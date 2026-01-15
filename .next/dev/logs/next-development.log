@@ -1,0 +1,2 @@
+[00:00:01.678] Server  LOG     > Ready on http://localhost:3000
+[00:01:18.641] Server  LOG       Reload env: .env.local

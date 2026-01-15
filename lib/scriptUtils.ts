@@ -73,3 +73,18 @@ export function shareScript(script: Script): { title: string; text: string; url?
     url: typeof window !== 'undefined' ? window.location.origin : undefined
   }
 }
+
+export function getCharactersInScene(script: Script): string[] {
+  // Extract unique characters in order of first appearance
+  const seen = new Set<string>()
+  const characters: string[] = []
+
+  script.lines.forEach(line => {
+    if (!seen.has(line.speaker)) {
+      seen.add(line.speaker)
+      characters.push(line.speaker)
+    }
+  })
+
+  return characters
+}

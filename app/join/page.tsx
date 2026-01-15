@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
 import { useConfetti } from '@/hooks/useConfetti'
 import { OnboardingModal } from '@/components/OnboardingModal'
-import { downloadScript, copyScriptToClipboard } from '@/lib/scriptUtils'
+import { downloadScript, copyScriptToClipboard, getCharactersInScene } from '@/lib/scriptUtils'
 
 // Helper function to get mood emoji and color
 function getMoodIndicator(mood: string) {
@@ -454,6 +454,9 @@ function JoinPageContent() {
                   }}
                 />
               </div>
+              <p className="px-4 pt-3 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                Characters: {getCharactersInScene(script).join(', ')}
+              </p>
             </div>
 
             {/* Script Display */}

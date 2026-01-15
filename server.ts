@@ -143,15 +143,22 @@ app.prepare().then(() => {
 
   const io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(server, {
     cors: {
-      origin: dev ? 'http://localhost:3000' : [
+      origin: dev ? [
+        'http://localhost:3000',
+        'http://localhost:3001'
+      ] : [
         'https://plot-twists.com',
         'https://www.plot-twists.com',
         'https://plot-twists-dvkmt8tyq-jackson-sangers-projects.vercel.app',
-        /\.vercel\.app$/  // Allow all Vercel preview deployments
+        /\.vercel\.app$/,  // Allow all Vercel preview deployments
+        'https://web-production-c7981.up.railway.app'  // Railway backend URL
       ],
-      methods: ['GET', 'POST'],
-      credentials: true
-    }
+      methods: ['GET', 'POST', 'OPTIONS'],
+      credentials: true,
+      allowedHeaders: ['Content-Type', 'Authorization']
+    },
+    transports: ['polling', 'websocket'],
+    allowEIO3: true
   })
 
   io.on('connection', (socket) => {

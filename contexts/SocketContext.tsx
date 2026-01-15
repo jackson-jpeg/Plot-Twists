@@ -35,16 +35,47 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // Reuse existing socket or create new one
     if (!globalSocket) {
-      // Use Railway backend URL in production, local in development
-      const socketUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'
-      console.log('Creating new socket connection to:', socketUrl)
+      // Determine socket URL based on environment
+      let socketUrl: string
+
+      if (typeof window !== 'undefined') {
+        // Client-side: check if we're on localhost
+        const isLocalhost = window.location.hostname === 'localhost' ||
+                           window.location.hostname === '127.0.0.1'
+
+        if (isLocalhost) {
+          // Local development
+          socketUrl = 'http://localhost:3000'
+        } else if (process.env.NEXT_PUBLIC_WS_URL) {
+          // Production: Use Railway backend
+          // Add https:// if not present
+          const wsUrl = process.env.NEXT_PUBLIC_WS_URL
+          socketUrl = wsUrl.startsWith('http') ? wsUrl : `https://${wsUrl}`
+        } else {
+          // Fallback to same origin
+          socketUrl = window.location.origin
+        }
+      } else {
+        // Server-side fallback
+        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'
+        socketUrl = wsUrl.startsWith('http') ? wsUrl : `https://${wsUrl}`
+      }
+
+      console.log('🔌 Socket connection config:')
+      console.log('  - Target URL:', socketUrl)
+      console.log('  - Environment:', process.env.NODE_ENV)
+      console.log('  - WS_URL env var:', process.env.NEXT_PUBLIC_WS_URL)
 
       globalSocket = io(socketUrl, {
         path: '/socket.io',
         reconnection: true,
         reconnectionDelay: 1000,
-        reconnectionAttempts: 5,
-        transports: ['websocket', 'polling']
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 10,
+        transports: ['polling', 'websocket'], // Try polling first, then upgrade to websocket
+        timeout: 20000,
+        autoConnect: true,
+        withCredentials: true
       })
 
       globalSocket.on('connect', () => {

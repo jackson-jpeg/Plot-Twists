@@ -1770,46 +1770,56 @@ button:focus-visible {
 /* Back Button */
 .back-button {
   position: fixed;
-  top: var(--space-5);
-  left: var(--space-5);
+  top: var(--space-4);
+  left: var(--space-3);
   z-index: var(--z-sticky);
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
+  justify-content: center;
+  gap: 0;
+  padding: var(--space-2);
+  width: 40px;
+  height: 40px;
   font-family: var(--font-ui);
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 400;
   color: var(--color-text-secondary);
-  background: var(--color-surface);
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-2);
+  backdrop-filter: blur(10px);
   transition:
     all var(--duration-fast) var(--easing-out);
 }
 
 .back-button:hover {
-  color: var(--color-text-primary);
-  border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-2);
-  background: var(--color-surface-elevated);
+  color: white;
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-3);
+  transform: scale(1.05);
 }
 
 .back-button:active {
-  box-shadow: var(--shadow-1);
-  transform: scale(0.98);
+  transform: scale(0.95);
 }
 
 .back-arrow {
-  font-size: 18px;
+  font-size: 20px;
+  line-height: 1;
   display: inline-block;
   transition: transform var(--duration-fast) var(--easing-out);
 }
 
 .back-button:hover .back-arrow {
   transform: translateX(-2px);
+}
+
+/* Hide text on back button, show only arrow */
+.back-button span:not(.back-arrow) {
+  display: none;
 }
 
 /* Dark mode adjustments */
@@ -1827,10 +1837,15 @@ button:focus-visible {
 /* Mobile responsive */
 @media (max-width: 768px) {
   .back-button {
-    top: var(--space-4);
-    left: var(--space-4);
-    padding: var(--space-2) var(--space-3);
-    font-size: 14px;
+    top: var(--space-3);
+    left: var(--space-3);
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .back-arrow {
+    font-size: 18px;
   }
 
   .doodle-arrow {
@@ -1900,11 +1915,11 @@ button:focus-visible {
 
 @media (max-width: 480px) {
   .back-button {
-    top: var(--space-3);
-    left: var(--space-3);
-    padding: var(--space-2);
-    font-size: 13px;
-    gap: var(--space-1);
+    top: var(--space-2);
+    left: var(--space-2);
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
   }
 
   .back-arrow {

@@ -66,17 +66,27 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       console.log('  - Environment:', process.env.NODE_ENV)
       console.log('  - WS_URL env var:', process.env.NEXT_PUBLIC_WS_URL)
 
+      // Configure transports based on environment
+      // Railway can be flaky with WebSocket upgrades, so we force polling in production
+      const isProduction = !socketUrl.includes('localhost')
+
       globalSocket = io(socketUrl, {
         path: '/socket.io',
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
         reconnectionAttempts: 10,
-        transports: ['polling', 'websocket'], // Try polling first, then upgrade to websocket
+        // Force polling-only in production (Railway), allow upgrade in dev
+        transports: isProduction ? ['polling'] : ['polling', 'websocket'],
+        upgrade: !isProduction, // Disable WebSocket upgrade in production
         timeout: 20000,
         autoConnect: true,
-        withCredentials: true
+        withCredentials: true,
+        forceNew: false,
+        multiplex: true
       })
+
+      console.log('  - Transport mode:', isProduction ? 'polling-only (production)' : 'polling + websocket (dev)')
 
       globalSocket.on('connect', () => {
         console.log('Socket connected:', globalSocket?.id)

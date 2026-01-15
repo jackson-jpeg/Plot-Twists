@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { Player, GameState, Script, RoomSettings, GameResults } from '@/lib/types'
 import { QRCodeSVG } from 'qrcode.react'
@@ -22,6 +23,7 @@ function getMoodIndicator(mood: string) {
 }
 
 export default function HostPage() {
+  const router = useRouter()
   const { socket, isConnected } = useSocket()
   const confetti = useConfetti()
   const [roomCode, setRoomCode] = useState<string>('')
@@ -147,6 +149,23 @@ export default function HostPage() {
   return (
     <div className="page-container">
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="host" />
+
+      {/* Back Button */}
+      {gameState === 'LOBBY' && (
+        <motion.button
+          onClick={() => router.push('/')}
+          className="back-button"
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          whileHover={{ x: -4 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <span className="back-arrow">←</span>
+          <span>Home</span>
+        </motion.button>
+      )}
+
       <AnimatePresence mode="wait">
         {gameState === 'LOBBY' && (
           <motion.div

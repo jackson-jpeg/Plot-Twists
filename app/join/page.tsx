@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { Player, GameState, Script, CardSelection, GameResults } from '@/lib/types'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -24,6 +24,7 @@ function getMoodIndicator(mood: string) {
 }
 
 function JoinPageContent() {
+  const router = useRouter()
   const { socket, isConnected } = useSocket()
   const searchParams = useSearchParams()
   const codeFromUrl = searchParams.get('code')
@@ -177,6 +178,21 @@ function JoinPageContent() {
     return (
       <div className="page-container items-center justify-center">
         <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="join" />
+
+        {/* Back Button */}
+        <motion.button
+          onClick={() => router.push('/')}
+          className="back-button"
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          whileHover={{ x: -4 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <span className="back-arrow">←</span>
+          <span>Home</span>
+        </motion.button>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

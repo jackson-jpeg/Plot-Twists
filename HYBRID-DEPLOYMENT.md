@@ -30,7 +30,7 @@ PORT=3000
 1. Go to **Settings** tab in Railway
 2. Click **"Generate Domain"** (under Networking)
 3. Copy your domain (e.g., `your-app.up.railway.app`)
-
+web-production-c7981.up.railway.app
 **IMPORTANT:** Save this URL - you'll need it for Step 2!
 
 ---
@@ -43,8 +43,8 @@ Go to Vercel Dashboard → Your Project → Settings → Environment Variables
 **Add these variables:**
 
 ```
-NEXT_PUBLIC_APP_URL=https://your-vercel-app.vercel.app
-NEXT_PUBLIC_WS_URL=https://your-app.up.railway.app
+NEXT_PUBLIC_APP_URL=https://plot-twists.com
+NEXT_PUBLIC_WS_URL=web-production-c7981.up.railway.app
 ```
 
 ⚠️ **Replace `your-app.up.railway.app` with your actual Railway domain from Step 1.4**

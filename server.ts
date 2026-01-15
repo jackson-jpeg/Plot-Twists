@@ -10,7 +10,7 @@ import { v4 as uuidv4 } from 'uuid'
 import Anthropic from '@anthropic-ai/sdk'
 
 const dev = process.env.NODE_ENV !== 'production'
-const hostname = 'localhost'
+const hostname = dev ? 'localhost' : '0.0.0.0'
 const port = parseInt(process.env.PORT || '3000', 10)
 
 const app = next({ dev, hostname, port })

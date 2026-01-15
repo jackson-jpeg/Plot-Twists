@@ -1,0 +1,8 @@
+# Railway ignore file - only deploy what's needed for backend
+.next/
+node_modules/
+.git/
+.env.local
+.DS_Store
+*.log
+.vercel/

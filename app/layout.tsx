@@ -6,7 +6,7 @@ import { Analytics } from '@vercel/analytics/react'
 export const metadata: Metadata = {
   title: 'Plot Twists - AI Improv Party Game',
   description: 'An AI-powered improv comedy game. Pick random cards, perform hilarious stories, vote for MVP. Perfect for theater kids and game nights!',
-  keywords: ['improv', 'party game', 'comedy', 'AI', 'theater', 'multiplayer', 'Jackbox-style'],
+  keywords: ['improv', 'party game', 'comedy', 'AI', 'theater', 'multiplayer', 'social game'],
   authors: [{ name: 'Plot Twists' }],
   openGraph: {
     title: 'Plot Twists - AI Improv Party Game',

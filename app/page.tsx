@@ -53,25 +53,6 @@ export default function Home() {
             The party game where AI writes your chaos
           </motion.p>
 
-          <motion.div
-            className="flex items-center justify-center gap-3 text-sm"
-            style={{ color: 'var(--color-text-tertiary)' }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <div style={{
-              width: '32px',
-              height: '2px',
-              background: 'var(--color-accent)'
-            }}></div>
-            <span className="font-medium">Powered by Claude</span>
-            <div style={{
-              width: '32px',
-              height: '2px',
-              background: 'var(--color-accent)'
-            }}></div>
-          </motion.div>
         </motion.div>
 
         <motion.div
@@ -118,7 +99,7 @@ export default function Home() {
             lineHeight: '1.6'
           }}>
             <p className="mb-3" style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-text-primary)' }}>
-              Like Jackbox, but weirder.
+              Your new favorite party game.
             </p>
             <p>
               Pick random cards. AI generates absurd improv scenes. Act them out with friends.

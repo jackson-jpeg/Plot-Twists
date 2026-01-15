@@ -157,9 +157,18 @@ app.prepare().then(() => {
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization']
     },
-    transports: ['polling', 'websocket'],
-    allowEIO3: true
+    // Force polling in production (Railway has WebSocket upgrade issues)
+    transports: dev ? ['polling', 'websocket'] : ['polling'],
+    allowEIO3: true,
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    upgradeTimeout: 30000,
+    maxHttpBufferSize: 1e6,
+    allowUpgrades: dev // Only allow upgrades in development
   })
+
+  console.log(`Socket.IO configured for ${dev ? 'development' : 'production'} mode`)
+  console.log(`Transports: ${dev ? 'polling + websocket' : 'polling-only'}`)
 
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id)

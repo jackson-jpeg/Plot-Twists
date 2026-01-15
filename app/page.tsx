@@ -22,105 +22,131 @@ export default function Home() {
   }
 
   return (
-    <main className="page-container items-center justify-center">
-      <div className="container max-w-3xl text-center">
+    <main className="page-container items-center justify-center home-nostalgic">
+      <div className="container max-w-3xl">
+
+        {/* Nostalgic header with doodles */}
         <motion.div
-          initial={{ y: -40, opacity: 0, scale: 0.95 }}
-          animate={{ y: 0, opacity: 1, scale: 1 }}
+          initial={{ y: -40, opacity: 0, rotate: -1 }}
+          animate={{ y: 0, opacity: 1, rotate: 0 }}
           transition={{
             type: "spring",
-            stiffness: 100,
-            damping: 15,
+            stiffness: 80,
+            damping: 12,
             delay: 0.1
           }}
-          className="mb-12"
+          className="bulletin-board-header"
         >
-          <motion.h1
-            className="hero-title mb-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            Plot Twists 🎭
-          </motion.h1>
+          <div className="header-polaroid">
+            <h1 className="hero-title-nostalgic">
+              Plot Twists
+              <span className="title-emoji">🎭</span>
+            </h1>
+            <div className="polaroid-caption">
+              The party game where AI writes your chaos
+            </div>
+          </div>
 
-          <motion.p
-            className="hero-subtitle mb-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
+          {/* Hand-drawn arrow annotation */}
+          <motion.div
+            className="doodle-arrow"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
           >
-            The party game where AI writes your chaos
-          </motion.p>
-
+            <span className="doodle-text">Pick one!</span>
+            <svg viewBox="0 0 100 40" className="arrow-svg">
+              <path d="M 10 20 Q 50 10, 90 20" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+              <path d="M 85 15 L 95 20 L 85 25" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </motion.div>
         </motion.div>
 
+        {/* Game buttons styled like tickets */}
         <motion.div
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{
             delay: 0.35,
             type: "spring",
-            stiffness: 100,
-            damping: 15
+            stiffness: 80,
+            damping: 12
           }}
-          className="stack-lg mb-12"
+          className="ticket-container"
         >
           <motion.button
             onClick={() => router.push('/host')}
-            className="btn btn-primary btn-large w-full"
-            whileHover={{ scale: 1.02 }}
+            className="game-ticket ticket-host"
+            whileHover={{ y: -4, rotate: 0 }}
             whileTap={{ scale: 0.98 }}
           >
-            <span>🎬</span>
-            <span>Host a Game</span>
+            <div className="ticket-stub">🎬</div>
+            <div className="ticket-main">
+              <div className="ticket-title">Host a Game</div>
+              <div className="ticket-subtitle">Start the show</div>
+            </div>
+            <div className="ticket-notch"></div>
           </motion.button>
 
           <motion.button
             onClick={() => router.push('/join')}
-            className="btn btn-secondary btn-large w-full"
-            whileHover={{ scale: 1.02 }}
+            className="game-ticket ticket-join"
+            whileHover={{ y: -4, rotate: 0 }}
             whileTap={{ scale: 0.98 }}
           >
-            <span>🎮</span>
-            <span>Join Game</span>
+            <div className="ticket-stub">🎮</div>
+            <div className="ticket-main">
+              <div className="ticket-title">Join Game</div>
+              <div className="ticket-subtitle">Jump into action</div>
+            </div>
+            <div className="ticket-notch"></div>
           </motion.button>
         </motion.div>
 
+        {/* Info card with scrapbook aesthetic */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="card card-accent"
+          className="scrapbook-card"
         >
-          <div style={{
-            color: 'var(--color-text-secondary)',
-            fontSize: '16px',
-            lineHeight: '1.6'
-          }}>
-            <p className="mb-3" style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-text-primary)' }}>
-              Your new favorite party game.
-            </p>
-            <p>
-              Pick random cards. AI generates absurd improv scenes. Act them out with friends.
-              Vote for who nailed it. Cry-laugh at the results.
-            </p>
+          <div className="tape-piece tape-top-left"></div>
+          <div className="tape-piece tape-top-right"></div>
+
+          <div className="scrapbook-content">
+            <h3 className="scrapbook-title">
+              How it works ✨
+            </h3>
+            <ol className="scrapbook-list">
+              <li>Pick random prompt cards</li>
+              <li>AI generates hilarious scenes</li>
+              <li>Act them out with friends</li>
+              <li>Vote for the MVP</li>
+              <li>Cry-laugh at the chaos</li>
+            </ol>
           </div>
+
+          {/* Handwritten note in corner */}
+          <motion.div
+            className="sticky-note"
+            initial={{ opacity: 0, rotate: 5, scale: 0.8 }}
+            animate={{ opacity: 1, rotate: 8, scale: 1 }}
+            transition={{ delay: 0.8 }}
+          >
+            Best with<br/>2-6 players!
+          </motion.div>
         </motion.div>
 
+        {/* Footer badges */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
-          className="mt-8"
+          className="home-badges"
         >
-          <p style={{
-            fontSize: '14px',
-            color: 'var(--color-text-tertiary)',
-            fontStyle: 'italic'
-          }}>
-            Perfect for 2-6 players • No acting skills required • Theater kids optional
-          </p>
+          <span className="retro-badge">No Acting Skills Required</span>
+          <span className="retro-badge">Theater Kids Welcome</span>
+          <span className="retro-badge">100% Chaos Guaranteed</span>
         </motion.div>
       </div>
     </main>

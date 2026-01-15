@@ -1291,6 +1291,473 @@ button:focus-visible {
 }
 
 /* ==========================================================================
+   Nostalgic Home Screen Styles
+   ========================================================================== */
+
+.home-nostalgic {
+  background: var(--color-bg);
+  position: relative;
+}
+
+/* Bulletin board header with polaroid */
+.bulletin-board-header {
+  position: relative;
+  margin-bottom: var(--space-9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.header-polaroid {
+  background: var(--color-surface);
+  padding: var(--space-5);
+  padding-bottom: var(--space-8);
+  border-radius: 2px;
+  box-shadow:
+    0 2px 4px rgba(42, 39, 34, 0.1),
+    0 8px 16px rgba(42, 39, 34, 0.12);
+  transform: rotate(-1deg);
+  position: relative;
+  border: 1px solid var(--color-border);
+  max-width: 500px;
+  width: 100%;
+}
+
+.header-polaroid::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 24px;
+  background: rgba(245, 158, 66, 0.15);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 2px rgba(42, 39, 34, 0.1);
+}
+
+.hero-title-nostalgic {
+  font-family: var(--font-display);
+  font-size: clamp(42px, 8vw, 56px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+  text-align: center;
+  margin-bottom: var(--space-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.title-emoji {
+  font-size: 0.9em;
+  display: inline-block;
+  animation: wiggle-subtle 3s ease-in-out infinite;
+}
+
+@keyframes wiggle-subtle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.polaroid-caption {
+  font-family: var(--font-handwritten);
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  text-align: center;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  padding: 0 var(--space-4);
+}
+
+/* Hand-drawn doodle arrow */
+.doodle-arrow {
+  position: absolute;
+  top: 100%;
+  right: -40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-accent);
+  opacity: 0.85;
+}
+
+.doodle-text {
+  font-family: var(--font-handwritten);
+  font-size: 15px;
+  transform: rotate(8deg);
+  white-space: nowrap;
+}
+
+.arrow-svg {
+  width: 100px;
+  height: 40px;
+  transform: rotate(15deg);
+  color: var(--color-accent);
+}
+
+/* Ticket-style buttons */
+.ticket-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.game-ticket {
+  background: var(--color-surface);
+  border: 2px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 0;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  cursor: pointer;
+  position: relative;
+  box-shadow:
+    0 2px 4px rgba(42, 39, 34, 0.08),
+    0 4px 12px rgba(42, 39, 34, 0.08);
+  transition:
+    transform var(--duration-fast) var(--easing-out),
+    box-shadow var(--duration-fast) var(--easing-out),
+    border-color var(--duration-fast) var(--easing-out);
+  overflow: visible;
+}
+
+.ticket-host {
+  transform: rotate(-1deg);
+}
+
+.ticket-join {
+  transform: rotate(1deg);
+}
+
+.game-ticket:hover {
+  box-shadow:
+    0 4px 8px rgba(42, 39, 34, 0.12),
+    0 8px 24px rgba(42, 39, 34, 0.12);
+  border-color: var(--color-accent);
+}
+
+.game-ticket:active {
+  box-shadow: 0 2px 4px rgba(42, 39, 34, 0.08);
+}
+
+.ticket-stub {
+  background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent-light));
+  border-right: 2px dashed var(--color-border-strong);
+  padding: var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  min-width: 80px;
+  position: relative;
+}
+
+.ticket-main {
+  flex: 1;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+.ticket-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.ticket-subtitle {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.ticket-notch {
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 24px;
+  background: var(--color-bg);
+  border: 2px dashed var(--color-border-strong);
+  border-right: none;
+  border-radius: 12px 0 0 12px;
+}
+
+/* Scrapbook card */
+.scrapbook-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: var(--space-7);
+  box-shadow:
+    0 1px 3px rgba(42, 39, 34, 0.08),
+    0 4px 12px rgba(42, 39, 34, 0.06);
+  position: relative;
+  margin-bottom: var(--space-7);
+  transform: rotate(-0.5deg);
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.scrapbook-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  opacity: 0.3;
+}
+
+/* Tape pieces */
+.tape-piece {
+  position: absolute;
+  width: 60px;
+  height: 24px;
+  background: rgba(245, 158, 66, 0.12);
+  border-top: 1px solid rgba(245, 158, 66, 0.15);
+  border-bottom: 1px solid rgba(245, 158, 66, 0.15);
+  box-shadow: inset 0 1px 2px rgba(42, 39, 34, 0.05);
+}
+
+.tape-top-left {
+  top: -12px;
+  left: 32px;
+  transform: rotate(-8deg);
+}
+
+.tape-top-right {
+  top: -12px;
+  right: 32px;
+  transform: rotate(8deg);
+}
+
+.scrapbook-content {
+  position: relative;
+  z-index: 1;
+}
+
+.scrapbook-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.scrapbook-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.scrapbook-list li {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  color: var(--color-text-primary);
+  padding-left: var(--space-5);
+  position: relative;
+  line-height: 1.5;
+}
+
+.scrapbook-list li::before {
+  content: '★';
+  position: absolute;
+  left: 0;
+  color: var(--color-accent);
+  font-size: 16px;
+}
+
+/* Sticky note */
+.sticky-note {
+  position: absolute;
+  bottom: -24px;
+  right: -24px;
+  background: #FFF4D6;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-handwritten);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--color-text-primary);
+  box-shadow:
+    0 2px 4px rgba(42, 39, 34, 0.1),
+    0 4px 12px rgba(42, 39, 34, 0.08);
+  border-radius: 1px;
+  text-align: center;
+  transform-origin: center;
+}
+
+.sticky-note::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 16px;
+  background: rgba(245, 158, 66, 0.2);
+  border-radius: 1px;
+}
+
+/* Retro badges */
+.home-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.retro-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 2px solid var(--color-border-strong);
+  border-radius: 2px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  box-shadow: 0 1px 2px rgba(42, 39, 34, 0.06);
+  transform: rotate(-1deg);
+}
+
+.retro-badge:nth-child(2) {
+  transform: rotate(0deg);
+}
+
+.retro-badge:nth-child(3) {
+  transform: rotate(1deg);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .header-polaroid::before,
+  .tape-piece {
+    background: rgba(245, 158, 66, 0.08);
+  }
+
+  .sticky-note {
+    background: #4A4530;
+    color: var(--color-text-primary);
+  }
+
+  .sticky-note::before {
+    background: rgba(245, 158, 66, 0.15);
+  }
+
+  .ticket-stub {
+    background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent-light));
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .doodle-arrow {
+    display: none;
+  }
+
+  .header-polaroid {
+    max-width: 100%;
+  }
+
+  .ticket-container {
+    max-width: 100%;
+  }
+
+  .scrapbook-card {
+    max-width: 100%;
+    padding: var(--space-6);
+  }
+
+  .sticky-note {
+    bottom: -20px;
+    right: -16px;
+    font-size: 13px;
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .ticket-stub {
+    min-width: 64px;
+    font-size: 28px;
+    padding: var(--space-4);
+  }
+
+  .ticket-title {
+    font-size: 20px;
+  }
+
+  .ticket-subtitle {
+    font-size: 13px;
+  }
+
+  .home-badges {
+    gap: var(--space-2);
+  }
+
+  .retro-badge {
+    font-size: 11px;
+    padding: 5px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title-nostalgic {
+    font-size: clamp(32px, 10vw, 42px);
+  }
+
+  .polaroid-caption {
+    font-size: 14px;
+  }
+
+  .scrapbook-card {
+    padding: var(--space-5);
+    margin-bottom: var(--space-9);
+  }
+
+  .scrapbook-title {
+    font-size: 18px;
+  }
+
+  .scrapbook-list li {
+    font-size: 15px;
+  }
+
+  .ticket-main {
+    padding: var(--space-4);
+  }
+}
+
+/* ==========================================================================
    Responsive
    ========================================================================== */
 

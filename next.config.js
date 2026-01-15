@@ -47,7 +47,10 @@ const nextConfig = {
     ]
   },
 
-  // WebSocket configuration for custom server
+  // Turbopack configuration (Next.js 16+ default bundler)
+  turbopack: {},
+
+  // WebSocket configuration for custom server (webpack fallback for legacy builds)
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Don't resolve 'fs' module on the client to prevent this error on build --> Error: Can't resolve 'fs'

@@ -60,8 +60,10 @@ async function generateScript(
   setting: string,
   circumstance: string,
   isMature: boolean,
-  numPlayers: number
+  isSoloMode: boolean | number // Can be boolean (solo mode flag) or number (player count for multiplayer)
 ) {
+  const numPlayers = typeof isSoloMode === 'boolean' ? (isSoloMode ? 1 : characters.length) : isSoloMode
+  const actualSoloMode = typeof isSoloMode === 'boolean' ? isSoloMode : false
   const characterList = characters.join(', ')
 
   // Build comedy writing guidelines based on rating
@@ -292,14 +294,29 @@ Now write comedy that makes people ACTUALLY LAUGH.`
 ═══════════════════════════════════════
 THE SETUP
 ═══════════════════════════════════════
-CHARACTERS: ${characterList}
+${actualSoloMode ? `PLAYER CHARACTER: ${characterList}
 SETTING: ${setting}
 CIRCUMSTANCE: ${circumstance}
+
+SOLO MODE INSTRUCTIONS:
+The player will perform as ${characterList}. You need to add 2-3 ADDITIONAL characters who would logically be in this setting.
+
+CRITICAL: Choose characters that FIT THE SETTING:
+- If the setting is "The Simpsons Living Room" → add Homer Simpson, Marge Simpson, or Bart Simpson
+- If the setting is "Central Perk (Friends)" → add Ross, Rachel, Chandler, Monica, Joey, or Phoebe
+- If the setting is "The Office Conference Room" → add Michael Scott, Dwight, Jim, Pam, etc.
+- If the setting is "The Batcave" → add Batman, Robin, Alfred
+- If the setting is "The Death Star" → add Darth Vader, Stormtroopers, Emperor
+
+DO NOT pick random unrelated characters. The supporting cast must make sense for the location.
+WHO would realistically be in "${setting}" during this circumstance? Add 2-3 of them.` : `CHARACTERS: ${characterList}
+SETTING: ${setting}
+CIRCUMSTANCE: ${circumstance}`}
 
 RATING: ${isMature ? '18+ (Adult comedy - profanity allowed, taboo topics fair game, SNL-level sharp writing)' : 'Family Friendly (Smart absurdist comedy for all ages - think peak Nickelodeon)'}
 
 SCRIPT LENGTH: 30-40 lines
-PERFORMERS: ${numPlayers} player${numPlayers > 1 ? 's' : ''} ${numPlayers === 1 ? '(Player performs main character, AI characters provide supporting reactions)' : '(Distribute lines evenly so everyone gets funny moments)'}
+PERFORMERS: ${numPlayers} player${numPlayers > 1 ? 's' : ''} ${actualSoloMode ? ` (Player performs as ${characterList}, you provide 2-3 supporting characters)` : '(Distribute lines evenly so everyone gets funny moments)'}
 
 ═══════════════════════════════════════
 YOUR MISSION
@@ -313,7 +330,9 @@ YOUR MISSION
 7. Give every character emotional stakes (even if absurd)
 8. End with a strong button - callback, twist, or perfect punchline
 
-${numPlayers > 1 ? 'Make sure all players get equal stage time and funny lines - no one should feel like a sidekick.' : 'The solo player should have most lines, but give AI characters strong personalities so the player has something to react to.'}
+${numPlayers > 1 ? 'Make sure all players get equal stage time and funny lines - no one should feel like a sidekick.' : `The player (${characterList}) should have most lines (60-70%), but give supporting characters strong personalities and funny reactions so the player has something to work with.`}
+
+${actualSoloMode ? `\nREMINDER: Add 2-3 characters who belong in "${setting}" - not random characters from other universes!` : ''}
 
 The premise is already absurd. Your job is to EXPLOIT that absurdity through sharp dialogue.
 
@@ -321,8 +340,13 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
 
   try {
     console.log(`🎭 Generating ${isMature ? '18+' : 'Family Friendly'} comedy script...`)
-    console.log(`   Characters: ${characterList}`)
-    console.log(`   Setting: ${setting}`)
+    if (actualSoloMode) {
+      console.log(`   Mode: SOLO - Player is ${characterList}`)
+      console.log(`   Setting: ${setting} (AI will add appropriate characters from this location)`)
+    } else {
+      console.log(`   Characters: ${characterList}`)
+      console.log(`   Setting: ${setting}`)
+    }
     console.log(`   Circumstance: ${circumstance}`)
 
     const message = await anthropic.messages.create({
@@ -718,30 +742,21 @@ app.prepare().then(() => {
     try {
       // Collect all characters from selections
       let characters = Array.from(room.selections.values()).map(s => s.character)
+      const isSoloMode = room.gameMode === 'SOLO' && characters.length === 1
 
-      // Solo mode: Add AI characters to fill the cast
-      if (room.gameMode === 'SOLO' && characters.length === 1) {
-        const content = getFilteredContent(room.isMature)
-        // Get 2-3 additional random characters that aren't the player's character
-        const availableCharacters = content.characters.filter(c => !characters.includes(c))
-        const numAICharacters = 2 + Math.floor(Math.random() * 2) // 2-3 AI characters
-
-        for (let i = 0; i < numAICharacters; i++) {
-          const randomIndex = Math.floor(Math.random() * availableCharacters.length)
-          characters.push(availableCharacters[randomIndex])
-          availableCharacters.splice(randomIndex, 1) // Remove to avoid duplicates
-        }
-
-        console.log(`Solo mode: Generated AI characters for room ${room.code}:`, characters)
+      if (isSoloMode) {
+        console.log(`Solo mode: Player selected "${characters[0]}" in "${firstSelection.setting}"`)
+        console.log(`AI will dynamically choose appropriate supporting characters based on the setting`)
       }
 
       // Generate script
+      // In solo mode, pass only the player's character and let the AI choose appropriate supporting characters
       const script = await generateScript(
         characters,
         firstSelection.setting,
         firstSelection.circumstance,
         room.isMature,
-        characters.length
+        isSoloMode // Pass solo mode flag instead of character count
       )
 
       room.script = script

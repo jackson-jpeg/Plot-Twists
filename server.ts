@@ -143,8 +143,14 @@ app.prepare().then(() => {
 
   const io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(server, {
     cors: {
-      origin: dev ? 'http://localhost:3000' : '*',
-      methods: ['GET', 'POST']
+      origin: dev ? 'http://localhost:3000' : [
+        'https://plot-twists.com',
+        'https://www.plot-twists.com',
+        'https://plot-twists-dvkmt8tyq-jackson-sangers-projects.vercel.app',
+        /\.vercel\.app$/  // Allow all Vercel preview deployments
+      ],
+      methods: ['GET', 'POST'],
+      credentials: true
     }
   })
 

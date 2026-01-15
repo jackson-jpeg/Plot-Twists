@@ -35,12 +35,16 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     // Reuse existing socket or create new one
     if (!globalSocket) {
-      console.log('Creating new socket connection')
-      globalSocket = io({
+      // Use Railway backend URL in production, local in development
+      const socketUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'
+      console.log('Creating new socket connection to:', socketUrl)
+
+      globalSocket = io(socketUrl, {
         path: '/socket.io',
         reconnection: true,
         reconnectionDelay: 1000,
-        reconnectionAttempts: 5
+        reconnectionAttempts: 5,
+        transports: ['websocket', 'polling']
       })
 
       globalSocket.on('connect', () => {

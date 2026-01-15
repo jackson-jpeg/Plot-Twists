@@ -1,0 +1,12 @@
+# Vercel should ignore the custom server - it only runs on Railway
+server.ts
+server.js
+Procfile
+railway.json
+.railwayignore
+
+# Don't need these for frontend build
+node_modules/
+.env
+*.log
+.DS_Store

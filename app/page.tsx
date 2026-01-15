@@ -50,7 +50,7 @@ export default function Home() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            AI-powered improv comedy game
+            The party game where AI writes your chaos
           </motion.p>
 
           <motion.div
@@ -112,14 +112,19 @@ export default function Home() {
           transition={{ delay: 0.5 }}
           className="card card-accent"
         >
-          <p style={{
+          <div style={{
             color: 'var(--color-text-secondary)',
             fontSize: '16px',
             lineHeight: '1.6'
           }}>
-            Pick characters, settings, and scenarios. Claude writes hilarious scripts.
-            Perform together. Vote for MVP.
-          </p>
+            <p className="mb-3" style={{ fontSize: '18px', fontWeight: '600', color: 'var(--color-text-primary)' }}>
+              Like Jackbox, but weirder.
+            </p>
+            <p>
+              Pick random cards. AI generates absurd improv scenes. Act them out with friends.
+              Vote for who nailed it. Cry-laugh at the results.
+            </p>
+          </div>
         </motion.div>
 
         <motion.div
@@ -133,7 +138,7 @@ export default function Home() {
             color: 'var(--color-text-tertiary)',
             fontStyle: 'italic'
           }}>
-            Best experienced with 2-6 players
+            Perfect for 2-6 players • No acting skills required • Theater kids optional
           </p>
         </motion.div>
       </div>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { SocketProvider } from '@/contexts/SocketContext'
+import { Analytics } from '@vercel/analytics/react'
 
 export const metadata: Metadata = {
   title: 'Plot Twists - AI Improv Party Game',
@@ -39,6 +40,7 @@ export default function RootLayout({
         <SocketProvider>
           {children}
         </SocketProvider>
+        <Analytics />
       </body>
     </html>
   )

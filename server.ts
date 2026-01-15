@@ -339,15 +339,21 @@ The premise is already absurd. Your job is to EXPLOIT that absurdity through sha
 Write the scene now. Make it genuinely funny - the kind of funny where people will want to perform it again.`
 
   try {
-    console.log(`🎭 Generating ${isMature ? '18+' : 'Family Friendly'} comedy script...`)
+    console.log(`\n🎬 AI SCRIPT GENERATION`)
+    console.log(`════════════════════════════════════════`)
+    console.log(`Rating: ${isMature ? '18+ (Adult Comedy)' : 'Family Friendly'}`)
     if (actualSoloMode) {
-      console.log(`   Mode: SOLO - Player is ${characterList}`)
-      console.log(`   Setting: ${setting} (AI will add appropriate characters from this location)`)
+      console.log(`Mode: SOLO`)
+      console.log(`Player Character: ${characterList}`)
+      console.log(`Setting: ${setting}`)
+      console.log(`Note: AI will add 2-3 supporting characters who belong in "${setting}"`)
     } else {
-      console.log(`   Characters: ${characterList}`)
-      console.log(`   Setting: ${setting}`)
+      console.log(`Mode: MULTIPLAYER (${numPlayers} players)`)
+      console.log(`All Characters: ${characterList}`)
+      console.log(`Setting: ${setting}`)
     }
-    console.log(`   Circumstance: ${circumstance}`)
+    console.log(`Circumstance: ${circumstance}`)
+    console.log(`════════════════════════════════════════\n`)
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
@@ -362,7 +368,7 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
       ]
     })
 
-    console.log(`✓ Script generated successfully`)
+    console.log(`✅ Script generated successfully!\n`)
 
     const content = message.content[0]
     if (content.type !== 'text') {
@@ -731,32 +737,48 @@ app.prepare().then(() => {
     room.gameState = 'LOADING'
     io.to(room.code).emit('game_state_change', 'LOADING')
 
-    // Get first player's selection for setting
-    const firstSelection = Array.from(room.selections.values())[0]
-    if (!firstSelection) return
+    // Get all player selections
+    const allSelections = Array.from(room.selections.values())
+    if (allSelections.length === 0) return
 
-    // Send green room trivia
-    const triviaQuestion = getGreenRoomTrivia(firstSelection.setting)
+    // For fairness in multiplayer, randomly pick setting and circumstance from all player selections
+    // (Each player picked their own, so we combine them randomly)
+    const randomSettingIndex = Math.floor(Math.random() * allSelections.length)
+    const randomCircumstanceIndex = Math.floor(Math.random() * allSelections.length)
+
+    const chosenSetting = allSelections[randomSettingIndex].setting
+    const chosenCircumstance = allSelections[randomCircumstanceIndex].circumstance
+
+    console.log(`🎲 Randomly selected setting: "${chosenSetting}" (from player ${randomSettingIndex + 1})`)
+    console.log(`🎲 Randomly selected circumstance: "${chosenCircumstance}" (from player ${randomCircumstanceIndex + 1})`)
+
+    // Send green room trivia based on chosen setting
+    const triviaQuestion = getGreenRoomTrivia(chosenSetting)
     io.to(room.code).emit('green_room_prompt', triviaQuestion)
 
     try {
-      // Collect all characters from selections
-      let characters = Array.from(room.selections.values()).map(s => s.character)
+      // Collect all characters from selections (everyone gets their character in the scene)
+      let characters = allSelections.map(s => s.character)
       const isSoloMode = room.gameMode === 'SOLO' && characters.length === 1
 
       if (isSoloMode) {
-        console.log(`Solo mode: Player selected "${characters[0]}" in "${firstSelection.setting}"`)
-        console.log(`AI will dynamically choose appropriate supporting characters based on the setting`)
+        console.log(`🎭 SOLO mode: Player is "${characters[0]}"`)
+        console.log(`   Setting: "${chosenSetting}"`)
+        console.log(`   AI will add 2-3 characters who belong in this setting`)
+      } else {
+        console.log(`🎭 ${room.gameMode} mode: ${characters.length} players`)
+        console.log(`   Characters: ${characters.join(', ')}`)
+        console.log(`   Setting: "${chosenSetting}"`)
+        console.log(`   Circumstance: "${chosenCircumstance}"`)
       }
 
       // Generate script
-      // In solo mode, pass only the player's character and let the AI choose appropriate supporting characters
       const script = await generateScript(
         characters,
-        firstSelection.setting,
-        firstSelection.circumstance,
+        chosenSetting,
+        chosenCircumstance,
         room.isMature,
-        isSoloMode // Pass solo mode flag instead of character count
+        isSoloMode
       )
 
       room.script = script

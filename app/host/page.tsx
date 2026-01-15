@@ -8,7 +8,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useConfetti } from '@/hooks/useConfetti'
 import { OnboardingModal } from '@/components/OnboardingModal'
-import { downloadScript, copyScriptToClipboard } from '@/lib/scriptUtils'
+import { downloadScript, copyScriptToClipboard, getCharactersInScene } from '@/lib/scriptUtils'
 
 // Helper function to get mood emoji and color
 function getMoodIndicator(mood: string) {
@@ -618,6 +618,9 @@ export default function HostPage() {
                 <h2 className="text-3xl font-display" style={{ color: 'var(--color-text-primary)' }}>{script.title}</h2>
               </div>
               <p className="text-lg italic mb-4" style={{ color: 'var(--color-text-secondary)' }}>{script.synopsis}</p>
+              <p className="text-sm mb-4" style={{ color: 'var(--color-text-tertiary)' }}>
+                Characters: {getCharactersInScene(script).join(', ')}
+              </p>
               <div className="flex items-center gap-4">
                 <span className="font-script font-bold" style={{ color: 'var(--color-accent)' }}>
                   LINE {currentLineIndex + 1}/{script.lines.length}

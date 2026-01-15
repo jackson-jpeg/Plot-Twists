@@ -62,45 +62,273 @@ async function generateScript(
   isMature: boolean,
   numPlayers: number
 ) {
-  const tone = isMature ? 'R-Rated (Adult humor, profanity allowed)' : 'Family Friendly (PG, wholesome)'
   const characterList = characters.join(', ')
 
-  const systemPrompt = `You are a comedy scriptwriting engine for a party game called 'Plot Twists'.
-Your goal is to write a funny, dialogue-heavy script based on specific character/setting mashups.
+  // Build comedy writing guidelines based on rating
+  const comedyGuidelines = isMature ? `
+═══════════════════════════════════════════════════════
+18+ MODE: WRITE LIKE SNL AT 1AM (NO CENSORS)
+═══════════════════════════════════════════════════════
 
-OUTPUT INSTRUCTIONS:
-1. You must output ONLY valid JSON.
-2. Do not include any conversational filler (no "Here is your script").
-3. Do not use Markdown formatting (no \`\`\`json blocks).
+THE GAME OF THE SCENE:
+Every scene needs a GAME - the central comic idea you're exploring. Examples:
+- "What if a kindergarten teacher had to explain Bitcoin to actual wolves?"
+- "Gordon Ramsay critiques a funeral he's catering"
+- "A couple's therapist realizes both clients are serial killers"
+Find the game IMMEDIATELY (line 1-3) and PLAY IT HARD.
 
-JSON STRUCTURE:
+CHARACTER DYNAMICS = COMEDY:
+- CONFLICT over agreement (people arguing is funnier than people agreeing)
+- STATUS GAMES (who has power? who's losing it? flip it unexpectedly)
+- EMOTIONAL STAKES (even absurd characters must WANT something badly)
+- FLAWS ARE FUNNY (cowards, narcissists, idiots, perverts - embrace it)
+- Let characters be CONFIDENTLY WRONG about everything
+
+THE PROFANITY PRINCIPLE:
+Swearing is a SPICE, not the meal. Use it when:
+- Frustration boils over ("Are you f*cking kidding me right now?")
+- Shock value at the perfect moment (quiet conversation → sudden "SHIT!")
+- Character voice demands it (drill sergeant, sailor, bitter ex)
+DON'T just pepper it randomly. Earn each f-bomb.
+
+TABOO TOPICS = COMEDY GOLD:
+You can explore: sex, death, drugs, politics, religion, bodily functions, trauma
+But be SPECIFIC and SURPRISING, not just edgy for edge's sake:
+- BAD: "Haha, sex!"
+- GOOD: "I'm not saying I'd sleep with my therapist, I'm saying I already did and now he won't validate my parking."
+
+SURPRISE & MISDIRECTION:
+Set up an expectation, then violate it:
+- Character A: "I have something important to tell you."
+- Character B: "You're dying."
+- Character A: "No, I'm pregnant."
+- Character B: "With what?"
+
+THE RHYTHM OF FUNNY:
+Long setup → SHORT punchline.
+Or: Short, short, short → LONG ridiculous rant.
+Vary it. Comedy lives in the unexpected beat.
+
+CALLBACKS & RUNNING GAGS:
+If something lands early (weird detail, strange accusation, dumb logic), BRING IT BACK.
+Example: "Still not sorry about the ferrets!" mentioned casually in line 8 becomes the reveal in line 35.
+
+AVOID LIKE POISON:
+- Characters going "This is insane!" (we KNOW it's insane, that's not a joke)
+- Explaining the joke ("Get it? Because he's a vampire!")
+- Being too polite or reasonable in chaos
+- Therapy-speak or emotional growth arcs
+- Anyone learning a lesson
+` : `
+═══════════════════════════════════════════════════════
+FAMILY FRIENDLY: WRITE LIKE PEAK NICKELODEON
+═══════════════════════════════════════════════════════
+
+THE GAME OF THE SCENE:
+Find the absurd premise and COMMIT. Examples:
+- "A pirate is terrified of water but won't admit it"
+- "A ghost is trying to haunt a house that's already condemned"
+- "SpongeBob logic: The worse things get, the more cheerful they are"
+Find the game in lines 1-3. Never let go.
+
+ABSURDISM IS YOUR WEAPON:
+Kids' comedy isn't dumb - it's WEIRD. Embrace:
+- Nonsense that feels somehow logical ("I can't come to work, my goldfish has jury duty")
+- Characters being confidently incorrect ("The moon is obviously made of government lies")
+- Overreacting to tiny things / underreacting to chaos
+- Items/locations doing impossible things described casually
+- Non-sequiturs that land because of COMMITMENT
+
+ENERGY & MOMENTUM:
+Fast pace. No dead air. If a line isn't moving the scene forward, cut it.
+Think: rapid-fire Looney Tunes energy, not slow explanatory dialogue.
+SHORT LINES for maximum impact:
+- "Why?"
+- "Because."
+- "But—"
+- "BECAUSE."
+
+WORDPLAY & LINGUISTIC CHAOS:
+Puns that make you groan. Malapropisms. Misheard phrases. Weird idioms.
+- "It's not rocket surgery!"
+- "Does a bear shop in the woods?"
+- Character names that are puns (Dr. Payne the dentist)
+
+PHYSICAL COMEDY IN DIALOGUE:
+You can't write stage directions, so DESCRIBE physical comedy in what characters say:
+- "Why are you hopping on one foot?"
+- "Are you... are you juggling eggs right now?"
+- "Did you just backflip over a couch for no reason?"
+
+ESCALATION TO ABSURDITY:
+Start weird. Get WEIRDER. Peak Nickelodeon shows never pumped the brakes:
+- Line 5: "There's a penguin in the kitchen"
+- Line 15: "There are seventeen penguins and they've formed a union"
+- Line 30: "The penguin union has elected a pope"
+
+RUNNING GAGS WITHIN THE SCENE:
+Establish a pattern, repeat with variation:
+- Every time Character A mentions tacos, something explodes
+- Character B keeps trying to interject but gets interrupted
+- Character C ends every sentence with "probably" even when it makes no sense
+
+AVOID LIKE POISON:
+- Jokes that require cultural knowledge kids don't have
+- Sarcasm without a clear "tell" (kids miss subtle sarcasm)
+- Emotional sincerity or "the moral of the story"
+- Adults explaining things condescendingly
+- Trying to sneak in educational content (this is COMEDY, not edutainment)
+`
+
+  const systemPrompt = `You are a professional comedy writer. Not someone who TRIES to be funny - someone who IS funny.
+
+These scripts will be performed OUT LOUD by amateur players. That means:
+- Every line must sound NATURAL when spoken
+- Comedy must land even with mediocre delivery
+- The words themselves must be funny, not just the performance
+- Avoid jokes that need perfect timing - focus on jokes that need perfect WORDS
+
+${comedyGuidelines}
+
+═══════════════════════════════════════════════════════
+THE IMPROV PRINCIPLE: YES-AND
+═══════════════════════════════════════════════════════
+Each character should BUILD on what came before, not deny it:
+- BAD: "No, I'm not a vampire." "Yes you are." "No I'm not."
+- GOOD: "I'm not a vampire." "Then explain the coffin." "It's for naps!"
+
+Never have characters say "That doesn't make sense" - EVERYTHING makes sense in its own weird logic.
+
+═══════════════════════════════════════════════════════
+CHARACTER VOICE IS NON-NEGOTIABLE
+═══════════════════════════════════════════════════════
+If Gordon Ramsay is in the scene, EVERY line should sound exactly like Gordon Ramsay.
+If Shakespeare is there, he speaks in iambic pentameter with flowery language.
+If Yoda is present, backwards his sentences must be.
+If a pirate appears, "yarr" and nautical metaphors, matey.
+
+Mixing a pirate and Shakespeare? The pirate doesn't suddenly talk like Shakespeare - the CONTRAST is the comedy.
+
+═══════════════════════════════════════════════════════
+SPECIFICITY BEATS GENERIC EVERY TIME
+═══════════════════════════════════════════════════════
+"I dropped something in the fryer" ← Boring
+"I dropped my 1987 Casio calculator watch in the fryer and it's beeping the Jeopardy theme underwater" ← Funny
+
+Specific details = real. Generic = forgettable.
+
+═══════════════════════════════════════════════════════
+THE RULE OF THREE
+═══════════════════════════════════════════════════════
+Pattern, pattern, BREAK:
+- "I need a weapon, a shield, and a really good therapist."
+- "We've tried negotiating, we've tried bribing, and we've tried a flash mob."
+
+Establish rhythm, then violate it.
+
+═══════════════════════════════════════════════════════
+EMOTIONAL STAKES IN ABSURDITY
+═══════════════════════════════════════════════════════
+Even in the most ridiculous scenarios, characters must CARE about something:
+- A vampire at a beach might desperately want to fit in with surfers
+- Gordon Ramsay at a funeral might be personally offended by bad catering
+- Shakespeare in space might be homesick for Earth
+
+If nobody wants anything, there's no scene. Stakes = investment = comedy.
+
+═══════════════════════════════════════════════════════
+PACING & STRUCTURE
+═══════════════════════════════════════════════════════
+Lines 1-5: HOOK (establish the game instantly)
+Lines 6-15: EXPLORE (play with the premise, build patterns)
+Lines 16-25: ESCALATE (things get worse/weirder/more)
+Lines 26-35: PEAK CHAOS (the scene reaches maximum absurdity)
+Lines 36-40: BUTTON (callback, twist, or perfect punchline to end on)
+
+Every scene needs a BEGINNING (what's the situation?), MIDDLE (how does it escalate?), and END (what's the button?).
+
+═══════════════════════════════════════════════════════
+WHAT KILLS COMEDY (NEVER DO THESE)
+═══════════════════════════════════════════════════════
+❌ Characters being aware they're in a comedy ("This is like a sitcom!")
+❌ Explaining the joke ("Because he's a doctor, get it?")
+❌ Generic shock reactions ("Oh my god!" "What?!" "This is crazy!")
+❌ Everyone agreeing with each other
+❌ Characters being boringly competent
+❌ Filler dialogue that doesn't advance anything
+❌ Referencing memes or internet culture (dates instantly)
+
+═══════════════════════════════════════════════════════
+OUTPUT FORMAT
+═══════════════════════════════════════════════════════
+Return ONLY valid JSON. No markdown. No commentary. Just:
+
 {
-  "title": "String (Funny Title)",
-  "synopsis": "String (One sentence setup)",
+  "title": "A punny/clever title that hints at the premise",
+  "synopsis": "One tight sentence: [CHARACTER] must [DO THING] while [OBSTACLE/CIRCUMSTANCE]",
   "lines": [
     {
-      "speaker": "String (Character Name)",
-      "text": "String (The dialogue line)",
-      "mood": "String (angry | happy | confused | whispering | neutral)"
+      "speaker": "Character Name",
+      "text": "Funny dialogue here",
+      "mood": "angry | happy | confused | whispering | neutral"
     }
   ]
-}`
+}
 
-  const userMessage = `Generate a script with the following parameters:
-- Characters: ${characterList}
-- Setting: ${setting}
-- Circumstance: ${circumstance}
-- Tone: ${tone}
-- Script Length: Approx 3 minutes (30-40 lines of dialogue)
-- Number of players: ${numPlayers}
+Title examples:
+- GOOD: "The Codfather" (mafia don at aquarium)
+- GOOD: "Fangs for the Memories" (vampire at reunion)
+- BAD: "A Funny Scene" (lazy)
 
-${numPlayers > 1 ? 'Distribute the lines evenly among all characters.' : ''}
-Ensure the characters speak in their distinct voices (e.g., if Yoda is a character, use his syntax).`
+Synopsis examples:
+- GOOD: "A pirate captain must navigate IKEA while his crew mutinies over the meatballs"
+- GOOD: "Gordon Ramsay reviews a funeral he's catering and offends the widow"
+- BAD: "Some characters are in a place and things happen"
+
+Now write comedy that makes people ACTUALLY LAUGH.`
+
+  const userMessage = `Write a scene using these ingredients:
+
+═══════════════════════════════════════
+THE SETUP
+═══════════════════════════════════════
+CHARACTERS: ${characterList}
+SETTING: ${setting}
+CIRCUMSTANCE: ${circumstance}
+
+RATING: ${isMature ? '18+ (Adult comedy - profanity allowed, taboo topics fair game, SNL-level sharp writing)' : 'Family Friendly (Smart absurdist comedy for all ages - think peak Nickelodeon)'}
+
+SCRIPT LENGTH: 30-40 lines
+PERFORMERS: ${numPlayers} player${numPlayers > 1 ? 's' : ''} ${numPlayers === 1 ? '(Player performs main character, AI characters provide supporting reactions)' : '(Distribute lines evenly so everyone gets funny moments)'}
+
+═══════════════════════════════════════
+YOUR MISSION
+═══════════════════════════════════════
+1. Find the GAME of this scene immediately (what's the core comic premise?)
+2. Write in the distinct voice of each character (Yoda talks like Yoda, pirates talk like pirates)
+3. Escalate from funny to FUNNIER to absolutely ridiculous
+4. Use specific details, not generic reactions
+5. Build patterns and break them (rule of three)
+6. Include callbacks to jokes from earlier in the scene
+7. Give every character emotional stakes (even if absurd)
+8. End with a strong button - callback, twist, or perfect punchline
+
+${numPlayers > 1 ? 'Make sure all players get equal stage time and funny lines - no one should feel like a sidekick.' : 'The solo player should have most lines, but give AI characters strong personalities so the player has something to react to.'}
+
+The premise is already absurd. Your job is to EXPLOIT that absurdity through sharp dialogue.
+
+Write the scene now. Make it genuinely funny - the kind of funny where people will want to perform it again.`
 
   try {
+    console.log(`🎭 Generating ${isMature ? '18+' : 'Family Friendly'} comedy script...`)
+    console.log(`   Characters: ${characterList}`)
+    console.log(`   Setting: ${setting}`)
+    console.log(`   Circumstance: ${circumstance}`)
+
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 4096,
+      max_tokens: 8192, // Increased for more sophisticated comedy
+      temperature: 1, // Max creativity for comedy writing
       system: systemPrompt,
       messages: [
         {
@@ -109,6 +337,8 @@ Ensure the characters speak in their distinct voices (e.g., if Yoda is a charact
         }
       ]
     })
+
+    console.log(`✓ Script generated successfully`)
 
     const content = message.content[0]
     if (content.type !== 'text') {

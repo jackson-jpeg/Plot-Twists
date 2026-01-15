@@ -46,6 +46,38 @@
   --color-accent-2-light: #E8F0FF;
   --color-accent-2-dark: #5A7AB5;
 
+  /* Purple Theme (Host) */
+  --color-purple: #A855F7;
+  --color-purple-hover: #9333EA;
+  --color-purple-light: #F3E8FF;
+  --color-purple-dark: #7C3AED;
+  --color-purple-glow: rgba(168, 85, 247, 0.4);
+  --color-purple-bg: rgba(139, 92, 246, 0.15);
+  --color-purple-bg-hover: rgba(139, 92, 246, 0.25);
+  --color-purple-border: rgba(168, 85, 247, 0.5);
+  --color-purple-border-hover: rgba(168, 85, 247, 0.8);
+  --color-purple-stub: rgba(168, 85, 247, 0.15);
+  --color-purple-stub-border: rgba(168, 85, 247, 0.3);
+
+  /* Pink Theme (Join) */
+  --color-pink: #EC4899;
+  --color-pink-hover: #DB2777;
+  --color-pink-light: #FCE7F3;
+  --color-pink-dark: #BE185D;
+  --color-pink-glow: rgba(236, 72, 153, 0.4);
+  --color-pink-bg: rgba(236, 72, 153, 0.15);
+  --color-pink-bg-hover: rgba(236, 72, 153, 0.25);
+  --color-pink-border: rgba(236, 72, 153, 0.5);
+  --color-pink-border-hover: rgba(236, 72, 153, 0.8);
+  --color-pink-stub: rgba(236, 72, 153, 0.15);
+  --color-pink-stub-border: rgba(236, 72, 153, 0.3);
+
+  /* Glassmorphism / Overlay */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg-hover: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-strong: rgba(255, 255, 255, 0.15);
+
   --color-success: #82B682;
   --color-success-light: #E8F5E8;
   --color-warning: #E8A75D;
@@ -139,6 +171,32 @@
     --color-script-bg: #252320;
     --color-script-active: #3A3A2E;
     --color-script-your-line: #4A3540;
+
+    /* Purple Theme - Dark Mode */
+    --color-purple-light: #3B2A4A;
+    --color-purple-glow: rgba(168, 85, 247, 0.5);
+    --color-purple-bg: rgba(139, 92, 246, 0.12);
+    --color-purple-bg-hover: rgba(139, 92, 246, 0.22);
+    --color-purple-border: rgba(168, 85, 247, 0.4);
+    --color-purple-border-hover: rgba(168, 85, 247, 0.7);
+    --color-purple-stub: rgba(168, 85, 247, 0.12);
+    --color-purple-stub-border: rgba(168, 85, 247, 0.25);
+
+    /* Pink Theme - Dark Mode */
+    --color-pink-light: #4A2A3B;
+    --color-pink-glow: rgba(236, 72, 153, 0.5);
+    --color-pink-bg: rgba(236, 72, 153, 0.12);
+    --color-pink-bg-hover: rgba(236, 72, 153, 0.22);
+    --color-pink-border: rgba(236, 72, 153, 0.4);
+    --color-pink-border-hover: rgba(236, 72, 153, 0.7);
+    --color-pink-stub: rgba(236, 72, 153, 0.12);
+    --color-pink-stub-border: rgba(236, 72, 153, 0.25);
+
+    /* Glassmorphism - Dark Mode (slightly more visible) */
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-bg-hover: rgba(255, 255, 255, 0.07);
+    --glass-border: rgba(255, 255, 255, 0.12);
+    --glass-border-strong: rgba(255, 255, 255, 0.18);
   }
 }
 
@@ -1405,74 +1463,93 @@ button:focus-visible {
 .ticket-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-6);
   margin-bottom: var(--space-8);
   align-items: center;
   width: 100%;
-  max-width: 500px;
+  max-width: 550px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .game-ticket {
-  background: var(--color-surface);
-  border: 2px dashed var(--color-border-strong);
-  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  border-radius: var(--radius-lg);
   padding: 0;
   display: flex;
   align-items: stretch;
   width: 100%;
   cursor: pointer;
   position: relative;
-  box-shadow:
-    0 2px 4px rgba(42, 39, 34, 0.08),
-    0 4px 12px rgba(42, 39, 34, 0.08);
+  box-shadow: var(--shadow-3);
   transition:
-    transform var(--duration-fast) var(--easing-out),
-    box-shadow var(--duration-fast) var(--easing-out),
-    border-color var(--duration-fast) var(--easing-out);
-  overflow: visible;
+    transform var(--duration-standard) var(--easing-out),
+    box-shadow var(--duration-standard) var(--easing-out),
+    border-color var(--duration-standard) var(--easing-out),
+    background var(--duration-standard) var(--easing-out);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
-.ticket-host {
-  transform: rotate(-1deg);
+/* Purple gradient for Host */
+.ticket-purple {
+  background: var(--color-purple-bg);
+  border-color: var(--color-purple-border);
 }
 
-.ticket-join {
-  transform: rotate(1deg);
-}
-
-.game-ticket:hover {
+.ticket-purple:hover {
+  background: var(--color-purple-bg-hover);
+  border-color: var(--color-purple-border-hover);
   box-shadow:
-    0 4px 8px rgba(42, 39, 34, 0.12),
-    0 8px 24px rgba(42, 39, 34, 0.12);
-  border-color: var(--color-accent);
+    var(--shadow-3),
+    0 12px 32px var(--color-purple-glow);
 }
 
-.game-ticket:active {
-  box-shadow: 0 2px 4px rgba(42, 39, 34, 0.08);
+/* Pink gradient for Join */
+.ticket-pink {
+  background: var(--color-pink-bg);
+  border-color: var(--color-pink-border);
+}
+
+.ticket-pink:hover {
+  background: var(--color-pink-bg-hover);
+  border-color: var(--color-pink-border-hover);
+  box-shadow:
+    var(--shadow-3),
+    0 12px 32px var(--color-pink-glow);
 }
 
 .ticket-stub {
-  background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent-light));
-  border-right: 2px dashed var(--color-border-strong);
-  padding: var(--space-5);
+  background: var(--glass-bg-hover);
+  border-right: 2px dashed var(--glass-border-strong);
+  padding: var(--space-6);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
-  min-width: 80px;
+  min-width: 100px;
   position: relative;
+  transition: all var(--duration-standard) var(--easing-out);
+}
+
+.ticket-purple .ticket-stub {
+  background: var(--color-purple-stub);
+  border-right-color: var(--color-purple-stub-border);
+}
+
+.ticket-pink .ticket-stub {
+  background: var(--color-pink-stub);
+  border-right-color: var(--color-pink-stub-border);
 }
 
 .ticket-main {
   flex: 1;
-  padding: var(--space-5);
+  padding: var(--space-6);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .ticket-title {
@@ -1481,13 +1558,28 @@ button:focus-visible {
   font-weight: 700;
   color: var(--color-text-primary);
   letter-spacing: -0.02em;
+  transition: color var(--duration-fast) var(--easing-out);
+}
+
+.ticket-title-large {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.game-ticket:hover .ticket-title {
+  color: white;
 }
 
 .ticket-subtitle {
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: 15px;
   color: var(--color-text-secondary);
   font-weight: 500;
+  transition: color var(--duration-fast) var(--easing-out);
+}
+
+.game-ticket:hover .ticket-subtitle {
+  color: var(--color-text-primary);
 }
 
 .ticket-notch {
@@ -1495,38 +1587,59 @@ button:focus-visible {
   right: -1px;
   top: 50%;
   transform: translateY(-50%);
-  width: 12px;
-  height: 24px;
+  width: 14px;
+  height: 28px;
   background: var(--color-bg);
-  border: 2px dashed var(--color-border-strong);
+  border: 2px solid var(--glass-border-strong);
   border-right: none;
-  border-radius: 12px 0 0 12px;
+  border-radius: 14px 0 0 14px;
 }
 
-/* Scrapbook card */
-.scrapbook-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: var(--space-7);
-  box-shadow:
-    0 1px 3px rgba(42, 39, 34, 0.08),
-    0 4px 12px rgba(42, 39, 34, 0.06);
+/* Compact How It Works Section */
+.how-it-works-compact {
+  background: var(--glass-bg);
+  border: 2px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2);
   position: relative;
   margin-bottom: var(--space-7);
-  transform: rotate(-0.5deg);
-  max-width: 500px;
+  max-width: 550px;
   margin-left: auto;
   margin-right: auto;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
-.scrapbook-card::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  opacity: 0.3;
+.how-it-works-toggle {
+  width: 100%;
+  padding: var(--space-5) var(--space-6);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  transition: all var(--duration-fast) var(--easing-out);
+}
+
+.how-it-works-toggle:hover {
+  color: white;
+  background: var(--glass-bg-hover);
+}
+
+.how-it-works-toggle-text {
+  flex: 1;
+  text-align: center;
+}
+
+.how-it-works-content {
+  padding: 0 var(--space-6) var(--space-6);
+  position: relative;
 }
 
 /* Tape pieces */
@@ -1534,10 +1647,12 @@ button:focus-visible {
   position: absolute;
   width: 60px;
   height: 24px;
-  background: rgba(245, 158, 66, 0.12);
-  border-top: 1px solid rgba(245, 158, 66, 0.15);
-  border-bottom: 1px solid rgba(245, 158, 66, 0.15);
-  box-shadow: inset 0 1px 2px rgba(42, 39, 34, 0.05);
+  background: var(--color-accent-light);
+  border-top: 1px solid var(--color-accent);
+  border-bottom: 1px solid var(--color-accent);
+  box-shadow: var(--shadow-inset);
+  opacity: 0.5;
+  z-index: 2;
 }
 
 .tape-top-left {
@@ -1552,64 +1667,89 @@ button:focus-visible {
   transform: rotate(8deg);
 }
 
-.scrapbook-content {
-  position: relative;
-  z-index: 1;
+.how-it-works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
-.scrapbook-title {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-4);
-  text-align: center;
-  letter-spacing: -0.01em;
-}
-
-.scrapbook-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.how-it-works-step {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
 }
 
-.scrapbook-list li {
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+  border: 2px solid var(--color-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  box-shadow: var(--shadow-1);
+}
+
+.step-text {
   font-family: var(--font-ui);
-  font-size: 16px;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--color-text-primary);
-  padding-left: var(--space-5);
-  position: relative;
-  line-height: 1.5;
+  line-height: 1.3;
 }
 
-.scrapbook-list li::before {
-  content: '★';
-  position: absolute;
-  left: 0;
-  color: var(--color-accent);
-  font-size: 16px;
+.how-it-works-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--glass-border);
+}
+
+.retro-badge-inline {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: 2px solid var(--glass-border-strong);
+  border-radius: 2px;
+  background: var(--glass-bg-hover);
+  color: var(--color-text-secondary);
+  box-shadow: var(--shadow-1);
 }
 
 /* Sticky note */
 .sticky-note {
   position: absolute;
-  bottom: -24px;
-  right: -24px;
+  bottom: -28px;
+  right: -28px;
   background: #FFF4D6;
   padding: var(--space-3) var(--space-4);
   font-family: var(--font-handwritten);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.4;
-  color: var(--color-text-primary);
+  color: #2A2722;
   box-shadow:
-    0 2px 4px rgba(42, 39, 34, 0.1),
-    0 4px 12px rgba(42, 39, 34, 0.08);
+    0 3px 6px rgba(0, 0, 0, 0.15),
+    0 6px 16px rgba(0, 0, 0, 0.1);
   border-radius: 1px;
   text-align: center;
   transform-origin: center;
+  z-index: 10;
 }
 
 .sticky-note::before {
@@ -1620,68 +1760,79 @@ button:focus-visible {
   transform: translateX(-50%);
   width: 40px;
   height: 16px;
-  background: rgba(245, 158, 66, 0.2);
+  background: var(--color-accent-light);
   border-radius: 1px;
+  box-shadow: var(--shadow-1);
+  opacity: 0.8;
 }
 
-/* Retro badges */
-.home-badges {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-6);
-}
 
-.retro-badge {
+/* Back Button */
+.back-button {
+  position: fixed;
+  top: var(--space-5);
+  left: var(--space-5);
+  z-index: var(--z-sticky);
   display: inline-flex;
   align-items: center;
-  padding: 6px 14px;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   font-family: var(--font-ui);
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  border: 2px solid var(--color-border-strong);
-  border-radius: 2px;
-  background: var(--color-surface);
   color: var(--color-text-secondary);
-  box-shadow: 0 1px 2px rgba(42, 39, 34, 0.06);
-  transform: rotate(-1deg);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  box-shadow: var(--shadow-1);
+  transition:
+    all var(--duration-fast) var(--easing-out);
 }
 
-.retro-badge:nth-child(2) {
-  transform: rotate(0deg);
+.back-button:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-2);
+  background: var(--color-surface-elevated);
 }
 
-.retro-badge:nth-child(3) {
-  transform: rotate(1deg);
+.back-button:active {
+  box-shadow: var(--shadow-1);
+  transform: scale(0.98);
+}
+
+.back-arrow {
+  font-size: 18px;
+  display: inline-block;
+  transition: transform var(--duration-fast) var(--easing-out);
+}
+
+.back-button:hover .back-arrow {
+  transform: translateX(-2px);
 }
 
 /* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
-  .header-polaroid::before,
+  .header-polaroid::before {
+    background: var(--color-accent-light);
+    opacity: 0.3;
+  }
+
   .tape-piece {
-    background: rgba(245, 158, 66, 0.08);
-  }
-
-  .sticky-note {
-    background: #4A4530;
-    color: var(--color-text-primary);
-  }
-
-  .sticky-note::before {
-    background: rgba(245, 158, 66, 0.15);
-  }
-
-  .ticket-stub {
-    background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent-light));
+    opacity: 0.6;
   }
 }
 
 /* Mobile responsive */
 @media (max-width: 768px) {
+  .back-button {
+    top: var(--space-4);
+    left: var(--space-4);
+    padding: var(--space-2) var(--space-3);
+    font-size: 14px;
+  }
+
   .doodle-arrow {
     display: none;
   }
@@ -1692,45 +1843,74 @@ button:focus-visible {
 
   .ticket-container {
     max-width: 100%;
+    gap: var(--space-5);
   }
 
-  .scrapbook-card {
+  .how-it-works-compact {
     max-width: 100%;
-    padding: var(--space-6);
+  }
+
+  .how-it-works-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+
+  .how-it-works-step:last-child {
+    grid-column: 1 / -1;
   }
 
   .sticky-note {
-    bottom: -20px;
-    right: -16px;
-    font-size: 13px;
+    bottom: -22px;
+    right: -18px;
+    font-size: 12px;
     padding: var(--space-2) var(--space-3);
   }
 
   .ticket-stub {
-    min-width: 64px;
-    font-size: 28px;
-    padding: var(--space-4);
+    min-width: 80px;
+    padding: var(--space-5);
   }
 
-  .ticket-title {
-    font-size: 20px;
+  .ticket-stub span {
+    font-size: 2.5rem;
+  }
+
+  .ticket-title-large {
+    font-size: 24px;
   }
 
   .ticket-subtitle {
-    font-size: 13px;
+    font-size: 14px;
   }
 
-  .home-badges {
-    gap: var(--space-2);
+  .how-it-works-toggle {
+    padding: var(--space-4) var(--space-5);
+    font-size: 18px;
   }
 
-  .retro-badge {
-    font-size: 11px;
-    padding: 5px 12px;
+  .how-it-works-content {
+    padding: 0 var(--space-5) var(--space-5);
+  }
+
+  .retro-badge-inline {
+    font-size: 10px;
+    padding: 4px 10px;
   }
 }
 
 @media (max-width: 480px) {
+  .back-button {
+    top: var(--space-3);
+    left: var(--space-3);
+    padding: var(--space-2);
+    font-size: 13px;
+    gap: var(--space-1);
+  }
+
+  .back-arrow {
+    font-size: 16px;
+  }
+
   .hero-title-nostalgic {
     font-size: clamp(32px, 10vw, 42px);
   }
@@ -1739,21 +1919,65 @@ button:focus-visible {
     font-size: 14px;
   }
 
-  .scrapbook-card {
-    padding: var(--space-5);
-    margin-bottom: var(--space-9);
+  .ticket-container {
+    gap: var(--space-4);
   }
 
-  .scrapbook-title {
-    font-size: 18px;
+  .ticket-stub {
+    min-width: 70px;
+    padding: var(--space-4);
   }
 
-  .scrapbook-list li {
-    font-size: 15px;
+  .ticket-stub span {
+    font-size: 2rem;
   }
 
   .ticket-main {
     padding: var(--space-4);
+  }
+
+  .ticket-title-large {
+    font-size: 20px;
+  }
+
+  .ticket-subtitle {
+    font-size: 13px;
+  }
+
+  .how-it-works-toggle {
+    padding: var(--space-3) var(--space-4);
+    font-size: 16px;
+    gap: var(--space-2);
+  }
+
+  .how-it-works-content {
+    padding: 0 var(--space-4) var(--space-4);
+  }
+
+  .how-it-works-grid {
+    gap: var(--space-2);
+  }
+
+  .step-number {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .step-text {
+    font-size: 13px;
+  }
+
+  .sticky-note {
+    bottom: -18px;
+    right: -14px;
+    font-size: 11px;
+    padding: var(--space-2);
+  }
+
+  .retro-badge-inline {
+    font-size: 9px;
+    padding: 4px 8px;
   }
 }
 

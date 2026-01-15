@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, GameState, Script, CardSelection } from '@/lib/types'
+import type { Player, GameState, Script, CardSelection, GameResults } from '@/lib/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
@@ -52,10 +52,7 @@ function JoinPageContent() {
   const [myCharacter, setMyCharacter] = useState('')
   const [myPlayerId, setMyPlayerId] = useState<string>('')
   const [greenRoomQuestion, setGreenRoomQuestion] = useState<string>('')
-  const [gameResults, setGameResults] = useState<{
-    winner: { playerId: string; playerName: string; votes: number }
-    allResults: Array<{ playerId: string; playerName: string; votes: number }>
-  } | null>(null)
+  const [gameResults, setGameResults] = useState<GameResults | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const previousSpeaker = React.useRef<string>('')

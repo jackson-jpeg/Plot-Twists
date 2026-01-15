@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, GameState, Script, RoomSettings } from '@/lib/types'
+import type { Player, GameState, Script, RoomSettings, GameResults } from '@/lib/types'
 import { QRCodeSVG } from 'qrcode.react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useConfetti } from '@/hooks/useConfetti'
@@ -35,10 +35,7 @@ export default function HostPage() {
     gameMode: 'ENSEMBLE'
   })
   const [isPlaying, setIsPlaying] = useState(true)
-  const [gameResults, setGameResults] = useState<{
-    winner: { playerId: string; playerName: string; votes: number }
-    allResults: Array<{ playerId: string; playerName: string; votes: number }>
-  } | null>(null)
+  const [gameResults, setGameResults] = useState<GameResults | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const roomCreatedRef = React.useRef(false)

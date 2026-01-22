@@ -4,7 +4,7 @@ import { parse } from 'url'
 import next from 'next'
 import { Server as SocketIOServer } from 'socket.io'
 import express from 'express'
-import type { ServerToClientEvents, ClientToServerEvents, Room, Player, CardSelection, RoomSettings } from './lib/types'
+import type { ServerToClientEvents, ClientToServerEvents, Room, Player, CardSelection, RoomSettings, Script, ScriptLine } from './lib/types'
 import { getFilteredContent, getGreenRoomQuestion } from './lib/content'
 import { v4 as uuidv4 } from 'uuid'
 import Anthropic from '@anthropic-ai/sdk'
@@ -19,6 +19,9 @@ const handle = app.getRequestHandler()
 
 // In-memory room storage
 const rooms = new Map<string, Room>()
+
+// Track teleprompter timeouts per room
+const roomTimeouts = new Map<string, NodeJS.Timeout>()
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
@@ -61,7 +64,8 @@ async function generateScript(
   setting: string,
   circumstance: string,
   isMature: boolean,
-  gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE'
+  gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE',
+  previousScript?: Script
 ) {
   const isSoloMode = gameMode === 'SOLO'
   const numPlayers = characters.length
@@ -288,7 +292,38 @@ Synopsis examples:
 - GOOD: "Gordon Ramsay reviews a funeral he's catering and offends the widow"
 - BAD: "Some characters are in a place and things happen"
 
-Now write comedy that makes people ACTUALLY LAUGH.`
+Now write comedy that makes people ACTUALLY LAUGH.${previousScript ? `
+
+═══════════════════════════════════════════════════════
+🎬 SEQUEL MODE ACTIVATED
+═══════════════════════════════════════════════════════
+This is a DIRECT SEQUEL to a previous scene. Here's what happened in Episode 1:
+
+PREVIOUS TITLE: "${previousScript.title}"
+PREVIOUS SYNOPSIS: ${previousScript.synopsis}
+
+PREVIOUS SCRIPT:
+${previousScript.lines.map((line: ScriptLine, i: number) => `${i + 1}. ${line.speaker}: "${line.text}"`).join('\n')}
+
+YOUR SEQUEL MISSION:
+1. The characters are THE SAME
+2. The setting is THE SAME
+3. The situation must ESCALATE from where Episode 1 ended
+4. CALL BACK to specific jokes, phrases, or moments from the previous script
+5. Reference what "just happened" - treat this as Episode 2, not a reboot
+6. The conflict should be a natural consequence of how Episode 1 ended
+7. Make this feel like a continuation that rewards the audience for watching Episode 1
+
+SEQUEL WRITING RULES:
+- If a character had a catchphrase or running gag, BRING IT BACK
+- If something absurd happened in Episode 1, the consequences should appear here
+- Reference specific dialogue from Episode 1 ("Remember when you said..." or callbacks)
+- Escalate the stakes: if they argued before, they should argue HARDER now
+- Episode 2 should feel like "oh no, things got WORSE" or "wait, it's happening AGAIN?"
+
+Think: If Episode 1 was "The Empire Strikes Back," this is "Return of the Jedi."
+If Episode 1 was chaos, Episode 2 is controlled chaos with callbacks.
+Make the audience laugh because they remember what happened in Episode 1.` : ''}`
 
   // Mode-specific scene dynamics
   const modeInstructions = gameMode === 'HEAD_TO_HEAD' ? `
@@ -356,23 +391,42 @@ AVOID:
 `
   : `
 ═══════════════════════════════════════
-SCENE DYNAMICS (SOLO MODE)
+SCENE DYNAMICS (SOLO MODE - YOU VS. AI)
 ═══════════════════════════════════════
-The player will perform as ${characters[0]}. You must add 2-3 ADDITIONAL characters who logically belong in this setting.
+This is a SOLO performance. The human player will perform as ${characters[0]}.
 
-CRITICAL: Choose characters that FIT THE SETTING:
-- If setting is "The Simpsons Living Room" → add Homer, Marge, or Bart
-- If setting is "Central Perk (Friends)" → add Ross, Rachel, Chandler, Monica, Joey, or Phoebe
-- If setting is "The Office Conference Room" → add Michael Scott, Dwight, Jim, Pam
-- If setting is "The Batcave" → add Batman, Robin, Alfred
-- If setting is "The Death Star" → add Darth Vader, Stormtroopers, Emperor
+YOUR MISSION: INVENT a hilarious "AI Co-Star" character to play opposite the human player.
 
-DO NOT pick random unrelated characters. The supporting cast must make sense for "${setting}".
+AI CO-STAR REQUIREMENTS:
+- Create a SINGLE memorable character with a distinct personality
+- The character must FIT the setting "${setting}" naturally
+- Give them a specific name, personality quirk, and comedic voice
+- The AI Co-Star should CLASH with the human player's character (create conflict)
+- Think: opposites attract but annoy each other (pessimist vs optimist, uptight vs chaotic, etc.)
 
-PLAYER FOCUS:
-- Player character (${characters[0]}) should have 60-70% of lines
-- Give supporting characters strong personalities and funny reactions
-- Supporting characters should create problems the player must react to
+CHARACTER DYNAMICS:
+- The human (${characters[0]}) and AI Co-Star must have OPPOSING GOALS regarding the circumstance
+- Create tension through conflicting approaches, not outright hostility
+- Use the comedy techniques: status games, confident wrongness, pattern-breaking
+- Each character should be confidently pursuing their own agenda
+
+LINE DISTRIBUTION:
+- Human player (${characters[0]}): 50-60% of lines
+- AI Co-Star: 40-50% of lines
+- Lines should alternate frequently - rapid-fire dialogue
+
+CRITICAL:
+- DO NOT add multiple AI characters - just ONE strong AI Co-Star
+- The AI Co-Star must be as funny and memorable as the human's character
+- Build to a comedic climax where both characters realize something unexpected
+- End with a twist that makes the human player laugh
+
+Example AI Co-Star inventions:
+- If human is "Gordon Ramsay" → AI Co-Star could be "An overly sensitive food blogger"
+- If human is "Sherlock Holmes" → AI Co-Star could be "A conspiracy theorist who thinks they're better at deduction"
+- If human is "Darth Vader" → AI Co-Star could be "An overly cheerful motivational speaker hired by the Empire"
+
+Make the AI Co-Star HILARIOUS and MEMORABLE. They should steal some scenes while supporting the human player.
 `
 
   const userMessage = `Write a scene using these ingredients:
@@ -410,15 +464,18 @@ The premise is already absurd. Your job is to EXPLOIT that absurdity through sha
 Write the scene now. Make it genuinely funny - the kind of funny where people will want to perform it again.`
 
   try {
-    console.log(`\n🎬 AI SCRIPT GENERATION`)
+    console.log(`\n🎬 AI SCRIPT GENERATION ${previousScript ? '(SEQUEL MODE)' : ''}`)
     console.log(`════════════════════════════════════════`)
     console.log(`Mode: ${gameMode}`)
     console.log(`Rating: ${isMature ? '18+ (Adult Comedy)' : 'Family Friendly'}`)
     console.log(`Characters: ${characterList}`)
     console.log(`Setting: ${setting}`)
     console.log(`Circumstance: ${circumstance}`)
+    if (previousScript) {
+      console.log(`Sequel to: "${previousScript.title}"`)
+    }
     if (isSoloMode) {
-      console.log(`Note: AI will add 2-3 supporting characters who belong in "${setting}"`)
+      console.log(`Note: AI will invent a hilarious Co-Star character to play opposite the human player`)
     }
     console.log(`════════════════════════════════════════\n`)
 
@@ -548,6 +605,7 @@ app.prepare().then(() => {
           isMature: settings.isMature || false,
           selections: new Map(),
           currentLineIndex: 0,
+          isPaused: false,
           votes: new Map(),
           createdAt: Date.now(),
           lastActivity: Date.now()
@@ -762,6 +820,198 @@ app.prepare().then(() => {
       io.to(roomCode).emit('sync_teleprompter', room.currentLineIndex)
     })
 
+    // Pause script
+    socket.on('pause_script', (roomCode) => {
+      const room = rooms.get(roomCode)
+      if (!room || !room.script) return
+
+      room.isPaused = true
+      room.lastActivity = Date.now()
+
+      // Clear the current timeout
+      const timeout = roomTimeouts.get(roomCode)
+      if (timeout) {
+        clearTimeout(timeout)
+        roomTimeouts.delete(roomCode)
+      }
+
+      console.log(`Script paused for room ${roomCode}`)
+    })
+
+    // Resume script
+    socket.on('resume_script', (roomCode) => {
+      const room = rooms.get(roomCode)
+      if (!room || !room.script) return
+
+      room.isPaused = false
+      room.lastActivity = Date.now()
+
+      console.log(`Script resumed for room ${roomCode}`)
+
+      // Restart teleprompter from current line
+      const WPM = 120
+      const advanceLine = (lineIndex: number) => {
+        if (room.isPaused) return
+
+        if (!room.script || lineIndex >= room.script.lines.length - 1) {
+          roomTimeouts.delete(room.code)
+          if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
+            room.gameState = 'VOTING'
+            io.to(room.code).emit('game_state_change', 'VOTING')
+          } else {
+            room.gameState = 'RESULTS'
+            io.to(room.code).emit('game_state_change', 'RESULTS')
+          }
+          return
+        }
+
+        const currentLine = room.script.lines[lineIndex]
+        const wordCount = currentLine.text.split(' ').length
+        const readingTimeMs = (wordCount / WPM) * 60 * 1000
+
+        const timeout = setTimeout(() => {
+          if (!room.script) return
+          room.currentLineIndex++
+          io.to(room.code).emit('sync_teleprompter', room.currentLineIndex)
+          advanceLine(room.currentLineIndex)
+        }, readingTimeMs)
+
+        roomTimeouts.set(room.code, timeout)
+      }
+
+      advanceLine(room.currentLineIndex)
+    })
+
+    // Jump to specific line
+    socket.on('jump_to_line', (roomCode, lineIndex) => {
+      const room = rooms.get(roomCode)
+      if (!room || !room.script) return
+
+      // Clear existing timeout
+      const timeout = roomTimeouts.get(roomCode)
+      if (timeout) {
+        clearTimeout(timeout)
+        roomTimeouts.delete(roomCode)
+      }
+
+      // Update line index
+      room.currentLineIndex = lineIndex
+      room.lastActivity = Date.now()
+
+      // Broadcast new line to all clients
+      io.to(roomCode).emit('sync_teleprompter', room.currentLineIndex)
+
+      console.log(`Jumped to line ${lineIndex} in room ${roomCode}`)
+
+      // If not paused, restart timer for new line
+      if (!room.isPaused) {
+        const WPM = 120
+        const advanceLine = (currentLineIndex: number) => {
+          if (room.isPaused) return
+
+          if (!room.script || currentLineIndex >= room.script.lines.length - 1) {
+            roomTimeouts.delete(room.code)
+            if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
+              room.gameState = 'VOTING'
+              io.to(room.code).emit('game_state_change', 'VOTING')
+            } else {
+              room.gameState = 'RESULTS'
+              io.to(room.code).emit('game_state_change', 'RESULTS')
+            }
+            return
+          }
+
+          const currentLine = room.script.lines[currentLineIndex]
+          const wordCount = currentLine.text.split(' ').length
+          const readingTimeMs = (wordCount / WPM) * 60 * 1000
+
+          const newTimeout = setTimeout(() => {
+            if (!room.script) return
+            room.currentLineIndex++
+            io.to(room.code).emit('sync_teleprompter', room.currentLineIndex)
+            advanceLine(room.currentLineIndex)
+          }, readingTimeMs)
+
+          roomTimeouts.set(room.code, newTimeout)
+        }
+
+        advanceLine(lineIndex)
+      }
+    })
+
+    // Request sequel
+    socket.on('request_sequel', async (roomCode) => {
+      const room = rooms.get(roomCode)
+      if (!room || !room.script) {
+        console.log(`Cannot generate sequel: room or script not found for ${roomCode}`)
+        return
+      }
+
+      console.log(`🎬 Sequel requested for room ${roomCode}`)
+
+      // Save the current script as previous
+      const previousScript = room.script
+
+      // Set loading state
+      room.gameState = 'LOADING'
+      room.lastActivity = Date.now()
+      io.to(roomCode).emit('game_state_change', 'LOADING')
+
+      try {
+        // Get player characters from selections
+        const playerIds = Array.from(room.players.values())
+          .filter(p => p.role === 'PLAYER')
+          .map(p => p.id)
+
+        const allSelections = Array.from(room.selections.values())
+        const playerSelections = allSelections.filter((_, index) => {
+          const playerId = Array.from(room.selections.keys())[index]
+          return playerIds.includes(playerId)
+        })
+
+        const characters = playerSelections.map(s => s.character)
+
+        // Use the same setting and circumstance from the previous script
+        // Extract from selections (they're still in the room)
+        const chosenSetting = playerSelections[0]?.setting || 'Unknown Setting'
+        const chosenCircumstance = playerSelections[0]?.circumstance || 'Unknown Circumstance'
+
+        console.log(`Generating sequel with ${characters.length} character(s)`)
+
+        // Generate sequel script
+        const sequelScript = await generateScript(
+          characters,
+          chosenSetting,
+          chosenCircumstance,
+          room.isMature,
+          room.gameMode,
+          previousScript // Pass the previous script
+        )
+
+        // Update room with new script
+        room.script = sequelScript
+        room.gameState = 'PERFORMING'
+        room.currentLineIndex = 0
+        room.isPaused = false
+
+        // Broadcast new script to all clients
+        io.to(roomCode).emit('script_ready', sequelScript)
+        io.to(roomCode).emit('game_state_change', 'PERFORMING')
+
+        console.log(`✅ Sequel generated: "${sequelScript.title}"`)
+
+        // Start teleprompter sync
+        startTeleprompterSync(room, io)
+      } catch (error) {
+        console.error('Sequel generation failed:', error)
+        io.to(roomCode).emit('error', 'Failed to generate sequel. Please try again.')
+
+        // Reset to results state
+        room.gameState = 'RESULTS'
+        io.to(roomCode).emit('game_state_change', 'RESULTS')
+      }
+    })
+
     // Update room settings
     socket.on('update_room_settings', (roomCode, settings) => {
       const room = rooms.get(roomCode)
@@ -863,7 +1113,7 @@ app.prepare().then(() => {
       console.log(`   Setting: "${chosenSetting}"`)
       console.log(`   Circumstance: "${chosenCircumstance}"`)
       if (room.gameMode === 'SOLO') {
-        console.log(`   Note: AI will add 2-3 supporting characters who belong in "${chosenSetting}"`)
+        console.log(`   Note: AI will invent a hilarious Co-Star character to play opposite the human player`)
       }
 
       // Generate script
@@ -914,7 +1164,16 @@ app.prepare().then(() => {
 
     // Calculate reading time for each line individually
     const advanceLine = (lineIndex: number) => {
+      // Check if paused
+      if (room.isPaused) {
+        console.log(`Teleprompter paused for room ${room.code}`)
+        return
+      }
+
       if (!room.script || lineIndex >= room.script.lines.length - 1) {
+        // Clear timeout reference
+        roomTimeouts.delete(room.code)
+
         // Move to voting or results
         if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
           room.gameState = 'VOTING'
@@ -932,12 +1191,15 @@ app.prepare().then(() => {
       const readingTimeMs = (wordCount / WPM) * 60 * 1000
 
       // Schedule next line advance based on current line's reading time
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         if (!room.script) return
         room.currentLineIndex++
         io.to(room.code).emit('sync_teleprompter', room.currentLineIndex)
         advanceLine(room.currentLineIndex)
       }, readingTimeMs)
+
+      // Store timeout reference for this room
+      roomTimeouts.set(room.code, timeout)
     }
 
     // Start with the first line (index 0)

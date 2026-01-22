@@ -7,6 +7,7 @@ import type { Player, GameState, Script, RoomSettings, GameResults } from '@/lib
 import { QRCodeSVG } from 'qrcode.react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useConfetti } from '@/hooks/useConfetti'
+import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
 import { downloadScript, copyScriptToClipboard, getCharactersInScene } from '@/lib/scriptUtils'
 
@@ -26,6 +27,7 @@ export default function HostPage() {
   const router = useRouter()
   const { socket, isConnected } = useSocket()
   const confetti = useConfetti()
+  useWakeLock() // Prevent screen sleep during gameplay
   const [roomCode, setRoomCode] = useState<string>('')
   const [players, setPlayers] = useState<Player[]>([])
   const [gameState, setGameState] = useState<GameState>('LOBBY')
@@ -99,12 +101,27 @@ export default function HostPage() {
   }
   const nextLine = () => {
     if (script && currentLineIndex < script.lines.length - 1) {
-      setCurrentLineIndex(currentLineIndex + 1)
-      socket?.emit('advance_script_line', roomCode)
+      const newIndex = currentLineIndex + 1
+      setCurrentLineIndex(newIndex)
+      socket?.emit('jump_to_line', roomCode, newIndex)
     }
   }
-  const previousLine = () => { if (currentLineIndex > 0) setCurrentLineIndex(currentLineIndex - 1) }
-  const togglePlayPause = () => setIsPlaying(!isPlaying)
+  const previousLine = () => {
+    if (currentLineIndex > 0) {
+      const newIndex = currentLineIndex - 1
+      setCurrentLineIndex(newIndex)
+      socket?.emit('jump_to_line', roomCode, newIndex)
+    }
+  }
+  const togglePlayPause = () => {
+    const newPlayingState = !isPlaying
+    setIsPlaying(newPlayingState)
+    if (newPlayingState) {
+      socket?.emit('resume_script', roomCode)
+    } else {
+      socket?.emit('pause_script', roomCode)
+    }
+  }
 
   const handleCopyScript = async () => {
     if (script) {
@@ -120,6 +137,11 @@ export default function HostPage() {
     if (script) {
       downloadScript(script)
     }
+  }
+
+  const requestSequel = () => {
+    setGameState('LOADING')
+    socket?.emit('request_sequel', roomCode)
   }
 
   const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join?code=${roomCode}` : ''
@@ -459,6 +481,20 @@ export default function HostPage() {
                   >
                     <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
                       Waiting for players to join...
+                    </p>
+                  </motion.div>
+                )}
+
+                {settings.gameMode === 'SOLO' && nonHostPlayers.length === 0 && (
+                  <motion.div
+                    className="card text-center"
+                    style={{ background: 'var(--color-highlight)', padding: '16px', border: '1px solid var(--color-warning)' }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
+                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+                      🎤 Solo needs exactly 1 player (You vs. AI)
                     </p>
                   </motion.div>
                 )}
@@ -913,18 +949,37 @@ export default function HostPage() {
                 </>
               )}
 
-              <motion.button
-                onClick={() => window.location.reload()}
-                className="btn btn-primary btn-large"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <span>🔄</span>
-                <span>New Game</span>
-              </motion.button>
+              <div className="flex flex-col gap-4 items-center mt-8">
+                {script && (
+                  <motion.button
+                    onClick={requestSequel}
+                    className="btn btn-primary btn-large"
+                    style={{ minWidth: '280px' }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.1 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span>🎬</span>
+                    <span>Generate Sequel</span>
+                  </motion.button>
+                )}
+
+                <motion.button
+                  onClick={() => window.location.reload()}
+                  className="btn btn-secondary btn-large"
+                  style={{ minWidth: '280px' }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.3 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span>🔄</span>
+                  <span>New Game</span>
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         )}

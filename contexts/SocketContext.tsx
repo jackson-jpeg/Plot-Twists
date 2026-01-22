@@ -43,41 +43,28 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         const isLocalhost = window.location.hostname === 'localhost' ||
                            window.location.hostname === '127.0.0.1'
 
-        console.log('🔍 URL Construction Debug:')
-        console.log('  - window.location.hostname:', window.location.hostname)
-        console.log('  - window.location.origin:', window.location.origin)
-        console.log('  - isLocalhost:', isLocalhost)
-        console.log('  - NEXT_PUBLIC_WS_URL env var:', process.env.NEXT_PUBLIC_WS_URL)
-        console.log('  - Raw NEXT_PUBLIC_WS_URL:', JSON.stringify(process.env.NEXT_PUBLIC_WS_URL))
-
         if (isLocalhost) {
           // Local development
           socketUrl = 'http://localhost:3000'
-          console.log('  ✅ Using localhost URL:', socketUrl)
         } else if (process.env.NEXT_PUBLIC_WS_URL) {
           // Production: Use Railway backend
           // Add https:// if not present
           const wsUrl = process.env.NEXT_PUBLIC_WS_URL
-          console.log('  - Raw wsUrl before processing:', wsUrl)
           socketUrl = wsUrl.startsWith('http') ? wsUrl : `https://${wsUrl}`
-          console.log('  ✅ Using Railway backend URL:', socketUrl)
         } else {
           // Fallback to same origin
           socketUrl = window.location.origin
-          console.log('  ⚠️ Using fallback (same origin) URL:', socketUrl)
         }
       } else {
         // Server-side fallback
         const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'
         socketUrl = wsUrl.startsWith('http') ? wsUrl : `https://${wsUrl}`
-        console.log('  🖥️ Server-side URL construction:', socketUrl)
       }
 
-      console.log('🔌 Final Socket Connection Config:')
-      console.log('  - Final Target URL:', socketUrl)
+      console.log('🔌 Socket connection config:')
+      console.log('  - Target URL:', socketUrl)
       console.log('  - Environment:', process.env.NODE_ENV)
-      console.log('  - Protocol:', socketUrl.split('://')[0])
-      console.log('  - Host:', socketUrl.split('://')[1])
+      console.log('  - WS_URL env var:', process.env.NEXT_PUBLIC_WS_URL)
 
       // Configure transports based on environment
       // Railway can be flaky with WebSocket upgrades, so we force polling in production

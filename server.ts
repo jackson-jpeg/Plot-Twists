@@ -391,42 +391,73 @@ AVOID:
 `
   : `
 ═══════════════════════════════════════
-SCENE DYNAMICS (SOLO MODE - YOU VS. AI)
+SCENE DYNAMICS (SOLO MODE - SETTING-BASED ENSEMBLE)
 ═══════════════════════════════════════
 This is a SOLO performance. The human player will perform as ${characters[0]}.
 
-YOUR MISSION: INVENT a hilarious "AI Co-Star" character to play opposite the human player.
+YOUR MISSION: ${characters[0]} has wandered into the world of "${setting}".
+You must populate the scene with 2-3 characters who NATIVELY BELONG to that setting.
 
-AI CO-STAR REQUIREMENTS:
-- Create a SINGLE memorable character with a distinct personality
-- The character must FIT the setting "${setting}" naturally
-- Give them a specific name, personality quirk, and comedic voice
-- The AI Co-Star should CLASH with the human player's character (create conflict)
-- Think: opposites attract but annoy each other (pessimist vs optimist, uptight vs chaotic, etc.)
+STEP 1: IDENTIFY THE SETTING'S UNIVERSE
+Look at "${setting}" and determine:
+- What fictional universe, show, location, or world does this represent?
+- Who are the iconic/recognizable characters from that universe?
+- What's the "local culture" or vibe of this place?
+
+Examples:
+- "The Simpsons Living Room" → This is Springfield. Natives: Homer Simpson, Marge Simpson, Bart Simpson
+- "Central Perk (Friends)" → This is the Friends universe. Natives: Ross, Rachel, Chandler, Monica, Joey, Phoebe
+- "The Office Conference Room" → This is Dunder Mifflin. Natives: Michael Scott, Dwight Schrute, Jim Halpert, Pam Beesly
+- "The Death Star" → This is Star Wars. Natives: Darth Vader, Stormtroopers, Imperial Officers
+- "A Haunted House" → Generic spooky setting. Natives: A Creepy Ghost, A Skeptical Homeowner, A Paranormal Investigator
+- "A Pirate Ship" → Generic pirate setting. Natives: The Ship's Captain, A Drunken First Mate, A Parrot (who talks)
+
+STEP 2: GENERATE 2-3 SETTING-NATIVE CHARACTERS
+Create an AI ensemble cast that fits the setting:
+- Use RECOGNIZABLE characters if the setting is from a known show/universe
+- Create ARCHETYPAL characters if the setting is generic (e.g., "A Hospital" → Dr. House-type, Nervous Nurse, Grumpy Receptionist)
+- Give each AI character a distinct personality, voice, and comedic function
+- These characters should feel like they "own" the space - ${characters[0]} is the OUTSIDER
+
+STEP 3: THE COMEDY CONTRAST
+The humor comes from the FISH-OUT-OF-WATER dynamic:
+- ${characters[0]} doesn't belong here and the locals KNOW IT
+- The setting-native characters react to this interloper with confusion, suspicion, or annoyance
+- ${characters[0]} must navigate the social rules and quirks of this unfamiliar world
+- The Circumstance ("${circumstance}") becomes harder because ${characters[0]} doesn't understand how things work here
 
 CHARACTER DYNAMICS:
-- The human (${characters[0]}) and AI Co-Star must have OPPOSING GOALS regarding the circumstance
-- Create tension through conflicting approaches, not outright hostility
-- Use the comedy techniques: status games, confident wrongness, pattern-breaking
-- Each character should be confidently pursuing their own agenda
+- ${characters[0]} is trying to accomplish the Circumstance
+- The 2-3 AI characters represent the "local establishment" reacting to this outsider
+- Create conflict through misunderstanding, cultural clash, or the locals being unhelpful
+- Each AI character should have their own agenda or quirk that complicates things
 
 LINE DISTRIBUTION:
-- Human player (${characters[0]}): 50-60% of lines
-- AI Co-Star: 40-50% of lines
-- Lines should alternate frequently - rapid-fire dialogue
+- Human player (${characters[0]}): 40-50% of lines
+- AI Ensemble (2-3 characters): 50-60% of lines TOTAL (split among them)
+- Mix rapid-fire exchanges with moments where multiple AI characters pile on
 
-CRITICAL:
-- DO NOT add multiple AI characters - just ONE strong AI Co-Star
-- The AI Co-Star must be as funny and memorable as the human's character
-- Build to a comedic climax where both characters realize something unexpected
-- End with a twist that makes the human player laugh
+CRITICAL REQUIREMENTS:
+- You MUST generate 2-3 AI characters (not 1, not 4+)
+- The AI characters MUST fit the setting logically (don't put Batman in "The Simpsons Living Room")
+- If the setting is from a known show/universe, USE THOSE CHARACTERS
+- If the setting is generic, CREATE archetypal characters that fit the vibe
+- ${characters[0]} should feel like an outsider trying to navigate this strange world
+- Build to a comedic climax where the culture clash reaches peak absurdity
 
-Example AI Co-Star inventions:
-- If human is "Gordon Ramsay" → AI Co-Star could be "An overly sensitive food blogger"
-- If human is "Sherlock Holmes" → AI Co-Star could be "A conspiracy theorist who thinks they're better at deduction"
-- If human is "Darth Vader" → AI Co-Star could be "An overly cheerful motivational speaker hired by the Empire"
+EXAMPLES OF GOOD CASTING:
+✅ Setting: "The Simpsons Living Room" → AI Cast: Homer Simpson, Marge Simpson, Bart Simpson
+✅ Setting: "A Therapist's Office" → AI Cast: Dr. Melfi (therapist), An Overly Honest Patient
+✅ Setting: "A Medieval Tavern" → AI Cast: A Gruff Bartender, A Mysterious Hooded Stranger, A Singing Bard
+✅ Setting: "Hogwarts Classroom" → AI Cast: Professor Snape, Hermione Granger, A Nervous First-Year
 
-Make the AI Co-Star HILARIOUS and MEMORABLE. They should steal some scenes while supporting the human player.
+EXAMPLES OF BAD CASTING:
+❌ Setting: "The Simpsons Living Room" → AI Cast: Darth Vader (doesn't fit)
+❌ Setting: "A Hospital" → AI Cast: Just one doctor (need 2-3 characters)
+❌ Setting: "The Death Star" → AI Cast: SpongeBob, Batman, Yoda (random characters, not Death Star natives)
+
+Write the scene where ${characters[0]} has stumbled into "${setting}" and must deal with the locals while trying to "${circumstance}".
+Make the culture clash HILARIOUS.
 `
 
   const userMessage = `Write a scene using these ingredients:

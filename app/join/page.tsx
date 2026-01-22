@@ -50,6 +50,11 @@ function JoinPageContent() {
     setting: '',
     circumstance: ''
   })
+  const [customInputActive, setCustomInputActive] = useState({
+    character: false,
+    setting: false,
+    circumstance: false
+  })
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [script, setScript] = useState<Script | null>(null)
   const [currentLineIndex, setCurrentLineIndex] = useState(0)
@@ -351,35 +356,160 @@ function JoinPageContent() {
             className="container max-w-2xl"
           >
             <div className="card">
-              <h1 className="text-3xl font-display text-center mb-8" style={{ color: 'var(--color-text-primary)' }}>🎴 Pick Your Cards</h1>
+              <h1 className="text-3xl font-display text-center mb-8" style={{ color: 'var(--color-text-primary)' }}>
+                {customInputActive.character || customInputActive.setting || customInputActive.circumstance
+                  ? '✎ Writer\'s Room'
+                  : '🎴 Pick Your Cards'}
+              </h1>
 
               <div className="stack">
-                <CardCarousel
-                  label="Character"
-                  icon="🎭"
-                  options={availableCards.characters}
-                  value={selection.character}
-                  onChange={(value) => setSelection({ ...selection, character: value })}
-                  color="var(--color-accent)"
-                />
+                {/* Character Input */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="label" style={{ marginBottom: 0 }}>🎭 Character</label>
+                    <button
+                      onClick={() => {
+                        setCustomInputActive({ ...customInputActive, character: !customInputActive.character })
+                        if (!customInputActive.character) {
+                          // Switching to custom mode - clear the selection
+                          setSelection({ ...selection, character: '' })
+                        }
+                      }}
+                      className="btn btn-ghost"
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        background: customInputActive.character ? 'var(--color-accent)' : 'var(--color-bg-secondary)',
+                        color: customInputActive.character ? 'white' : 'var(--color-text-secondary)'
+                      }}
+                    >
+                      <span>{customInputActive.character ? '✎ Write Custom' : '🃏 Pick Card'}</span>
+                    </button>
+                  </div>
 
-                <CardCarousel
-                  label="Setting"
-                  icon="🏛️"
-                  options={availableCards.settings}
-                  value={selection.setting}
-                  onChange={(value) => setSelection({ ...selection, setting: value })}
-                  color="var(--color-accent-2)"
-                />
+                  {customInputActive.character ? (
+                    <input
+                      type="text"
+                      value={selection.character}
+                      onChange={(e) => setSelection({ ...selection, character: e.target.value })}
+                      placeholder="Enter custom character (e.g., SpongeBob)..."
+                      maxLength={50}
+                      className="input font-script text-lg"
+                      style={{
+                        background: 'var(--color-bg-secondary)',
+                        border: '2px solid var(--color-accent)',
+                        fontStyle: 'italic'
+                      }}
+                    />
+                  ) : (
+                    <CardCarousel
+                      label="Character"
+                      icon="🎭"
+                      options={availableCards.characters}
+                      value={selection.character}
+                      onChange={(value) => setSelection({ ...selection, character: value })}
+                      color="var(--color-accent)"
+                    />
+                  )}
+                </div>
 
-                <CardCarousel
-                  label="Circumstance"
-                  icon="⚡"
-                  options={availableCards.circumstances}
-                  value={selection.circumstance}
-                  onChange={(value) => setSelection({ ...selection, circumstance: value })}
-                  color="var(--color-warning)"
-                />
+                {/* Setting Input */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="label" style={{ marginBottom: 0 }}>🏛️ Setting</label>
+                    <button
+                      onClick={() => {
+                        setCustomInputActive({ ...customInputActive, setting: !customInputActive.setting })
+                        if (!customInputActive.setting) {
+                          setSelection({ ...selection, setting: '' })
+                        }
+                      }}
+                      className="btn btn-ghost"
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        background: customInputActive.setting ? 'var(--color-accent-2)' : 'var(--color-bg-secondary)',
+                        color: customInputActive.setting ? 'white' : 'var(--color-text-secondary)'
+                      }}
+                    >
+                      <span>{customInputActive.setting ? '✎ Write Custom' : '🃏 Pick Card'}</span>
+                    </button>
+                  </div>
+
+                  {customInputActive.setting ? (
+                    <input
+                      type="text"
+                      value={selection.setting}
+                      onChange={(e) => setSelection({ ...selection, setting: e.target.value })}
+                      placeholder="Enter custom setting (e.g., The Simpsons Living Room)..."
+                      maxLength={50}
+                      className="input font-script text-lg"
+                      style={{
+                        background: 'var(--color-bg-secondary)',
+                        border: '2px solid var(--color-accent-2)',
+                        fontStyle: 'italic'
+                      }}
+                    />
+                  ) : (
+                    <CardCarousel
+                      label="Setting"
+                      icon="🏛️"
+                      options={availableCards.settings}
+                      value={selection.setting}
+                      onChange={(value) => setSelection({ ...selection, setting: value })}
+                      color="var(--color-accent-2)"
+                    />
+                  )}
+                </div>
+
+                {/* Circumstance Input */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="label" style={{ marginBottom: 0 }}>⚡ Circumstance</label>
+                    <button
+                      onClick={() => {
+                        setCustomInputActive({ ...customInputActive, circumstance: !customInputActive.circumstance })
+                        if (!customInputActive.circumstance) {
+                          setSelection({ ...selection, circumstance: '' })
+                        }
+                      }}
+                      className="btn btn-ghost"
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        background: customInputActive.circumstance ? 'var(--color-warning)' : 'var(--color-bg-secondary)',
+                        color: customInputActive.circumstance ? 'white' : 'var(--color-text-secondary)'
+                      }}
+                    >
+                      <span>{customInputActive.circumstance ? '✎ Write Custom' : '🃏 Pick Card'}</span>
+                    </button>
+                  </div>
+
+                  {customInputActive.circumstance ? (
+                    <input
+                      type="text"
+                      value={selection.circumstance}
+                      onChange={(e) => setSelection({ ...selection, circumstance: e.target.value })}
+                      placeholder="Enter custom circumstance (e.g., Must apologize for a misunderstanding)..."
+                      maxLength={80}
+                      className="input font-script text-lg"
+                      style={{
+                        background: 'var(--color-bg-secondary)',
+                        border: '2px solid var(--color-warning)',
+                        fontStyle: 'italic'
+                      }}
+                    />
+                  ) : (
+                    <CardCarousel
+                      label="Circumstance"
+                      icon="⚡"
+                      options={availableCards.circumstances}
+                      value={selection.circumstance}
+                      onChange={(value) => setSelection({ ...selection, circumstance: value })}
+                      color="var(--color-warning)"
+                    />
+                  )}
+                </div>
 
                 {error && (
                   <div className="p-4 rounded-lg" style={{ background: 'var(--color-danger)', border: '2px solid var(--color-bg)' }}>

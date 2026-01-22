@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
 import { useConfetti } from '@/hooks/useConfetti'
 import { OnboardingModal } from '@/components/OnboardingModal'
+import { CardCarousel } from '@/components/CardCarousel'
 import { downloadScript, copyScriptToClipboard, getCharactersInScene } from '@/lib/scriptUtils'
 
 // Helper function to get mood emoji and color
@@ -345,53 +346,38 @@ function JoinPageContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="container max-w-lg"
+            className="container max-w-2xl"
           >
             <div className="card">
               <h1 className="text-3xl font-display text-center mb-8" style={{ color: 'var(--color-text-primary)' }}>🎴 Pick Your Cards</h1>
 
               <div className="stack">
-                <div>
-                  <label className="label">🎭 Character</label>
-                  <select
-                    value={selection.character}
-                    onChange={(e) => setSelection({ ...selection, character: e.target.value })}
-                    className="input cursor-pointer"
-                  >
-                    <option value="">Select character...</option>
-                    {availableCards.characters.map((char) => (
-                      <option key={char} value={char}>{char}</option>
-                    ))}
-                  </select>
-                </div>
+                <CardCarousel
+                  label="Character"
+                  icon="🎭"
+                  options={availableCards.characters}
+                  value={selection.character}
+                  onChange={(value) => setSelection({ ...selection, character: value })}
+                  color="var(--color-accent)"
+                />
 
-                <div>
-                  <label className="label">🏛️ Setting</label>
-                  <select
-                    value={selection.setting}
-                    onChange={(e) => setSelection({ ...selection, setting: e.target.value })}
-                    className="input cursor-pointer"
-                  >
-                    <option value="">Select setting...</option>
-                    {availableCards.settings.map((setting) => (
-                      <option key={setting} value={setting}>{setting}</option>
-                    ))}
-                  </select>
-                </div>
+                <CardCarousel
+                  label="Setting"
+                  icon="🏛️"
+                  options={availableCards.settings}
+                  value={selection.setting}
+                  onChange={(value) => setSelection({ ...selection, setting: value })}
+                  color="var(--color-accent-2)"
+                />
 
-                <div>
-                  <label className="label">⚡ Circumstance</label>
-                  <select
-                    value={selection.circumstance}
-                    onChange={(e) => setSelection({ ...selection, circumstance: e.target.value })}
-                    className="input cursor-pointer"
-                  >
-                    <option value="">Select circumstance...</option>
-                    {availableCards.circumstances.map((circ) => (
-                      <option key={circ} value={circ}>{circ}</option>
-                    ))}
-                  </select>
-                </div>
+                <CardCarousel
+                  label="Circumstance"
+                  icon="⚡"
+                  options={availableCards.circumstances}
+                  value={selection.circumstance}
+                  onChange={(value) => setSelection({ ...selection, circumstance: value })}
+                  color="var(--color-warning)"
+                />
 
                 {error && (
                   <div className="p-4 rounded-lg" style={{ background: 'var(--color-danger)', border: '2px solid var(--color-bg)' }}>
@@ -399,14 +385,17 @@ function JoinPageContent() {
                   </div>
                 )}
 
-                <button
+                <motion.button
                   onClick={handleSubmitCards}
                   disabled={!selection.character || !selection.setting || !selection.circumstance}
                   className="btn btn-primary btn-large w-full"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{ marginTop: '24px' }}
                 >
                   <span>✨</span>
-                  <span>Submit</span>
-                </button>
+                  <span>Submit Cards</span>
+                </motion.button>
               </div>
             </div>
           </motion.div>

@@ -1,2 +1,3 @@
-[00:00:01.678] Server  LOG     > Ready on http://localhost:3000
-[00:01:18.641] Server  LOG       Reload env: .env.local
+[00:00:01.410] Server  LOG     Socket.IO configured for development mode
+[00:00:01.410] Server  LOG     Transports: polling + websocket
+[00:00:01.411] Server  LOG     > Ready on http://localhost:3000

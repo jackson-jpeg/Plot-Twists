@@ -1,3 +1,4 @@
+// Force rebuild: Writer's Room Update
 'use client'
 
 import React, { useEffect, useState, Suspense } from 'react'
@@ -379,7 +380,7 @@ function JoinPageContent() {
                       style={{
                         padding: '6px 12px',
                         fontSize: '13px',
-                        background: customInputActive.character ? 'var(--color-accent)' : 'var(--color-bg-secondary)',
+                        background: customInputActive.character ? 'var(--color-accent)' : '#f0f0f0',
                         color: customInputActive.character ? 'white' : 'var(--color-text-secondary)'
                       }}
                     >
@@ -396,7 +397,7 @@ function JoinPageContent() {
                       maxLength={50}
                       className="input font-script text-lg"
                       style={{
-                        background: 'var(--color-bg-secondary)',
+                        background: '#f0f0f0',
                         border: '2px solid var(--color-accent)',
                         fontStyle: 'italic'
                       }}
@@ -428,7 +429,7 @@ function JoinPageContent() {
                       style={{
                         padding: '6px 12px',
                         fontSize: '13px',
-                        background: customInputActive.setting ? 'var(--color-accent-2)' : 'var(--color-bg-secondary)',
+                        background: customInputActive.setting ? 'var(--color-accent-2)' : '#f0f0f0',
                         color: customInputActive.setting ? 'white' : 'var(--color-text-secondary)'
                       }}
                     >
@@ -445,7 +446,7 @@ function JoinPageContent() {
                       maxLength={50}
                       className="input font-script text-lg"
                       style={{
-                        background: 'var(--color-bg-secondary)',
+                        background: '#f0f0f0',
                         border: '2px solid var(--color-accent-2)',
                         fontStyle: 'italic'
                       }}
@@ -477,7 +478,7 @@ function JoinPageContent() {
                       style={{
                         padding: '6px 12px',
                         fontSize: '13px',
-                        background: customInputActive.circumstance ? 'var(--color-warning)' : 'var(--color-bg-secondary)',
+                        background: customInputActive.circumstance ? 'var(--color-warning)' : '#f0f0f0',
                         color: customInputActive.circumstance ? 'white' : 'var(--color-text-secondary)'
                       }}
                     >
@@ -494,7 +495,7 @@ function JoinPageContent() {
                       maxLength={80}
                       className="input font-script text-lg"
                       style={{
-                        background: 'var(--color-bg-secondary)',
+                        background: '#f0f0f0',
                         border: '2px solid var(--color-warning)',
                         fontStyle: 'italic'
                       }}

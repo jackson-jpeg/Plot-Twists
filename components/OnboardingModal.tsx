@@ -91,7 +91,7 @@ export function OnboardingModal({ isOpen, onClose, mode = 'join' }: OnboardingMo
           </div>
         </section>
 
-        {/* How to Play */}
+        {/* How to Play - Timeline */}
         {mode === 'host' ? (
           <section>
             <h3
@@ -99,26 +99,56 @@ export function OnboardingModal({ isOpen, onClose, mode = 'join' }: OnboardingMo
                 fontSize: '18px',
                 fontWeight: 600,
                 color: 'var(--color-accent)',
-                marginBottom: '12px',
+                marginBottom: '16px',
                 marginTop: 0
               }}
             >
               🎪 Hosting a Game
             </h3>
-            <ol style={{ color: 'var(--color-text-secondary)', lineHeight: 1.8, paddingLeft: '20px', margin: 0 }}>
-              <li>Choose a game mode and click "Create Room"</li>
-              <li>Share the 4-letter room code with your players</li>
-              <li>
-                Wait in the Green Room for players to join (they'll answer trivia while waiting!)
-              </li>
-              <li>Click "Deal Cards" to distribute random prompts to everyone</li>
-              <li>
-                Review each player's prompt on your screen, then press <kbd style={{ background: 'var(--color-surface)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--color-border)', fontFamily: 'monospace' }}>Space</kbd> to start their performance
-              </li>
-              <li>Press <kbd style={{ background: 'var(--color-surface)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--color-border)', fontFamily: 'monospace' }}>Space</kbd> again to end their performance and move to the next player</li>
-              <li>After all performances, click "Start Voting" to let players vote</li>
-              <li>View results and see who won!</li>
-            </ol>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[
+                { icon: '🎮', color: 'var(--color-accent)', text: 'Choose a game mode and click "Create Room"' },
+                { icon: '🔗', color: 'var(--color-accent-2)', text: 'Share the 4-letter room code with your players' },
+                { icon: '🎭', color: 'var(--color-warning)', text: 'Wait in the Green Room for players to join' },
+                { icon: '🎴', color: 'var(--color-accent)', text: 'Click "Deal Cards" to distribute random prompts' },
+                { icon: '⌨️', color: 'var(--color-accent-2)', text: 'Press Space to start each performance' },
+                { icon: '⏭️', color: 'var(--color-warning)', text: 'Press Space again to move to next player' },
+                { icon: '🗳️', color: 'var(--color-accent)', text: 'Click "Start Voting" after all performances' },
+                { icon: '🏆', color: 'var(--color-accent-2)', text: 'View results and celebrate the winner!' }
+              ].map((step, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px',
+                    background: 'var(--color-surface)',
+                    borderRadius: '8px',
+                    borderLeft: `3px solid ${step.color}`
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '18px',
+                      background: `${step.color}20`,
+                      borderRadius: '50%',
+                      flexShrink: 0
+                    }}
+                  >
+                    {step.icon}
+                  </div>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
+                    {step.text}
+                  </span>
+                </div>
+              ))}
+            </div>
           </section>
         ) : (
           <section>
@@ -127,22 +157,56 @@ export function OnboardingModal({ isOpen, onClose, mode = 'join' }: OnboardingMo
                 fontSize: '18px',
                 fontWeight: 600,
                 color: 'var(--color-accent)',
-                marginBottom: '12px',
+                marginBottom: '16px',
                 marginTop: 0
               }}
             >
               🎪 Joining a Game
             </h3>
-            <ol style={{ color: 'var(--color-text-secondary)', lineHeight: 1.8, paddingLeft: '20px', margin: 0 }}>
-              <li>Get the 4-letter room code from your host</li>
-              <li>Enter the room code and choose a fun nickname</li>
-              <li>Wait in the Green Room (answer trivia questions while you wait!)</li>
-              <li>When the host deals cards, you'll see your random prompt</li>
-              <li>Think about your story while waiting for your turn</li>
-              <li>When it's your turn, perform your story for everyone!</li>
-              <li>After all performances, vote for your favorite story (can't vote for yourself)</li>
-              <li>See who won and celebrate! 🎉</li>
-            </ol>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[
+                { icon: '🔗', color: 'var(--color-accent)', text: 'Get the 4-letter room code from your host' },
+                { icon: '✍️', color: 'var(--color-accent-2)', text: 'Enter the code and choose a fun nickname' },
+                { icon: '🎭', color: 'var(--color-warning)', text: 'Wait in the lobby for the game to start' },
+                { icon: '🎴', color: 'var(--color-accent)', text: 'Pick your cards when selection begins' },
+                { icon: '💭', color: 'var(--color-accent-2)', text: 'Review the script and get ready to perform' },
+                { icon: '🎬', color: 'var(--color-warning)', text: 'Follow along and perform your lines!' },
+                { icon: '🗳️', color: 'var(--color-accent)', text: 'Vote for your favorite performance' },
+                { icon: '🎉', color: 'var(--color-accent-2)', text: 'Celebrate the winner and play again!' }
+              ].map((step, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px',
+                    background: 'var(--color-surface)',
+                    borderRadius: '8px',
+                    borderLeft: `3px solid ${step.color}`
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '18px',
+                      background: `${step.color}20`,
+                      borderRadius: '50%',
+                      flexShrink: 0
+                    }}
+                  >
+                    {step.icon}
+                  </div>
+                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
+                    {step.text}
+                  </span>
+                </div>
+              ))}
+            </div>
           </section>
         )}
 
@@ -194,20 +258,40 @@ export function OnboardingModal({ isOpen, onClose, mode = 'join' }: OnboardingMo
               fontSize: '18px',
               fontWeight: 600,
               color: 'var(--color-accent)',
-              marginBottom: '12px',
+              marginBottom: '16px',
               marginTop: 0
             }}
           >
             💡 Pro Tips
           </h3>
-          <ul style={{ color: 'var(--color-text-secondary)', lineHeight: 1.8, paddingLeft: '20px', margin: 0 }}>
-            <li>Don't overthink it - improv is about going with your gut!</li>
-            <li>Yes, and... - build on ideas instead of shutting them down</li>
-            <li>Embrace the weird - the stranger the combination, the more fun!</li>
-            <li>Commit fully - even if it's silly, sell it with confidence</li>
-            <li>Watch the mood indicator to gauge your performance energy</li>
-            <li>Have fun! This isn't about being perfect, it's about being creative</li>
-          </ul>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px' }}>
+            {[
+              { icon: '🧠', text: "Don't overthink it - go with your gut!" },
+              { icon: '✅', text: 'Yes, and... - build on ideas' },
+              { icon: '🎪', text: 'Embrace the weird combinations' },
+              { icon: '💪', text: 'Commit fully with confidence' },
+              { icon: '😊', text: 'Watch the mood indicator' },
+              { icon: '🎉', text: "Have fun! It's about creativity" }
+            ].map((tip, index) => (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px',
+                  padding: '10px',
+                  background: 'var(--color-surface)',
+                  borderRadius: '8px',
+                  border: '1px solid var(--color-border)'
+                }}
+              >
+                <span style={{ fontSize: '18px', flexShrink: 0 }}>{tip.icon}</span>
+                <span style={{ color: 'var(--color-text-secondary)', fontSize: '13px', lineHeight: 1.4 }}>
+                  {tip.text}
+                </span>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* Call to Action */}

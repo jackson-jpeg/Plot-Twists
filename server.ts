@@ -479,16 +479,34 @@ app.prepare().then(() => {
 
   const io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(server, {
     cors: {
-      origin: dev ? [
-        'http://localhost:3000',
-        'http://localhost:3001'
-      ] : [
-        'https://plot-twists.com',
-        'https://www.plot-twists.com',
-        'https://plot-twists-dvkmt8tyq-jackson-sangers-projects.vercel.app',
-        /\.vercel\.app$/,  // Allow all Vercel preview deployments
-        'https://web-production-c7981.up.railway.app'  // Railway backend URL
-      ],
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true)
+
+        const allowedOrigins = dev ? [
+          'http://localhost:3000',
+          'http://localhost:3001'
+        ] : [
+          'https://plot-twists.com',
+          'https://www.plot-twists.com',
+          'https://plot-twists-dvkmt8tyq-jackson-sangers-projects.vercel.app',
+          'https://web-production-c7981.up.railway.app'
+        ]
+
+        // Check exact matches
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true)
+        }
+
+        // In production, allow all Vercel preview deployments
+        if (!dev && origin.endsWith('.vercel.app')) {
+          return callback(null, true)
+        }
+
+        // Reject all other origins
+        console.log(`CORS blocked origin: ${origin}`)
+        callback(new Error('Not allowed by CORS'))
+      },
       methods: ['GET', 'POST', 'OPTIONS'],
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization']

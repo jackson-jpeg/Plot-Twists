@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
 import { useConfetti } from '@/hooks/useConfetti'
+import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
 import { CardCarousel } from '@/components/CardCarousel'
 import { downloadScript, copyScriptToClipboard, getCharactersInScene } from '@/lib/scriptUtils'
@@ -31,6 +32,7 @@ function JoinPageContent() {
   const codeFromUrl = searchParams.get('code')
   const toast = useToast()
   const confetti = useConfetti()
+  useWakeLock() // Prevent screen sleep during gameplay
 
   const [roomCode, setRoomCode] = useState(codeFromUrl || '')
   const [nickname, setNickname] = useState('')

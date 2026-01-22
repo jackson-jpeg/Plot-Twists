@@ -50,6 +50,7 @@ export interface Room {
   selections: Map<string, CardSelection>
   script?: Script
   currentLineIndex: number
+  isPaused: boolean
   votes: Map<string, string> // playerId -> targetPlayerId
   createdAt: number
   lastActivity: number
@@ -94,6 +95,10 @@ export interface ClientToServerEvents {
   start_game: (roomCode: string) => void
   submit_vote: (roomCode: string, targetPlayerId: string) => void
   advance_script_line: (roomCode: string) => void
+  pause_script: (roomCode: string) => void
+  resume_script: (roomCode: string) => void
+  jump_to_line: (roomCode: string, lineIndex: number) => void
+  request_sequel: (roomCode: string) => void
   request_new_game: (roomCode: string) => void
   update_room_settings: (roomCode: string, settings: Partial<RoomSettings>) => void
   disconnect: () => void

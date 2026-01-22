@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, GameState, Script, CardSelection, GameResults } from '@/lib/types'
+import type { Player, GameState, Script, CardSelection, GameResults, PlayerRole } from '@/lib/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
@@ -56,6 +56,7 @@ function JoinPageContent() {
   const [gameResults, setGameResults] = useState<GameResults | null>(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [myRole, setMyRole] = useState<PlayerRole>('PLAYER')
   const previousSpeaker = React.useRef<string>('')
 
   useEffect(() => {
@@ -83,7 +84,10 @@ function JoinPageContent() {
     socket.on('script_ready', (newScript) => {
       setScript(newScript)
       setCurrentLineIndex(0)
-      setMyCharacter(selection.character)
+      // Only set character if not a spectator
+      if (myRole !== 'SPECTATOR') {
+        setMyCharacter(selection.character)
+      }
     })
     socket.on('sync_teleprompter', setCurrentLineIndex)
     socket.on('game_over', setGameResults)
@@ -101,7 +105,7 @@ function JoinPageContent() {
       socket.off('game_over')
       socket.off('error')
     }
-  }, [socket, isConnected, selection])
+  }, [socket, isConnected, selection, myRole])
 
   const handleJoin = () => {
     if (!socket || !roomCode || !nickname) {
@@ -117,7 +121,19 @@ function JoinPageContent() {
     socket.emit('join_room', upperRoomCode, nickname, (response) => {
       if (response.success) {
         setHasJoined(true)
-        toast.success(`Joined room ${upperRoomCode}!`)
+
+        // Set role from server response
+        if (response.role) {
+          setMyRole(response.role)
+          if (response.role === 'SPECTATOR') {
+            toast.info('Room is full! You joined as a Spectator.')
+          } else {
+            toast.success(`Joined room ${upperRoomCode}!`)
+          }
+        } else {
+          toast.success(`Joined room ${upperRoomCode}!`)
+        }
+
         if (response.players) {
           setPlayers(response.players)
           // Find my player ID by matching nickname
@@ -271,9 +287,15 @@ function JoinPageContent() {
             className="container max-w-lg text-center"
           >
             <div className="card">
-              <div className="text-6xl mb-6">🎉</div>
-              <h1 className="text-4xl font-display mb-4" style={{ color: 'var(--color-success)' }}>You're In!</h1>
-              <p className="text-lg mb-8" style={{ color: 'var(--color-text-secondary)' }}>Waiting for game to start...</p>
+              <div className="text-6xl mb-6">{myRole === 'SPECTATOR' ? '👁️' : '🎉'}</div>
+              <h1 className="text-4xl font-display mb-4" style={{ color: 'var(--color-success)' }}>
+                {myRole === 'SPECTATOR' ? 'Spectator Mode' : "You're In!"}
+              </h1>
+              <p className="text-lg mb-8" style={{ color: 'var(--color-text-secondary)' }}>
+                {myRole === 'SPECTATOR'
+                  ? 'Sit back and enjoy the show! You can vote at the end.'
+                  : 'Waiting for game to start...'}
+              </p>
               <div className="stack-sm">
                 {players.map((player) => (
                   <div
@@ -287,8 +309,10 @@ function JoinPageContent() {
                     >
                       {player.nickname[0]?.toUpperCase()}
                     </div>
-                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                      {player.nickname} {player.isHost && '👑'}
+                    <span className="font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+                      {player.nickname}
+                      {player.isHost && '👑'}
+                      {player.role === 'SPECTATOR' && <span title="Spectator">👁️</span>}
                     </span>
                   </div>
                 ))}
@@ -297,7 +321,25 @@ function JoinPageContent() {
           </motion.div>
         )}
 
-        {gameState === 'SELECTION' && !hasSubmitted && (
+        {gameState === 'SELECTION' && !hasSubmitted && myRole === 'SPECTATOR' && (
+          <motion.div
+            key="spectator-waiting"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="container max-w-lg text-center"
+          >
+            <div className="card">
+              <div className="text-8xl mb-6">🍿</div>
+              <h1 className="text-3xl font-display mb-4" style={{ color: 'var(--color-text-primary)' }}>Grab Some Popcorn</h1>
+              <p className="text-lg" style={{ color: 'var(--color-text-secondary)' }}>
+                Waiting for the actors to pick their cards...
+              </p>
+            </div>
+          </motion.div>
+        )}
+
+        {gameState === 'SELECTION' && !hasSubmitted && myRole !== 'SPECTATOR' && (
           <motion.div
             key="selection"
             initial={{ opacity: 0 }}
@@ -572,7 +614,7 @@ function JoinPageContent() {
                 </motion.div>
               ) : (
                 <div className="stack-sm">
-                  {players.filter((p) => !p.isHost && p.id !== myPlayerId).map((player) => (
+                  {players.filter((p) => p.role === 'PLAYER' && p.id !== myPlayerId).map((player) => (
                     <motion.button
                       key={player.id}
                       onClick={() => handleVote(player.id)}

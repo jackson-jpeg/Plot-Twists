@@ -1,3 +1,87 @@
-[00:00:01.410] Server  LOG     Socket.IO configured for development mode
-[00:00:01.410] Server  LOG     Transports: polling + websocket
-[00:00:01.411] Server  LOG     > Ready on http://localhost:3000
+[00:00:01.528] Server  LOG     Socket.IO configured for development mode
+[00:00:01.528] Server  LOG     Transports: polling + websocket
+[00:00:01.530] Server  LOG     > Ready on http://localhost:3000
+[00:03:30.759] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:30.783] Server  LOG     Client connected: "ebic_CsXd2q_WvJ4AAAB"
+[00:03:31.004] Browser LOG     🔌 Socket connection config:
+[00:03:31.004] Browser LOG       - Target URL: http://localhost:3000
+[00:03:31.004] Browser LOG       - Environment: development
+[00:03:31.004] Browser LOG       - WS_URL env var: ws://localhost:3000
+[00:03:31.005] Browser LOG       - Transport mode: polling + websocket (dev)
+[00:03:31.005] Browser LOG     Socket connected: ebic_CsXd2q_WvJ4AAAB
+[00:03:31.005] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:31.005] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/ color: rgb(120, 120, 120) color: inherit {"o":"http://localhost:3000/","r":"","sdkn":"@vercel/analytics/react","sdkv":"1.6.1","sv":"0.1.3","ts":1769054684373}
+[00:03:34.873] Server  LOG     Room created: 9HE9
+[00:03:34.968] Browser WARN    Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+[00:03:34.968] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/host color: rgb(120, 120, 120) color: inherit {"o":"http://localhost:3000/host","sdkn":"@vercel/analytics/react","sdkv":"1.6.1","sv":"0.1.3","ts":1769054688320}
+[00:03:48.581] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:48.618] Server  LOG     Client connected: "dXl7tduo_iJxfdxcAAAD"
+[00:03:48.695] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./contexts/SocketContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:03:48.696] Browser LOG     🔌 Socket connection config:
+[00:03:48.696] Browser LOG       - Target URL: http://localhost:3000
+[00:03:48.696] Browser LOG       - Environment: development
+[00:03:48.696] Browser LOG       - WS_URL env var: ws://localhost:3000
+[00:03:48.696] Browser LOG       - Transport mode: polling + websocket (dev)
+[00:03:48.696] Browser LOG     Socket connected: dXl7tduo_iJxfdxcAAAD
+[00:03:48.696] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:48.696] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/join color: rgb(120, 120, 120) color: inherit {"o":"http://localhost:3000/join","r":"","sdkn":"@vercel/analytics/react","sdkv":"1.6.1","sv":"0.1.3","ts":1769054702103}
+[00:03:48.696] Server  WARN    ⚠ Fast Refresh had to perform a full reload when ./contexts/SocketContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:03:48.858] Server  LOG     ✓ Compiled in 116ms
+[00:03:49.024] Server  LOG     Client disconnected: "dXl7tduo_iJxfdxcAAAD" "Reason:" "transport close"
+[00:03:49.026] Server  LOG     Client disconnected: "ebic_CsXd2q_WvJ4AAAB" "Reason:" "transport close"
+[00:03:49.159] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:49.226] Server  LOG     Client connected: "Nb0ZDRUEfGIySTZuAAAF"
+[00:03:49.245] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[00:03:49.320] Server  LOG     Client connected: "iTTYhRuZFSVe_yeSAAAH"
+[00:03:49.335] Browser LOG     🔍 URL Construction Debug:
+[00:03:49.335] Browser LOG       - window.location.hostname: localhost
+[00:03:49.335] Browser LOG       - window.location.origin: http://localhost:3000
+[00:03:49.335] Browser LOG       - isLocalhost: true
+[00:03:49.335] Browser LOG       - NEXT_PUBLIC_WS_URL env var: ws://localhost:3000
+[00:03:49.335] Browser LOG       - Raw NEXT_PUBLIC_WS_URL: "ws://localhost:3000"
+[00:03:49.335] Browser LOG       ✅ Using localhost URL: http://localhost:3000
+[00:03:49.335] Browser LOG     🔌 Final Socket Connection Config:
+[00:03:49.335] Browser LOG       - Final Target URL: http://localhost:3000
+[00:03:49.335] Browser LOG       - Environment: development
+[00:03:49.335] Browser LOG       - Protocol: http
+[00:03:49.335] Browser LOG       - Host: localhost:3000
+[00:03:49.335] Browser LOG       - Transport mode: polling + websocket (dev)
+[00:03:49.335] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:49.335] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/join color: rgb(120, 120, 120) color: inherit {"o":"http://localhost:3000/join","sdkn":"@vercel/analytics/react","sdkv":"1.6.1","sv":"0.1.3","ts":1769054702686}
+[00:03:49.335] Browser LOG     Socket connected: Nb0ZDRUEfGIySTZuAAAF
+[00:03:49.426] Server  LOG     Room created: BRUQ
+[00:03:49.883] Browser LOG     🔍 URL Construction Debug:
+[00:03:49.883] Browser LOG       - window.location.hostname: localhost
+[00:03:49.883] Browser LOG       - window.location.origin: http://localhost:3000
+[00:03:49.883] Browser LOG       - isLocalhost: true
+[00:03:49.883] Browser LOG       - NEXT_PUBLIC_WS_URL env var: ws://localhost:3000
+[00:03:49.883] Browser LOG       - Raw NEXT_PUBLIC_WS_URL: "ws://localhost:3000"
+[00:03:49.883] Browser LOG       ✅ Using localhost URL: http://localhost:3000
+[00:03:49.883] Browser LOG     🔌 Final Socket Connection Config:
+[00:03:49.883] Browser LOG       - Final Target URL: http://localhost:3000
+[00:03:49.883] Browser LOG       - Environment: development
+[00:03:49.883] Browser LOG       - Protocol: http
+[00:03:49.883] Browser LOG       - Host: localhost:3000
+[00:03:49.883] Browser LOG       - Transport mode: polling + websocket (dev)
+[00:03:49.883] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:03:49.883] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://localhost:3000/host color: rgb(120, 120, 120) color: inherit {"o":"http://localhost:3000/host","sdkn":"@vercel/analytics/react","sdkv":"1.6.1","sv":"0.1.3","ts":1769054702788}
+[00:03:49.883] Browser LOG     Socket connected: iTTYhRuZFSVe_yeSAAAH
+[00:03:52.027] Server  LOG     Removing player Host from room 9HE9
+[00:03:52.028] Server  LOG     Deleting empty room 9HE9
+[00:03:52.536] Server  LOG     Join attempt - Room: 9HE9, Nickname: Jakcosn
+[00:03:52.538] Server  LOG     Available rooms: ["BRUQ"]
+[00:03:52.538] Server  LOG     Room 9HE9 not found!
+[00:03:54.613] Server  LOG     Join attempt - Room: 9HE9, Nickname: Jakcosn
+[00:03:54.613] Server  LOG     Available rooms: ["BRUQ"]
+[00:03:54.613] Server  LOG     Room 9HE9 not found!
+[00:03:56.154] Server  LOG     Join attempt - Room: 9HE9, Nickname: Jakcosn
+[00:03:56.154] Server  LOG     Available rooms: ["BRUQ"]
+[00:03:56.154] Server  LOG     Room 9HE9 not found!
+[00:03:58.068] Server  LOG     Join attempt - Room: 9HE9, Nickname: Jakcosn
+[00:03:58.068] Server  LOG     Available rooms: ["BRUQ"]
+[00:03:58.069] Server  LOG     Room 9HE9 not found!
+[00:04:39.180] Server  LOG       Reload env: .env
+[00:05:08.328] Server  LOG     Client disconnected: "Nb0ZDRUEfGIySTZuAAAF" "Reason:" "transport close"
+[00:05:08.378] Server  LOG     Client disconnected: "iTTYhRuZFSVe_yeSAAAH" "Reason:" "transport close"
+[00:05:11.379] Server  LOG     Removing player Host from room BRUQ
+[00:05:11.380] Server  LOG     Deleting empty room BRUQ

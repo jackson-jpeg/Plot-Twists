@@ -556,7 +556,7 @@ app.prepare().then(() => {
     })
 
     // Submit card selections
-    socket.on('submit_cards', (roomCode, selections, callback) => {
+    socket.on('submit_cards', async (roomCode, selections, callback) => {
       try {
         const room = rooms.get(roomCode)
         if (!room) {
@@ -592,9 +592,18 @@ app.prepare().then(() => {
 
         // Solo mode: Start immediately when single player submits
         if (room.gameMode === 'SOLO') {
+          console.log(`🎮 Solo mode detected for room ${roomCode}`)
           const nonHostPlayers = Array.from(room.players.values()).filter(p => !p.isHost)
+          console.log(`   Non-host players count: ${nonHostPlayers.length}`)
+          console.log(`   Players:`, nonHostPlayers.map(p => `${p.nickname} (submitted: ${p.hasSubmittedSelection})`))
+
           if (nonHostPlayers.length === 1 && nonHostPlayers[0].hasSubmittedSelection) {
-            startScriptGeneration(room, io)
+            console.log(`   ✅ Starting script generation for solo mode`)
+            await startScriptGeneration(room, io)
+          } else {
+            console.log(`   ❌ Conditions not met for script generation`)
+            console.log(`      - Player count is 1: ${nonHostPlayers.length === 1}`)
+            console.log(`      - Player has submitted: ${nonHostPlayers[0]?.hasSubmittedSelection}`)
           }
           return
         }
@@ -605,8 +614,9 @@ app.prepare().then(() => {
           .every(p => p.hasSubmittedSelection)
 
         if (allSubmitted && room.players.size > 1) {
+          console.log(`🎬 All players submitted in ${room.gameMode} mode, starting script generation`)
           // Start script generation
-          startScriptGeneration(room, io)
+          await startScriptGeneration(room, io)
         }
       } catch (error) {
         console.error('Error submitting cards:', error)

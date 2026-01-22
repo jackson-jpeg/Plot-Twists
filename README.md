@@ -179,7 +179,7 @@ ISC
 ## Credits
 
 - Powered by [Anthropic Claude](https://www.anthropic.com/)
-- Inspired by Jackbox Games
+
 - Built with ❤️ by the Plot Twists team
 
 ---

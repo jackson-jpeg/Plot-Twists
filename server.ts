@@ -8,6 +8,7 @@ import type { ServerToClientEvents, ClientToServerEvents, Room, Player, CardSele
 import { getFilteredContent, getGreenRoomQuestion } from './lib/content'
 import { v4 as uuidv4 } from 'uuid'
 import Anthropic from '@anthropic-ai/sdk'
+import { ScriptSchema } from './lib/schema'
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = dev ? 'localhost' : '0.0.0.0'
@@ -60,10 +61,10 @@ async function generateScript(
   setting: string,
   circumstance: string,
   isMature: boolean,
-  isSoloMode: boolean | number // Can be boolean (solo mode flag) or number (player count for multiplayer)
+  gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE'
 ) {
-  const numPlayers = typeof isSoloMode === 'boolean' ? (isSoloMode ? 1 : characters.length) : isSoloMode
-  const actualSoloMode = typeof isSoloMode === 'boolean' ? isSoloMode : false
+  const isSoloMode = gameMode === 'SOLO'
+  const numPlayers = characters.length
   const characterList = characters.join(', ')
 
   // Build comedy writing guidelines based on rating
@@ -289,34 +290,108 @@ Synopsis examples:
 
 Now write comedy that makes people ACTUALLY LAUGH.`
 
+  // Mode-specific scene dynamics
+  const modeInstructions = gameMode === 'HEAD_TO_HEAD' ? `
+═══════════════════════════════════════
+SCENE DYNAMICS (HEAD-TO-HEAD MODE)
+═══════════════════════════════════════
+This is a COMPETITIVE scene. The two characters must have OPPOSING GOALS.
+
+STRUCTURE:
+- Character A (${characters[0]}) wants to achieve the Circumstance
+- Character B (${characters[1]}) wants to STOP them or do it their own way
+- Every line should escalate the conflict
+
+WRITING STYLE:
+- Rapid-fire banter with high energy
+- Characters should interrupt each other
+- Use short, punchy exchanges (think tennis rally)
+- Each character believes they're 100% right
+- The disagreement should feel personal and specific
+
+PACING:
+- Lines should alternate frequently (don't let one character monologue)
+- Build to a comedic climax where both characters are at maximum frustration
+- End with an unexpected twist or compromise (but make it funny)
+
+AVOID:
+- Friendly cooperation or easy agreement
+- Long speeches (keep it snappy)
+- Characters being reasonable or backing down early
+`
+  : gameMode === 'ENSEMBLE' ? `
+═══════════════════════════════════════
+SCENE DYNAMICS (ENSEMBLE MODE)
+═══════════════════════════════════════
+This is a CHAOTIC GROUP scene. Structure it like "The Office" or "Community."
+
+ROLE ASSIGNMENTS:
+- ${characters[0]} is the STRAIGHT MAN (the reasonable one trying to manage the situation)
+- ${characters.slice(1).join(', ')} are AGENTS OF CHAOS (derailing the plan with their antics)
+
+CRITICAL: You have ${characters.length} characters. You MUST give every single one of them dialogue and a personality. Do not leave anyone out.
+
+STRUCTURE:
+- Straight Man tries to execute the Circumstance logically
+- Each Chaos Agent has their own agenda/misunderstanding that conflicts with the plan
+- The scene spirals as multiple characters talk over each other
+
+SPOTLIGHT MOMENTS:
+Each character MUST get at least one memorable moment to shine:
+- A ridiculous suggestion that somehow makes sense
+- A running gag or catchphrase
+- A reveal that changes the dynamic
+- A physical comedy beat (described through dialogue)
+
+PACING:
+- Start with Straight Man outlining the plan
+- Chaos Agents derail it one by one
+- Escalate to maximum chaos where everyone is talking at once
+- End with either spectacular failure or accidental success
+
+AVOID:
+- Everyone agreeing too quickly
+- Characters standing around watching others perform
+- Letting any character disappear for too long (max 5-6 lines without speaking)
+`
+  : `
+═══════════════════════════════════════
+SCENE DYNAMICS (SOLO MODE)
+═══════════════════════════════════════
+The player will perform as ${characters[0]}. You must add 2-3 ADDITIONAL characters who logically belong in this setting.
+
+CRITICAL: Choose characters that FIT THE SETTING:
+- If setting is "The Simpsons Living Room" → add Homer, Marge, or Bart
+- If setting is "Central Perk (Friends)" → add Ross, Rachel, Chandler, Monica, Joey, or Phoebe
+- If setting is "The Office Conference Room" → add Michael Scott, Dwight, Jim, Pam
+- If setting is "The Batcave" → add Batman, Robin, Alfred
+- If setting is "The Death Star" → add Darth Vader, Stormtroopers, Emperor
+
+DO NOT pick random unrelated characters. The supporting cast must make sense for "${setting}".
+
+PLAYER FOCUS:
+- Player character (${characters[0]}) should have 60-70% of lines
+- Give supporting characters strong personalities and funny reactions
+- Supporting characters should create problems the player must react to
+`
+
   const userMessage = `Write a scene using these ingredients:
 
 ═══════════════════════════════════════
 THE SETUP
 ═══════════════════════════════════════
-${actualSoloMode ? `PLAYER CHARACTER: ${characterList}
+CHARACTERS: ${characterList}
 SETTING: ${setting}
 CIRCUMSTANCE: ${circumstance}
-
-SOLO MODE INSTRUCTIONS:
-The player will perform as ${characterList}. You need to add 2-3 ADDITIONAL characters who would logically be in this setting.
-
-CRITICAL: Choose characters that FIT THE SETTING:
-- If the setting is "The Simpsons Living Room" → add Homer Simpson, Marge Simpson, or Bart Simpson
-- If the setting is "Central Perk (Friends)" → add Ross, Rachel, Chandler, Monica, Joey, or Phoebe
-- If the setting is "The Office Conference Room" → add Michael Scott, Dwight, Jim, Pam, etc.
-- If the setting is "The Batcave" → add Batman, Robin, Alfred
-- If the setting is "The Death Star" → add Darth Vader, Stormtroopers, Emperor
-
-DO NOT pick random unrelated characters. The supporting cast must make sense for the location.
-WHO would realistically be in "${setting}" during this circumstance? Add 2-3 of them.` : `CHARACTERS: ${characterList}
-SETTING: ${setting}
-CIRCUMSTANCE: ${circumstance}`}
-
 RATING: ${isMature ? '18+ (Adult comedy - profanity allowed, taboo topics fair game, SNL-level sharp writing)' : 'Family Friendly (Smart absurdist comedy for all ages - think peak Nickelodeon)'}
 
-SCRIPT LENGTH: 30-40 lines
-PERFORMERS: ${numPlayers} player${numPlayers > 1 ? 's' : ''} ${actualSoloMode ? ` (Player performs as ${characterList}, you provide 2-3 supporting characters)` : '(Distribute lines evenly so everyone gets funny moments)'}
+${modeInstructions}
+
+═══════════════════════════════════════
+SCRIPT REQUIREMENTS
+═══════════════════════════════════════
+SCRIPT LENGTH: ${gameMode === 'ENSEMBLE' ? '40-50 lines' : '30-40 lines'}
+PERFORMERS: ${numPlayers} player${numPlayers > 1 ? 's' : ''}
 
 ═══════════════════════════════════════
 YOUR MISSION
@@ -330,10 +405,6 @@ YOUR MISSION
 7. Give every character emotional stakes (even if absurd)
 8. End with a strong button - callback, twist, or perfect punchline
 
-${numPlayers > 1 ? 'Make sure all players get equal stage time and funny lines - no one should feel like a sidekick.' : `The player (${characterList}) should have most lines (60-70%), but give supporting characters strong personalities and funny reactions so the player has something to work with.`}
-
-${actualSoloMode ? `\nREMINDER: Add 2-3 characters who belong in "${setting}" - not random characters from other universes!` : ''}
-
 The premise is already absurd. Your job is to EXPLOIT that absurdity through sharp dialogue.
 
 Write the scene now. Make it genuinely funny - the kind of funny where people will want to perform it again.`
@@ -341,23 +412,19 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
   try {
     console.log(`\n🎬 AI SCRIPT GENERATION`)
     console.log(`════════════════════════════════════════`)
+    console.log(`Mode: ${gameMode}`)
     console.log(`Rating: ${isMature ? '18+ (Adult Comedy)' : 'Family Friendly'}`)
-    if (actualSoloMode) {
-      console.log(`Mode: SOLO`)
-      console.log(`Player Character: ${characterList}`)
-      console.log(`Setting: ${setting}`)
-      console.log(`Note: AI will add 2-3 supporting characters who belong in "${setting}"`)
-    } else {
-      console.log(`Mode: MULTIPLAYER (${numPlayers} players)`)
-      console.log(`All Characters: ${characterList}`)
-      console.log(`Setting: ${setting}`)
-    }
+    console.log(`Characters: ${characterList}`)
+    console.log(`Setting: ${setting}`)
     console.log(`Circumstance: ${circumstance}`)
+    if (isSoloMode) {
+      console.log(`Note: AI will add 2-3 supporting characters who belong in "${setting}"`)
+    }
     console.log(`════════════════════════════════════════\n`)
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 8192, // Increased for more sophisticated comedy
+      max_tokens: gameMode === 'ENSEMBLE' ? 10000 : 8192, // Extra tokens for ENSEMBLE to ensure spotlight moments
       temperature: 1, // Max creativity for comedy writing
       system: systemPrompt,
       messages: [
@@ -384,7 +451,16 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
       jsonText = jsonText.replace(/\n?```$/, '')
     }
 
-    const script = JSON.parse(jsonText.trim())
+    // Parse and validate with Zod
+    const rawScript = JSON.parse(jsonText.trim())
+    const validationResult = ScriptSchema.safeParse(rawScript)
+
+    if (!validationResult.success) {
+      console.error('❌ Script validation failed:', validationResult.error.format())
+      throw new Error(`Invalid script format: ${validationResult.error.message}`)
+    }
+
+    const script = validationResult.data
     return script
   } catch (error) {
     console.error('Error generating script:', error)
@@ -499,16 +575,9 @@ app.prepare().then(() => {
         }
 
         // Check player limits based on game mode
-        const currentPlayerCount = Array.from(room.players.values()).filter(p => !p.isHost).length
+        const currentPlayerCount = Array.from(room.players.values()).filter(p => p.role === 'PLAYER').length
         const maxPlayers = room.gameMode === 'SOLO' ? 1 : room.gameMode === 'HEAD_TO_HEAD' ? 2 : 6
-
-        if (currentPlayerCount >= maxPlayers) {
-          callback({
-            success: false,
-            error: `Room is full (${maxPlayers} ${maxPlayers === 1 ? 'player' : 'players'} max for ${room.gameMode} mode)`
-          })
-          return
-        }
+        const isRoomFull = currentPlayerCount >= maxPlayers
 
         // Check for duplicate nicknames
         const nicknameExists = Array.from(room.players.values()).some(p =>
@@ -519,10 +588,11 @@ app.prepare().then(() => {
           return
         }
 
+        // Join as SPECTATOR if room is full, otherwise as PLAYER
         const player: Player = {
           id: uuidv4(),
           nickname: sanitizedNickname,
-          role: 'PLAYER',
+          role: isRoomFull ? 'SPECTATOR' : 'PLAYER',
           isHost: false,
           socketId: socket.id,
           score: 0
@@ -541,13 +611,14 @@ app.prepare().then(() => {
           gameMode: room.gameMode
         }
 
-        console.log(`✓ Player "${sanitizedNickname}" (ID: ${player.id}) successfully joined room ${upperRoomCode}`)
+        console.log(`✓ ${player.role === 'SPECTATOR' ? 'Spectator' : 'Player'} "${sanitizedNickname}" (ID: ${player.id}) successfully joined room ${upperRoomCode}`)
         console.log(`Total players in room: ${playersList.length}`, playersList.map(p => p.nickname))
 
         callback({
           success: true,
           players: playersList,
-          settings: roomSettings
+          settings: roomSettings,
+          role: player.role
         })
       } catch (error) {
         console.error('Error joining room:', error)
@@ -592,16 +663,16 @@ app.prepare().then(() => {
 
         // Solo mode: Start immediately when single player submits
         if (room.gameMode === 'SOLO') {
-          const nonHostPlayers = Array.from(room.players.values()).filter(p => !p.isHost)
-          if (nonHostPlayers.length === 1 && nonHostPlayers[0].hasSubmittedSelection) {
+          const activePlayers = Array.from(room.players.values()).filter(p => p.role === 'PLAYER')
+          if (activePlayers.length === 1 && activePlayers[0].hasSubmittedSelection) {
             startScriptGeneration(room, io)
           }
           return
         }
 
-        // Ensemble/Head-to-Head: Check if all players have submitted
+        // Ensemble/Head-to-Head: Check if all players have submitted (exclude spectators)
         const allSubmitted = Array.from(room.players.values())
-          .filter(p => !p.isHost)
+          .filter(p => p.role === 'PLAYER')
           .every(p => p.hasSubmittedSelection)
 
         if (allSubmitted && room.players.size > 1) {
@@ -757,19 +828,24 @@ app.prepare().then(() => {
     io.to(room.code).emit('green_room_prompt', triviaQuestion)
 
     try {
-      // Collect all characters from selections (everyone gets their character in the scene)
-      let characters = allSelections.map(s => s.character)
-      const isSoloMode = room.gameMode === 'SOLO' && characters.length === 1
+      // Collect characters from PLAYER role selections only (exclude spectators)
+      const playerIds = Array.from(room.players.values())
+        .filter(p => p.role === 'PLAYER')
+        .map(p => p.id)
 
-      if (isSoloMode) {
-        console.log(`🎭 SOLO mode: Player is "${characters[0]}"`)
-        console.log(`   Setting: "${chosenSetting}"`)
-        console.log(`   AI will add 2-3 characters who belong in this setting`)
-      } else {
-        console.log(`🎭 ${room.gameMode} mode: ${characters.length} players`)
-        console.log(`   Characters: ${characters.join(', ')}`)
-        console.log(`   Setting: "${chosenSetting}"`)
-        console.log(`   Circumstance: "${chosenCircumstance}"`)
+      const playerSelections = allSelections.filter((_, index) => {
+        const playerId = Array.from(room.selections.keys())[index]
+        return playerIds.includes(playerId)
+      })
+
+      let characters = playerSelections.map(s => s.character)
+
+      console.log(`🎭 ${room.gameMode} mode: ${characters.length} player${characters.length > 1 ? 's' : ''}`)
+      console.log(`   Characters: ${characters.join(', ')}`)
+      console.log(`   Setting: "${chosenSetting}"`)
+      console.log(`   Circumstance: "${chosenCircumstance}"`)
+      if (room.gameMode === 'SOLO') {
+        console.log(`   Note: AI will add 2-3 supporting characters who belong in "${chosenSetting}"`)
       }
 
       // Generate script
@@ -778,7 +854,7 @@ app.prepare().then(() => {
         chosenSetting,
         chosenCircumstance,
         room.isMature,
-        isSoloMode
+        room.gameMode
       )
 
       room.script = script
@@ -817,15 +893,10 @@ app.prepare().then(() => {
     if (!room.script) return
 
     const WPM = 120 // Words per minute
-    const totalWords = room.script.lines.reduce((acc, line) => {
-      return acc + line.text.split(' ').length
-    }, 0)
-    const totalDurationMs = (totalWords / WPM) * 60 * 1000
-    const intervalMs = totalDurationMs / room.script.lines.length
 
-    const interval = setInterval(() => {
-      if (!room.script || room.currentLineIndex >= room.script.lines.length - 1) {
-        clearInterval(interval)
+    // Calculate reading time for each line individually
+    const advanceLine = (lineIndex: number) => {
+      if (!room.script || lineIndex >= room.script.lines.length - 1) {
         // Move to voting or results
         if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
           room.gameState = 'VOTING'
@@ -837,9 +908,22 @@ app.prepare().then(() => {
         return
       }
 
-      room.currentLineIndex++
-      io.to(room.code).emit('sync_teleprompter', room.currentLineIndex)
-    }, intervalMs)
+      // Calculate time for the CURRENT line being displayed
+      const currentLine = room.script.lines[lineIndex]
+      const wordCount = currentLine.text.split(' ').length
+      const readingTimeMs = (wordCount / WPM) * 60 * 1000
+
+      // Schedule next line advance based on current line's reading time
+      setTimeout(() => {
+        if (!room.script) return
+        room.currentLineIndex++
+        io.to(room.code).emit('sync_teleprompter', room.currentLineIndex)
+        advanceLine(room.currentLineIndex)
+      }, readingTimeMs)
+    }
+
+    // Start with the first line (index 0)
+    advanceLine(0)
   }
 
   // Calculate voting results

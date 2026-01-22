@@ -89,7 +89,7 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   create_room: (settings: RoomSettings, callback: (response: { success: boolean, code?: string, error?: string }) => void) => void
-  join_room: (roomCode: string, nickname: string, callback: (response: { success: boolean, error?: string, players?: Player[], settings?: RoomSettings }) => void) => void
+  join_room: (roomCode: string, nickname: string, callback: (response: { success: boolean, error?: string, players?: Player[], settings?: RoomSettings, role?: PlayerRole }) => void) => void
   submit_cards: (roomCode: string, selections: CardSelection, callback: (response: { success: boolean, error?: string }) => void) => void
   start_game: (roomCode: string) => void
   submit_vote: (roomCode: string, targetPlayerId: string) => void

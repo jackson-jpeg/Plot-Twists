@@ -9,6 +9,12 @@ import { getFilteredContent, getGreenRoomQuestion } from './lib/content'
 import { v4 as uuidv4 } from 'uuid'
 import Anthropic from '@anthropic-ai/sdk'
 import { ScriptSchema } from './lib/schema'
+import { configureSecurityMiddleware, validateEnvironment } from './server/middleware/security'
+import { SocketRateLimiter } from './server/middleware/rateLimiter'
+import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname } from './server/utils/validation'
+
+// Validate environment on startup
+validateEnvironment()
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = dev ? 'localhost' : '0.0.0.0'
@@ -41,9 +47,14 @@ function generateRoomCode(): string {
   return code
 }
 
-// Sanitize user input
+// Socket.io rate limiters
+const roomCreationLimiter = new SocketRateLimiter(10, 5 * 60 * 1000) // 10 rooms per 5 minutes
+const scriptGenerationLimiter = new SocketRateLimiter(20, 10 * 60 * 1000) // 20 scripts per 10 minutes
+const joinRoomLimiter = new SocketRateLimiter(30, 60 * 1000) // 30 joins per minute
+
+// Sanitize user input (use enhanced version from utils)
 function sanitizeInput(input: string): string {
-  return input.trim().slice(0, 50).replace(/[<>]/g, '')
+  return sanitizeUserInput(input, 50)
 }
 
 // Clean up inactive rooms (runs every 5 minutes)
@@ -563,6 +574,10 @@ function getGreenRoomTrivia(setting: string): string {
 
 app.prepare().then(() => {
   const expressApp = express()
+
+  // Configure security middleware
+  configureSecurityMiddleware(expressApp)
+
   const server = createServer(expressApp)
 
   const io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(server, {
@@ -617,6 +632,13 @@ app.prepare().then(() => {
 
     // Create room
     socket.on('create_room', (settings, callback) => {
+      // Rate limiting
+      if (!roomCreationLimiter.check(socket.id)) {
+        console.warn(`Rate limit exceeded for room creation: ${socket.id}`)
+        callback({ success: false, error: 'Too many room creation attempts. Please try again later.' })
+        return
+      }
+
       try {
         const code = generateRoomCode()
         const hostPlayer: Player = {
@@ -656,7 +678,28 @@ app.prepare().then(() => {
 
     // Join room
     socket.on('join_room', (roomCode, nickname, callback) => {
+      // Rate limiting
+      if (!joinRoomLimiter.check(socket.id)) {
+        console.warn(`Rate limit exceeded for join room: ${socket.id}`)
+        callback({ success: false, error: 'Too many join attempts. Please slow down.' })
+        return
+      }
+
       try {
+        // Validate room code format
+        if (!isValidRoomCode(roomCode)) {
+          console.log(`Invalid room code format: ${roomCode}`)
+          callback({ success: false, error: 'Invalid room code format' })
+          return
+        }
+
+        // Validate nickname
+        if (!isValidNickname(nickname)) {
+          console.log(`Invalid nickname: ${nickname}`)
+          callback({ success: false, error: 'Invalid nickname. Please use 1-50 characters.' })
+          return
+        }
+
         const upperRoomCode = roomCode.toUpperCase()
         console.log(`Join attempt - Room: ${upperRoomCode}, Nickname: ${nickname}`)
         console.log(`Available rooms:`, Array.from(rooms.keys()))
@@ -1104,6 +1147,16 @@ app.prepare().then(() => {
 
   // Helper function to start script generation
   async function startScriptGeneration(room: Room, io: SocketIOServer) {
+    // Rate limiting for script generation (use host socket ID)
+    const hostSocketId = room.host.socketId
+    if (!scriptGenerationLimiter.check(hostSocketId)) {
+      console.warn(`Script generation rate limit exceeded for room ${room.code}`)
+      io.to(room.code).emit('error', 'Too many script generation requests. Please wait a moment.')
+      room.gameState = 'SELECTION'
+      io.to(room.code).emit('game_state_change', 'SELECTION')
+      return
+    }
+
     room.gameState = 'LOADING'
     io.to(room.code).emit('game_state_change', 'LOADING')
 

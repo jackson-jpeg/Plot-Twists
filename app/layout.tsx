@@ -2,12 +2,19 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { SocketProvider } from '@/contexts/SocketContext'
 import { Analytics } from '@vercel/analytics/react'
+import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 
 export const metadata: Metadata = {
   title: 'Plot Twists - AI Improv Party Game',
   description: 'An AI-powered improv comedy game. Pick random cards, perform hilarious stories, vote for MVP. Perfect for theater kids and game nights!',
   keywords: ['improv', 'party game', 'comedy', 'AI', 'theater', 'multiplayer', 'social game'],
   authors: [{ name: 'Plot Twists' }],
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Plot Twists',
+  },
   openGraph: {
     title: 'Plot Twists - AI Improv Party Game',
     description: 'An AI-powered improv comedy game. Pick random cards, perform hilarious stories, vote for MVP.',
@@ -37,6 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <ServiceWorkerRegistration />
         <SocketProvider>
           {children}
         </SocketProvider>

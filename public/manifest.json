@@ -1,0 +1,57 @@
+{
+  "name": "Plot Twists - AI Improv Comedy Game",
+  "short_name": "Plot Twists",
+  "description": "AI-powered, real-time multiplayer improv comedy party game",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#ff6b9d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["entertainment", "games"],
+  "screenshots": [
+    {
+      "src": "/screenshot-host.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Host screen with teleprompter"
+    },
+    {
+      "src": "/screenshot-player.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Player screen with card selection"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Join Game",
+      "short_name": "Join",
+      "description": "Join an existing game with room code",
+      "url": "/join",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Host Game",
+      "short_name": "Host",
+      "description": "Create and host a new game",
+      "url": "/host",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

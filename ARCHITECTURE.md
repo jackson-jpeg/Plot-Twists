@@ -906,7 +906,147 @@ NEXT_PUBLIC_WS_URL=your-app.up.railway.app  # WebSocket URL
 
 ---
 
-## 13. Critical Files Reference
+## 13. Recent Improvements (2026-01-23)
+
+### ✅ Implemented
+
+#### Security Enhancements
+- **Helmet.js Integration**: Added comprehensive security headers
+  - Content Security Policy (CSP)
+  - X-Frame-Options: DENY
+  - X-Content-Type-Options: nosniff
+  - X-XSS-Protection
+  - Referrer-Policy
+- **Enhanced Input Validation**:
+  - Sanitization of user input (nicknames, room codes)
+  - XSS prevention (strip dangerous characters)
+  - Format validation for room codes and UUIDs
+  - Max length enforcement
+- **Environment Validation**: Automatic check for required environment variables on startup
+
+#### Rate Limiting
+- **HTTP Rate Limiting** (express-rate-limit):
+  - General API: 100 requests per 15 minutes
+  - Room creation: 10 rooms per 5 minutes per IP
+  - Script generation: 20 scripts per 10 minutes per IP
+- **Socket.io Rate Limiting**:
+  - Custom `SocketRateLimiter` class for per-connection limits
+  - Room creation: 10 attempts per 5 minutes
+  - Join room: 30 attempts per minute
+  - Script generation: 20 attempts per 10 minutes
+  - Automatic cleanup of stale rate limit records
+
+#### Code Organization
+- **New Module Structure**:
+  ```
+  server/
+  ├── middleware/
+  │   ├── rateLimiter.ts          # Rate limiting for HTTP & Socket.io
+  │   └── security.ts             # Helmet config & env validation
+  ├── utils/
+  │   ├── constants.ts            # App-wide constants
+  │   └── validation.ts           # Input sanitization & validation
+  └── services/
+      ├── room.service.ts         # Room management functions
+      ├── ai.service.ts           # Claude API integration
+      └── teleprompter.service.ts # Teleprompter sync logic
+  ```
+- **Benefits**:
+  - Improved maintainability
+  - Easier testing
+  - Clearer separation of concerns
+  - Reusable utilities
+
+#### Testing Infrastructure
+- **Jest Configuration**:
+  - ts-jest for TypeScript support
+  - jsdom environment for React components
+  - Coverage thresholds (50% across all metrics)
+  - Test scripts: `test`, `test:watch`, `test:unit`
+- **Unit Tests Created**:
+  - `validation.test.ts`: Input sanitization, room code validation, nickname validation
+  - `rateLimiter.test.ts`: Socket rate limiter functionality
+- **Test Coverage**: Initial tests for critical security and validation functions
+
+#### PWA (Progressive Web App)
+- **Manifest.json**:
+  - Standalone display mode
+  - App icons (192x192, 512x512)
+  - Theme colors
+  - Shortcuts (Join Game, Host Game)
+  - Screenshots for app stores
+- **Service Worker** (`sw.js`):
+  - Cache-first strategy for static assets
+  - Network-first with cache fallback for dynamic content
+  - Automatic cache cleanup on updates
+  - Offline support for core pages
+- **Mobile Enhancements**:
+  - Apple Web App capable
+  - Status bar styling
+  - Portrait orientation lock
+  - Service worker registration in production
+
+#### Dependencies Added
+```json
+{
+  "dependencies": {
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.1.0",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "ts-jest": "^29.2.5"
+  }
+}
+```
+
+### Impact Assessment
+
+**Security**: 🔴 High Impact
+- XSS and injection attack prevention
+- Rate limiting prevents API abuse and cost overruns
+- Environment validation catches misconfigurations early
+
+**Developer Experience**: 🟡 Medium Impact
+- Cleaner code organization
+- Testing infrastructure enables confidence in changes
+- Modular structure simplifies debugging
+
+**User Experience**: 🟢 Low-Medium Impact
+- PWA enables "Add to Home Screen" on mobile
+- Offline support for better reliability
+- Faster loading with service worker caching
+
+### Files Added/Modified
+
+**New Files**:
+- `server/middleware/rateLimiter.ts`
+- `server/middleware/security.ts`
+- `server/utils/constants.ts`
+- `server/utils/validation.ts`
+- `server/services/room.service.ts`
+- `server/services/ai.service.ts`
+- `server/services/teleprompter.service.ts`
+- `public/manifest.json`
+- `public/sw.js`
+- `components/ServiceWorkerRegistration.tsx`
+- `jest.config.js`
+- `jest.setup.js`
+- `__tests__/unit/server/utils/validation.test.ts`
+- `__tests__/unit/server/middleware/rateLimiter.test.ts`
+
+**Modified Files**:
+- `server.ts` - Added rate limiting, security middleware, enhanced validation
+- `package.json` - Added dependencies and test scripts
+- `app/layout.tsx` - Added PWA meta tags and service worker registration
+
+---
+
+## 14. Critical Files Reference
 
 | File | Lines | Purpose | Update Frequency |
 |------|-------|---------|------------------|
@@ -927,6 +1067,7 @@ NEXT_PUBLIC_WS_URL=your-app.up.railway.app  # WebSocket URL
 
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
+| 2026-01-23 | 1.1 | Added security enhancements, rate limiting, testing infrastructure, PWA support, code organization | Claude |
 | 2026-01-23 | 1.0 | Initial architecture documentation | Claude |
 
 ---

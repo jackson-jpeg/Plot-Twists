@@ -1046,6 +1046,92 @@ NEXT_PUBLIC_WS_URL=your-app.up.railway.app  # WebSocket URL
 
 ---
 
+## 13.2. UX Improvements (2026-01-23)
+
+### ✅ Card Selection Enhancements
+
+#### "Shuffle All" Button
+- **Feature**: One-click random selection of all three cards
+- **Location**: Card selection screen (appears when not in custom mode)
+- **Visual**: Gradient button with dice emoji (🎲)
+- **Feedback**:
+  - Mobile vibration pattern (50ms × 3)
+  - Success toast notification
+- **Impact**: Reduces decision paralysis, speeds up game start
+
+**Code Location**: `app/join/page.tsx:371-402`
+
+#### Progress Indicator
+- **Feature**: Real-time visual feedback showing selection progress
+- **Display**:
+  - 3 circles (one per card type)
+  - Filled circles = selected (green)
+  - Empty circles = not selected (gray)
+  - Text counter: "X/3"
+- **Location**: Top-right of "Pick Your Cards" header
+- **Animation**: Smooth scale transition on selection
+
+**Code Location**: `app/join/page.tsx:368-382`
+
+#### Haptic Feedback
+- **Feature**: Mobile vibration when selecting cards
+- **Trigger**: Each card selection from carousel
+- **Pattern**: Single 50ms vibration
+- **Devices**: Mobile browsers supporting Navigator.vibrate API
+- **Graceful Degradation**: Silent on unsupported devices
+
+**Code Location**: `app/join/page.tsx:472-475, 527-530, 581-584`
+
+#### Selection Preview Box
+- **Feature**: Live preview of selected cards
+- **Display**: Compact card showing:
+  - Character (🎭)
+  - Setting (🏛️)
+  - Circumstance (⚡)
+- **Styling**: Highlighted background with accent border
+- **Animation**: Spring animation on appearance
+- **Updates**: Real-time as selections change
+
+**Code Location**: `app/join/page.tsx:595-622`
+
+#### Enhanced Submit Button
+- **Visual States**:
+  - **Incomplete** (< 3 cards):
+    - Opacity 50%
+    - Text shows "Submit Cards (X/3)"
+    - Disabled state
+  - **Complete** (3/3 cards):
+    - Full opacity
+    - Text shows "Submit Cards - Ready!"
+    - Pulsing glow animation
+    - Enabled state
+- **Animation**: Infinite pulse effect when ready
+- **Accessibility**: Clear visual indication of readiness
+
+**Code Location**: `app/join/page.tsx:624-652`
+
+### Impact Assessment
+
+**User Experience**: 🟢 High Impact
+- **Reduces friction**: "Shuffle All" speeds up selection for indecisive players
+- **Clear feedback**: Progress indicator prevents confusion
+- **Mobile-first**: Haptic feedback enhances touch interaction
+- **Transparency**: Preview box builds confidence before submission
+
+**Technical Risk**: 🟢 Very Low
+- All features are additive (no breaking changes)
+- Graceful degradation for unsupported browsers
+- No backend changes required
+- Build tests pass
+
+**Performance**: 🟢 Excellent
+- Lightweight animations (Framer Motion)
+- No additional API calls
+- Client-side only logic
+- Minimal re-renders
+
+---
+
 ## 14. Critical Files Reference
 
 | File | Lines | Purpose | Update Frequency |
@@ -1067,6 +1153,7 @@ NEXT_PUBLIC_WS_URL=your-app.up.railway.app  # WebSocket URL
 
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
+| 2026-01-23 | 1.2 | Enhanced card selection UX with "Shuffle All", progress indicators, haptic feedback, and selection preview | Claude |
 | 2026-01-23 | 1.1 | Added security enhancements, rate limiting, testing infrastructure, PWA support, code organization | Claude |
 | 2026-01-23 | 1.0 | Initial architecture documentation | Claude |
 

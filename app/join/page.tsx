@@ -357,11 +357,71 @@ function JoinPageContent() {
             className="container max-w-2xl"
           >
             <div className="card">
-              <h1 className="text-3xl font-display text-center mb-8" style={{ color: 'var(--color-text-primary)' }}>
-                {customInputActive.character || customInputActive.setting || customInputActive.circumstance
-                  ? '✎ Writer\'s Room'
-                  : '🎴 Pick Your Cards'}
-              </h1>
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-3xl font-display" style={{ color: 'var(--color-text-primary)', marginBottom: 0 }}>
+                  {customInputActive.character || customInputActive.setting || customInputActive.circumstance
+                    ? '✎ Writer\'s Room'
+                    : '🎴 Pick Your Cards'}
+                </h1>
+
+                {/* Progress Indicator */}
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    {[selection.character, selection.setting, selection.circumstance].map((value, index) => (
+                      <div
+                        key={index}
+                        className="w-3 h-3 rounded-full transition-all duration-300"
+                        style={{
+                          background: value ? 'var(--color-success)' : 'var(--color-border)',
+                          transform: value ? 'scale(1)' : 'scale(0.8)'
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                    {[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3
+                  </span>
+                </div>
+              </div>
+
+              {/* Feeling Lucky Button */}
+              {!customInputActive.character && !customInputActive.setting && !customInputActive.circumstance && (
+                <motion.button
+                  onClick={() => {
+                    if (availableCards.characters.length && availableCards.settings.length && availableCards.circumstances.length) {
+                      const randomCharacter = availableCards.characters[Math.floor(Math.random() * availableCards.characters.length)]
+                      const randomSetting = availableCards.settings[Math.floor(Math.random() * availableCards.settings.length)]
+                      const randomCircumstance = availableCards.circumstances[Math.floor(Math.random() * availableCards.circumstances.length)]
+
+                      setSelection({
+                        character: randomCharacter,
+                        setting: randomSetting,
+                        circumstance: randomCircumstance
+                      })
+
+                      if ('vibrate' in navigator) {
+                        navigator.vibrate([50, 50, 50])
+                      }
+
+                      toast.success('Shuffled! 🎲')
+                    }
+                  }}
+                  className="btn btn-ghost w-full mb-6"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--color-highlight-pink), var(--color-highlight-yellow))',
+                    border: '2px solid var(--color-accent)',
+                    fontWeight: 'bold'
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <span>🎲</span>
+                  <span>Feeling Lucky? Shuffle All!</span>
+                </motion.button>
+              )}
 
               <div className="stack">
                 {/* Character Input */}
@@ -408,7 +468,12 @@ function JoinPageContent() {
                       icon="🎭"
                       options={availableCards.characters}
                       value={selection.character}
-                      onChange={(value) => setSelection({ ...selection, character: value })}
+                      onChange={(value) => {
+                        setSelection({ ...selection, character: value })
+                        if ('vibrate' in navigator) {
+                          navigator.vibrate(50)
+                        }
+                      }}
                       color="var(--color-accent)"
                     />
                   )}
@@ -457,7 +522,12 @@ function JoinPageContent() {
                       icon="🏛️"
                       options={availableCards.settings}
                       value={selection.setting}
-                      onChange={(value) => setSelection({ ...selection, setting: value })}
+                      onChange={(value) => {
+                        setSelection({ ...selection, setting: value })
+                        if ('vibrate' in navigator) {
+                          navigator.vibrate(50)
+                        }
+                      }}
                       color="var(--color-accent-2)"
                     />
                   )}
@@ -506,7 +576,12 @@ function JoinPageContent() {
                       icon="⚡"
                       options={availableCards.circumstances}
                       value={selection.circumstance}
-                      onChange={(value) => setSelection({ ...selection, circumstance: value })}
+                      onChange={(value) => {
+                        setSelection({ ...selection, circumstance: value })
+                        if ('vibrate' in navigator) {
+                          navigator.vibrate(50)
+                        }
+                      }}
                       color="var(--color-warning)"
                     />
                   )}
@@ -518,16 +593,69 @@ function JoinPageContent() {
                   </div>
                 )}
 
+                {/* Selection Preview */}
+                {(selection.character || selection.setting || selection.circumstance) && (
+                  <motion.div
+                    className="p-4 rounded-lg"
+                    style={{ background: 'var(--color-highlight)', border: '2px solid var(--color-accent)' }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 200 }}
+                  >
+                    <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>YOUR SELECTION:</p>
+                    <div className="text-sm space-y-1">
+                      {selection.character && (
+                        <p style={{ color: 'var(--color-text-primary)' }}>
+                          <span className="font-bold">🎭 Character:</span> {selection.character}
+                        </p>
+                      )}
+                      {selection.setting && (
+                        <p style={{ color: 'var(--color-text-primary)' }}>
+                          <span className="font-bold">🏛️ Setting:</span> {selection.setting}
+                        </p>
+                      )}
+                      {selection.circumstance && (
+                        <p style={{ color: 'var(--color-text-primary)' }}>
+                          <span className="font-bold">⚡ Circumstance:</span> {selection.circumstance}
+                        </p>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+
                 <motion.button
                   onClick={handleSubmitCards}
                   disabled={!selection.character || !selection.setting || !selection.circumstance}
                   className="btn btn-primary btn-large w-full"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  style={{ marginTop: '24px' }}
+                  style={{
+                    marginTop: '24px',
+                    opacity: (!selection.character || !selection.setting || !selection.circumstance) ? 0.5 : 1
+                  }}
+                  animate={
+                    (selection.character && selection.setting && selection.circumstance)
+                      ? {
+                          boxShadow: [
+                            '0 0 0 0 rgba(245, 158, 66, 0)',
+                            '0 0 0 10px rgba(245, 158, 66, 0)',
+                            '0 0 0 0 rgba(245, 158, 66, 0)'
+                          ]
+                        }
+                      : {}
+                  }
+                  transition={
+                    (selection.character && selection.setting && selection.circumstance)
+                      ? { duration: 2, repeat: Infinity }
+                      : {}
+                  }
                 >
                   <span>✨</span>
-                  <span>Submit Cards</span>
+                  <span>
+                    {(!selection.character || !selection.setting || !selection.circumstance)
+                      ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)`
+                      : 'Submit Cards - Ready!'}
+                  </span>
                 </motion.button>
               </div>
             </div>

@@ -86,6 +86,29 @@ export interface Card {
   imageUrl?: string
 }
 
+// For creating cards (id is optional since it's generated server-side)
+export interface CardInput {
+  id?: string
+  name: string
+  description?: string
+  tags?: string[]
+  imageUrl?: string
+}
+
+// Type for creating card packs (uses CardInput instead of Card)
+export interface CardPackInput {
+  name: string
+  description: string
+  author: string
+  theme: string
+  isMature: boolean
+  isBuiltIn: boolean
+  isPublic: boolean
+  characters: CardInput[]
+  settings: CardInput[]
+  circumstances: CardInput[]
+}
+
 export interface CardPack {
   id: string
   name: string
@@ -318,7 +341,7 @@ export interface ClientToServerEvents {
   // Feature 3: Card Pack Events
   list_card_packs: (callback: (response: { success: boolean, packs?: CardPackMetadata[], error?: string }) => void) => void
   select_card_pack: (roomCode: string, packId: string, callback: (response: { success: boolean, error?: string }) => void) => void
-  create_card_pack: (pack: Omit<CardPack, 'id' | 'downloads' | 'rating' | 'ratingCount' | 'createdAt' | 'updatedAt'>, callback: (response: { success: boolean, packId?: string, error?: string }) => void) => void
+  create_card_pack: (pack: CardPackInput, callback: (response: { success: boolean, packId?: string, error?: string }) => void) => void
   rate_card_pack: (packId: string, rating: number, callback: (response: { success: boolean, error?: string }) => void) => void
 
   // Feature 4: Audio Events

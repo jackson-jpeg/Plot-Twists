@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { CardPackMetadata } from '@/lib/types'
+import { CardPackCreator } from './CardPackCreator'
 
 interface CardPackSelectorProps {
   roomCode?: string
@@ -27,6 +28,7 @@ export function CardPackSelector({
   const [loading, setLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showCreator, setShowCreator] = useState(false)
 
   // Fetch available packs
   const fetchPacks = useCallback(() => {
@@ -88,7 +90,18 @@ export function CardPackSelector({
     rating: 5.0
   }
 
+  const handlePackCreated = (packId: string) => {
+    fetchPacks() // Refresh the pack list
+    selectPack(packId) // Auto-select the new pack
+  }
+
   return (
+    <>
+    <CardPackCreator
+      isOpen={showCreator}
+      onClose={() => setShowCreator(false)}
+      onCreated={handlePackCreated}
+    />
     <div className="bg-gray-900/50 rounded-xl overflow-hidden">
       {/* Header - always visible */}
       <button
@@ -182,7 +195,7 @@ export function CardPackSelector({
 
                   {showCreateButton && (
                     <button
-                      onClick={() => {/* TODO: Open pack creator modal */}}
+                      onClick={() => setShowCreator(true)}
                       className="w-full p-4 rounded-xl border-2 border-dashed border-gray-700 text-gray-400 hover:border-purple-500 hover:text-purple-400 transition-colors"
                     >
                       + Create Custom Pack
@@ -195,5 +208,6 @@ export function CardPackSelector({
         )}
       </AnimatePresence>
     </div>
+    </>
   )
 }

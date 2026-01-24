@@ -6,7 +6,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import * as fs from 'fs'
 import * as path from 'path'
-import type { CardPack, CardPackMetadata, Card } from '../../lib/types'
+import type { CardPack, CardPackMetadata, Card, CardPackInput } from '../../lib/types'
 
 // In-memory storage for card packs (persisted to JSON file)
 const cardPacks = new Map<string, CardPack>()
@@ -155,7 +155,7 @@ export function getPackCards(packId: string, isMature: boolean): {
  * Create a new card pack
  */
 export function createCardPack(
-  packData: Omit<CardPack, 'id' | 'downloads' | 'rating' | 'ratingCount' | 'createdAt' | 'updatedAt'>
+  packData: CardPackInput
 ): { success: boolean, packId?: string, error?: string } {
   // Validate pack data
   if (!packData.name || packData.name.trim().length < 3) {

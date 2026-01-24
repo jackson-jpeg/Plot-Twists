@@ -3,13 +3,18 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, GameState, Script, RoomSettings, GameResults } from '@/lib/types'
+import type { Player, GameState, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings } from '@/lib/types'
 import { QRCodeSVG } from 'qrcode.react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useConfetti } from '@/hooks/useConfetti'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
 import { downloadScript, copyScriptToClipboard, getCharactersInScene } from '@/lib/scriptUtils'
+import { ScriptCustomizationPanel } from '@/components/ScriptCustomizationPanel'
+import { CardPackSelector } from '@/components/CardPackSelector'
+import { AudioSettingsPanel } from '@/components/AudioSettingsPanel'
+import { AudienceReactionBar } from '@/components/AudienceReactionBar'
+import { PlotTwistVoting } from '@/components/PlotTwistVoting'
 
 // Helper function to get mood emoji and color
 function getMoodIndicator(mood: string) {
@@ -43,6 +48,23 @@ export default function HostPage() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const roomCreatedRef = React.useRef(false)
+  const [scriptCustomization, setScriptCustomization] = useState<ScriptCustomization>({
+    comedyStyle: 'witty',
+    scriptLength: 'standard',
+    difficulty: 'intermediate',
+    physicalComedy: 'minimal',
+    enableCallbacks: true
+  })
+  const [audioSettings, setAudioSettings] = useState<AudioSettings>({
+    voiceEnabled: false,
+    voiceSettings: { enabled: false, provider: 'browser', speed: 1.0, pitch: 1.0, volume: 0.8 },
+    soundEffectsEnabled: true,
+    soundEffectsVolume: 0.5,
+    ambienceEnabled: false,
+    ambienceVolume: 0.3,
+    turnChimeEnabled: true
+  })
+  const [selectedPackId, setSelectedPackId] = useState('standard')
 
   useEffect(() => {
     if (!socket || !isConnected || roomCreatedRef.current) return
@@ -88,7 +110,15 @@ export default function HostPage() {
     }
   }, [socket, isConnected])
 
-  const startGame = () => socket?.emit('start_game', roomCode)
+  const startGame = () => {
+    // Send customization settings along with start game command
+    socket?.emit('update_room_settings', roomCode, {
+      scriptCustomization,
+      audioSettings,
+      cardPackId: selectedPackId
+    })
+    socket?.emit('start_game', roomCode)
+  }
   const toggleMature = () => {
     const newSettings = { ...settings, isMature: !settings.isMature }
     setSettings(newSettings)
@@ -452,6 +482,23 @@ export default function HostPage() {
                 </motion.button>
               </div>
 
+              {/* New Feature Panels */}
+              <CardPackSelector
+                roomCode={roomCode}
+                selectedPackId={selectedPackId}
+                onSelect={setSelectedPackId}
+              />
+
+              <ScriptCustomizationPanel
+                customization={scriptCustomization}
+                onChange={setScriptCustomization}
+              />
+
+              <AudioSettingsPanel
+                settings={audioSettings}
+                onChange={setAudioSettings}
+              />
+
               <AnimatePresence>
                 {((settings.gameMode === 'SOLO' && nonHostPlayers.length === 1) ||
                   (settings.gameMode === 'HEAD_TO_HEAD' && nonHostPlayers.length === 2) ||
@@ -644,6 +691,9 @@ export default function HostPage() {
             exit={{ opacity: 0 }}
             className="container max-w-5xl"
           >
+            {/* Audience Interaction Components */}
+            <AudienceReactionBar roomCode={roomCode} isPerforming={true} isHost={true} />
+            <PlotTwistVoting roomCode={roomCode} isHost={true} />
             {/* Meta Info */}
             <motion.div
               className="mb-6"

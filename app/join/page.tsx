@@ -13,6 +13,8 @@ import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
 import { CardCarousel } from '@/components/CardCarousel'
 import { downloadScript, copyScriptToClipboard, getCharactersInScene } from '@/lib/scriptUtils'
+import { AudienceReactionBar } from '@/components/AudienceReactionBar'
+import { PlotTwistVoting } from '@/components/PlotTwistVoting'
 
 // Helper function to get mood emoji and color
 function getMoodIndicator(mood: string) {
@@ -731,6 +733,9 @@ function JoinPageContent() {
             exit={{ opacity: 0 }}
             className="min-h-screen flex flex-col"
           >
+            {/* Audience Interaction - show for spectators and players not currently speaking */}
+            <AudienceReactionBar roomCode={roomCode.toUpperCase()} isPerforming={true} isHost={false} />
+            <PlotTwistVoting roomCode={roomCode.toUpperCase()} isHost={false} />
             {/* Progress Bar */}
             <div className="p-4" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
               <div className="flex items-center justify-between text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>

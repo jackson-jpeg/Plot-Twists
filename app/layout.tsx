@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { SocketProvider } from '@/contexts/SocketContext'
+import { AuthProvider } from '@/contexts/AuthContext'
 import { Analytics } from '@vercel/analytics/react'
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 
@@ -45,9 +46,11 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <ServiceWorkerRegistration />
-        <SocketProvider>
-          {children}
-        </SocketProvider>
+        <AuthProvider>
+          <SocketProvider>
+            {children}
+          </SocketProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

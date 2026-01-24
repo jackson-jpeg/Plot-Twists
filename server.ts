@@ -60,6 +60,20 @@ import {
   getAmbienceTrack,
   createDefaultAudioSettings
 } from './server/services/audio.service'
+import {
+  saveGame,
+  getGame,
+  getGameByShareCode,
+  getPlayerGames,
+  shareGame,
+  exportGameAsText
+} from './server/services/gameHistory.service'
+import {
+  getPlayerStats,
+  recordGameResult,
+  getLeaderboard,
+  unlockAchievement
+} from './server/services/playerStats.service'
 
 // Validate environment on startup
 validateEnvironment()
@@ -1476,6 +1490,81 @@ app.prepare().then(() => {
       callback({ success: true, audioUrl: undefined })
     })
 
+    // ============================================================
+    // FEATURE 5: Game History Events
+    // ============================================================
+
+    // Get game history for a player
+    socket.on('get_game_history', (playerId, limit, callback) => {
+      try {
+        const games = getPlayerGames(playerId, limit)
+        callback({ success: true, games })
+      } catch (error) {
+        console.error('Error fetching game history:', error)
+        callback({ success: false, error: 'Failed to load game history' })
+      }
+    })
+
+    // Get specific game details
+    socket.on('get_game_details', (gameId, callback) => {
+      try {
+        const game = getGame(gameId)
+        if (!game) {
+          callback({ success: false, error: 'Game not found' })
+          return
+        }
+        callback({ success: true, game })
+      } catch (error) {
+        console.error('Error fetching game details:', error)
+        callback({ success: false, error: 'Failed to load game' })
+      }
+    })
+
+    // Share a game
+    socket.on('share_game', (gameId, callback) => {
+      try {
+        const result = shareGame(gameId)
+        if (result.success && result.shareCode) {
+          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://plottwists.app'
+          callback({
+            success: true,
+            shareUrl: `${baseUrl}/replay/${result.shareCode}`
+          })
+        } else {
+          callback({ success: false, error: result.error })
+        }
+      } catch (error) {
+        console.error('Error sharing game:', error)
+        callback({ success: false, error: 'Failed to share game' })
+      }
+    })
+
+    // ============================================================
+    // FEATURE 6: Player Stats Events
+    // ============================================================
+
+    // Get player stats
+    socket.on('get_player_stats', (playerId, callback) => {
+      try {
+        const stats = getPlayerStats(playerId)
+        callback({ success: true, stats })
+      } catch (error) {
+        console.error('Error fetching player stats:', error)
+        callback({ success: false, error: 'Failed to load stats' })
+      }
+    })
+
+    // Get leaderboard
+    socket.on('get_leaderboard', (category, limit, callback) => {
+      try {
+        const entries = getLeaderboard(category, limit)
+        callback({ success: true, entries })
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error)
+        callback({ success: false, error: 'Failed to load leaderboard' })
+      }
+    })
+
     // Handle disconnect
     socket.on('disconnect', (reason) => {
       console.log('Client disconnected:', socket.id, 'Reason:', reason)
@@ -1702,6 +1791,74 @@ app.prepare().then(() => {
       allResults: results
     })
     io.to(room.code).emit('game_state_change', 'RESULTS')
+
+    // Save game to history and update player stats
+    try {
+      if (room.script) {
+        // Get setting and circumstance from selections
+        const allSelections = Array.from(room.selections.values())
+        const setting = allSelections[0]?.setting || 'Unknown'
+        const circumstance = allSelections[0]?.circumstance || 'Unknown'
+
+        // Calculate game duration (approximate)
+        const duration = Math.floor((Date.now() - room.createdAt) / 1000)
+
+        // Get reaction count
+        const reactionCount = room.audienceInteraction
+          ? Object.values(room.audienceInteraction.reactionCounts).reduce((a, b) => a + b, 0)
+          : 0
+
+        // Save the game
+        const savedGame = saveGame(
+          room.code,
+          room.script,
+          Array.from(room.players.values()),
+          room.gameMode,
+          { winner, allResults: results },
+          {
+            setting,
+            circumstance,
+            cardPackId: room.cardPackId || 'standard',
+            comedyStyle: room.scriptCustomization?.comedyStyle || 'witty',
+            duration,
+            audienceReactionCount: reactionCount,
+            plotTwistsUsed: room.audienceInteraction?.plotTwistHistory || []
+          }
+        )
+
+        console.log(`Saved game to history: ${savedGame.id}`)
+
+        // Update player stats
+        const players = Array.from(room.players.values()).filter(p => p.role === 'PLAYER')
+        for (const player of players) {
+          const voteResult = results.find(r => r.playerId === player.id)
+          const newAchievements = recordGameResult(
+            player.id,
+            player.nickname,
+            savedGame,
+            {
+              character: player.assignedCharacter || '',
+              votesReceived: voteResult?.votes || 0,
+              isWinner: winner?.playerId === player.id,
+              reactionsReceived: Math.floor(reactionCount / players.length) // Approximate per-player
+            }
+          )
+
+          // Notify player of new achievements
+          if (newAchievements.length > 0) {
+            const playerSocket = io.sockets.sockets.get(player.socketId)
+            if (playerSocket) {
+              // Emit achievement unlocked events (client can show toast)
+              newAchievements.forEach(achievement => {
+                playerSocket.emit('achievement_unlocked' as never, achievement)
+              })
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error saving game to history:', error)
+    }
   }
 
   // Handle Next.js requests

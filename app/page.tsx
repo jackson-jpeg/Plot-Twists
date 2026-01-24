@@ -24,6 +24,20 @@ export default function Home() {
 
   return (
     <main className="page-container items-center justify-center home-nostalgic">
+      {/* Profile Button */}
+      <motion.button
+        onClick={() => router.push('/profile')}
+        className="fixed top-4 right-4 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg shadow-lg hover:shadow-xl transition-shadow"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.5, type: 'spring' }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        title="Your Profile & Stats"
+      >
+        <span className="text-2xl">👤</span>
+      </motion.button>
+
       <div className="container max-w-3xl">
 
         {/* Nostalgic header with doodles */}

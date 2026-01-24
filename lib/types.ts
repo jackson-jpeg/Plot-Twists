@@ -316,6 +316,9 @@ export interface ServerToClientEvents {
   ambience_start: (trackUrl: string) => void
   ambience_stop: () => void
   turn_chime: (playerId: string) => void
+
+  // Feature 6: Player Stats Events
+  achievement_unlocked: (achievement: Achievement) => void
 }
 
 export interface ClientToServerEvents {
@@ -348,4 +351,128 @@ export interface ClientToServerEvents {
   update_audio_settings: (roomCode: string, settings: Partial<AudioSettings>) => void
   request_line_audio: (roomCode: string, lineIndex: number, callback: (response: { success: boolean, audioUrl?: string, error?: string }) => void) => void
   trigger_sound_effect: (roomCode: string, effect: SoundEffectType) => void
+
+  // Feature 5: Game History Events
+  get_game_history: (playerId: string, limit: number, callback: (response: { success: boolean, games?: SavedGame[], error?: string }) => void) => void
+  get_game_details: (gameId: string, callback: (response: { success: boolean, game?: SavedGame, error?: string }) => void) => void
+  share_game: (gameId: string, callback: (response: { success: boolean, shareUrl?: string, error?: string }) => void) => void
+
+  // Feature 6: Player Stats Events
+  get_player_stats: (playerId: string, callback: (response: { success: boolean, stats?: PlayerStats, error?: string }) => void) => void
+  get_leaderboard: (category: LeaderboardCategory, limit: number, callback: (response: { success: boolean, entries?: LeaderboardEntry[], error?: string }) => void) => void
+}
+
+// ============================================================
+// FEATURE 5: Game History & Replay System
+// ============================================================
+
+export interface SavedGamePlayer {
+  id: string
+  nickname: string
+  character: string
+  isHost: boolean
+  votesReceived: number
+  isWinner: boolean
+}
+
+export interface SavedGame {
+  id: string
+  title: string // Script title
+  synopsis: string
+  playedAt: number
+  duration: number // in seconds
+  roomCode: string
+  gameMode: GameMode
+  players: SavedGamePlayer[]
+  script: Script
+  setting: string
+  circumstance: string
+  winner?: {
+    playerId: string
+    playerName: string
+    character: string
+  }
+  audienceReactionCount: number
+  plotTwistsUsed: string[]
+  cardPackUsed: string
+  comedyStyle: ComedyStyle
+  isPublic: boolean
+  shareCode?: string
+  views: number
+  likes: number
+}
+
+export interface GameHistoryFilters {
+  playerId?: string
+  gameMode?: GameMode
+  startDate?: number
+  endDate?: number
+  won?: boolean
+}
+
+// ============================================================
+// FEATURE 6: Player Stats & Achievements
+// ============================================================
+
+export type AchievementId =
+  | 'first_game'
+  | 'comedy_king'
+  | 'crowd_pleaser'
+  | 'plot_twist_survivor'
+  | 'versatile_actor'
+  | 'winning_streak_3'
+  | 'winning_streak_5'
+  | 'games_10'
+  | 'games_50'
+  | 'games_100'
+  | 'reactions_100'
+  | 'reactions_500'
+  | 'perfect_game'
+  | 'ensemble_master'
+  | 'solo_star'
+  | 'card_creator'
+  | 'trendsetter'
+
+export interface Achievement {
+  id: AchievementId
+  name: string
+  description: string
+  icon: string
+  rarity: 'common' | 'rare' | 'epic' | 'legendary'
+  unlockedAt?: number
+  progress?: number
+  target?: number
+}
+
+export interface PlayerStats {
+  playerId: string
+  nickname: string
+  gamesPlayed: number
+  gamesWon: number
+  winRate: number
+  totalVotesReceived: number
+  totalReactionsReceived: number
+  favoriteCharacter?: string
+  characterCounts: Record<string, number>
+  gameModeStats: {
+    solo: { played: number, won: number }
+    headToHead: { played: number, won: number }
+    ensemble: { played: number, won: number }
+  }
+  currentWinStreak: number
+  bestWinStreak: number
+  achievements: Achievement[]
+  recentGames: string[] // Game IDs
+  joinedAt: number
+  lastPlayedAt: number
+}
+
+export type LeaderboardCategory = 'wins' | 'games' | 'winRate' | 'reactions' | 'streak'
+
+export interface LeaderboardEntry {
+  rank: number
+  playerId: string
+  nickname: string
+  value: number
+  achievement?: AchievementId // Featured achievement to display
 }

@@ -350,6 +350,7 @@ export function createExamplePacks(): void {
     author: 'Plot Twists',
     theme: 'office',
     isMature: false,
+    isBuiltIn: false,
     isPublic: true,
     characters: [
       { id: uuidv4(), name: 'The Overbearing Boss', description: 'Thinks they\'re everyone\'s best friend' },
@@ -380,6 +381,7 @@ export function createExamplePacks(): void {
     author: 'Plot Twists',
     theme: 'scifi',
     isMature: false,
+    isBuiltIn: false,
     isPublic: true,
     characters: [
       { id: uuidv4(), name: 'The Grizzled Captain', description: 'Has seen too many red shirts die' },

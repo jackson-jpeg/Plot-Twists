@@ -67,7 +67,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        // @ts-expect-error - Dynamic import of optional Firebase dependency
         const firebaseAuth = await import('firebase/auth')
         const { onAuthStateChanged } = firebaseAuth
         const auth = getFirebaseAuth()
@@ -109,7 +108,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // @ts-expect-error - Dynamic import of optional Firebase dependency
       const firebaseAuth = await import('firebase/auth')
       const { signInWithEmailAndPassword } = firebaseAuth
       const auth = getFirebaseAuth()
@@ -127,7 +125,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // @ts-expect-error - Dynamic import of optional Firebase dependency
       const firebaseAuth = await import('firebase/auth')
       const { createUserWithEmailAndPassword, updateProfile } = firebaseAuth
       const auth = getFirebaseAuth()
@@ -146,7 +143,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      // @ts-expect-error - Dynamic import of optional Firebase dependency
       const firebaseAuth = await import('firebase/auth')
       const { signInWithPopup, GoogleAuthProvider } = firebaseAuth
       const auth = getFirebaseAuth()
@@ -163,7 +159,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!firebaseReady) return
 
     try {
-      // @ts-expect-error - Dynamic import of optional Firebase dependency
       const firebaseAuth = await import('firebase/auth')
       const { signOut: firebaseSignOut } = firebaseAuth
       const auth = getFirebaseAuth()

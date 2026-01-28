@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import type { ScriptCustomization, ComedyStyle, ScriptLength, ScriptDifficulty, PhysicalComedyLevel } from '@/lib/types'
+import type { ScriptCustomization, ComedyStyle, ScriptLength, ScriptDifficulty, PhysicalComedyLevel, GenrePack } from '@/lib/types'
+import { GENRE_PACK_INFO } from '@/lib/types'
 
 interface ScriptCustomizationPanelProps {
   customization?: ScriptCustomization
@@ -37,12 +38,20 @@ const PHYSICAL_LEVELS: { value: PhysicalComedyLevel; label: string }[] = [
   { value: 'heavy', label: 'Heavy' }
 ]
 
+const GENRE_PACKS: { value: GenrePack; label: string; icon: string; description: string }[] = Object.entries(GENRE_PACK_INFO).map(([key, info]) => ({
+  value: key as GenrePack,
+  label: info.name,
+  icon: info.icon,
+  description: info.description
+}))
+
 const DEFAULT_CUSTOMIZATION: ScriptCustomization = {
   comedyStyle: 'witty',
   scriptLength: 'standard',
   difficulty: 'intermediate',
   physicalComedy: 'minimal',
-  enableCallbacks: true
+  enableCallbacks: true,
+  genrePack: 'classic_comedy'
 }
 
 export function ScriptCustomizationPanel({
@@ -79,9 +88,10 @@ export function ScriptCustomizationPanel({
           <div>
             <h3 className="font-semibold text-white">Script Customization</h3>
             <p className="text-sm text-gray-400">
+              {GENRE_PACKS.find(g => g.value === local.genrePack)?.icon}{' '}
+              {GENRE_PACKS.find(g => g.value === local.genrePack)?.label} •{' '}
               {COMEDY_STYLES.find(s => s.value === local.comedyStyle)?.label} •{' '}
-              {SCRIPT_LENGTHS.find(l => l.value === local.scriptLength)?.label} •{' '}
-              {DIFFICULTIES.find(d => d.value === local.difficulty)?.label}
+              {SCRIPT_LENGTHS.find(l => l.value === local.scriptLength)?.label}
             </p>
           </div>
         </div>
@@ -124,6 +134,35 @@ export function ScriptCustomizationPanel({
             </div>
             <p className="text-xs text-gray-500 mt-2">
               {COMEDY_STYLES.find(s => s.value === local.comedyStyle)?.description}
+            </p>
+          </div>
+
+          {/* Genre Pack */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              Genre Style
+            </label>
+            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+              {GENRE_PACKS.map(genre => (
+                <button
+                  key={genre.value}
+                  onClick={() => handleChange('genrePack', genre.value)}
+                  disabled={disabled}
+                  className={`p-3 rounded-lg text-left transition-all ${
+                    local.genrePack === genre.value
+                      ? 'bg-purple-600 text-white ring-2 ring-purple-400'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  } disabled:opacity-50`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{genre.icon}</span>
+                    <span className="text-sm font-medium">{genre.label}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              {GENRE_PACKS.find(g => g.value === local.genrePack)?.description}
             </p>
           </div>
 

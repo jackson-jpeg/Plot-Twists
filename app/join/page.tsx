@@ -276,7 +276,48 @@ function JoinPageContent() {
                 className="btn btn-primary btn-large w-full"
               >
                 <span>🚀</span>
-                <span>Join</span>
+                <span>Join as Player</span>
+              </button>
+
+              <div className="flex items-center gap-3 mt-2">
+                <div className="flex-1 h-px" style={{ background: 'var(--color-surface-alt)' }} />
+                <span className="text-sm" style={{ color: 'var(--color-text-muted)' }}>or</span>
+                <div className="flex-1 h-px" style={{ background: 'var(--color-surface-alt)' }} />
+              </div>
+
+              <button
+                onClick={() => {
+                  if (!socket || !roomCode || !nickname) {
+                    toast.error('Please enter both room code and nickname')
+                    return
+                  }
+                  if (roomCode.length !== 4) {
+                    toast.error('Room code must be 4 characters')
+                    return
+                  }
+                  setError('')
+                  const upperRoomCode = roomCode.toUpperCase()
+                  socket.emit('join_as_spectator', upperRoomCode, nickname, (response) => {
+                    if (response.success) {
+                      setHasJoined(true)
+                      setMyRole('SPECTATOR')
+                      toast.success('Joined as spectator!')
+                      if (response.players) {
+                        setPlayers(response.players)
+                        const myPlayer = response.players.find(p => p.nickname === nickname && !p.isHost)
+                        if (myPlayer) setMyPlayerId(myPlayer.id)
+                      }
+                    } else {
+                      toast.error(response.error || 'Failed to join as spectator')
+                    }
+                  })
+                }}
+                disabled={!roomCode || !nickname}
+                className="btn btn-secondary w-full"
+                style={{ opacity: (!roomCode || !nickname) ? 0.5 : 1 }}
+              >
+                <span>👁️</span>
+                <span>Watch as Spectator</span>
               </button>
             </div>
           </div>

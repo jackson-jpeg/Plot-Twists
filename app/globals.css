@@ -1766,6 +1766,81 @@ button:focus-visible {
   opacity: 0.8;
 }
 
+/* Larger sticky note for content */
+.sticky-note-large {
+  background: #FFF4D6;
+  padding: var(--space-5);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #2A2722;
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.15),
+    0 6px 16px rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  position: relative;
+}
+
+.sticky-note-large::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 20px;
+  background: var(--color-accent-light);
+  border-radius: 1px;
+  box-shadow: var(--shadow-1);
+  opacity: 0.6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sticky-note-large {
+    background: #4A4530;
+    color: var(--color-text-primary);
+  }
+}
+
+/* Note card - like index card */
+.note-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
+  position: relative;
+  overflow: visible;
+}
+
+/* Polaroid card style */
+.polaroid-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  box-shadow:
+    0 2px 4px rgba(42, 39, 34, 0.1),
+    0 8px 16px rgba(42, 39, 34, 0.12);
+  position: relative;
+  overflow: visible;
+}
+
+/* Center tape piece */
+.tape-top-center {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 24px;
+  background: var(--color-accent-light);
+  border-top: 1px solid var(--color-accent);
+  border-bottom: 1px solid var(--color-accent);
+  box-shadow: var(--shadow-inset);
+  opacity: 0.5;
+  z-index: 2;
+  border-radius: 2px;
+}
+
 
 /* Back Button */
 .back-button {

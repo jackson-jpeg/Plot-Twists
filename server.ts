@@ -17,7 +17,8 @@ import type {
   ScriptCustomization,
   AudioSettings,
   CardPack,
-  SoundEffectType
+  SoundEffectType,
+  GenrePack
 } from './lib/types'
 import { getFilteredContent, getGreenRoomQuestion } from './lib/content'
 import { v4 as uuidv4 } from 'uuid'
@@ -74,6 +75,12 @@ import {
   getLeaderboard,
   unlockAchievement
 } from './server/services/playerStats.service'
+import {
+  generateLineAudio,
+  audioBufferToDataUrl,
+  isTTSAvailable,
+  getAvailableTTSProviders
+} from './server/services/tts.service'
 
 // Validate environment on startup
 validateEnvironment()
@@ -554,6 +561,201 @@ Write the scene where ${characters[0]} has stumbled into "${setting}" and must d
 Make the culture clash HILARIOUS.
 `
 
+  // Genre-specific instructions based on customization
+  const getGenreInstructions = (genre: GenrePack | undefined): string => {
+    if (!genre || genre === 'classic_comedy') return ''
+
+    const genrePrompts: Record<Exclude<GenrePack, 'classic_comedy'>, string> = {
+      horror_parody: `
+═══════════════════════════════════════
+GENRE: HORROR PARODY
+═══════════════════════════════════════
+Write this as a HORROR-COMEDY in the style of Scary Movie, Tucker & Dale vs Evil, or What We Do in the Shadows.
+
+HORROR TROPES TO PARODY:
+- Characters investigate strange noises instead of leaving
+- The phone/car/flashlight ALWAYS dies at the worst moment
+- Someone says "I'll be right back" (they won't be)
+- Creepy children, jump scares that are actually mundane, ominous warnings ignored
+- Characters split up for absolutely no good reason
+
+MOOD USAGE:
+- Use "whispering" for creepy warnings and ominous statements
+- Use "confused" when characters ignore obvious danger signs
+- Sudden shifts from "neutral" to "angry" for jump scare moments
+
+COMEDY APPROACH:
+- Characters are genre-aware but still make bad decisions
+- The monster/threat has mundane problems or complaints
+- Dramatic music stings described in dialogue ("Did you hear that ominous chord?")
+`,
+
+      soap_opera: `
+═══════════════════════════════════════
+GENRE: SOAP OPERA / TELENOVELA
+═══════════════════════════════════════
+Write this as a MELODRAMATIC SOAP OPERA in the style of Dynasty, Days of Our Lives, or any telenovela.
+
+SOAP OPERA ESSENTIALS:
+- DRAMATIC REVEALS ("I am... your FATHER!")
+- Secret twins, amnesia, faked deaths, stolen babies
+- Love triangles, forbidden affairs, dramatic slaps
+- Characters stare intensely before commercial breaks
+- Whispered scheming and overheard conversations
+
+MOOD USAGE:
+- "whispering" for scheming and secrets
+- "angry" for dramatic confrontations and slaps
+- Wild swings between moods in the same character
+
+DIALOGUE STYLE:
+- Over-the-top emotional declarations
+- Characters repeat dramatic news in disbelief ("You mean... the baby... is YOURS?!")
+- Dramatic pauses... indicated... like... this
+`,
+
+      nature_documentary: `
+═══════════════════════════════════════
+GENRE: NATURE DOCUMENTARY
+═══════════════════════════════════════
+Write this as a NATURE DOCUMENTARY narrated in the style of David Attenborough or Planet Earth.
+
+DOCUMENTARY STRUCTURE:
+- One character serves as the "Narrator" with an Attenborough-like voice
+- Other characters are "observed" as if they were wildlife
+- Mundane human activities described as fascinating animal behaviors
+
+NARRATOR LINES SHOULD:
+- Describe actions in present tense ("The human... approaches the refrigerator...")
+- Use nature documentary vocabulary (habitat, mating ritual, territorial display)
+- Maintain gravitas even when describing absurd things
+
+MOOD FOR NARRATOR: Always "neutral" (documentary calm)
+MOOD FOR SUBJECTS: Varies based on their "natural behaviors"
+`,
+
+      true_crime: `
+═══════════════════════════════════════
+GENRE: TRUE CRIME PODCAST
+═══════════════════════════════════════
+Write this as a TRUE CRIME PODCAST in the style of Serial or Making a Murderer.
+
+TRUE CRIME ELEMENTS:
+- A "Host" character narrates with dramatic pauses
+- Ominous foreshadowing ("Little did they know... this would be their last pizza order")
+- Interview segments with unreliable "witnesses"
+- Everything is treated as evidence of something sinister
+- Cliffhanger endings ("But that's not the strangest part...")
+
+DIALOGUE PATTERNS:
+- Host uses phrases like "What happened next... changed everything"
+- Witnesses are dramatic ("I'll never forget that Tuesday. Or was it Wednesday?")
+- Podcast ad-break style interruptions for comedy
+`,
+
+      film_noir: `
+═══════════════════════════════════════
+GENRE: FILM NOIR / HARD-BOILED DETECTIVE
+═══════════════════════════════════════
+Write this as FILM NOIR in the style of The Maltese Falcon or classic detective fiction.
+
+NOIR ESSENTIALS:
+- A world-weary protagonist with internal monologue
+- Femme fatales, shadowy figures, double-crosses
+- Everything described in rain, shadows, and cigarette smoke
+- Metaphors everywhere ("The night was darker than my ex-wife's coffee")
+
+DIALOGUE STYLE:
+- Hard-boiled one-liners and witty comebacks
+- Characters speak in metaphors constantly
+- Inner monologue from the protagonist
+- Everyone talks like they're in a 1940s movie
+`,
+
+      reality_tv: `
+═══════════════════════════════════════
+GENRE: REALITY TV SHOW
+═══════════════════════════════════════
+Write this as a REALITY TV SHOW in the style of The Bachelor, Survivor, or Real Housewives.
+
+REALITY TV STRUCTURE:
+- Mix of "live" action and "confessional" interviews
+- Mark confessionals: "CONFESSIONAL - [Character Name]:"
+- Characters behave differently in confessionals vs. with others
+- Alliances, backstabbing, and drama
+
+REALITY TV TROPES:
+- "I'm not here to make friends"
+- Villain edits vs. hero edits
+- "Can I steal you for a sec?"
+- Breaking the fourth wall in confessionals
+`,
+
+      infomercial: `
+═══════════════════════════════════════
+GENRE: INFOMERCIAL / AS SEEN ON TV
+═══════════════════════════════════════
+Write this as an INFOMERCIAL in the style of ShamWow or any "As Seen on TV" product.
+
+INFOMERCIAL STRUCTURE:
+- Over-enthusiastic host selling something (can be anything)
+- Terrible actors demonstrating the "old way" of doing things
+- "BUT WAIT, THERE'S MORE!" moments
+- Fake testimonials and incredible claims
+
+INFOMERCIAL LANGUAGE:
+- Rhetorical questions ("Are YOU tired of [mundane thing]?!")
+- Made-up statistics ("9 out of 10 doctors agree!")
+- Fake urgency ("Call in the next 15 minutes!")
+
+MOOD: Mostly "happy" (infomercial energy) with "confused" for struggling customers
+`,
+
+      courtroom_drama: `
+═══════════════════════════════════════
+GENRE: COURTROOM DRAMA
+═══════════════════════════════════════
+Write this as a COURTROOM DRAMA in the style of Law & Order or A Few Good Men.
+
+COURTROOM ESSENTIALS:
+- "OBJECTION!" (Sustained/Overruled)
+- Surprise witnesses and dramatic evidence reveals
+- Lawyer speeches to the jury
+- The truth coming out under cross-examination
+- Gasps from the gallery
+
+COURTROOM DIALOGUE PATTERNS:
+- "I'll allow it" / "I'll strike that from the record"
+- "Where were you on the night of [absurd event]?"
+- Building to a dramatic "YOU CAN'T HANDLE THE TRUTH" moment
+`,
+
+      sports_commentary: `
+═══════════════════════════════════════
+GENRE: SPORTS COMMENTARY
+═══════════════════════════════════════
+Write this as SPORTS COMMENTARY for a non-sport activity (like ESPN covering office work).
+
+COMMENTARY STRUCTURE:
+- Two commentators: Play-by-play and Color Commentary
+- Commentators describe mundane actions like athletic feats
+- Statistics, player histories, and "career highlights"
+- "Let's go to [Name] on the sidelines" for interviews
+
+COMMENTARY LANGUAGE:
+- Sports metaphors for non-sports ("He's really in the zone with that spreadsheet")
+- Made-up statistics ("She's batting .347 with the coffee machine this season")
+- Dramatic calls ("AND THE CROWD GOES WILD!")
+
+MOOD: Commentators are mostly "happy"/excited, participants are "confused"
+`
+    }
+
+    return genrePrompts[genre] || ''
+  }
+
+  const genreInstructions = getGenreInstructions(customization?.genrePack)
+
   const userMessage = `Write a scene using these ingredients:
 
 ═══════════════════════════════════════
@@ -563,9 +765,10 @@ CHARACTERS: ${characterList}
 SETTING: ${setting}
 CIRCUMSTANCE: ${circumstance}
 RATING: ${isMature ? '18+ (Adult comedy - profanity allowed, taboo topics fair game, SNL-level sharp writing)' : 'Family Friendly (Smart absurdist comedy for all ages - think peak Nickelodeon)'}
+${customization?.genrePack && customization.genrePack !== 'classic_comedy' ? `GENRE STYLE: ${customization.genrePack.replace(/_/g, ' ').toUpperCase()}` : ''}
 
 ${modeInstructions}
-
+${genreInstructions}
 ═══════════════════════════════════════
 SCRIPT REQUIREMENTS
 ═══════════════════════════════════════
@@ -868,6 +1071,97 @@ app.prepare().then(() => {
       } catch (error) {
         console.error('Error joining room:', error)
         callback({ success: false, error: 'Failed to join room' })
+      }
+    })
+
+    // Join room as spectator (explicit spectator join)
+    socket.on('join_as_spectator', (roomCode, nickname, callback) => {
+      // Rate limiting
+      if (!joinRoomLimiter.check(socket.id)) {
+        console.warn(`Rate limit exceeded for join room: ${socket.id}`)
+        callback({ success: false, error: 'Too many join attempts. Please slow down.' })
+        return
+      }
+
+      try {
+        // Validate room code format
+        if (!isValidRoomCode(roomCode)) {
+          callback({ success: false, error: 'Invalid room code format' })
+          return
+        }
+
+        // Validate nickname
+        if (!isValidNickname(nickname)) {
+          callback({ success: false, error: 'Invalid nickname. Please use 1-50 characters.' })
+          return
+        }
+
+        const upperRoomCode = roomCode.toUpperCase()
+        const room = rooms.get(upperRoomCode)
+        if (!room) {
+          callback({ success: false, error: 'Room not found' })
+          return
+        }
+
+        const sanitizedNickname = sanitizeInput(nickname)
+        if (!sanitizedNickname) {
+          callback({ success: false, error: 'Invalid nickname' })
+          return
+        }
+
+        // Check for duplicate nicknames
+        const nicknameExists = Array.from(room.players.values()).some(p =>
+          p.nickname.toLowerCase() === sanitizedNickname.toLowerCase()
+        )
+        if (nicknameExists) {
+          callback({ success: false, error: 'Nickname already taken in this room' })
+          return
+        }
+
+        // Create spectator player - spectators CAN join mid-game
+        const spectator: Player = {
+          id: uuidv4(),
+          nickname: sanitizedNickname,
+          role: 'SPECTATOR',
+          isHost: false,
+          socketId: socket.id,
+          score: 0
+        }
+
+        room.players.set(spectator.id, spectator)
+        room.lastActivity = Date.now()
+        socket.join(upperRoomCode)
+
+        const playersList = Array.from(room.players.values())
+        io.to(upperRoomCode).emit('player_joined', spectator)
+        io.to(upperRoomCode).emit('players_update', playersList)
+
+        const roomSettings: RoomSettings = {
+          isMature: room.isMature,
+          gameMode: room.gameMode,
+          scriptCustomization: room.scriptCustomization,
+          cardPackId: room.cardPackId,
+          audioSettings: room.audioSettings,
+          audienceInteractionEnabled: !!room.audienceInteraction
+        }
+
+        console.log(`Spectator "${sanitizedNickname}" joined room ${upperRoomCode}`)
+
+        callback({
+          success: true,
+          players: playersList,
+          settings: roomSettings
+        })
+
+        // If game is in progress, send current state to spectator
+        if (room.gameState !== 'LOBBY' && room.script) {
+          socket.emit('script_ready', room.script)
+          socket.emit('game_state_change', room.gameState)
+          socket.emit('sync_teleprompter', room.currentLineIndex)
+        }
+      } catch (error) {
+        console.error('Error joining as spectator:', error)
+        callback({ success: false, error: 'Failed to join as spectator' })
       }
     })
 
@@ -1466,7 +1760,7 @@ app.prepare().then(() => {
     })
 
     // Request line audio (for TTS)
-    socket.on('request_line_audio', (roomCode, lineIndex, callback) => {
+    socket.on('request_line_audio', async (roomCode, lineIndex, callback) => {
       const room = rooms.get(roomCode)
       if (!room || !room.script) {
         callback({ success: false, error: 'Room or script not found' })
@@ -1478,16 +1772,47 @@ app.prepare().then(() => {
         return
       }
 
-      // For now, return a placeholder - actual TTS would require external API
-      // Browser TTS will be handled client-side
       const line = room.script.lines[lineIndex]
       if (!line) {
         callback({ success: false, error: 'Line not found' })
         return
       }
 
-      // Return success - client will use browser TTS
-      callback({ success: true, audioUrl: undefined })
+      const voiceSettings = room.audioSettings.voiceSettings
+
+      // Browser TTS is handled client-side
+      if (voiceSettings.provider === 'browser') {
+        callback({ success: true, audioUrl: undefined })
+        return
+      }
+
+      // Check if the provider is available
+      if (!isTTSAvailable(voiceSettings.provider)) {
+        console.warn(`TTS provider ${voiceSettings.provider} not configured, falling back to browser`)
+        callback({ success: true, audioUrl: undefined })
+        return
+      }
+
+      try {
+        // Generate audio using the TTS service
+        const result = await generateLineAudio(
+          line.text,
+          line.speaker,
+          voiceSettings
+        )
+
+        if (result.audioBuffer) {
+          const audioUrl = audioBufferToDataUrl(result.audioBuffer)
+          callback({ success: true, audioUrl })
+        } else {
+          // Fall back to browser TTS if generation failed
+          callback({ success: true, audioUrl: undefined })
+        }
+      } catch (error) {
+        console.error('TTS generation error:', error)
+        // Fall back to browser TTS on error
+        callback({ success: true, audioUrl: undefined })
+      }
     })
 
     // ============================================================

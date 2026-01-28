@@ -57,6 +57,32 @@ export type ScriptLength = 'quick' | 'standard' | 'epic'
 export type ScriptDifficulty = 'beginner' | 'intermediate' | 'advanced'
 export type PhysicalComedyLevel = 'none' | 'minimal' | 'heavy'
 
+// Genre Packs - different script styles/themes
+export type GenrePack =
+  | 'classic_comedy'    // Default funny scenes
+  | 'horror_parody'     // Scary movie spoofs with jump scares and clichés
+  | 'soap_opera'        // Melodramatic with betrayals and gasps
+  | 'nature_documentary'// David Attenborough-style narration of mundane activities
+  | 'true_crime'        // Dramatic podcast-style narration
+  | 'film_noir'         // Detective monologues and femme fatales
+  | 'reality_tv'        // Confessionals and dramatic editing
+  | 'infomercial'       // Over-the-top product pitches
+  | 'courtroom_drama'   // Legal proceedings gone wrong
+  | 'sports_commentary' // Play-by-play of non-sports activities
+
+export const GENRE_PACK_INFO: Record<GenrePack, { name: string; description: string; icon: string }> = {
+  classic_comedy: { name: 'Classic Comedy', description: 'Traditional funny scenes and witty banter', icon: '😂' },
+  horror_parody: { name: 'Horror Parody', description: 'Scary movie spoofs with predictable jump scares', icon: '👻' },
+  soap_opera: { name: 'Soap Opera', description: 'Melodramatic betrayals, long-lost twins, and gasps', icon: '😱' },
+  nature_documentary: { name: 'Nature Documentary', description: 'David Attenborough narrates mundane activities', icon: '🦁' },
+  true_crime: { name: 'True Crime', description: 'Dramatic podcast-style investigation narration', icon: '🔍' },
+  film_noir: { name: 'Film Noir', description: 'Hard-boiled detective monologues and mystery', icon: '🕵️' },
+  reality_tv: { name: 'Reality TV', description: 'Confessionals, alliances, and dramatic reveals', icon: '📺' },
+  infomercial: { name: 'Infomercial', description: 'But wait, there\'s more! Over-the-top product pitches', icon: '📢' },
+  courtroom_drama: { name: 'Courtroom Drama', description: 'Objections, surprise witnesses, and legal chaos', icon: '⚖️' },
+  sports_commentary: { name: 'Sports Commentary', description: 'Play-by-play of everyday non-sports activities', icon: '🏆' }
+}
+
 export interface ScriptCustomization {
   comedyStyle: ComedyStyle
   scriptLength: ScriptLength
@@ -64,6 +90,7 @@ export interface ScriptCustomization {
   physicalComedy: PhysicalComedyLevel
   enableCallbacks: boolean // Reference jokes from previous rounds
   customInstructions?: string // Optional host notes for AI
+  genrePack?: GenrePack // Genre/style for the script
 }
 
 export const DEFAULT_SCRIPT_CUSTOMIZATION: ScriptCustomization = {
@@ -324,6 +351,7 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
   create_room: (settings: RoomSettings, callback: (response: { success: boolean, code?: string, error?: string }) => void) => void
   join_room: (roomCode: string, nickname: string, callback: (response: { success: boolean, error?: string, players?: Player[], settings?: RoomSettings, role?: PlayerRole }) => void) => void
+  join_as_spectator: (roomCode: string, nickname: string, callback: (response: { success: boolean, error?: string, players?: Player[], settings?: RoomSettings }) => void) => void
   submit_cards: (roomCode: string, selections: CardSelection, callback: (response: { success: boolean, error?: string }) => void) => void
   start_game: (roomCode: string) => void
   submit_vote: (roomCode: string, targetPlayerId: string) => void

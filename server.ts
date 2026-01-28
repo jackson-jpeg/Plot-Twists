@@ -4,7 +4,21 @@ import { parse } from 'url'
 import next from 'next'
 import { Server as SocketIOServer } from 'socket.io'
 import express from 'express'
-import type { ServerToClientEvents, ClientToServerEvents, Room, Player, CardSelection, RoomSettings, Script, ScriptLine } from './lib/types'
+import type {
+  ServerToClientEvents,
+  ClientToServerEvents,
+  Room,
+  Player,
+  CardSelection,
+  RoomSettings,
+  Script,
+  ScriptLine,
+  AudienceReactionType,
+  ScriptCustomization,
+  AudioSettings,
+  CardPack,
+  SoundEffectType
+} from './lib/types'
 import { getFilteredContent, getGreenRoomQuestion } from './lib/content'
 import { v4 as uuidv4 } from 'uuid'
 import Anthropic from '@anthropic-ai/sdk'
@@ -12,6 +26,54 @@ import { ScriptSchema } from './lib/schema'
 import { configureSecurityMiddleware, validateEnvironment } from './server/middleware/security'
 import { SocketRateLimiter } from './server/middleware/rateLimiter'
 import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname } from './server/utils/validation'
+
+// Feature Services
+import {
+  initializeAudienceState,
+  recordReaction,
+  canSendReaction,
+  startPlotTwist,
+  votePlotTwist,
+  finalizePlotTwist,
+  generateTwistInjection,
+  resetReactionCounts
+} from './server/services/audience.service'
+import {
+  buildCustomizationPrompt,
+  getMaxTokens,
+  getLineCountRange,
+  validateCustomization
+} from './server/services/scriptCustomization.service'
+import {
+  listCardPacks,
+  getCardPack,
+  getPackCards,
+  createCardPack,
+  rateCardPack,
+  incrementDownloads,
+  STANDARD_PACK_ID
+} from './server/services/cardpack.service'
+import {
+  enhanceScriptWithAudio,
+  validateAudioSettings,
+  getSoundEffectUrl,
+  getAmbienceTrack,
+  createDefaultAudioSettings
+} from './server/services/audio.service'
+import {
+  saveGame,
+  getGame,
+  getGameByShareCode,
+  getPlayerGames,
+  shareGame,
+  exportGameAsText
+} from './server/services/gameHistory.service'
+import {
+  getPlayerStats,
+  recordGameResult,
+  getLeaderboard,
+  unlockAchievement
+} from './server/services/playerStats.service'
 
 // Validate environment on startup
 validateEnvironment()
@@ -51,6 +113,11 @@ function generateRoomCode(): string {
 const roomCreationLimiter = new SocketRateLimiter(10, 5 * 60 * 1000) // 10 rooms per 5 minutes
 const scriptGenerationLimiter = new SocketRateLimiter(20, 10 * 60 * 1000) // 20 scripts per 10 minutes
 const joinRoomLimiter = new SocketRateLimiter(30, 60 * 1000) // 30 joins per minute
+const reactionLimiter = new SocketRateLimiter(60, 60 * 1000) // 60 reactions per minute
+const cardPackLimiter = new SocketRateLimiter(5, 60 * 1000) // 5 pack operations per minute
+
+// Track plot twist timeouts per room
+const plotTwistTimeouts = new Map<string, NodeJS.Timeout>()
 
 // Sanitize user input (use enhanced version from utils)
 function sanitizeInput(input: string): string {
@@ -76,11 +143,27 @@ async function generateScript(
   circumstance: string,
   isMature: boolean,
   gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE',
-  previousScript?: Script
+  previousScript?: Script,
+  customization?: ScriptCustomization
 ) {
   const isSoloMode = gameMode === 'SOLO'
   const numPlayers = characters.length
   const characterList = characters.join(', ')
+
+  // Get customization prompt if provided
+  const customizationPrompt = customization
+    ? buildCustomizationPrompt(customization, gameMode)
+    : ''
+
+  // Get script length requirements
+  const lineRange = customization
+    ? getLineCountRange(customization.scriptLength)
+    : { min: 30, max: 40 }
+
+  // Get max tokens based on customization
+  const maxTokens = customization
+    ? getMaxTokens(customization.scriptLength, gameMode)
+    : (gameMode === 'ENSEMBLE' ? 10000 : 8192)
 
   // Build comedy writing guidelines based on rating
   const comedyGuidelines = isMature ? `
@@ -486,8 +569,9 @@ ${modeInstructions}
 ═══════════════════════════════════════
 SCRIPT REQUIREMENTS
 ═══════════════════════════════════════
-SCRIPT LENGTH: ${gameMode === 'ENSEMBLE' ? '40-50 lines' : '30-40 lines'}
+SCRIPT LENGTH: ${lineRange.min}-${lineRange.max} lines
 PERFORMERS: ${numPlayers} player${numPlayers > 1 ? 's' : ''}
+${customizationPrompt}
 
 ═══════════════════════════════════════
 YOUR MISSION
@@ -513,6 +597,9 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
     console.log(`Characters: ${characterList}`)
     console.log(`Setting: ${setting}`)
     console.log(`Circumstance: ${circumstance}`)
+    if (customization) {
+      console.log(`Style: ${customization.comedyStyle}, Length: ${customization.scriptLength}, Difficulty: ${customization.difficulty}`)
+    }
     if (previousScript) {
       console.log(`Sequel to: "${previousScript.title}"`)
     }
@@ -523,7 +610,7 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
 
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-5-20250929',
-      max_tokens: gameMode === 'ENSEMBLE' ? 10000 : 8192, // Extra tokens for ENSEMBLE to ensure spotlight moments
+      max_tokens: maxTokens,
       temperature: 1, // Max creativity for comedy writing
       system: systemPrompt,
       messages: [
@@ -661,7 +748,15 @@ app.prepare().then(() => {
           isPaused: false,
           votes: new Map(),
           createdAt: Date.now(),
-          lastActivity: Date.now()
+          lastActivity: Date.now(),
+          // Feature 1: Audience Interaction
+          audienceInteraction: settings.audienceInteractionEnabled ? initializeAudienceState() : undefined,
+          // Feature 2: Script Customization
+          scriptCustomization: settings.scriptCustomization || undefined,
+          // Feature 3: Card Pack
+          cardPackId: settings.cardPackId || STANDARD_PACK_ID,
+          // Feature 4: Audio Settings
+          audioSettings: settings.audioSettings || createDefaultAudioSettings()
         }
 
         rooms.set(code, room)
@@ -1052,27 +1147,44 @@ app.prepare().then(() => {
 
         console.log(`Generating sequel with ${characters.length} character(s)`)
 
-        // Generate sequel script
+        // Generate sequel script with customization
         const sequelScript = await generateScript(
           characters,
           chosenSetting,
           chosenCircumstance,
           room.isMature,
           room.gameMode,
-          previousScript // Pass the previous script
+          previousScript as Script, // Pass the previous script
+          room.scriptCustomization
         )
 
+        // Enhance with audio metadata if audio is enabled
+        const finalScript = room.audioSettings
+          ? enhanceScriptWithAudio(sequelScript, room.audioSettings, chosenSetting)
+          : sequelScript
+
         // Update room with new script
-        room.script = sequelScript
+        room.script = finalScript
         room.gameState = 'PERFORMING'
         room.currentLineIndex = 0
         room.isPaused = false
 
+        // Reset audience interaction for new performance
+        if (room.audienceInteraction) {
+          resetReactionCounts(room.audienceInteraction)
+        }
+
         // Broadcast new script to all clients
-        io.to(roomCode).emit('script_ready', sequelScript)
+        io.to(roomCode).emit('script_ready', finalScript)
         io.to(roomCode).emit('game_state_change', 'PERFORMING')
 
-        console.log(`✅ Sequel generated: "${sequelScript.title}"`)
+        // Start ambience if enabled
+        if (room.audioSettings?.ambienceEnabled) {
+          const ambienceTrack = getAmbienceTrack(chosenSetting)
+          io.to(roomCode).emit('ambience_start', ambienceTrack)
+        }
+
+        console.log(`✅ Sequel generated: "${finalScript.title}"`)
 
         // Start teleprompter sync
         startTeleprompterSync(room, io)
@@ -1097,13 +1209,360 @@ app.prepare().then(() => {
       if (settings.gameMode !== undefined) {
         room.gameMode = settings.gameMode
       }
+      // Feature 2: Script Customization
+      if (settings.scriptCustomization !== undefined) {
+        room.scriptCustomization = validateCustomization(settings.scriptCustomization)
+      }
+      // Feature 3: Card Pack
+      if (settings.cardPackId !== undefined) {
+        room.cardPackId = settings.cardPackId
+      }
+      // Feature 4: Audio Settings
+      if (settings.audioSettings !== undefined) {
+        room.audioSettings = validateAudioSettings(settings.audioSettings)
+      }
+      // Feature 1: Audience Interaction
+      if (settings.audienceInteractionEnabled !== undefined) {
+        if (settings.audienceInteractionEnabled && !room.audienceInteraction) {
+          room.audienceInteraction = initializeAudienceState()
+        } else if (!settings.audienceInteractionEnabled) {
+          room.audienceInteraction = undefined
+        }
+      }
       room.lastActivity = Date.now()
 
       const roomSettings: RoomSettings = {
         isMature: room.isMature,
-        gameMode: room.gameMode
+        gameMode: room.gameMode,
+        scriptCustomization: room.scriptCustomization,
+        cardPackId: room.cardPackId,
+        audioSettings: room.audioSettings,
+        audienceInteractionEnabled: !!room.audienceInteraction
       }
       io.to(roomCode).emit('room_settings_update', roomSettings)
+    })
+
+    // ============================================================
+    // FEATURE 1: Audience Interaction Events
+    // ============================================================
+
+    // Send audience reaction
+    socket.on('send_audience_reaction', (roomCode, reactionType) => {
+      // Rate limiting
+      if (!reactionLimiter.check(socket.id)) {
+        return
+      }
+
+      const room = rooms.get(roomCode)
+      if (!room || !room.audienceInteraction) return
+
+      // Find sender
+      let sender: Player | undefined
+      for (const player of room.players.values()) {
+        if (player.socketId === socket.id) {
+          sender = player
+          break
+        }
+      }
+      if (!sender) return
+
+      // Check cooldown and record reaction
+      if (!canSendReaction(sender.id)) return
+
+      const reaction = recordReaction(
+        room.audienceInteraction,
+        reactionType,
+        sender.id,
+        sender.nickname
+      )
+
+      if (reaction) {
+        room.lastActivity = Date.now()
+        // Broadcast to all clients
+        io.to(roomCode).emit('audience_reaction_received', reaction)
+        io.to(roomCode).emit('audience_reaction_counts', room.audienceInteraction.reactionCounts)
+      }
+    })
+
+    // Start a plot twist vote
+    socket.on('start_plot_twist', (roomCode) => {
+      const room = rooms.get(roomCode)
+      if (!room || !room.audienceInteraction) return
+      if (room.gameState !== 'PERFORMING') return
+
+      // Only host can start plot twists
+      if (room.host.socketId !== socket.id) return
+
+      // Check if there's already an active twist
+      if (room.audienceInteraction.activePlotTwist?.isActive) return
+
+      const twist = startPlotTwist(room.audienceInteraction, 15000) // 15 seconds to vote
+      room.lastActivity = Date.now()
+
+      io.to(roomCode).emit('plot_twist_started', twist)
+
+      // Set timeout to finalize and inject
+      const timeout = setTimeout(() => {
+        if (!room.audienceInteraction) return
+
+        const winningTwist = finalizePlotTwist(room.audienceInteraction)
+        if (winningTwist) {
+          io.to(roomCode).emit('plot_twist_result', winningTwist)
+
+          // Generate and inject new lines
+          const speakers = room.script?.lines.map(l => l.speaker).filter((v, i, a) => a.indexOf(v) === i) || []
+          const injectedLines = generateTwistInjection(winningTwist, speakers)
+
+          if (room.script && injectedLines.length > 0) {
+            // Insert lines after current position
+            const insertIndex = room.currentLineIndex + 1
+            room.script.lines.splice(insertIndex, 0, ...injectedLines)
+            io.to(roomCode).emit('plot_twist_injected', insertIndex, injectedLines)
+          }
+        }
+
+        plotTwistTimeouts.delete(roomCode)
+      }, 15000)
+
+      plotTwistTimeouts.set(roomCode, timeout)
+    })
+
+    // Vote on a plot twist option
+    socket.on('vote_plot_twist', (roomCode, optionId) => {
+      const room = rooms.get(roomCode)
+      if (!room || !room.audienceInteraction) return
+
+      // Find voter
+      let voterId: string | undefined
+      for (const [id, player] of room.players.entries()) {
+        if (player.socketId === socket.id) {
+          voterId = id
+          break
+        }
+      }
+      if (!voterId) return
+
+      const result = votePlotTwist(room.audienceInteraction, optionId, voterId)
+      if (result.success && result.newCount !== undefined) {
+        room.lastActivity = Date.now()
+        io.to(roomCode).emit('plot_twist_vote_update', optionId, result.newCount)
+      }
+    })
+
+    // ============================================================
+    // FEATURE 3: Card Pack Events
+    // ============================================================
+
+    // List available card packs
+    socket.on('list_card_packs', (callback) => {
+      try {
+        const packs = listCardPacks()
+        callback({ success: true, packs })
+      } catch (error) {
+        console.error('Error listing card packs:', error)
+        callback({ success: false, error: 'Failed to list card packs' })
+      }
+    })
+
+    // Select a card pack for the room
+    socket.on('select_card_pack', (roomCode, packId, callback) => {
+      const room = rooms.get(roomCode)
+      if (!room) {
+        callback({ success: false, error: 'Room not found' })
+        return
+      }
+
+      // Only host can select packs
+      if (room.host.socketId !== socket.id) {
+        callback({ success: false, error: 'Only the host can select card packs' })
+        return
+      }
+
+      // Verify pack exists
+      if (packId !== STANDARD_PACK_ID && !getCardPack(packId)) {
+        callback({ success: false, error: 'Card pack not found' })
+        return
+      }
+
+      room.cardPackId = packId
+      room.lastActivity = Date.now()
+
+      // Increment download count for custom packs
+      if (packId !== STANDARD_PACK_ID) {
+        incrementDownloads(packId)
+      }
+
+      io.to(roomCode).emit('card_pack_selected', packId)
+      callback({ success: true })
+    })
+
+    // Create a new card pack
+    socket.on('create_card_pack', (packData, callback) => {
+      // Rate limiting
+      if (!cardPackLimiter.check(socket.id)) {
+        callback({ success: false, error: 'Too many requests. Please wait a moment.' })
+        return
+      }
+
+      try {
+        const result = createCardPack(packData)
+        callback(result)
+      } catch (error) {
+        console.error('Error creating card pack:', error)
+        callback({ success: false, error: 'Failed to create card pack' })
+      }
+    })
+
+    // Rate a card pack
+    socket.on('rate_card_pack', (packId, rating, callback) => {
+      // Rate limiting
+      if (!cardPackLimiter.check(socket.id)) {
+        callback({ success: false, error: 'Too many requests. Please wait a moment.' })
+        return
+      }
+
+      try {
+        const result = rateCardPack(packId, rating)
+        callback(result)
+      } catch (error) {
+        console.error('Error rating card pack:', error)
+        callback({ success: false, error: 'Failed to rate card pack' })
+      }
+    })
+
+    // ============================================================
+    // FEATURE 4: Audio Events
+    // ============================================================
+
+    // Update audio settings
+    socket.on('update_audio_settings', (roomCode, settings) => {
+      const room = rooms.get(roomCode)
+      if (!room) return
+
+      // Only host can change audio settings
+      if (room.host.socketId !== socket.id) return
+
+      room.audioSettings = validateAudioSettings({
+        ...room.audioSettings,
+        ...settings
+      })
+      room.lastActivity = Date.now()
+
+      io.to(roomCode).emit('audio_settings_update', room.audioSettings)
+    })
+
+    // Trigger sound effect (host only)
+    socket.on('trigger_sound_effect', (roomCode, effect) => {
+      const room = rooms.get(roomCode)
+      if (!room) return
+
+      // Only host can trigger sound effects
+      if (room.host.socketId !== socket.id) return
+
+      if (!room.audioSettings?.soundEffectsEnabled) return
+
+      room.lastActivity = Date.now()
+      io.to(roomCode).emit('play_sound_effect', effect)
+    })
+
+    // Request line audio (for TTS)
+    socket.on('request_line_audio', (roomCode, lineIndex, callback) => {
+      const room = rooms.get(roomCode)
+      if (!room || !room.script) {
+        callback({ success: false, error: 'Room or script not found' })
+        return
+      }
+
+      if (!room.audioSettings?.voiceEnabled) {
+        callback({ success: false, error: 'Voice is not enabled' })
+        return
+      }
+
+      // For now, return a placeholder - actual TTS would require external API
+      // Browser TTS will be handled client-side
+      const line = room.script.lines[lineIndex]
+      if (!line) {
+        callback({ success: false, error: 'Line not found' })
+        return
+      }
+
+      // Return success - client will use browser TTS
+      callback({ success: true, audioUrl: undefined })
+    })
+
+    // ============================================================
+    // FEATURE 5: Game History Events
+    // ============================================================
+
+    // Get game history for a player
+    socket.on('get_game_history', (playerId, limit, callback) => {
+      try {
+        const games = getPlayerGames(playerId, limit)
+        callback({ success: true, games })
+      } catch (error) {
+        console.error('Error fetching game history:', error)
+        callback({ success: false, error: 'Failed to load game history' })
+      }
+    })
+
+    // Get specific game details
+    socket.on('get_game_details', (gameId, callback) => {
+      try {
+        const game = getGame(gameId)
+        if (!game) {
+          callback({ success: false, error: 'Game not found' })
+          return
+        }
+        callback({ success: true, game })
+      } catch (error) {
+        console.error('Error fetching game details:', error)
+        callback({ success: false, error: 'Failed to load game' })
+      }
+    })
+
+    // Share a game
+    socket.on('share_game', (gameId, callback) => {
+      try {
+        const result = shareGame(gameId)
+        if (result.success && result.shareCode) {
+          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://plottwists.app'
+          callback({
+            success: true,
+            shareUrl: `${baseUrl}/replay/${result.shareCode}`
+          })
+        } else {
+          callback({ success: false, error: result.error })
+        }
+      } catch (error) {
+        console.error('Error sharing game:', error)
+        callback({ success: false, error: 'Failed to share game' })
+      }
+    })
+
+    // ============================================================
+    // FEATURE 6: Player Stats Events
+    // ============================================================
+
+    // Get player stats
+    socket.on('get_player_stats', (playerId, callback) => {
+      try {
+        const stats = getPlayerStats(playerId)
+        callback({ success: true, stats })
+      } catch (error) {
+        console.error('Error fetching player stats:', error)
+        callback({ success: false, error: 'Failed to load stats' })
+      }
+    })
+
+    // Get leaderboard
+    socket.on('get_leaderboard', (category, limit, callback) => {
+      try {
+        const entries = getLeaderboard(category, limit)
+        callback({ success: true, entries })
+      } catch (error) {
+        console.error('Error fetching leaderboard:', error)
+        callback({ success: false, error: 'Failed to load leaderboard' })
+      }
     })
 
     // Handle disconnect
@@ -1200,21 +1659,39 @@ app.prepare().then(() => {
         console.log(`   Note: AI will invent a hilarious Co-Star character to play opposite the human player`)
       }
 
-      // Generate script
+      // Generate script with customization
       const script = await generateScript(
         characters,
         chosenSetting,
         chosenCircumstance,
         room.isMature,
-        room.gameMode
+        room.gameMode,
+        undefined, // No previous script
+        room.scriptCustomization
       )
 
-      room.script = script
+      // Enhance with audio metadata if audio is enabled
+      const finalScript = room.audioSettings
+        ? enhanceScriptWithAudio(script, room.audioSettings, chosenSetting)
+        : script
+
+      room.script = finalScript
       room.gameState = 'PERFORMING'
       room.currentLineIndex = 0
 
-      io.to(room.code).emit('script_ready', script)
+      // Reset audience interaction for new performance
+      if (room.audienceInteraction) {
+        resetReactionCounts(room.audienceInteraction)
+      }
+
+      io.to(room.code).emit('script_ready', finalScript)
       io.to(room.code).emit('game_state_change', 'PERFORMING')
+
+      // Start ambience if enabled
+      if (room.audioSettings?.ambienceEnabled) {
+        const ambienceTrack = getAmbienceTrack(chosenSetting)
+        io.to(room.code).emit('ambience_start', ambienceTrack)
+      }
 
       // Start teleprompter sync
       startTeleprompterSync(room, io)
@@ -1314,6 +1791,74 @@ app.prepare().then(() => {
       allResults: results
     })
     io.to(room.code).emit('game_state_change', 'RESULTS')
+
+    // Save game to history and update player stats
+    try {
+      if (room.script) {
+        // Get setting and circumstance from selections
+        const allSelections = Array.from(room.selections.values())
+        const setting = allSelections[0]?.setting || 'Unknown'
+        const circumstance = allSelections[0]?.circumstance || 'Unknown'
+
+        // Calculate game duration (approximate)
+        const duration = Math.floor((Date.now() - room.createdAt) / 1000)
+
+        // Get reaction count
+        const reactionCount = room.audienceInteraction
+          ? Object.values(room.audienceInteraction.reactionCounts).reduce((a, b) => a + b, 0)
+          : 0
+
+        // Save the game
+        const savedGame = saveGame(
+          room.code,
+          room.script,
+          Array.from(room.players.values()),
+          room.gameMode,
+          { winner, allResults: results },
+          {
+            setting,
+            circumstance,
+            cardPackId: room.cardPackId || 'standard',
+            comedyStyle: room.scriptCustomization?.comedyStyle || 'witty',
+            duration,
+            audienceReactionCount: reactionCount,
+            plotTwistsUsed: room.audienceInteraction?.plotTwistHistory || []
+          }
+        )
+
+        console.log(`Saved game to history: ${savedGame.id}`)
+
+        // Update player stats
+        const players = Array.from(room.players.values()).filter(p => p.role === 'PLAYER')
+        for (const player of players) {
+          const voteResult = results.find(r => r.playerId === player.id)
+          const newAchievements = recordGameResult(
+            player.id,
+            player.nickname,
+            savedGame,
+            {
+              character: player.assignedCharacter || '',
+              votesReceived: voteResult?.votes || 0,
+              isWinner: winner?.playerId === player.id,
+              reactionsReceived: Math.floor(reactionCount / players.length) // Approximate per-player
+            }
+          )
+
+          // Notify player of new achievements
+          if (newAchievements.length > 0) {
+            const playerSocket = io.sockets.sockets.get(player.socketId)
+            if (playerSocket) {
+              // Emit achievement unlocked events (client can show toast)
+              newAchievements.forEach(achievement => {
+                playerSocket.emit('achievement_unlocked' as never, achievement)
+              })
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error saving game to history:', error)
+    }
   }
 
   // Handle Next.js requests

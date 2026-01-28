@@ -1132,20 +1132,263 @@ NEXT_PUBLIC_WS_URL=your-app.up.railway.app  # WebSocket URL
 
 ---
 
+## 13.3. New Features (2026-01-24)
+
+### Feature 1: Audience Interaction System
+
+**Purpose:** Transform passive spectators into active participants who can influence performances in real-time.
+
+#### Components
+
+**Live Reactions:**
+- 5 reaction types: Laugh (😂), Cheer (🎉), Gasp (😱), Boo (👎), Applause (👏)
+- Rate-limited to 1 reaction per 2 seconds per user
+- Floating reaction animations on host screen
+- Real-time aggregated counts
+
+**Plot Twist Voting:**
+- Host can trigger mid-performance "plot twist" events
+- Audience votes on 4 randomly generated twist options
+- 15-second voting window
+- Winning twist gets injected into the script
+- AI generates reaction lines for characters
+
+#### Socket Events
+
+| Event | Direction | Purpose |
+|-------|-----------|---------|
+| `send_audience_reaction` | Client → Server | Send a reaction |
+| `audience_reaction_received` | Server → Client | Broadcast reaction |
+| `audience_reaction_counts` | Server → Client | Aggregated counts |
+| `start_plot_twist` | Client → Server | Host starts twist vote |
+| `plot_twist_started` | Server → Client | Broadcast twist options |
+| `vote_plot_twist` | Client → Server | Cast vote |
+| `plot_twist_result` | Server → Client | Announce winner |
+| `plot_twist_injected` | Server → Client | New lines added |
+
+#### Files Added
+- `server/services/audience.service.ts` - Reaction handling, plot twist generation
+- `components/AudienceReactionBar.tsx` - Reaction buttons and display
+- `components/PlotTwistVoting.tsx` - Voting UI
+
+---
+
+### Feature 2: AI Script Customization Engine
+
+**Purpose:** Give hosts granular control over script generation style and difficulty.
+
+#### Customization Options
+
+| Setting | Options | Default |
+|---------|---------|---------|
+| Comedy Style | Witty, Slapstick, Absurdist, Dark, Sitcom, Improv | Witty |
+| Script Length | Quick (15-25), Standard (30-40), Epic (45-60) | Standard |
+| Difficulty | Beginner, Intermediate, Advanced | Intermediate |
+| Physical Comedy | None, Minimal, Heavy | Minimal |
+| Enable Callbacks | true/false | true |
+| Custom Instructions | Free text (500 char max) | - |
+
+#### How It Works
+
+1. Host selects customization options in lobby
+2. Settings stored in `room.scriptCustomization`
+3. `buildCustomizationPrompt()` generates dynamic AI instructions
+4. Instructions injected into Claude system prompt
+5. Token limits adjusted based on script length
+
+#### Files Added
+- `server/services/scriptCustomization.service.ts` - Prompt generation
+- `components/ScriptCustomizationPanel.tsx` - Settings UI
+
+---
+
+### Feature 3: Custom Card Pack Creator
+
+**Purpose:** Let users create, share, and import custom character/setting/circumstance packs.
+
+#### Card Pack Structure
+
+```typescript
+interface CardPack {
+  id: string
+  name: string
+  description: string
+  author: string
+  theme: string
+  isMature: boolean
+  isBuiltIn: boolean
+  isPublic: boolean
+  characters: Card[]    // min 5
+  settings: Card[]      // min 3
+  circumstances: Card[] // min 3
+  downloads: number
+  rating: number
+  ratingCount: number
+}
+```
+
+#### Features
+
+- **Standard Pack**: Built-in default (200+ characters, 70+ settings, 60+ circumstances)
+- **Custom Packs**: User-created and persisted to `data/cardpacks.json`
+- **Example Packs**: "Office Comedy" and "Sci-Fi Adventures" included
+- **Pack Selection**: Host chooses pack in lobby
+- **Rating System**: Users can rate packs (1-5 stars)
+
+#### Socket Events
+
+| Event | Direction | Purpose |
+|-------|-----------|---------|
+| `list_card_packs` | Client → Server | Get available packs |
+| `select_card_pack` | Client → Server | Choose pack for room |
+| `card_pack_selected` | Server → Client | Broadcast selection |
+| `create_card_pack` | Client → Server | Create new pack |
+| `rate_card_pack` | Client → Server | Rate a pack |
+
+#### Files Added
+- `server/services/cardpack.service.ts` - Pack CRUD operations
+- `components/CardPackSelector.tsx` - Pack browser UI
+- `data/cardpacks.json` - Pack persistence
+
+---
+
+### Feature 4: Voice & Audio Integration
+
+**Purpose:** Bring scripts to life with text-to-speech for AI co-stars and ambient audio.
+
+#### Audio Features
+
+**Text-to-Speech:**
+- Browser-native TTS for AI character lines (Solo mode)
+- Adjustable speed (0.5x - 2.0x)
+- Adjustable pitch (0.5x - 2.0x)
+- Mood-based voice modulation
+
+**Sound Effects:**
+- 8 built-in effects: door_slam, laugh_track, dramatic_sting, applause, record_scratch, crickets, explosion, magic_sparkle
+- Host can trigger manually
+- Auto-detected from script content (e.g., "[door slam]")
+
+**Ambience:**
+- Setting-appropriate background audio
+- Tracks for: office, restaurant, space, outdoors, city, horror, medieval
+- Adjustable volume
+
+**Turn Notification:**
+- Chime when it's your character's turn to speak
+- Helps performers stay engaged
+
+#### Audio Settings Structure
+
+```typescript
+interface AudioSettings {
+  voiceEnabled: boolean
+  voiceSettings: VoiceSettings
+  soundEffectsEnabled: boolean
+  soundEffectsVolume: number
+  ambienceEnabled: boolean
+  ambienceVolume: number
+  turnChimeEnabled: boolean
+}
+```
+
+#### Socket Events
+
+| Event | Direction | Purpose |
+|-------|-----------|---------|
+| `update_audio_settings` | Client → Server | Change audio config |
+| `audio_settings_update` | Server → Client | Broadcast changes |
+| `play_sound_effect` | Server → Client | Trigger SFX |
+| `ambience_start` | Server → Client | Start background audio |
+| `ambience_stop` | Server → Client | Stop background audio |
+| `turn_chime` | Server → Client | Notify player's turn |
+
+#### Files Added
+- `server/services/audio.service.ts` - Audio utilities
+- `components/AudioSettingsPanel.tsx` - Settings UI
+
+---
+
+### Updated Room Interface
+
+```typescript
+interface Room {
+  // ... existing fields
+
+  // Feature 1: Audience Interaction
+  audienceInteraction?: AudienceInteractionState
+
+  // Feature 2: Script Customization
+  scriptCustomization?: ScriptCustomization
+
+  // Feature 3: Card Pack
+  cardPackId?: string
+
+  // Feature 4: Audio Settings
+  audioSettings?: AudioSettings
+}
+```
+
+### Updated RoomSettings Interface
+
+```typescript
+interface RoomSettings {
+  isMature: boolean
+  gameMode: GameMode
+  scriptCustomization?: ScriptCustomization
+  cardPackId?: string
+  audioSettings?: AudioSettings
+  audienceInteractionEnabled?: boolean
+}
+```
+
+---
+
+### Impact Assessment
+
+**User Experience**: 🔥 Major Enhancement
+- Audience no longer passive
+- Highly customizable scripts
+- Unlimited content via card packs
+- Immersive audio experience
+
+**Replayability**: 🔥 Significantly Increased
+- 6 comedy styles × 3 lengths × 3 difficulties = 54 combinations
+- Unlimited custom card packs
+- Plot twists make each performance unique
+
+**Technical Complexity**: 🟡 Moderate
+- 4 new service files
+- 5 new frontend components
+- 20+ new socket events
+- Extended types.ts (~250 new lines)
+
+---
+
 ## 14. Critical Files Reference
 
 | File | Lines | Purpose | Update Frequency |
 |------|-------|---------|------------------|
-| `/server.ts` | 1,275 | Backend core | High |
+| `/server.ts` | ~1,600 | Backend core | High |
 | `/app/globals.css` | 2,183 | Design system | Low |
 | `/app/host/page.tsx` | ~400 | Host UI | Medium |
 | `/app/join/page.tsx` | ~400 | Player UI | Medium |
 | `/contexts/SocketContext.tsx` | 125 | Socket manager | Low |
-| `/lib/types.ts` | 106 | Type definitions | Medium |
+| `/lib/types.ts` | ~350 | Type definitions | Medium |
 | `/lib/content.ts` | 20,991 | Game content | Low |
 | `/lib/schema.ts` | 20 | Validation | Low |
 | `/design-tokens.json` | 132 | Design tokens | Low |
 | `/package.json` | 47 | Dependencies | Medium |
+| `/server/services/audience.service.ts` | ~200 | Audience interactions | Low |
+| `/server/services/scriptCustomization.service.ts` | ~250 | AI prompt customization | Low |
+| `/server/services/cardpack.service.ts` | ~300 | Card pack CRUD | Low |
+| `/server/services/audio.service.ts` | ~250 | Audio utilities | Low |
+| `/components/AudienceReactionBar.tsx` | ~130 | Reaction UI | Low |
+| `/components/PlotTwistVoting.tsx` | ~180 | Plot twist voting | Low |
+| `/components/ScriptCustomizationPanel.tsx` | ~220 | Script settings UI | Low |
+| `/components/CardPackSelector.tsx` | ~170 | Pack browser UI | Low |
+| `/components/AudioSettingsPanel.tsx` | ~260 | Audio settings UI | Low |
+| `/data/cardpacks.json` | Variable | Custom pack storage | Dynamic |
 
 ---
 
@@ -1153,6 +1396,7 @@ NEXT_PUBLIC_WS_URL=your-app.up.railway.app  # WebSocket URL
 
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
+| 2026-01-24 | 1.3 | Added 4 major features: Audience Interaction System, AI Script Customization Engine, Custom Card Pack Creator, Voice & Audio Integration | Claude |
 | 2026-01-23 | 1.2 | Enhanced card selection UX with "Shuffle All", progress indicators, haptic feedback, and selection preview | Claude |
 | 2026-01-23 | 1.1 | Added security enhancements, rate limiting, testing infrastructure, PWA support, code organization | Claude |
 | 2026-01-23 | 1.0 | Initial architecture documentation | Claude |

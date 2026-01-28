@@ -43,9 +43,7 @@ export async function initializeFirebase(): Promise<boolean> {
   }
 
   try {
-    // @ts-expect-error - Dynamic import of optional Firebase dependency
     const firebaseApp = await import('firebase/app')
-    // @ts-expect-error - Dynamic import of optional Firebase dependency
     const firebaseAuth = await import('firebase/auth')
 
     const { initializeApp, getApps } = firebaseApp

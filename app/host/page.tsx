@@ -487,6 +487,7 @@ export default function HostPage() {
                 roomCode={roomCode}
                 selectedPackId={selectedPackId}
                 onSelect={setSelectedPackId}
+                showCreateButton={true}
               />
 
               <ScriptCustomizationPanel

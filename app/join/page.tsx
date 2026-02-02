@@ -68,6 +68,7 @@ function JoinPageContent() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [myRole, setMyRole] = useState<PlayerRole>('PLAYER')
+  const [selectedPackName, setSelectedPackName] = useState<string | null>(null)
   const previousSpeaker = React.useRef<string>('')
 
   useEffect(() => {
@@ -106,6 +107,18 @@ function JoinPageContent() {
       toast.error(errorMsg)
       setError(errorMsg)
     })
+    socket.on('card_pack_selected', (packId: string) => {
+      // Display a friendly name based on pack ID
+      if (packId === 'standard') {
+        setSelectedPackName('Standard Pack')
+      } else if (packId === 'example-office-comedy') {
+        setSelectedPackName('Office Comedy')
+      } else if (packId === 'example-scifi-adventures') {
+        setSelectedPackName('Sci-Fi Adventures')
+      } else {
+        setSelectedPackName('Custom Pack')
+      }
+    })
     return () => {
       socket.off('players_update')
       socket.off('game_state_change')
@@ -115,6 +128,7 @@ function JoinPageContent() {
       socket.off('sync_teleprompter')
       socket.off('game_over')
       socket.off('error')
+      socket.off('card_pack_selected')
     }
   }, [socket, isConnected, selection, myRole])
 
@@ -302,11 +316,24 @@ function JoinPageContent() {
               <h1 className="text-4xl font-display mb-4" style={{ color: 'var(--color-success)' }}>
                 {myRole === 'SPECTATOR' ? 'Spectator Mode' : "You're In!"}
               </h1>
-              <p className="text-lg mb-8" style={{ color: 'var(--color-text-secondary)' }}>
+              <p className="text-lg mb-4" style={{ color: 'var(--color-text-secondary)' }}>
                 {myRole === 'SPECTATOR'
                   ? 'Sit back and enjoy the show! You can vote at the end.'
                   : 'Waiting for game to start...'}
               </p>
+              {selectedPackName && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
+                  style={{ background: 'var(--color-highlight)', border: '1px solid var(--color-border)' }}
+                >
+                  <span>📦</span>
+                  <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                    {selectedPackName}
+                  </span>
+                </motion.div>
+              )}
               <div className="stack-sm">
                 {players.map((player) => (
                   <div

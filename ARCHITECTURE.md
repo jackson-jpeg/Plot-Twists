@@ -1,7 +1,7 @@
 # Plot Twists - Application Architecture & Documentation
 
-**Last Updated:** 2026-01-23
-**Version:** 1.0
+**Last Updated:** 2026-02-01
+**Version:** 1.4
 **Status:** Active Development
 
 ---
@@ -1231,9 +1231,13 @@ interface CardPack {
 
 - **Standard Pack**: Built-in default (200+ characters, 70+ settings, 60+ circumstances)
 - **Custom Packs**: User-created and persisted to `data/cardpacks.json`
-- **Example Packs**: "Office Comedy" and "Sci-Fi Adventures" included
+- **Example Packs**: "Office Comedy" and "Sci-Fi Adventures" (deterministic IDs for persistence)
 - **Pack Selection**: Host chooses pack in lobby
-- **Rating System**: Users can rate packs (1-5 stars)
+- **Rating System**: Interactive star rating (1-5 stars) with hover states
+- **Pack Browser**: Full modal for discovering community packs with search, filter, and sort
+- **Pack Editor**: Edit existing custom packs (3-step wizard)
+- **Pack Deletion**: Delete custom packs with confirmation modal
+- **Player Visibility**: Players see selected pack name in lobby
 
 #### Socket Events
 
@@ -1243,11 +1247,21 @@ interface CardPack {
 | `select_card_pack` | Client → Server | Choose pack for room |
 | `card_pack_selected` | Server → Client | Broadcast selection |
 | `create_card_pack` | Client → Server | Create new pack |
+| `update_card_pack` | Client → Server | Update existing pack |
+| `delete_card_pack` | Client → Server | Delete a pack |
 | `rate_card_pack` | Client → Server | Rate a pack |
+| `search_card_packs` | Client → Server | Search packs by query |
+| `get_featured_packs` | Client → Server | Get top-rated packs |
+| `get_card_pack` | Client → Server | Get pack details by ID |
 
-#### Files Added
-- `server/services/cardpack.service.ts` - Pack CRUD operations
-- `components/CardPackSelector.tsx` - Pack browser UI
+#### Files Added/Modified
+- `server/services/cardpack.service.ts` - Pack CRUD operations (enhanced with deterministic IDs)
+- `components/CardPackSelector.tsx` - Pack browser UI (enhanced with edit/delete/rate)
+- `components/CardPackCreator.tsx` - 3-step pack creation wizard
+- `components/CardPackEditor.tsx` - Edit existing packs
+- `components/CardPackBrowser.tsx` - Full discovery modal with search/filter/sort
+- `components/StarRating.tsx` - Interactive star rating component
+- `components/DeleteConfirmModal.tsx` - Confirmation dialog for deletions
 - `data/cardpacks.json` - Pack persistence
 
 ---
@@ -1396,6 +1410,7 @@ interface RoomSettings {
 
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
+| 2026-02-01 | 1.4 | Card Pack Creator feature completion: CardPackEditor, DeleteConfirmModal, StarRating, CardPackBrowser components; search/featured/edit/delete socket events | Claude |
 | 2026-01-24 | 1.3 | Added 4 major features: Audience Interaction System, AI Script Customization Engine, Custom Card Pack Creator, Voice & Audio Integration | Claude |
 | 2026-01-23 | 1.2 | Enhanced card selection UX with "Shuffle All", progress indicators, haptic feedback, and selection preview | Claude |
 | 2026-01-23 | 1.1 | Added security enhancements, rate limiting, testing infrastructure, PWA support, code organization | Claude |

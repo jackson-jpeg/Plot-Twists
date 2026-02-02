@@ -290,7 +290,7 @@ export interface ServerToClientEvents {
   players_update: (players: Player[]) => void
   green_room_prompt: (question: string) => void
   script_ready: (script: Script | ScriptWithAudio) => void
-  sync_teleprompter: (lineIndex: number) => void
+  sync_teleprompter: (data: TeleprompterSyncData | number) => void // Backward compatible
   game_over: (results: GameResults) => void
   error: (message: string) => void
   room_settings_update: (settings: RoomSettings) => void
@@ -319,6 +319,11 @@ export interface ServerToClientEvents {
 
   // Feature 6: Player Stats Events
   achievement_unlocked: (achievement: Achievement) => void
+
+  // Teleprompter Sync & Play Again Events
+  new_game_started: (options: NewGameOptions) => void
+  latency_ping: (serverTimestamp: number) => void
+  latency_pong_response: (data: { latency: number }) => void
 }
 
 export interface ClientToServerEvents {
@@ -332,9 +337,13 @@ export interface ClientToServerEvents {
   resume_script: (roomCode: string) => void
   jump_to_line: (roomCode: string, lineIndex: number) => void
   request_sequel: (roomCode: string) => void
-  request_new_game: (roomCode: string) => void
+  request_new_game: (roomCode: string, options?: NewGameOptions) => void
   update_room_settings: (roomCode: string, settings: Partial<RoomSettings>) => void
   disconnect: () => void
+  // Player navigation (synced with all clients)
+  player_jump_to_line: (roomCode: string, lineIndex: number) => void
+  // Latency measurement
+  latency_pong: (serverTimestamp: number, clientTimestamp: number) => void
 
   // Feature 1: Audience Interaction Events
   send_audience_reaction: (roomCode: string, reactionType: AudienceReactionType) => void
@@ -480,4 +489,18 @@ export interface LeaderboardEntry {
   nickname: string
   value: number
   achievement?: AchievementId // Featured achievement to display
+}
+
+// ============================================================
+// Teleprompter Sync & Latency Types
+// ============================================================
+
+export interface TeleprompterSyncData {
+  lineIndex: number
+  serverTimestamp: number
+  expectedDuration?: number
+}
+
+export interface NewGameOptions {
+  keepSelections?: boolean
 }

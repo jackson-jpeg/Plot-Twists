@@ -4,7 +4,7 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, GameState, Script, CardSelection, GameResults, PlayerRole } from '@/lib/types'
+import type { Player, GameState, Script, CardSelection, GameResults, PlayerRole, TeleprompterSyncData } from '@/lib/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
@@ -69,6 +69,7 @@ function JoinPageContent() {
   const [copySuccess, setCopySuccess] = useState(false)
   const [myRole, setMyRole] = useState<PlayerRole>('PLAYER')
   const [selectedPackName, setSelectedPackName] = useState<string | null>(null)
+  const [networkLatency, setNetworkLatency] = useState<number | null>(null)
   const previousSpeaker = React.useRef<string>('')
 
   useEffect(() => {
@@ -101,7 +102,14 @@ function JoinPageContent() {
         setMyCharacter(selection.character)
       }
     })
-    socket.on('sync_teleprompter', setCurrentLineIndex)
+    // Handle both legacy (number) and new (object) sync formats
+    socket.on('sync_teleprompter', (data: TeleprompterSyncData | number) => {
+      if (typeof data === 'number') {
+        setCurrentLineIndex(data)
+      } else {
+        setCurrentLineIndex(data.lineIndex)
+      }
+    })
     socket.on('game_over', setGameResults)
     socket.on('error', (errorMsg: string) => {
       toast.error(errorMsg)
@@ -119,6 +127,24 @@ function JoinPageContent() {
         setSelectedPackName('Custom Pack')
       }
     })
+    // Handle new game started (play again without reload)
+    socket.on('new_game_started', () => {
+      setGameState('LOBBY')
+      setScript(null)
+      setCurrentLineIndex(0)
+      setGameResults(null)
+      setHasSubmitted(false)
+      setMyCharacter('')
+      setSelection({ character: '', setting: '', circumstance: '' })
+      setGreenRoomQuestion('')
+    })
+    // Latency measurement
+    socket.on('latency_ping', (serverTimestamp: number) => {
+      socket.emit('latency_pong', serverTimestamp, Date.now())
+    })
+    socket.on('latency_pong_response', (data: { latency: number }) => {
+      setNetworkLatency(data.latency)
+    })
     return () => {
       socket.off('players_update')
       socket.off('game_state_change')
@@ -129,6 +155,9 @@ function JoinPageContent() {
       socket.off('game_over')
       socket.off('error')
       socket.off('card_pack_selected')
+      socket.off('new_game_started')
+      socket.off('latency_ping')
+      socket.off('latency_pong_response')
     }
   }, [socket, isConnected, selection, myRole])
 
@@ -187,6 +216,19 @@ function JoinPageContent() {
   }
 
   const handleVote = (playerId: string) => socket?.emit('submit_vote', roomCode, playerId)
+
+  // Player navigation (synced with all clients)
+  const goToPreviousLine = () => {
+    if (currentLineIndex > 0) {
+      socket?.emit('player_jump_to_line', roomCode.toUpperCase(), currentLineIndex - 1)
+    }
+  }
+
+  const goToNextLine = () => {
+    if (script && currentLineIndex < script.lines.length - 1) {
+      socket?.emit('player_jump_to_line', roomCode.toUpperCase(), currentLineIndex + 1)
+    }
+  }
 
   const handleCopyScript = async () => {
     if (script) {
@@ -863,6 +905,46 @@ function JoinPageContent() {
                 )
               })()}
             </div>
+
+            {/* Player Navigation Controls */}
+            <div className="p-4" style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}>
+              <div className="flex items-center justify-between max-w-md mx-auto">
+                <motion.button
+                  onClick={goToPreviousLine}
+                  disabled={currentLineIndex === 0}
+                  className="btn btn-ghost"
+                  style={{
+                    opacity: currentLineIndex === 0 ? 0.5 : 1,
+                    padding: '12px 20px'
+                  }}
+                  whileHover={currentLineIndex > 0 ? { scale: 1.05 } : {}}
+                  whileTap={currentLineIndex > 0 ? { scale: 0.95 } : {}}
+                >
+                  ← Back
+                </motion.button>
+
+                <span className="font-script text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  {currentLineIndex + 1} / {script.lines.length}
+                </span>
+
+                <motion.button
+                  onClick={goToNextLine}
+                  disabled={currentLineIndex >= script.lines.length - 1}
+                  className="btn btn-ghost"
+                  style={{
+                    opacity: currentLineIndex >= script.lines.length - 1 ? 0.5 : 1,
+                    padding: '12px 20px'
+                  }}
+                  whileHover={currentLineIndex < script.lines.length - 1 ? { scale: 1.05 } : {}}
+                  whileTap={currentLineIndex < script.lines.length - 1 ? { scale: 0.95 } : {}}
+                >
+                  Next →
+                </motion.button>
+              </div>
+              <p className="text-center text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
+                Navigation syncs with everyone
+              </p>
+            </div>
           </motion.div>
         )}
 
@@ -1025,18 +1107,27 @@ function JoinPageContent() {
                 </motion.div>
               )}
 
-              <motion.button
-                onClick={() => window.location.reload()}
-                className="btn btn-primary btn-large"
+              <motion.div
+                className="card text-center"
+                style={{ background: 'var(--color-highlight)', padding: '24px' }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
-                <span>🔄</span>
-                <span>Play Again</span>
-              </motion.button>
+                <motion.div
+                  className="text-4xl mb-3"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  ⏳
+                </motion.div>
+                <p className="font-display text-lg mb-1" style={{ color: 'var(--color-text-primary)' }}>
+                  Waiting for Host...
+                </p>
+                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  The host will start the next game
+                </p>
+              </motion.div>
             </div>
           </motion.div>
         )}

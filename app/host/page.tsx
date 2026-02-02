@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, GameState, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings } from '@/lib/types'
+import type { Player, GameState, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings, TeleprompterSyncData } from '@/lib/types'
 import { QRCodeSVG } from 'qrcode.react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useConfetti } from '@/hooks/useConfetti'
@@ -65,6 +65,7 @@ export default function HostPage() {
     turnChimeEnabled: true
   })
   const [selectedPackId, setSelectedPackId] = useState('standard')
+  const [networkLatency, setNetworkLatency] = useState<number | null>(null)
 
   useEffect(() => {
     if (!socket || !isConnected || roomCreatedRef.current) return
@@ -98,8 +99,30 @@ export default function HostPage() {
     socket.on('game_state_change', setGameState)
     socket.on('green_room_prompt', setGreenRoomQuestion)
     socket.on('script_ready', (newScript) => { setScript(newScript); setCurrentLineIndex(0) })
-    socket.on('sync_teleprompter', setCurrentLineIndex)
+    // Handle both legacy (number) and new (object) sync formats
+    socket.on('sync_teleprompter', (data: TeleprompterSyncData | number) => {
+      if (typeof data === 'number') {
+        setCurrentLineIndex(data)
+      } else {
+        setCurrentLineIndex(data.lineIndex)
+      }
+    })
     socket.on('game_over', setGameResults)
+    // Handle new game started (play again without reload)
+    socket.on('new_game_started', () => {
+      setGameState('LOBBY')
+      setScript(null)
+      setCurrentLineIndex(0)
+      setGameResults(null)
+      setIsPlaying(true)
+    })
+    // Latency measurement
+    socket.on('latency_ping', (serverTimestamp: number) => {
+      socket.emit('latency_pong', serverTimestamp, Date.now())
+    })
+    socket.on('latency_pong_response', (data: { latency: number }) => {
+      setNetworkLatency(data.latency)
+    })
     return () => {
       socket.off('players_update')
       socket.off('game_state_change')
@@ -107,6 +130,9 @@ export default function HostPage() {
       socket.off('script_ready')
       socket.off('sync_teleprompter')
       socket.off('game_over')
+      socket.off('new_game_started')
+      socket.off('latency_ping')
+      socket.off('latency_pong_response')
     }
   }, [socket, isConnected])
 
@@ -172,6 +198,10 @@ export default function HostPage() {
   const requestSequel = () => {
     setGameState('LOADING')
     socket?.emit('request_sequel', roomCode)
+  }
+
+  const requestNewGame = (keepSelections: boolean = false) => {
+    socket?.emit('request_new_game', roomCode, { keepSelections })
   }
 
   const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join?code=${roomCode}` : ''
@@ -1018,7 +1048,7 @@ export default function HostPage() {
                 )}
 
                 <motion.button
-                  onClick={() => window.location.reload()}
+                  onClick={() => requestNewGame(false)}
                   className="btn btn-secondary btn-large"
                   style={{ minWidth: '280px' }}
                   initial={{ opacity: 0 }}
@@ -1028,7 +1058,21 @@ export default function HostPage() {
                   whileTap={{ scale: 0.98 }}
                 >
                   <span>🔄</span>
-                  <span>New Game</span>
+                  <span>New Game (Same Players)</span>
+                </motion.button>
+
+                <motion.button
+                  onClick={() => window.location.reload()}
+                  className="btn btn-ghost"
+                  style={{ minWidth: '280px' }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.4 }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span>🚪</span>
+                  <span>Exit to Home</span>
                 </motion.button>
               </div>
             </div>

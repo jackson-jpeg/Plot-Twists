@@ -1,7 +1,7 @@
 # Plot Twists - Application Architecture & Documentation
 
-**Last Updated:** 2026-02-01
-**Version:** 1.4
+**Last Updated:** 2026-02-02
+**Version:** 1.5
 **Status:** Active Development
 
 ---
@@ -253,11 +253,14 @@ game_state_change(newState: GameState)
 players_update(players: Player[])
 green_room_prompt(question: string)
 script_ready(script: Script)
-sync_teleprompter(lineIndex: number)
+sync_teleprompter(data: TeleprompterSyncData | number)  // v1.5: timestamp-based or legacy
 game_over(results: GameResults)
 error(message: string)
 room_settings_update(settings: RoomSettings)
 available_cards(cards: {...})
+new_game_started(options: NewGameOptions)              // v1.5: play again without reload
+latency_ping(serverTimestamp: number)                  // v1.5: latency measurement
+latency_pong_response(data: { latency: number })       // v1.5: latency result
 ```
 
 #### Client → Server Events
@@ -273,7 +276,9 @@ pause_script(roomCode)
 resume_script(roomCode)
 jump_to_line(roomCode, lineIndex)
 request_sequel(roomCode)
-request_new_game(roomCode)
+request_new_game(roomCode, options?: NewGameOptions)   // v1.5: play again without reload
+player_jump_to_line(roomCode, lineIndex)              // v1.5: synced player navigation
+latency_pong(serverTimestamp, clientTimestamp)        // v1.5: latency measurement
 update_room_settings(roomCode, settings)
 disconnect()
 ```
@@ -475,11 +480,26 @@ cors: { origin: 'http://localhost:3000' }
 - Next line preview
 - Mood indicator (emoji)
 - Vibration feedback when character speaks (mobile)
+- Navigation controls (Back/Next) synced with all clients
 
-**Synchronization**:
-- Reading time = `(words / 120 WPM) * 60` seconds
-- All clients receive line updates in real-time
-- Pause/resume functionality
+**Smart Timing (v1.5)**:
+- Base reading time = `(words / 120 WPM) * 60` seconds
+- **Punctuation pauses**: `.` = 400ms, `!` = 500ms, `?` = 450ms, `...` = 800ms, `,` = 200ms
+- **Mood multipliers**: angry = 0.9x (faster), whispering = 1.3x (slower), confused = 1.2x
+- **Stage directions**: Base 2000ms + reduced word time
+- **Bounds**: Clamped to 1.5s - 15s per line
+
+**Timestamp-Based Sync (v1.5)**:
+- Sync events include `serverTimestamp` for precise coordination
+- `expectedDuration` sent with each sync for client-side prediction
+- Backward compatible with legacy number-only sync format
+- Latency measurement via ping/pong events
+
+**Player Navigation (v1.5)**:
+- Players can navigate forward/backward during performance
+- Navigation syncs with ALL clients (host + players)
+- Brief pause then auto-resume after player navigation
+- Helps recover from accidental advances
 
 ### Voting System
 
@@ -1379,20 +1399,172 @@ interface RoomSettings {
 
 ---
 
+## 13.4. Teleprompter Sync & Play-Again Improvements (2026-02-02)
+
+### Smart Line Timing
+
+**Purpose:** Replace fixed WPM timing with intelligent duration calculation that accounts for punctuation, mood, and line type.
+
+#### Timing Constants (`server/utils/constants.ts`)
+
+```typescript
+// Punctuation pauses (ms)
+PUNCTUATION_PAUSES = {
+  '.': 400, '!': 500, '?': 450, ',': 200,
+  ':': 300, ';': 250, '...': 800, '--': 400
+}
+
+// Mood multipliers (faster/slower delivery)
+MOOD_TIMING_MULTIPLIERS = {
+  angry: 0.9,      // Faster
+  happy: 1.0,
+  confused: 1.2,   // More hesitation
+  whispering: 1.3, // Slower
+  neutral: 1.0
+}
+
+// Bounds
+MIN_LINE_DISPLAY_TIME = 1500   // 1.5 seconds minimum
+MAX_LINE_DISPLAY_TIME = 15000  // 15 seconds maximum
+STAGE_DIRECTION_BASE_TIME = 2000
+```
+
+#### Timing Utility (`server/utils/timing.ts`)
+
+```typescript
+function calculateLineDisplayTime(line: ScriptLine): number {
+  // 1. Base time from word count (120 WPM)
+  // 2. Add punctuation pauses (ellipsis = 800ms, period = 400ms, etc.)
+  // 3. Apply mood multiplier
+  // 4. Special handling for stage directions (NARRATOR)
+  // 5. Clamp to min/max bounds
+}
+```
+
+### Timestamp-Based Sync
+
+**Purpose:** Enable precise synchronization across multiple devices with varying network latency.
+
+#### Sync Data Structure
+
+```typescript
+interface TeleprompterSyncData {
+  lineIndex: number
+  serverTimestamp: number
+  expectedDuration?: number  // For client-side prediction
+}
+```
+
+#### Latency Measurement
+
+- Server sends `latency_ping` with timestamp
+- Client responds with `latency_pong`
+- Server calculates RTT and sends `latency_pong_response`
+- Clients can display network latency for debugging
+
+### Player Navigation
+
+**Key Behavior:** When ANY player navigates, everyone (host + all players) moves to that line together. This ensures perfect sync at all times.
+
+#### Implementation
+
+1. Player presses Back/Next on their device
+2. `player_jump_to_line` event sent to server
+3. Server validates line index
+4. Server clears auto-advance timeout
+5. Server broadcasts `sync_teleprompter` to ALL clients
+6. After 500ms delay, auto-advance resumes
+
+#### UI (Join Page)
+
+- Back/Next buttons at bottom of PERFORMING screen
+- Line counter: "X / total"
+- Helper text: "Navigation syncs with everyone"
+
+### Play Again Without Reload
+
+**Purpose:** Allow sequential games without page reloads, keeping players in the room.
+
+#### Host Flow
+
+1. Results screen shows three buttons:
+   - "Generate Sequel" - continues story with same setup
+   - "New Game (Same Players)" - resets to LOBBY
+   - "Exit to Home" - page reload
+
+2. "New Game" triggers `request_new_game` event
+
+3. Server resets:
+   - `gameState` → 'LOBBY'
+   - Clears script, votes, submission flags
+   - Optionally keeps card selections
+   - Resets audience interaction
+
+4. Server broadcasts `new_game_started` to all clients
+
+5. Clients reset local state without reload
+
+#### Player Flow
+
+1. Results screen shows "Waiting for Host..."
+2. Receives `new_game_started` event
+3. Resets to LOBBY state automatically
+
+### Vote Reset Bug Fix
+
+**Issue:** Votes from previous games carried over to sequels.
+
+**Fix:** Clear votes in `request_sequel` handler before generating new script:
+
+```typescript
+room.votes.clear()
+for (const player of room.players.values()) {
+  player.hasSubmittedVote = false
+}
+```
+
+### Files Added/Modified
+
+**New Files:**
+- `server/utils/timing.ts` - Smart timing calculation
+
+**Modified Files:**
+- `server/utils/constants.ts` - Added timing constants
+- `server.ts` - Updated teleprompter sync, added new handlers
+- `lib/types.ts` - Added TeleprompterSyncData, NewGameOptions, new events
+- `app/host/page.tsx` - Play-again flow, latency handling
+- `app/join/page.tsx` - Player navigation, play-again flow
+
+### Impact Assessment
+
+**User Experience**: 🟢 High Impact
+- Better pacing with smart timing
+- Players can recover from accidental advances
+- Seamless multi-game sessions
+
+**Technical Risk**: 🟢 Low
+- Backward compatible sync format
+- No breaking changes to existing flow
+- Graceful degradation
+
+---
+
 ## 14. Critical Files Reference
 
 | File | Lines | Purpose | Update Frequency |
 |------|-------|---------|------------------|
-| `/server.ts` | ~1,600 | Backend core | High |
+| `/server.ts` | ~2,000 | Backend core | High |
 | `/app/globals.css` | 2,183 | Design system | Low |
-| `/app/host/page.tsx` | ~400 | Host UI | Medium |
-| `/app/join/page.tsx` | ~400 | Player UI | Medium |
+| `/app/host/page.tsx` | ~450 | Host UI | Medium |
+| `/app/join/page.tsx` | ~500 | Player UI | Medium |
 | `/contexts/SocketContext.tsx` | 125 | Socket manager | Low |
-| `/lib/types.ts` | ~350 | Type definitions | Medium |
+| `/lib/types.ts` | ~400 | Type definitions | Medium |
 | `/lib/content.ts` | 20,991 | Game content | Low |
 | `/lib/schema.ts` | 20 | Validation | Low |
 | `/design-tokens.json` | 132 | Design tokens | Low |
 | `/package.json` | 47 | Dependencies | Medium |
+| `/server/utils/timing.ts` | ~100 | Smart line timing | Low |
+| `/server/utils/constants.ts` | ~60 | App constants | Low |
 | `/server/services/audience.service.ts` | ~200 | Audience interactions | Low |
 | `/server/services/scriptCustomization.service.ts` | ~250 | AI prompt customization | Low |
 | `/server/services/cardpack.service.ts` | ~300 | Card pack CRUD | Low |
@@ -1410,6 +1582,7 @@ interface RoomSettings {
 
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
+| 2026-02-02 | 1.5 | Teleprompter sync improvements: smart timing (punctuation/mood-aware), timestamp-based sync, player navigation controls, play-again without reload, vote reset fix | Claude |
 | 2026-02-01 | 1.4 | Card Pack Creator feature completion: CardPackEditor, DeleteConfirmModal, StarRating, CardPackBrowser components; search/featured/edit/delete socket events | Claude |
 | 2026-01-24 | 1.3 | Added 4 major features: Audience Interaction System, AI Script Customization Engine, Custom Card Pack Creator, Voice & Audio Integration | Claude |
 | 2026-01-23 | 1.2 | Enhanced card selection UX with "Shuffle All", progress indicators, haptic feedback, and selection preview | Claude |

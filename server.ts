@@ -49,8 +49,12 @@ import {
   getCardPack,
   getPackCards,
   createCardPack,
+  updateCardPack,
+  deleteCardPack,
   rateCardPack,
   incrementDownloads,
+  searchCardPacks,
+  getFeaturedPacks,
   STANDARD_PACK_ID
 } from './server/services/cardpack.service'
 import {
@@ -1427,6 +1431,77 @@ app.prepare().then(() => {
       } catch (error) {
         console.error('Error rating card pack:', error)
         callback({ success: false, error: 'Failed to rate card pack' })
+      }
+    })
+
+    // Update a card pack
+    socket.on('update_card_pack', (packId, updates, callback) => {
+      // Rate limiting
+      if (!cardPackLimiter.check(socket.id)) {
+        callback({ success: false, error: 'Too many requests. Please wait a moment.' })
+        return
+      }
+
+      try {
+        const result = updateCardPack(packId, updates)
+        callback(result)
+      } catch (error) {
+        console.error('Error updating card pack:', error)
+        callback({ success: false, error: 'Failed to update card pack' })
+      }
+    })
+
+    // Delete a card pack
+    socket.on('delete_card_pack', (packId, callback) => {
+      // Rate limiting
+      if (!cardPackLimiter.check(socket.id)) {
+        callback({ success: false, error: 'Too many requests. Please wait a moment.' })
+        return
+      }
+
+      try {
+        const result = deleteCardPack(packId)
+        callback(result)
+      } catch (error) {
+        console.error('Error deleting card pack:', error)
+        callback({ success: false, error: 'Failed to delete card pack' })
+      }
+    })
+
+    // Search card packs
+    socket.on('search_card_packs', (query, callback) => {
+      try {
+        const packs = searchCardPacks(query)
+        callback({ success: true, packs })
+      } catch (error) {
+        console.error('Error searching card packs:', error)
+        callback({ success: false, error: 'Failed to search card packs' })
+      }
+    })
+
+    // Get featured packs
+    socket.on('get_featured_packs', (limit, callback) => {
+      try {
+        const packs = getFeaturedPacks(limit)
+        callback({ success: true, packs })
+      } catch (error) {
+        console.error('Error getting featured packs:', error)
+        callback({ success: false, error: 'Failed to get featured packs' })
+      }
+    })
+
+    // Get a specific card pack
+    socket.on('get_card_pack', (packId, callback) => {
+      try {
+        const pack = getCardPack(packId)
+        if (pack) {
+          callback({ success: true, pack })
+        } else {
+          callback({ success: false, error: 'Pack not found' })
+        }
+      } catch (error) {
+        console.error('Error getting card pack:', error)
+        callback({ success: false, error: 'Failed to get card pack' })
       }
     })
 

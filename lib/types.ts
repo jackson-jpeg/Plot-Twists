@@ -345,7 +345,12 @@ export interface ClientToServerEvents {
   list_card_packs: (callback: (response: { success: boolean, packs?: CardPackMetadata[], error?: string }) => void) => void
   select_card_pack: (roomCode: string, packId: string, callback: (response: { success: boolean, error?: string }) => void) => void
   create_card_pack: (pack: CardPackInput, callback: (response: { success: boolean, packId?: string, error?: string }) => void) => void
-  rate_card_pack: (packId: string, rating: number, callback: (response: { success: boolean, error?: string }) => void) => void
+  update_card_pack: (packId: string, updates: Partial<CardPackInput>, callback: (response: { success: boolean, error?: string }) => void) => void
+  delete_card_pack: (packId: string, callback: (response: { success: boolean, error?: string }) => void) => void
+  rate_card_pack: (packId: string, rating: number, callback: (response: { success: boolean, newRating?: number, error?: string }) => void) => void
+  search_card_packs: (query: string, callback: (response: { success: boolean, packs?: CardPackMetadata[], error?: string }) => void) => void
+  get_featured_packs: (limit: number, callback: (response: { success: boolean, packs?: CardPackMetadata[], error?: string }) => void) => void
+  get_card_pack: (packId: string, callback: (response: { success: boolean, pack?: CardPack, error?: string }) => void) => void
 
   // Feature 4: Audio Events
   update_audio_settings: (roomCode: string, settings: Partial<AudioSettings>) => void

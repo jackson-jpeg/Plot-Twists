@@ -130,6 +130,20 @@ function sanitizeInput(input: string): string {
   return sanitizeUserInput(input, 50)
 }
 
+// Validate room exists and return it, or emit error and return null
+function validateRoom(roomCode: string, socket: { emit: (event: 'error', message: string) => void }): Room | null {
+  if (!roomCode || !isValidRoomCode(roomCode)) {
+    socket.emit('error', 'Invalid room code')
+    return null
+  }
+  const room = rooms.get(roomCode.toUpperCase())
+  if (!room) {
+    socket.emit('error', 'Room not found')
+    return null
+  }
+  return room
+}
+
 // Clean up inactive rooms (runs every 5 minutes)
 setInterval(() => {
   const now = Date.now()
@@ -137,6 +151,17 @@ setInterval(() => {
   for (const [code, room] of rooms.entries()) {
     if (now - room.lastActivity > oneHour) {
       console.log(`Cleaning up inactive room: ${code}`)
+      // Clean up associated timeouts before deleting room
+      const roomTimeout = roomTimeouts.get(code)
+      if (roomTimeout) {
+        clearTimeout(roomTimeout)
+        roomTimeouts.delete(code)
+      }
+      const plotTwistTimeout = plotTwistTimeouts.get(code)
+      if (plotTwistTimeout) {
+        clearTimeout(plotTwistTimeout)
+        plotTwistTimeouts.delete(code)
+      }
       rooms.delete(code)
     }
   }
@@ -694,8 +719,8 @@ app.prepare().then(() => {
           return callback(null, true)
         }
 
-        // In production, allow all Vercel preview deployments
-        if (!dev && origin.endsWith('.vercel.app')) {
+        // In production, allow only plot-twists Vercel preview deployments
+        if (!dev && origin.match(/^https:\/\/plot-twists(-[a-z0-9]+)?\.vercel\.app$/)) {
           return callback(null, true)
         }
 
@@ -1131,7 +1156,7 @@ app.prepare().then(() => {
 
     // Player jump to line (synced navigation - all clients move together)
     socket.on('player_jump_to_line', (roomCode, lineIndex) => {
-      const room = rooms.get(roomCode)
+      const room = validateRoom(roomCode, socket)
       if (!room || room.gameState !== 'PERFORMING' || !room.script) return
 
       // Validate line index
@@ -1373,7 +1398,7 @@ app.prepare().then(() => {
         return
       }
 
-      const room = rooms.get(roomCode)
+      const room = validateRoom(roomCode, socket)
       if (!room || !room.audienceInteraction) return
 
       // Find sender
@@ -1449,7 +1474,7 @@ app.prepare().then(() => {
 
     // Vote on a plot twist option
     socket.on('vote_plot_twist', (roomCode, optionId) => {
-      const room = rooms.get(roomCode)
+      const room = validateRoom(roomCode, socket)
       if (!room || !room.audienceInteraction) return
 
       // Find voter
@@ -1627,7 +1652,7 @@ app.prepare().then(() => {
 
     // Update audio settings
     socket.on('update_audio_settings', (roomCode, settings) => {
-      const room = rooms.get(roomCode)
+      const room = validateRoom(roomCode, socket)
       if (!room) return
 
       // Only host can change audio settings
@@ -1644,7 +1669,7 @@ app.prepare().then(() => {
 
     // Trigger sound effect (host only)
     socket.on('trigger_sound_effect', (roomCode, effect) => {
-      const room = rooms.get(roomCode)
+      const room = validateRoom(roomCode, socket)
       if (!room) return
 
       // Only host can trigger sound effects
@@ -1796,10 +1821,32 @@ app.prepare().then(() => {
               // Only delete room if it's empty or has been too long
               if (player.isHost && room.gameState === 'LOBBY' && room.players.size === 0) {
                 console.log(`Deleting empty room ${code}`)
+                // Clean up timeouts before deleting room
+                const roomTimeout = roomTimeouts.get(code)
+                if (roomTimeout) {
+                  clearTimeout(roomTimeout)
+                  roomTimeouts.delete(code)
+                }
+                const plotTwistTimeout = plotTwistTimeouts.get(code)
+                if (plotTwistTimeout) {
+                  clearTimeout(plotTwistTimeout)
+                  plotTwistTimeouts.delete(code)
+                }
                 rooms.delete(code)
               } else if (player.isHost) {
-                // Host left during game - notify but don't delete immediately
-                io.to(code).emit('error', 'Host disconnected')
+                // Host left during game - notify players with specific event and cleanup timeouts
+                console.log(`Host disconnected from room ${code}`)
+                const roomTimeout = roomTimeouts.get(code)
+                if (roomTimeout) {
+                  clearTimeout(roomTimeout)
+                  roomTimeouts.delete(code)
+                }
+                const plotTwistTimeout = plotTwistTimeouts.get(code)
+                if (plotTwistTimeout) {
+                  clearTimeout(plotTwistTimeout)
+                  plotTwistTimeouts.delete(code)
+                }
+                io.to(code).emit('host_disconnected', { message: 'The host has left the game. You can wait for them to reconnect or return to the home page.' })
               }
               break
             }

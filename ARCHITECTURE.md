@@ -1,7 +1,7 @@
 # Plot Twists - Application Architecture & Documentation
 
 **Last Updated:** 2026-02-02
-**Version:** 1.5
+**Version:** 1.6
 **Status:** Active Development
 
 ---
@@ -1549,6 +1549,154 @@ for (const player of room.players.values()) {
 
 ---
 
+## 13.5. Security & Stability Fixes (2026-02-02)
+
+### Memory Leak Fixes (Critical)
+
+**Issue:** `plotTwistTimeouts` and `roomTimeouts` Maps accumulated orphaned timeout references that were never cleared on room deletion or player disconnect.
+
+**Fix:**
+1. Added timeout cleanup in the room cleanup interval (runs every 5 minutes)
+2. Added timeout cleanup in disconnect handler when:
+   - Host leaves and room is empty
+   - Host disconnects during active game
+
+```typescript
+// In room cleanup interval and disconnect handler
+const roomTimeout = roomTimeouts.get(code)
+if (roomTimeout) {
+  clearTimeout(roomTimeout)
+  roomTimeouts.delete(code)
+}
+const plotTwistTimeout = plotTwistTimeouts.get(code)
+if (plotTwistTimeout) {
+  clearTimeout(plotTwistTimeout)
+  plotTwistTimeouts.delete(code)
+}
+```
+
+### Host Disconnect Recovery
+
+**Issue:** When host disconnected, players remained stranded with no notification or recovery options.
+
+**Fix:**
+1. Added `host_disconnected` event type to `ServerToClientEvents`
+2. Server emits `host_disconnected` when host leaves during active game
+3. Join page shows overlay with:
+   - Explanation message
+   - "Wait for Reconnection" button
+   - "Return Home" button
+
+```typescript
+// Server (disconnect handler)
+io.to(code).emit('host_disconnected', {
+  message: 'The host has left the game. You can wait for them to reconnect or return to the home page.'
+})
+```
+
+### Script Generation Timeout
+
+**Issue:** If Claude API failed or timed out, users saw infinite loading spinner with no way to cancel or retry.
+
+**Fix:**
+1. Added 30-second timeout timer when entering LOADING state
+2. Timeout UI shows after 30 seconds with:
+   - "Taking longer than expected" message
+   - "Retry" button - restarts script generation
+   - "Back to Lobby" button - returns to lobby state
+3. Timeout automatically clears when leaving LOADING state
+
+### Room Validation Helper
+
+**Issue:** Many socket handlers accepted `roomCode` without validation, risking crashes or unauthorized access.
+
+**Fix:**
+Created `validateRoom()` helper function applied to 5 handlers:
+- `send_audience_reaction`
+- `vote_plot_twist`
+- `update_audio_settings`
+- `trigger_sound_effect`
+- `player_jump_to_line`
+
+```typescript
+function validateRoom(roomCode: string, socket: { emit: (event: 'error', message: string) => void }): Room | null {
+  if (!roomCode || !isValidRoomCode(roomCode)) {
+    socket.emit('error', 'Invalid room code')
+    return null
+  }
+  const room = rooms.get(roomCode.toUpperCase())
+  if (!room) {
+    socket.emit('error', 'Room not found')
+    return null
+  }
+  return room
+}
+```
+
+### CORS Restriction
+
+**Issue:** CORS allowed all `*.vercel.app` subdomains, permitting any Vercel-deployed app to connect.
+
+**Fix:** Restricted to only `plot-twists` preview deployments:
+
+```typescript
+// Before
+if (!dev && origin.endsWith('.vercel.app')) { ... }
+
+// After
+if (!dev && origin.match(/^https:\/\/plot-twists(-[a-z0-9]+)?\.vercel\.app$/)) { ... }
+```
+
+### TypeScript Type Fixes
+
+**Issue:** `lib/firebase.ts` used `any` types for Firebase app and auth objects.
+
+**Fix:** Added proper type definitions:
+
+```typescript
+type FirebaseApp = { name: string; options: Record<string, unknown> }
+type FirebaseAuth = { currentUser: unknown; onAuthStateChanged: (callback: (user: unknown) => void) => () => void }
+
+let app: FirebaseApp | null = null
+let auth: FirebaseAuth | null = null
+```
+
+### Card Submission Loading State
+
+**Issue:** No feedback when submitting card selections - button just sat there.
+
+**Fix:**
+1. Added `isSubmitting` state
+2. Button shows loading spinner and "Submitting..." text during submission
+3. Button disabled while submitting to prevent double-submission
+
+### Files Modified
+
+| File | Changes |
+|------|---------|
+| `server.ts` | Memory leak fixes, host disconnect event, room validation helper, CORS restriction |
+| `app/join/page.tsx` | Host disconnect overlay, card submission loading state |
+| `app/host/page.tsx` | Script generation timeout with retry UI |
+| `lib/types.ts` | Added `host_disconnected` event type |
+| `lib/firebase.ts` | Fixed TypeScript any types |
+
+### Impact Assessment
+
+**Stability**: 🔴 Critical
+- Prevents server memory exhaustion from orphaned timeouts
+- Prevents players from being stranded on host disconnect
+
+**Security**: 🟡 Medium
+- CORS now only allows legitimate preview domains
+- Room validation prevents potential crashes from invalid requests
+
+**User Experience**: 🟢 High
+- Clear feedback during card submission
+- Recoverable state when script generation times out
+- Graceful handling of host disconnection
+
+---
+
 ## 14. Critical Files Reference
 
 | File | Lines | Purpose | Update Frequency |
@@ -1582,6 +1730,7 @@ for (const player of room.players.values()) {
 
 | Date | Version | Changes | Author |
 |------|---------|---------|--------|
+| 2026-02-02 | 1.6 | Security & stability fixes: memory leak cleanup, host disconnect recovery, script generation timeout, room validation helper, CORS restriction, TypeScript type fixes, card submission loading state | Claude |
 | 2026-02-02 | 1.5 | Teleprompter sync improvements: smart timing (punctuation/mood-aware), timestamp-based sync, player navigation controls, play-again without reload, vote reset fix | Claude |
 | 2026-02-01 | 1.4 | Card Pack Creator feature completion: CardPackEditor, DeleteConfirmModal, StarRating, CardPackBrowser components; search/featured/edit/delete socket events | Claude |
 | 2026-01-24 | 1.3 | Added 4 major features: Audience Interaction System, AI Script Customization Engine, Custom Card Pack Creator, Voice & Audio Integration | Claude |

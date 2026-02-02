@@ -59,6 +59,7 @@ function JoinPageContent() {
     circumstance: false
   })
   const [hasSubmitted, setHasSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [script, setScript] = useState<Script | null>(null)
   const [currentLineIndex, setCurrentLineIndex] = useState(0)
   const [myCharacter, setMyCharacter] = useState('')
@@ -70,6 +71,7 @@ function JoinPageContent() {
   const [myRole, setMyRole] = useState<PlayerRole>('PLAYER')
   const [selectedPackName, setSelectedPackName] = useState<string | null>(null)
   const [networkLatency, setNetworkLatency] = useState<number | null>(null)
+  const [hostDisconnected, setHostDisconnected] = useState(false)
   const previousSpeaker = React.useRef<string>('')
 
   useEffect(() => {
@@ -115,6 +117,12 @@ function JoinPageContent() {
       toast.error(errorMsg)
       setError(errorMsg)
     })
+    socket.on('host_disconnected', (data: { message: string }) => {
+      toast.error('Host Disconnected')
+      setError(data.message)
+      // Set a flag to show recovery UI
+      setHostDisconnected(true)
+    })
     socket.on('card_pack_selected', (packId: string) => {
       // Display a friendly name based on pack ID
       if (packId === 'standard') {
@@ -154,6 +162,7 @@ function JoinPageContent() {
       socket.off('sync_teleprompter')
       socket.off('game_over')
       socket.off('error')
+      socket.off('host_disconnected')
       socket.off('card_pack_selected')
       socket.off('new_game_started')
       socket.off('latency_ping')
@@ -205,7 +214,9 @@ function JoinPageContent() {
       toast.error('Please select all cards')
       return
     }
+    setIsSubmitting(true)
     socket.emit('submit_cards', roomCode, selection, (response) => {
+      setIsSubmitting(false)
       if (response.success) {
         setHasSubmitted(true)
         toast.success('Cards submitted!')
@@ -344,6 +355,53 @@ function JoinPageContent() {
   return (
     <div className="page-container">
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="join" />
+
+      {/* Host Disconnected Overlay */}
+      <AnimatePresence>
+        {hostDisconnected && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(0, 0, 0, 0.8)' }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="card max-w-md w-full text-center"
+            >
+              <div className="text-6xl mb-4">😢</div>
+              <h2 className="text-2xl font-display mb-4" style={{ color: 'var(--color-text-primary)' }}>
+                Host Disconnected
+              </h2>
+              <p className="mb-6" style={{ color: 'var(--color-text-secondary)' }}>
+                The host has left the game. You can wait for them to reconnect or return to the home page.
+              </p>
+              <div className="flex flex-col gap-3">
+                <motion.button
+                  onClick={() => setHostDisconnected(false)}
+                  className="btn btn-secondary w-full"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Wait for Reconnection
+                </motion.button>
+                <motion.button
+                  onClick={() => router.push('/')}
+                  className="btn btn-primary w-full"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Return Home
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {gameState === 'LOBBY' && (
           <motion.div
@@ -696,16 +754,16 @@ function JoinPageContent() {
 
                 <motion.button
                   onClick={handleSubmitCards}
-                  disabled={!selection.character || !selection.setting || !selection.circumstance}
+                  disabled={!selection.character || !selection.setting || !selection.circumstance || isSubmitting}
                   className="btn btn-primary btn-large w-full"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                  whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
                   style={{
                     marginTop: '24px',
-                    opacity: (!selection.character || !selection.setting || !selection.circumstance) ? 0.5 : 1
+                    opacity: (!selection.character || !selection.setting || !selection.circumstance || isSubmitting) ? 0.5 : 1
                   }}
                   animate={
-                    (selection.character && selection.setting && selection.circumstance)
+                    (selection.character && selection.setting && selection.circumstance && !isSubmitting)
                       ? {
                           boxShadow: [
                             '0 0 0 0 rgba(245, 158, 66, 0)',
@@ -716,17 +774,31 @@ function JoinPageContent() {
                       : {}
                   }
                   transition={
-                    (selection.character && selection.setting && selection.circumstance)
+                    (selection.character && selection.setting && selection.circumstance && !isSubmitting)
                       ? { duration: 2, repeat: Infinity }
                       : {}
                   }
                 >
-                  <span>✨</span>
-                  <span>
-                    {(!selection.character || !selection.setting || !selection.circumstance)
-                      ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)`
-                      : 'Submit Cards - Ready!'}
-                  </span>
+                  {isSubmitting ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      >
+                        ⏳
+                      </motion.span>
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>✨</span>
+                      <span>
+                        {(!selection.character || !selection.setting || !selection.circumstance)
+                          ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)`
+                          : 'Submit Cards - Ready!'}
+                      </span>
+                    </>
+                  )}
                 </motion.button>
               </div>
             </div>

@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, GameState, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings, TeleprompterSyncData } from '@/lib/types'
+import type { Player, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings, TeleprompterSyncData } from '@/lib/types'
+import type { GameState } from '@/lib/types'
 import { QRCodeSVG } from 'qrcode.react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useConfetti } from '@/hooks/useConfetti'
@@ -66,6 +67,8 @@ export default function HostPage() {
   })
   const [selectedPackId, setSelectedPackId] = useState('standard')
   const [networkLatency, setNetworkLatency] = useState<number | null>(null)
+  const [scriptGenerationTimedOut, setScriptGenerationTimedOut] = useState(false)
+  const scriptGenerationTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (!socket || !isConnected || roomCreatedRef.current) return
@@ -96,7 +99,22 @@ export default function HostPage() {
   useEffect(() => {
     if (!socket || !isConnected) return
     socket.on('players_update', setPlayers)
-    socket.on('game_state_change', setGameState)
+    socket.on('game_state_change', (newState: GameState) => {
+      setGameState(newState)
+      // Clear timeout when leaving LOADING state
+      if (newState !== 'LOADING' && scriptGenerationTimeoutRef.current) {
+        clearTimeout(scriptGenerationTimeoutRef.current)
+        scriptGenerationTimeoutRef.current = null
+        setScriptGenerationTimedOut(false)
+      }
+      // Start timeout when entering LOADING state
+      if (newState === 'LOADING') {
+        setScriptGenerationTimedOut(false)
+        scriptGenerationTimeoutRef.current = setTimeout(() => {
+          setScriptGenerationTimedOut(true)
+        }, 30000) // 30 second timeout
+      }
+    })
     socket.on('green_room_prompt', setGreenRoomQuestion)
     socket.on('script_ready', (newScript) => { setScript(newScript); setCurrentLineIndex(0) })
     // Handle both legacy (number) and new (object) sync formats
@@ -698,7 +716,7 @@ export default function HostPage() {
                 />
               </div>
               <AnimatePresence mode="wait">
-                {greenRoomQuestion && (
+                {greenRoomQuestion && !scriptGenerationTimedOut && (
                   <motion.div
                     className="card card-accent-2 mt-8"
                     initial={{ opacity: 0, y: 20 }}
@@ -707,6 +725,59 @@ export default function HostPage() {
                   >
                     <h3 className="font-display text-lg mb-3" style={{ color: 'var(--color-accent-2)' }}>💭 While You Wait</h3>
                     <p className="italic" style={{ color: 'var(--color-text-primary)' }}>"{greenRoomQuestion}"</p>
+                  </motion.div>
+                )}
+                {scriptGenerationTimedOut && (
+                  <motion.div
+                    className="card mt-8"
+                    style={{ background: 'var(--color-highlight-pink)', border: '2px solid var(--color-danger)' }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <h3 className="font-display text-lg mb-3" style={{ color: 'var(--color-danger)' }}>⏰ Taking longer than expected</h3>
+                    <p className="mb-4" style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+                      Script generation is taking longer than usual. You can wait, retry, or go back.
+                    </p>
+                    <div className="flex gap-3 justify-center flex-wrap">
+                      <motion.button
+                        onClick={() => {
+                          // Reset and retry - go back to selection
+                          socket?.emit('update_room_settings', roomCode, {
+                            scriptCustomization,
+                            audioSettings,
+                            cardPackId: selectedPackId
+                          })
+                          socket?.emit('start_game', roomCode)
+                          setScriptGenerationTimedOut(false)
+                          // Restart the timeout
+                          if (scriptGenerationTimeoutRef.current) {
+                            clearTimeout(scriptGenerationTimeoutRef.current)
+                          }
+                          scriptGenerationTimeoutRef.current = setTimeout(() => {
+                            setScriptGenerationTimedOut(true)
+                          }, 30000)
+                        }}
+                        className="btn btn-primary"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <span>🔄</span>
+                        <span>Retry</span>
+                      </motion.button>
+                      <motion.button
+                        onClick={() => {
+                          // Go back to selection state
+                          socket?.emit('request_new_game', roomCode, { keepSelections: false })
+                        }}
+                        className="btn btn-ghost"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <span>←</span>
+                        <span>Back to Lobby</span>
+                      </motion.button>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>

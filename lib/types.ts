@@ -293,6 +293,7 @@ export interface ServerToClientEvents {
   sync_teleprompter: (data: TeleprompterSyncData | number) => void // Backward compatible
   game_over: (results: GameResults) => void
   error: (message: string) => void
+  host_disconnected: (data: { message: string }) => void
   room_settings_update: (settings: RoomSettings) => void
   available_cards: (cards: { characters: string[], settings: string[], circumstances: string[] }) => void
 

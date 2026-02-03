@@ -41,6 +41,8 @@ interface AuthContextType {
   linkWithGoogle: () => Promise<AuthResult>
   linkWithEmail: (email: string, password: string) => Promise<AuthResult>
   linkWithPhone: (verificationId: string, code: string) => Promise<AuthResult>
+  updateDisplayName: (displayName: string) => Promise<AuthResult>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<AuthResult>
   signOut: () => Promise<void>
   getPlayerId: () => string
 }
@@ -58,6 +60,8 @@ const AuthContext = createContext<AuthContextType>({
   linkWithGoogle: async () => ({ success: false, error: 'Not configured' }),
   linkWithEmail: async () => ({ success: false, error: 'Not configured' }),
   linkWithPhone: async () => ({ success: false, error: 'Not configured' }),
+  updateDisplayName: async () => ({ success: false, error: 'Not configured' }),
+  changePassword: async () => ({ success: false, error: 'Not configured' }),
   signOut: async () => {},
   getPlayerId: () => ''
 })
@@ -333,6 +337,66 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [firebaseReady])
 
+  // Update display name
+  const updateDisplayName = useCallback(async (displayName: string): Promise<AuthResult> => {
+    if (!firebaseReady) {
+      return { success: false, error: 'Authentication not configured' }
+    }
+
+    try {
+      const firebaseAuth = await import('firebase/auth')
+      const { updateProfile } = firebaseAuth
+      const auth = getFirebaseAuth()
+      const currentUser = auth?.currentUser
+
+      if (!currentUser) {
+        return { success: false, error: 'No user signed in' }
+      }
+
+      await updateProfile(currentUser, { displayName })
+
+      // Update local user state
+      setUser(prev => prev ? { ...prev, displayName } : null)
+
+      return { success: true }
+    } catch (error: unknown) {
+      return { success: false, error: getFirebaseErrorMessage(error) }
+    }
+  }, [firebaseReady])
+
+  // Change password (requires reauthentication)
+  const changePassword = useCallback(async (currentPassword: string, newPassword: string): Promise<AuthResult> => {
+    if (!firebaseReady) {
+      return { success: false, error: 'Authentication not configured' }
+    }
+
+    try {
+      const firebaseAuth = await import('firebase/auth')
+      const { EmailAuthProvider, reauthenticateWithCredential, updatePassword } = firebaseAuth
+      const auth = getFirebaseAuth()
+      const currentUser = auth?.currentUser
+
+      if (!currentUser) {
+        return { success: false, error: 'No user signed in' }
+      }
+
+      if (!currentUser.email) {
+        return { success: false, error: 'No email associated with this account' }
+      }
+
+      // Reauthenticate the user first
+      const credential = EmailAuthProvider.credential(currentUser.email, currentPassword)
+      await reauthenticateWithCredential(currentUser, credential)
+
+      // Now update the password
+      await updatePassword(currentUser, newPassword)
+
+      return { success: true }
+    } catch (error: unknown) {
+      return { success: false, error: getFirebaseErrorMessage(error) }
+    }
+  }, [firebaseReady])
+
   const signOut = useCallback(async (): Promise<void> => {
     if (!firebaseReady) return
 
@@ -367,6 +431,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     linkWithGoogle,
     linkWithEmail,
     linkWithPhone,
+    updateDisplayName,
+    changePassword,
     signOut,
     getPlayerId
   }

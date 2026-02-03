@@ -9,6 +9,7 @@ import { PlayerProfile, Leaderboard } from '@/components/PlayerProfile'
 import { AuthModal } from '@/components/AuthModal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
+import { AccountSettings } from '@/components/AccountSettings'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -173,6 +174,18 @@ export default function ProfilePage() {
             className="mb-6"
           >
             <AccountUpgradeCard />
+          </motion.div>
+        )}
+
+        {/* Account Settings for Authenticated Users */}
+        {user && !user.isAnonymous && !showLeaderboard && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-6"
+          >
+            <AccountSettings />
           </motion.div>
         )}
 

@@ -12,14 +12,14 @@ interface PlayerProfileProps {
 }
 
 const RARITY_COLORS = {
-  common: 'from-gray-400 to-gray-600',
+  common: 'from-[var(--color-text-secondary)] to-[var(--color-text-tertiary)]',
   rare: 'from-blue-400 to-blue-600',
   epic: 'from-purple-400 to-purple-600',
   legendary: 'from-yellow-400 to-orange-500'
 }
 
 const RARITY_BG = {
-  common: 'bg-gray-500/20 border-gray-500/50',
+  common: 'bg-[var(--color-surface-alt)] border-[var(--color-border)]',
   rare: 'bg-blue-500/20 border-blue-500/50',
   epic: 'bg-purple-500/20 border-purple-500/50',
   legendary: 'bg-yellow-500/20 border-yellow-500/50'
@@ -55,7 +55,7 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
 
   if (loading) {
     return (
-      <div className="text-center py-12 text-gray-400">
+      <div className="text-center py-12 text-[var(--color-text-secondary)]">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -70,9 +70,9 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
 
   if (error || !stats) {
     return (
-      <div className="text-center py-12 text-red-400">
+      <div className="text-center py-12 text-[var(--color-danger)]">
         <p>{error || 'Profile not found'}</p>
-        <button onClick={fetchStats} className="mt-2 text-purple-400 hover:underline">
+        <button onClick={fetchStats} className="mt-2 text-[var(--color-purple)] hover:underline">
           Try again
         </button>
       </div>
@@ -93,39 +93,39 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
         >
           🎭
         </motion.div>
-        <h2 className="text-2xl font-bold text-white mb-3">Ready for Your Debut?</h2>
-        <p className="text-gray-400 mb-6 max-w-xs mx-auto">
+        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] font-display mb-3">Ready for Your Debut?</h2>
+        <p className="text-[var(--color-text-secondary)] mb-6 max-w-xs mx-auto">
           Play your first game to start tracking stats and unlock achievements!
         </p>
 
         {/* What you'll unlock */}
         <div className="grid grid-cols-3 gap-3 mb-8 text-center">
           <motion.div
-            className="p-3 rounded-lg bg-gray-800/50"
+            className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border)]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
             <div className="text-2xl mb-1">📊</div>
-            <div className="text-xs text-gray-400">Stats</div>
+            <div className="text-xs text-[var(--color-text-tertiary)]">Stats</div>
           </motion.div>
           <motion.div
-            className="p-3 rounded-lg bg-gray-800/50"
+            className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border)]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
             <div className="text-2xl mb-1">🏅</div>
-            <div className="text-xs text-gray-400">Achievements</div>
+            <div className="text-xs text-[var(--color-text-tertiary)]">Achievements</div>
           </motion.div>
           <motion.div
-            className="p-3 rounded-lg bg-gray-800/50"
+            className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border)]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
             <div className="text-2xl mb-1">🏆</div>
-            <div className="text-xs text-gray-400">Leaderboard</div>
+            <div className="text-xs text-[var(--color-text-tertiary)]">Leaderboard</div>
           </motion.div>
         </div>
 
@@ -150,12 +150,12 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-3xl font-bold text-white">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-purple)] to-[var(--color-pink)] flex items-center justify-center text-3xl font-bold text-white">
             {stats.nickname[0]?.toUpperCase()}
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white">{stats.nickname}</h2>
-            <p className="text-gray-400">
+            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats.nickname}</h2>
+            <p className="text-[var(--color-text-secondary)]">
               Playing since {new Date(stats.joinedAt).toLocaleDateString()}
             </p>
           </div>
@@ -163,7 +163,7 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
         {onClose && (
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white text-2xl"
+            className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] text-2xl"
           >
             ×
           </button>
@@ -171,28 +171,37 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <motion.div
+        className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4"
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+      >
         <StatCard
           icon="🎮"
           label="Games"
           value={stats.gamesPlayed}
+          index={0}
         />
         <StatCard
           icon="🏆"
           label="Wins"
           value={stats.gamesWon}
+          index={1}
         />
         <StatCard
           icon="📈"
           label="Win Rate"
           value={`${Math.round(stats.winRate)}%`}
+          index={2}
         />
         <StatCard
           icon="🔥"
           label="Best Streak"
           value={stats.bestWinStreak}
+          index={3}
         />
-      </div>
+      </motion.div>
 
       {/* Current Streak Banner */}
       {stats.currentWinStreak >= 2 && (
@@ -216,23 +225,34 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
         </motion.div>
       )}
 
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-gray-700 pb-2">
-        {(['stats', 'achievements', 'history'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 rounded-t-lg font-medium transition-colors ${
-              activeTab === tab
-                ? 'bg-gray-800 text-white'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            {tab === 'stats' && '📊 Stats'}
-            {tab === 'achievements' && `🏅 Achievements (${unlockedAchievements.length})`}
-            {tab === 'history' && '📜 History'}
-          </button>
-        ))}
+      {/* Tabs - styled as paper tabs */}
+      <div className="flex gap-1 border-b border-[var(--color-border)] pb-0 relative">
+        {(['stats', 'achievements', 'history'] as const).map((tab, index) => {
+          const rotations = [-1, 0.5, -0.5]
+          const isActive = activeTab === tab
+
+          return (
+            <motion.button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2.5 rounded-t-lg font-medium transition-all border border-b-0 relative -mb-px ${
+                isActive
+                  ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-primary)] z-10'
+                  : 'bg-[var(--color-surface-alt)] border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
+              }`}
+              style={{
+                transform: isActive ? 'rotate(0deg) translateY(-2px)' : `rotate(${rotations[index]}deg)`,
+                boxShadow: isActive ? 'var(--shadow-2)' : 'none'
+              }}
+              whileHover={!isActive ? { y: -2, rotate: 0 } : {}}
+              whileTap={{ scale: 0.98 }}
+            >
+              {tab === 'stats' && '📊 Stats'}
+              {tab === 'achievements' && `🏅 Achievements (${unlockedAchievements.length})`}
+              {tab === 'history' && '📜 History'}
+            </motion.button>
+          )
+        })}
       </div>
 
       {/* Tab Content */}
@@ -247,53 +267,95 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
           >
             {/* Favorite Character */}
             {stats.favoriteCharacter && (
-              <div className="bg-gray-800/50 rounded-xl p-4">
-                <h3 className="text-sm text-gray-400 mb-2">Favorite Character</h3>
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">🎭</span>
-                  <div>
-                    <p className="font-semibold text-white text-lg">{stats.favoriteCharacter}</p>
-                    <p className="text-sm text-gray-400">
-                      Played {stats.characterCounts[stats.favoriteCharacter]} times
-                    </p>
+              <motion.div
+                className="polaroid-card relative"
+                style={{ transform: 'rotate(-0.5deg)' }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                whileHover={{ rotate: 0, scale: 1.02 }}
+              >
+                <div className="tape-piece tape-top-left" style={{ width: '50px', height: '18px' }} />
+                <div className="p-5">
+                  <h3 className="text-sm text-[var(--color-text-tertiary)] mb-2 font-display">Favorite Character</h3>
+                  <div className="flex items-center gap-3">
+                    <motion.span
+                      className="text-3xl"
+                      animate={{ rotate: [-5, 5, -5] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      🎭
+                    </motion.span>
+                    <div>
+                      <p className="font-semibold text-[var(--color-text-primary)] text-lg">{stats.favoriteCharacter}</p>
+                      <p className="text-sm text-[var(--color-text-secondary)]">
+                        Played {stats.characterCounts[stats.favoriteCharacter]} times
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Game Mode Breakdown */}
-            <div className="bg-gray-800/50 rounded-xl p-4">
-              <h3 className="text-sm text-gray-400 mb-3">Game Mode Performance</h3>
-              <div className="space-y-3">
-                <ModeStatRow
-                  mode="Solo"
-                  icon="🎤"
-                  stats={stats.gameModeStats.solo}
-                />
-                <ModeStatRow
-                  mode="Head to Head"
-                  icon="⚔️"
-                  stats={stats.gameModeStats.headToHead}
-                />
-                <ModeStatRow
-                  mode="Ensemble"
-                  icon="👥"
-                  stats={stats.gameModeStats.ensemble}
-                />
-              </div>
-            </div>
-
-            {/* Audience Love */}
-            <div className="bg-gray-800/50 rounded-xl p-4">
-              <h3 className="text-sm text-gray-400 mb-2">Audience Reactions</h3>
-              <div className="flex items-center gap-4">
-                <div className="text-4xl">😂</div>
-                <div>
-                  <p className="text-2xl font-bold text-white">{stats.totalReactionsReceived}</p>
-                  <p className="text-sm text-gray-400">total reactions received</p>
+            <motion.div
+              className="polaroid-card relative"
+              style={{ transform: 'rotate(0.5deg)' }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              whileHover={{ rotate: 0, scale: 1.02 }}
+            >
+              <div className="tape-piece tape-top-right" style={{ width: '50px', height: '18px' }} />
+              <div className="p-5">
+                <h3 className="text-sm text-[var(--color-text-tertiary)] mb-3 font-display">Game Mode Performance</h3>
+                <div className="space-y-3">
+                  <ModeStatRow
+                    mode="Solo"
+                    icon="🎤"
+                    stats={stats.gameModeStats.solo}
+                  />
+                  <ModeStatRow
+                    mode="Head to Head"
+                    icon="⚔️"
+                    stats={stats.gameModeStats.headToHead}
+                  />
+                  <ModeStatRow
+                    mode="Ensemble"
+                    icon="👥"
+                    stats={stats.gameModeStats.ensemble}
+                  />
                 </div>
               </div>
-            </div>
+            </motion.div>
+
+            {/* Audience Love */}
+            <motion.div
+              className="polaroid-card relative"
+              style={{ transform: 'rotate(-1deg)' }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              whileHover={{ rotate: 0, scale: 1.02 }}
+            >
+              <div className="tape-piece tape-top-center" />
+              <div className="p-5">
+                <h3 className="text-sm text-[var(--color-text-tertiary)] mb-2 font-display">Audience Reactions</h3>
+                <div className="flex items-center gap-4">
+                  <motion.div
+                    className="text-4xl"
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    😂
+                  </motion.div>
+                  <div>
+                    <p className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats.totalReactionsReceived}</p>
+                    <p className="text-sm text-[var(--color-text-secondary)]">total reactions received</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
 
@@ -308,12 +370,13 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
             {/* Unlocked Achievements */}
             {unlockedAchievements.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
+                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] font-display mb-4 flex items-center gap-2">
+                  <span className="font-handwritten text-[var(--color-accent)]">★</span>
                   Unlocked ({unlockedAchievements.length})
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {unlockedAchievements.map(achievement => (
-                    <AchievementCard key={achievement.id} achievement={achievement} unlocked />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {unlockedAchievements.map((achievement, index) => (
+                    <AchievementCard key={achievement.id} achievement={achievement} unlocked index={index} />
                   ))}
                 </div>
               </div>
@@ -322,12 +385,12 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
             {/* Locked Achievements */}
             {lockedAchievements.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-400 mb-3">
+                <h3 className="text-lg font-semibold text-[var(--color-text-tertiary)] font-display mb-4">
                   Locked ({lockedAchievements.length})
                 </h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {lockedAchievements.map(achievement => (
-                    <AchievementCard key={achievement.id} achievement={achievement} unlocked={false} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {lockedAchievements.map((achievement, index) => (
+                    <AchievementCard key={achievement.id} achievement={achievement} unlocked={false} index={index} />
                   ))}
                 </div>
               </div>
@@ -350,15 +413,59 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
   )
 }
 
+// Animation variants
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 }
+}
+
+const emojiWiggle = {
+  initial: { rotate: 0 },
+  animate: {
+    rotate: [-3, 3, -3],
+    transition: {
+      duration: 2,
+      repeat: Infinity,
+      ease: "easeInOut" as const
+    }
+  }
+}
+
 // Sub-components
 
-function StatCard({ icon, label, value }: { icon: string, label: string, value: string | number }) {
+function StatCard({ icon, label, value, index = 0 }: { icon: string, label: string, value: string | number, index?: number }) {
+  const rotations = [-1, 1, -0.5, 1.5]
+  const rotation = rotations[index % rotations.length]
+
   return (
-    <div className="bg-gray-800/50 rounded-xl p-4 text-center">
-      <div className="text-2xl mb-1">{icon}</div>
-      <div className="text-xl font-bold text-white">{value}</div>
-      <div className="text-xs text-gray-400">{label}</div>
-    </div>
+    <motion.div
+      className="polaroid-card p-4 text-center relative"
+      style={{ transform: `rotate(${rotation}deg)` }}
+      variants={staggerItem}
+      whileHover={{ scale: 1.05, rotate: 0, transition: { duration: 0.2 } }}
+    >
+      <div className="tape-piece tape-top-center" style={{ width: '40px', height: '16px', top: '-8px' }} />
+      <motion.div
+        className="text-2xl mb-1"
+        variants={emojiWiggle}
+        initial="initial"
+        animate="animate"
+      >
+        {icon}
+      </motion.div>
+      <div className="text-xl font-bold text-[var(--color-text-primary)] font-display">{value}</div>
+      <div className="text-xs text-[var(--color-text-tertiary)]">{label}</div>
+    </motion.div>
   )
 }
 
@@ -377,62 +484,94 @@ function ModeStatRow({
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
         <span>{icon}</span>
-        <span className="text-gray-300">{mode}</span>
+        <span className="text-[var(--color-text-secondary)]">{mode}</span>
       </div>
       <div className="flex items-center gap-4 text-sm">
-        <span className="text-gray-400">{stats.played} played</span>
-        <span className="text-green-400">{stats.won} won</span>
-        <span className="text-purple-400">{winRate}%</span>
+        <span className="text-[var(--color-text-tertiary)]">{stats.played} played</span>
+        <span className="text-[var(--color-success)]">{stats.won} won</span>
+        <span className="text-[var(--color-purple)]">{winRate}%</span>
       </div>
     </div>
   )
 }
 
-function AchievementCard({ achievement, unlocked }: { achievement: Achievement, unlocked: boolean }) {
+function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Achievement, unlocked: boolean, index?: number }) {
+  const rotations = [-1, 1, -0.5, 1.5, 0.5, -1.5]
+  const rotation = rotations[index % rotations.length]
+
+  // Glow colors for epic and legendary
+  const glowStyles = unlocked && (achievement.rarity === 'legendary' || achievement.rarity === 'epic') ? {
+    boxShadow: achievement.rarity === 'legendary'
+      ? '0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.1)'
+      : '0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(168, 85, 247, 0.1)',
+    animation: 'glow-pulse 3s ease-in-out infinite'
+  } : {}
+
   return (
     <motion.div
-      whileHover={{ scale: 1.02 }}
-      className={`p-4 rounded-xl border transition-all ${
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      whileHover={{ scale: 1.03, rotate: 0 }}
+      className={`relative transition-all ${
         unlocked
-          ? RARITY_BG[achievement.rarity]
-          : 'bg-gray-900/50 border-gray-700 opacity-60'
+          ? 'polaroid-card'
+          : 'bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg opacity-60'
       }`}
+      style={{
+        transform: unlocked ? `rotate(${rotation}deg)` : 'none',
+        ...glowStyles
+      }}
     >
-      <div className="flex items-start gap-3">
-        <div className={`text-3xl ${!unlocked ? 'grayscale' : ''}`}>
-          {achievement.icon}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h4 className={`font-semibold truncate ${unlocked ? 'text-white' : 'text-gray-500'}`}>
-              {achievement.name}
-            </h4>
-            <span className={`text-xs px-1.5 py-0.5 rounded bg-gradient-to-r ${RARITY_COLORS[achievement.rarity]} text-white`}>
-              {achievement.rarity}
-            </span>
-          </div>
-          <p className={`text-xs mt-1 ${unlocked ? 'text-gray-400' : 'text-gray-600'}`}>
-            {achievement.description}
-          </p>
-          {/* Progress bar for locked achievements with progress */}
-          {!unlocked && achievement.progress !== undefined && achievement.target && (
-            <div className="mt-2">
-              <div className="h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-purple-500 rounded-full"
-                  style={{ width: `${Math.min((achievement.progress / achievement.target) * 100, 100)}%` }}
-                />
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {achievement.progress} / {achievement.target}
-              </p>
+      {/* Tape decoration for unlocked achievements */}
+      {unlocked && (
+        <div
+          className="tape-piece absolute -top-2 left-1/2 -translate-x-1/2"
+          style={{ width: '40px', height: '14px' }}
+        />
+      )}
+
+      <div className={`p-4 ${unlocked ? 'pt-5' : ''}`}>
+        <div className="flex items-start gap-3">
+          <motion.div
+            className={`text-3xl ${!unlocked ? 'grayscale' : ''}`}
+            animate={unlocked ? { rotate: [-3, 3, -3] } : {}}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            {achievement.icon}
+          </motion.div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h4 className={`font-semibold truncate ${unlocked ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-disabled)]'}`}>
+                {achievement.name}
+              </h4>
+              <span className={`text-xs px-1.5 py-0.5 rounded bg-gradient-to-r ${RARITY_COLORS[achievement.rarity]} text-white`}>
+                {achievement.rarity}
+              </span>
             </div>
-          )}
-          {unlocked && achievement.unlockedAt && (
-            <p className="text-xs text-gray-500 mt-1">
-              Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
+            <p className={`text-xs mt-1 ${unlocked ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-text-disabled)]'}`}>
+              {achievement.description}
             </p>
-          )}
+            {/* Progress bar for locked achievements with progress */}
+            {!unlocked && achievement.progress !== undefined && achievement.target && (
+              <div className="mt-2">
+                <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[var(--color-accent)] rounded-full"
+                    style={{ width: `${Math.min((achievement.progress / achievement.target) * 100, 100)}%` }}
+                  />
+                </div>
+                <p className="text-xs text-[var(--color-text-disabled)] mt-1">
+                  {achievement.progress} / {achievement.target}
+                </p>
+              </div>
+            )}
+            {unlocked && achievement.unlockedAt && (
+              <p className="text-xs text-[var(--color-text-tertiary)] mt-1 font-handwritten">
+                {new Date(achievement.unlockedAt).toLocaleDateString()}
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>
@@ -471,7 +610,7 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-white flex items-center gap-2">
+      <h2 className="text-xl font-bold text-[var(--color-text-primary)] font-display flex items-center gap-2">
         <span>🏅</span> Leaderboard
       </h2>
 
@@ -483,8 +622,8 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
             onClick={() => setActiveCategory(cat.key)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               activeCategory === cat.key
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-800 text-gray-400 hover:text-white'
+                ? 'bg-[var(--color-purple)] text-white'
+                : 'bg-[var(--color-surface-elevated)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
             }`}
           >
             {cat.icon} {cat.label}
@@ -494,12 +633,12 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
 
       {/* Entries */}
       {loading ? (
-        <div className="text-center py-8 text-gray-400">Loading...</div>
+        <div className="text-center py-8 text-[var(--color-text-secondary)]">Loading...</div>
       ) : entries.length === 0 ? (
         <div className="text-center py-8">
           <div className="text-4xl mb-3">🏆</div>
-          <h3 className="text-lg font-semibold text-white mb-2">The Hall of Fame Awaits</h3>
-          <p className="text-gray-400">Play more games to compete on the leaderboard!</p>
+          <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">The Hall of Fame Awaits</h3>
+          <p className="text-[var(--color-text-secondary)]">Play more games to compete on the leaderboard!</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -510,16 +649,16 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
               className={`flex items-center gap-4 p-3 rounded-xl ${
-                index < 3 ? 'bg-gradient-to-r from-gray-800/80 to-gray-800/40' : 'bg-gray-800/30'
+                index < 3 ? 'bg-gradient-to-r from-[var(--color-surface-elevated)] to-[var(--color-surface)]' : 'bg-[var(--color-surface-elevated)]/50'
               }`}
             >
-              <div className="w-8 text-center text-xl">
+              <div className={`w-8 text-center ${index < 3 ? 'text-xl' : 'text-sm font-medium text-[var(--color-text-tertiary)]'}`}>
                 {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${entry.rank}`}
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-white">{entry.nickname}</p>
+                <p className="font-semibold text-[var(--color-text-primary)]">{entry.nickname}</p>
               </div>
-              <div className="text-lg font-bold text-purple-400">
+              <div className="text-lg font-bold text-[var(--color-purple)]">
                 {entry.value}{activeCategory === 'winRate' ? '%' : ''}
               </div>
             </motion.div>

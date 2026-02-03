@@ -73,7 +73,7 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
 
   if (loading) {
     return (
-      <div className="text-center py-8 text-gray-400">
+      <div className="text-center py-8 text-[var(--color-text-secondary)]">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -88,9 +88,9 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
 
   if (error) {
     return (
-      <div className="text-center py-8 text-red-400">
+      <div className="text-center py-8 text-[var(--color-danger)]">
         <p>{error}</p>
-        <button onClick={fetchHistory} className="mt-2 text-purple-400 hover:underline">
+        <button onClick={fetchHistory} className="mt-2 text-[var(--color-purple)] hover:underline">
           Try again
         </button>
       </div>
@@ -99,10 +99,10 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
 
   if (games.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-400">
+      <div className="text-center py-8 text-[var(--color-text-secondary)]">
         <div className="text-5xl mb-4">🎭</div>
         <p>No games yet!</p>
-        <p className="text-sm mt-1">Your performance history will appear here</p>
+        <p className="text-sm mt-1 text-[var(--color-text-tertiary)]">Your performance history will appear here</p>
       </div>
     )
   }
@@ -110,7 +110,7 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
   return (
     <div className="space-y-4">
       {showTitle && (
-        <h2 className="text-xl font-bold text-white flex items-center gap-2">
+        <h2 className="text-xl font-bold text-[var(--color-text-primary)] font-display flex items-center gap-2">
           <span>📜</span> Game History
         </h2>
       )}
@@ -122,12 +122,12 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="bg-gray-800/50 rounded-xl overflow-hidden"
+            className="bg-[var(--color-surface-elevated)] border border-[var(--color-border)] rounded-xl overflow-hidden"
           >
             {/* Game Header - Always visible */}
             <button
               onClick={() => setExpandedGameId(expandedGameId === game.id ? null : game.id)}
-              className="w-full p-4 text-left hover:bg-gray-700/30 transition-colors"
+              className="w-full p-4 text-left hover:bg-[var(--color-surface)]/50 transition-colors"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -135,19 +135,19 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
                     {game.winner?.playerId === playerId ? '🏆' : '🎬'}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-white">{game.title}</h3>
-                    <p className="text-sm text-gray-400">
+                    <h3 className="font-semibold text-[var(--color-text-primary)]">{game.title}</h3>
+                    <p className="text-sm text-[var(--color-text-tertiary)]">
                       {formatDate(game.playedAt)} • {formatDuration(game.duration)}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs px-2 py-1 rounded bg-gray-700 text-gray-300">
+                  <span className="text-xs px-2 py-1 rounded bg-[var(--color-surface)] text-[var(--color-text-secondary)]">
                     {game.gameMode.replace('_', ' ')}
                   </span>
                   <motion.span
                     animate={{ rotate: expandedGameId === game.id ? 180 : 0 }}
-                    className="text-gray-400"
+                    className="text-[var(--color-text-tertiary)]"
                   >
                     ▼
                   </motion.span>
@@ -164,40 +164,40 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="p-4 pt-0 border-t border-gray-700/50 space-y-4">
+                  <div className="p-4 pt-0 border-t border-[var(--color-border)]/50 space-y-4">
                     {/* Synopsis */}
                     <div>
-                      <p className="text-sm text-gray-300 italic">"{game.synopsis}"</p>
+                      <p className="text-sm text-[var(--color-text-secondary)] italic">"{game.synopsis}"</p>
                     </div>
 
                     {/* Setting & Circumstance */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-gray-500">Setting:</span>
-                        <p className="text-gray-300">{game.setting}</p>
+                        <span className="text-[var(--color-text-tertiary)]">Setting:</span>
+                        <p className="text-[var(--color-text-secondary)]">{game.setting}</p>
                       </div>
                       <div>
-                        <span className="text-gray-500">Circumstance:</span>
-                        <p className="text-gray-300">{game.circumstance}</p>
+                        <span className="text-[var(--color-text-tertiary)]">Circumstance:</span>
+                        <p className="text-[var(--color-text-secondary)]">{game.circumstance}</p>
                       </div>
                     </div>
 
                     {/* Cast */}
                     <div>
-                      <span className="text-gray-500 text-sm">Cast:</span>
+                      <span className="text-[var(--color-text-tertiary)] text-sm">Cast:</span>
                       <div className="flex flex-wrap gap-2 mt-1">
                         {game.players.map(player => (
                           <div
                             key={player.id}
                             className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${
                               player.isWinner
-                                ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50'
-                                : 'bg-gray-700 text-gray-300'
+                                ? 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-300 border border-yellow-500/50'
+                                : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)]'
                             }`}
                           >
                             {player.isWinner && <span>👑</span>}
                             <span className="font-medium">{player.character}</span>
-                            <span className="text-gray-500">({player.nickname})</span>
+                            <span className="text-[var(--color-text-tertiary)]">({player.nickname})</span>
                           </div>
                         ))}
                       </div>
@@ -206,19 +206,19 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
                     {/* Stats */}
                     <div className="flex gap-4 text-sm">
                       {game.audienceReactionCount > 0 && (
-                        <div className="flex items-center gap-1 text-gray-400">
+                        <div className="flex items-center gap-1 text-[var(--color-text-tertiary)]">
                           <span>😂</span>
                           <span>{game.audienceReactionCount} reactions</span>
                         </div>
                       )}
                       {game.plotTwistsUsed.length > 0 && (
-                        <div className="flex items-center gap-1 text-gray-400">
+                        <div className="flex items-center gap-1 text-[var(--color-text-tertiary)]">
                           <span>🌀</span>
                           <span>{game.plotTwistsUsed.length} plot twists</span>
                         </div>
                       )}
                       {game.views > 0 && (
-                        <div className="flex items-center gap-1 text-gray-400">
+                        <div className="flex items-center gap-1 text-[var(--color-text-tertiary)]">
                           <span>👁</span>
                           <span>{game.views} views</span>
                         </div>
@@ -230,13 +230,13 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
                       <button
                         onClick={() => handleShare(game.id)}
                         disabled={sharingGameId === game.id}
-                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                        className="px-4 py-2 bg-[var(--color-purple)] hover:bg-[var(--color-purple-hover)] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                       >
                         {sharingGameId === game.id ? 'Sharing...' : game.isPublic ? '📋 Copy Link' : '🔗 Share'}
                       </button>
                       <button
                         onClick={() => {/* TODO: View full script */}}
-                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm font-medium transition-colors"
+                        className="px-4 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-surface-alt)] text-[var(--color-text-primary)] border border-[var(--color-border)] rounded-lg text-sm font-medium transition-colors"
                       >
                         📄 View Script
                       </button>

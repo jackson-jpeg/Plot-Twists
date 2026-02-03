@@ -338,10 +338,10 @@ export default function HostPage() {
   const handleSetupModeChange = (mode: 'quick' | 'custom') => {
     setGameSetupMode(mode)
     if (mode === 'quick') {
-      // Reset to recommended defaults
-      const newSettings = { ...settings, isMature: false, gameMode: 'ENSEMBLE' as const }
+      // Reset to recommended defaults, but preserve user's content rating choice
+      const newSettings = { ...settings, gameMode: 'ENSEMBLE' as const }
       setSettings(newSettings)
-      socket?.emit('update_room_settings', roomCode, { isMature: false, gameMode: 'ENSEMBLE' })
+      socket?.emit('update_room_settings', roomCode, { gameMode: 'ENSEMBLE' })
       setSelectedPackId('standard')
       setScriptCustomization({
         comedyStyle: 'witty',
@@ -843,6 +843,40 @@ export default function HostPage() {
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* Content Rating - Quick Game Mode */}
+              {gameSetupMode === 'quick' && (
+                <motion.div
+                  className="card"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{settings.isMature ? '🔞' : '👨‍👩‍👧‍👦'}</span>
+                      <div>
+                        <h3 className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>
+                          {settings.isMature ? 'After Dark' : 'Family Friendly'}
+                        </h3>
+                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          {settings.isMature
+                            ? 'Adult themes, mature humor'
+                            : 'Fun for all ages'}
+                        </p>
+                      </div>
+                    </div>
+                    <motion.button
+                      onClick={toggleMature}
+                      className="btn btn-secondary"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Switch
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
 
               {/* Custom settings - only shown in custom mode */}
               {gameSetupMode === 'custom' && (

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { PhoneAuthForm } from './PhoneAuthForm'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ interface AuthModalProps {
 export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) {
   const { signIn, signUp, signInWithGoogle, isConfigured } = useAuth()
   const [mode, setMode] = useState<'signin' | 'signup'>(initialMode)
+  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
@@ -74,11 +76,22 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
     setPassword('')
     setDisplayName('')
     setError(null)
+    setAuthMethod('email')
   }
 
   const toggleMode = () => {
     setMode(mode === 'signin' ? 'signup' : 'signin')
     setError(null)
+  }
+
+  const handlePhoneAuthSuccess = () => {
+    onClose()
+    resetForm()
+  }
+
+  const handleClose = () => {
+    resetForm()
+    onClose()
   }
 
   if (!isOpen) return null
@@ -92,7 +105,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={(e) => e.target === e.currentTarget && onClose()}
+          onClick={(e) => e.target === e.currentTarget && handleClose()}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -109,7 +122,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
               Your stats will be saved locally on this device.
             </p>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
             >
               Continue as Guest
@@ -127,7 +140,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+        onClick={(e) => e.target === e.currentTarget && handleClose()}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -142,7 +155,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
               </h2>
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="text-gray-400 hover:text-white text-2xl"
               >
                 ×
@@ -203,61 +216,105 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
               </div>
             </div>
 
-            {/* Email/Password Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {mode === 'signup' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">
-                    Display Name
-                  </label>
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Your stage name"
-                    className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
-                    required
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  minLength={6}
-                  className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
-                  required
-                />
-              </div>
-
+            {/* Email/Phone Toggle */}
+            <div className="flex gap-2 mb-4">
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+                onClick={() => { setAuthMethod('email'); setError(null) }}
+                className={`flex-1 p-2 rounded-lg font-medium text-sm transition-colors ${
+                  authMethod === 'email'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
               >
-                {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
+                Email
               </button>
-            </form>
+              <button
+                onClick={() => { setAuthMethod('phone'); setError(null) }}
+                className={`flex-1 p-2 rounded-lg font-medium text-sm transition-colors ${
+                  authMethod === 'phone'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Phone
+              </button>
+            </div>
+
+            <AnimatePresence mode="wait">
+              {authMethod === 'email' ? (
+                <motion.div
+                  key="email-form"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                >
+                  {/* Email/Password Form */}
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {mode === 'signup' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">
+                          Display Name
+                        </label>
+                        <input
+                          type="text"
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          placeholder="Your stage name"
+                          className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                          required
+                        />
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-1">
+                        Password
+                      </label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        minLength={6}
+                        className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                        required
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+                    >
+                      {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
+                    </button>
+                  </form>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="phone-form"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                >
+                  <PhoneAuthForm onSuccess={handlePhoneAuthSuccess} />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Toggle Mode */}
             <p className="text-center text-gray-400 mt-4 text-sm">

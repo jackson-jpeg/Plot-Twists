@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { PlayerProfile, Leaderboard } from '@/components/PlayerProfile'
 import { AuthModal } from '@/components/AuthModal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -93,20 +94,22 @@ export default function ProfilePage() {
         >
           <div className="tape-piece tape-top-center"></div>
 
-          {user ? (
+          {user && !user.isAnonymous ? (
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <motion.div
                   className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-md"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                 >
-                  {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || '?'}
+                  {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || user.phoneNumber?.[0] || '?'}
                 </motion.div>
                 <div>
                   <p className="font-semibold text-[var(--color-text-primary)]">
                     {user.displayName || 'Player'}
                   </p>
-                  <p className="text-sm text-[var(--color-text-secondary)]">{user.email}</p>
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    {user.email || user.phoneNumber}
+                  </p>
                 </div>
               </div>
               <motion.button
@@ -117,6 +120,20 @@ export default function ProfilePage() {
               >
                 Sign Out
               </motion.button>
+            </div>
+          ) : user?.isAnonymous ? (
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                  🎭
+                </div>
+                <div>
+                  <p className="font-semibold text-[var(--color-text-primary)]">Anonymous Player</p>
+                  <p className="text-sm text-[var(--color-text-secondary)]">
+                    Link an account to save progress
+                  </p>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-between p-4">
@@ -146,6 +163,18 @@ export default function ProfilePage() {
             </div>
           )}
         </motion.div>
+
+        {/* Account Upgrade Card for Anonymous Users */}
+        {user?.isAnonymous && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-6"
+          >
+            <AccountUpgradeCard />
+          </motion.div>
+        )}
 
         {/* Main Content - styled like a bulletin board card */}
         <AnimatePresence mode="wait">

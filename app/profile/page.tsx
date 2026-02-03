@@ -129,7 +129,7 @@ export default function ProfilePage() {
                   <p className="text-sm text-[var(--color-text-secondary)]">
                     {isConfigured
                       ? 'Sign in to sync across devices'
-                      : 'Stats saved locally'}
+                      : 'Playing as Guest'}
                   </p>
                 </div>
               </div>
@@ -220,8 +220,9 @@ export default function ProfilePage() {
           initial={{ opacity: 0, rotate: 10, scale: 0.8 }}
           animate={{ opacity: 1, rotate: 12, scale: 1 }}
           transition={{ delay: 0.5 }}
+          whileHover={{ scale: 1.05, rotate: 8 }}
         >
-          Keep playing<br/>to unlock<br/>achievements!
+          🎯 Keep playing<br/>to unlock<br/>achievements!
         </motion.div>
       </div>
     </main>

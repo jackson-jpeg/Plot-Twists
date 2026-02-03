@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings, TeleprompterSyncData } from '@/lib/types'
+import type { Player, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings, TeleprompterSyncData, CardSelection } from '@/lib/types'
 import type { GameState } from '@/lib/types'
 import { QRCodeSVG } from 'qrcode.react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -16,6 +16,9 @@ import { CardPackSelector } from '@/components/CardPackSelector'
 import { AudioSettingsPanel } from '@/components/AudioSettingsPanel'
 import { AudienceReactionBar } from '@/components/AudienceReactionBar'
 import { PlotTwistVoting } from '@/components/PlotTwistVoting'
+import { CardCarousel } from '@/components/CardCarousel'
+import { useToast } from '@/hooks/useToast'
+import { ToastContainer } from '@/components/Toast'
 
 // Helper function to get mood emoji and color
 function getMoodIndicator(mood: string) {
@@ -70,6 +73,61 @@ export default function HostPage() {
   const [gameSetupMode, setGameSetupMode] = useState<'quick' | 'custom'>('quick')
   const [scriptGenerationTimedOut, setScriptGenerationTimedOut] = useState(false)
   const scriptGenerationTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const loadingIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  // Loading stage messages based on progress
+  const loadingStages = [
+    { percent: 0, message: "Gathering inspiration...", icon: "🎬" },
+    { percent: 20, message: "Assembling characters...", icon: "🎭" },
+    { percent: 40, message: "Writing dialogue...", icon: "✍️" },
+    { percent: 60, message: "Adding comedic timing...", icon: "😂" },
+    { percent: 80, message: "Polishing the script...", icon: "✨" },
+    { percent: 95, message: "Almost ready...", icon: "🎪" }
+  ]
+
+  const getCurrentLoadingStage = () => {
+    for (let i = loadingStages.length - 1; i >= 0; i--) {
+      if (loadingProgress >= loadingStages[i].percent) {
+        return loadingStages[i]
+      }
+    }
+    return loadingStages[0]
+  }
+
+  // Enhanced page transition variants with blur/scale effects
+  const pageTransitionVariants = {
+    initial: { opacity: 0, scale: 0.95, y: 20, filter: 'blur(8px)' },
+    animate: {
+      opacity: 1, scale: 1, y: 0, filter: 'blur(0px)',
+      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }
+    },
+    exit: {
+      opacity: 0, scale: 1.02, y: -10, filter: 'blur(4px)',
+      transition: { duration: 0.25 }
+    }
+  }
+
+  // Solo mode card selection state
+  const toast = useToast()
+  const [availableCards, setAvailableCards] = useState<{
+    characters: string[]
+    settings: string[]
+    circumstances: string[]
+  }>({ characters: [], settings: [], circumstances: [] })
+  const [selection, setSelection] = useState<CardSelection>({
+    character: '',
+    setting: '',
+    circumstance: ''
+  })
+  const [customInputActive, setCustomInputActive] = useState({
+    character: false,
+    setting: false,
+    circumstance: false
+  })
+  const [hasSubmittedSelection, setHasSubmittedSelection] = useState(false)
+  const [isSubmittingCards, setIsSubmittingCards] = useState(false)
+  const [hasTriggeredSelectionConfetti, setHasTriggeredSelectionConfetti] = useState(false)
 
   useEffect(() => {
     if (!socket || !isConnected || roomCreatedRef.current) return
@@ -97,20 +155,64 @@ export default function HostPage() {
     }
   }, [gameState, confetti])
 
+  // Trigger mini confetti when all cards are selected for the first time (solo mode)
+  useEffect(() => {
+    if (
+      settings.gameMode === 'SOLO' &&
+      selection.character &&
+      selection.setting &&
+      selection.circumstance &&
+      !hasTriggeredSelectionConfetti &&
+      gameState === 'SELECTION' &&
+      !hasSubmittedSelection
+    ) {
+      setHasTriggeredSelectionConfetti(true)
+      confetti.fireWinnerConfetti()
+      toast.success('All cards selected! Ready to submit!')
+    }
+  }, [selection, hasTriggeredSelectionConfetti, gameState, hasSubmittedSelection, settings.gameMode, confetti, toast])
+
+  // Reset confetti trigger when selection resets
+  useEffect(() => {
+    if (!selection.character && !selection.setting && !selection.circumstance) {
+      setHasTriggeredSelectionConfetti(false)
+    }
+  }, [selection])
+
   useEffect(() => {
     if (!socket || !isConnected) return
     socket.on('players_update', setPlayers)
+    socket.on('player_joined', (player: Player) => {
+      if (gameState === 'LOBBY' && !player.isHost) {
+        toast.success(`${player.nickname} joined the show!`)
+      }
+    })
     socket.on('game_state_change', (newState: GameState) => {
       setGameState(newState)
-      // Clear timeout when leaving LOADING state
-      if (newState !== 'LOADING' && scriptGenerationTimeoutRef.current) {
-        clearTimeout(scriptGenerationTimeoutRef.current)
-        scriptGenerationTimeoutRef.current = null
+      // Clear timeout and progress interval when leaving LOADING state
+      if (newState !== 'LOADING') {
+        if (scriptGenerationTimeoutRef.current) {
+          clearTimeout(scriptGenerationTimeoutRef.current)
+          scriptGenerationTimeoutRef.current = null
+        }
+        if (loadingIntervalRef.current) {
+          clearInterval(loadingIntervalRef.current)
+          loadingIntervalRef.current = null
+        }
         setScriptGenerationTimedOut(false)
+        setLoadingProgress(0)
       }
-      // Start timeout when entering LOADING state
+      // Start timeout and progress animation when entering LOADING state
       if (newState === 'LOADING') {
         setScriptGenerationTimedOut(false)
+        setLoadingProgress(0)
+        // Animate progress in stages
+        loadingIntervalRef.current = setInterval(() => {
+          setLoadingProgress(prev => {
+            if (prev >= 95) return 95
+            return prev + Math.random() * 8 + 2
+          })
+        }, 1500)
         scriptGenerationTimeoutRef.current = setTimeout(() => {
           setScriptGenerationTimedOut(true)
         }, 30000) // 30 second timeout
@@ -118,6 +220,7 @@ export default function HostPage() {
     })
     socket.on('green_room_prompt', setGreenRoomQuestion)
     socket.on('script_ready', (newScript) => { setScript(newScript); setCurrentLineIndex(0) })
+    socket.on('available_cards', setAvailableCards)
     // Handle both legacy (number) and new (object) sync formats
     socket.on('sync_teleprompter', (data: TeleprompterSyncData | number) => {
       if (typeof data === 'number') {
@@ -134,6 +237,10 @@ export default function HostPage() {
       setCurrentLineIndex(0)
       setGameResults(null)
       setIsPlaying(true)
+      // Reset solo mode selection state
+      setSelection({ character: '', setting: '', circumstance: '' })
+      setCustomInputActive({ character: false, setting: false, circumstance: false })
+      setHasSubmittedSelection(false)
     })
     // Latency measurement
     socket.on('latency_ping', (serverTimestamp: number) => {
@@ -144,16 +251,18 @@ export default function HostPage() {
     })
     return () => {
       socket.off('players_update')
+      socket.off('player_joined')
       socket.off('game_state_change')
       socket.off('green_room_prompt')
       socket.off('script_ready')
       socket.off('sync_teleprompter')
       socket.off('game_over')
+      socket.off('available_cards')
       socket.off('new_game_started')
       socket.off('latency_ping')
       socket.off('latency_pong_response')
     }
-  }, [socket, isConnected])
+  }, [socket, isConnected, gameState, toast])
 
   const startGame = () => {
     // Send customization settings along with start game command
@@ -163,6 +272,24 @@ export default function HostPage() {
       cardPackId: selectedPackId
     })
     socket?.emit('start_game', roomCode)
+  }
+
+  // Solo mode card submission (host plays directly)
+  const handleSubmitSoloCards = () => {
+    if (!socket || !roomCode || !selection.character || !selection.setting || !selection.circumstance) {
+      toast.error('Please select all cards')
+      return
+    }
+    setIsSubmittingCards(true)
+    socket.emit('submit_cards', roomCode, selection, (response) => {
+      setIsSubmittingCards(false)
+      if (response.success) {
+        setHasSubmittedSelection(true)
+        toast.success('Cards submitted!')
+      } else {
+        toast.error(response.error || 'Failed to submit cards')
+      }
+    })
   }
   const toggleMature = () => {
     const newSettings = { ...settings, isMature: !settings.isMature }
@@ -298,10 +425,10 @@ export default function HostPage() {
         {gameState === 'LOBBY' && (
           <motion.div
             key="lobby"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-6xl"
           >
             {/* Header */}
@@ -337,9 +464,39 @@ export default function HostPage() {
                 transition={{ type: "spring", bounce: 0.4, delay: 0.2 }}
               >
                 {roomCode ? (
-                  <div className="room-code-display">
-                    {roomCode}
-                  </div>
+                  <>
+                    <div className="flex items-center justify-center gap-3 mb-2">
+                      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                        Share this code with players:
+                      </p>
+                      <div className={`connection-indicator ${isConnected ? 'connection-indicator-connected' : 'connection-indicator-disconnected'}`}>
+                        <div className="connection-indicator-dot" />
+                        <span>{isConnected ? 'Live' : 'Offline'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-3">
+                      <div className="room-code-display">
+                        {roomCode}
+                      </div>
+                      <motion.button
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(joinUrl)
+                            toast.success('Link copied!')
+                          } catch {
+                            toast.error('Failed to copy')
+                          }
+                        }}
+                        className="btn btn-ghost"
+                        style={{ padding: '12px' }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        title="Copy join link"
+                      >
+                        <span className="text-xl">📋</span>
+                      </motion.button>
+                    </div>
+                  </>
                 ) : (
                   <div className="skeleton" style={{ width: '280px', height: '88px', display: 'inline-block' }}></div>
                 )}
@@ -388,6 +545,48 @@ export default function HostPage() {
                 >
                   Or visit <span className="font-script font-bold" style={{ color: 'var(--color-text-primary)' }}>plot-twists.com</span>
                 </motion.p>
+
+                {/* Player progress indicator */}
+                {settings.gameMode !== 'SOLO' && (
+                  <motion.div
+                    className="mt-4 p-3 rounded-lg"
+                    style={{ background: 'var(--color-surface-alt)' }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 }}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Players joined</span>
+                      <span className="text-sm font-semibold" style={{
+                        color: (settings.gameMode === 'HEAD_TO_HEAD' && nonHostPlayers.length === 2) ||
+                               (settings.gameMode === 'ENSEMBLE' && nonHostPlayers.length >= 3)
+                          ? 'var(--color-success)'
+                          : 'var(--color-text-secondary)'
+                      }}>
+                        {nonHostPlayers.length}/{settings.gameMode === 'HEAD_TO_HEAD' ? 2 : 3}+
+                      </span>
+                    </div>
+                    <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{
+                          background: (settings.gameMode === 'HEAD_TO_HEAD' && nonHostPlayers.length >= 2) ||
+                                     (settings.gameMode === 'ENSEMBLE' && nonHostPlayers.length >= 3)
+                            ? 'var(--color-success)'
+                            : 'var(--color-accent)'
+                        }}
+                        initial={{ width: '0%' }}
+                        animate={{
+                          width: `${Math.min(
+                            (nonHostPlayers.length / (settings.gameMode === 'HEAD_TO_HEAD' ? 2 : 3)) * 100,
+                            100
+                          )}%`
+                        }}
+                        transition={{ duration: 0.5 }}
+                      />
+                    </div>
+                  </motion.div>
+                )}
               </motion.div>
 
               {/* Players Card */}
@@ -453,7 +652,7 @@ export default function HostPage() {
                       </motion.div>
                     ))}
                   </AnimatePresence>
-                  {nonHostPlayers.length === 0 && (
+                  {nonHostPlayers.length === 0 && settings.gameMode !== 'SOLO' && (
                     <motion.div
                       className="empty-state"
                       initial={{ opacity: 0 }}
@@ -464,10 +663,34 @@ export default function HostPage() {
                         animate={{ rotate: [0, 10, -10, 0] }}
                         transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
                       >
-                        ⏳
+                        📱
                       </motion.p>
-                      <p className="empty-state-description" style={{ fontSize: '14px', marginBottom: 0 }}>
+                      <p className="empty-state-description" style={{ fontSize: '14px', marginBottom: '8px' }}>
                         Waiting for players to join...
+                      </p>
+                      <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                        Share the room code or scan the QR
+                      </p>
+                    </motion.div>
+                  )}
+                  {nonHostPlayers.length === 0 && settings.gameMode === 'SOLO' && (
+                    <motion.div
+                      className="empty-state"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <motion.p
+                        className="empty-state-icon"
+                        animate={{ scale: [1, 1.1, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        🎤
+                      </motion.p>
+                      <p className="empty-state-description" style={{ fontSize: '14px', marginBottom: '8px' }}>
+                        You're the star!
+                      </p>
+                      <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                        Click "Start Solo Game" when ready
                       </p>
                     </motion.div>
                   )}
@@ -593,6 +816,32 @@ export default function HostPage() {
                     <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>3-6 players</div>
                   </motion.button>
                 </div>
+
+                {/* Solo Mode Info */}
+                <AnimatePresence>
+                  {settings.gameMode === 'SOLO' && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-4 p-4 rounded-lg"
+                      style={{ background: 'var(--color-highlight-blue)', border: '1px solid var(--color-accent-2)' }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl">💡</span>
+                        <div>
+                          <p className="font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>
+                            How Solo Mode Works
+                          </p>
+                          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                            You'll pick cards and the AI will create a scene with you as the star.
+                            AI characters from the setting will join your performance!
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Custom settings - only shown in custom mode */}
@@ -636,7 +885,7 @@ export default function HostPage() {
               )}
 
               <AnimatePresence>
-                {((settings.gameMode === 'SOLO' && nonHostPlayers.length === 1) ||
+                {((settings.gameMode === 'SOLO') ||
                   (settings.gameMode === 'HEAD_TO_HEAD' && nonHostPlayers.length === 2) ||
                   (settings.gameMode === 'ENSEMBLE' && nonHostPlayers.length >= 3)) && (
                   <motion.button
@@ -649,39 +898,11 @@ export default function HostPage() {
                     whileTap={{ scale: 0.98 }}
                   >
                     <span>🎬</span>
-                    <span>Start Game</span>
+                    <span>{settings.gameMode === 'SOLO' ? 'Start Solo Game' : 'Start Game'}</span>
                   </motion.button>
                 )}
 
-                {/* Player count hints */}
-                {nonHostPlayers.length === 0 && (
-                  <motion.div
-                    className="card text-center"
-                    style={{ background: 'var(--color-surface-alt)', padding: '16px' }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
-                      Waiting for players to join...
-                    </p>
-                  </motion.div>
-                )}
-
-                {settings.gameMode === 'SOLO' && nonHostPlayers.length === 0 && (
-                  <motion.div
-                    className="card text-center"
-                    style={{ background: 'var(--color-highlight)', padding: '16px', border: '1px solid var(--color-warning)' }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
-                      🎤 Solo needs exactly 1 player (You vs. AI)
-                    </p>
-                  </motion.div>
-                )}
-
+                {/* Player count hints - only for multiplayer modes */}
                 {settings.gameMode === 'HEAD_TO_HEAD' && nonHostPlayers.length === 1 && (
                   <motion.div
                     className="card text-center"
@@ -714,12 +935,403 @@ export default function HostPage() {
           </motion.div>
         )}
 
-        {gameState === 'SELECTION' && (
+        {gameState === 'SELECTION' && settings.gameMode === 'SOLO' && !hasSubmittedSelection && (
+          <motion.div
+            key="solo-selection"
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="container max-w-2xl"
+          >
+            {/* Back to Lobby Button */}
+            <motion.button
+              onClick={() => {
+                socket?.emit('request_new_game', roomCode, { keepSelections: false })
+              }}
+              className="back-button mb-4"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              whileHover={{ x: -4 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="back-arrow">←</span>
+              <span>Back to Lobby</span>
+            </motion.button>
+
+            <div className="card">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-3xl font-display" style={{ color: 'var(--color-text-primary)', marginBottom: 0 }}>
+                  🎴 Pick Your Cards
+                </h1>
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1">
+                    {[selection.character, selection.setting, selection.circumstance].map((value, index) => (
+                      <div
+                        key={index}
+                        className="w-3 h-3 rounded-full transition-all duration-300"
+                        style={{
+                          background: value ? 'var(--color-success)' : 'var(--color-border)',
+                          transform: value ? 'scale(1)' : 'scale(0.8)'
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                    {[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3
+                  </span>
+                </div>
+              </div>
+
+              {/* Loading state if cards haven't loaded */}
+              {availableCards.characters.length === 0 && (
+                <motion.div
+                  className="text-center py-8"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  <motion.div
+                    className="text-4xl mb-4"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  >
+                    🎴
+                  </motion.div>
+                  <p style={{ color: 'var(--color-text-secondary)' }}>Loading cards...</p>
+                </motion.div>
+              )}
+
+              {/* Feeling Lucky Button */}
+              {availableCards.characters.length > 0 && !customInputActive.character && !customInputActive.setting && !customInputActive.circumstance && (
+                <motion.button
+                  onClick={() => {
+                    if (availableCards.characters.length && availableCards.settings.length && availableCards.circumstances.length) {
+                      const randomCharacter = availableCards.characters[Math.floor(Math.random() * availableCards.characters.length)]
+                      const randomSetting = availableCards.settings[Math.floor(Math.random() * availableCards.settings.length)]
+                      const randomCircumstance = availableCards.circumstances[Math.floor(Math.random() * availableCards.circumstances.length)]
+                      setSelection({
+                        character: randomCharacter,
+                        setting: randomSetting,
+                        circumstance: randomCircumstance
+                      })
+                      toast.success('Shuffled! 🎲')
+                    }
+                  }}
+                  className="btn btn-ghost w-full mb-4"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--color-highlight-pink), var(--color-highlight-yellow))',
+                    border: '2px solid var(--color-accent)',
+                    fontWeight: 'bold'
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <span>🎲</span>
+                  <span>Feeling Lucky? Shuffle All!</span>
+                </motion.button>
+              )}
+
+              {availableCards.characters.length > 0 && (
+              <div className="stack">
+                {/* Character */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="label" style={{ marginBottom: 0 }}>🎭 Character</label>
+                    <button
+                      onClick={() => {
+                        setCustomInputActive({ ...customInputActive, character: !customInputActive.character })
+                        if (!customInputActive.character) {
+                          setSelection({ ...selection, character: '' })
+                        }
+                      }}
+                      className="btn btn-ghost"
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        background: customInputActive.character ? 'var(--color-accent)' : 'var(--color-surface-alt)',
+                        color: customInputActive.character ? 'white' : 'var(--color-text-secondary)'
+                      }}
+                    >
+                      <span>{customInputActive.character ? '✎ Custom' : '🃏 Cards'}</span>
+                    </button>
+                  </div>
+                  {customInputActive.character ? (
+                    <input
+                      type="text"
+                      value={selection.character}
+                      onChange={(e) => setSelection({ ...selection, character: e.target.value })}
+                      placeholder="Enter custom character (e.g., SpongeBob)..."
+                      maxLength={50}
+                      className="input font-script text-lg"
+                      style={{
+                        background: 'var(--color-surface-alt)',
+                        border: '2px solid var(--color-accent)',
+                        fontStyle: 'italic'
+                      }}
+                    />
+                  ) : (
+                    <CardCarousel
+                      label="Character"
+                      icon="🎭"
+                      options={availableCards.characters}
+                      value={selection.character}
+                      onChange={(value) => setSelection({ ...selection, character: value })}
+                      color="var(--color-accent)"
+                    />
+                  )}
+                </div>
+
+                {/* Setting */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="label" style={{ marginBottom: 0 }}>🏛️ Setting</label>
+                    <button
+                      onClick={() => {
+                        setCustomInputActive({ ...customInputActive, setting: !customInputActive.setting })
+                        if (!customInputActive.setting) {
+                          setSelection({ ...selection, setting: '' })
+                        }
+                      }}
+                      className="btn btn-ghost"
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        background: customInputActive.setting ? 'var(--color-accent-2)' : 'var(--color-surface-alt)',
+                        color: customInputActive.setting ? 'white' : 'var(--color-text-secondary)'
+                      }}
+                    >
+                      <span>{customInputActive.setting ? '✎ Custom' : '🃏 Cards'}</span>
+                    </button>
+                  </div>
+                  {customInputActive.setting ? (
+                    <input
+                      type="text"
+                      value={selection.setting}
+                      onChange={(e) => setSelection({ ...selection, setting: e.target.value })}
+                      placeholder="Enter custom setting (e.g., The Simpsons Living Room)..."
+                      maxLength={50}
+                      className="input font-script text-lg"
+                      style={{
+                        background: 'var(--color-surface-alt)',
+                        border: '2px solid var(--color-accent-2)',
+                        fontStyle: 'italic'
+                      }}
+                    />
+                  ) : (
+                    <CardCarousel
+                      label="Setting"
+                      icon="🏛️"
+                      options={availableCards.settings}
+                      value={selection.setting}
+                      onChange={(value) => setSelection({ ...selection, setting: value })}
+                      color="var(--color-accent-2)"
+                    />
+                  )}
+                </div>
+
+                {/* Circumstance */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="label" style={{ marginBottom: 0 }}>⚡ Circumstance</label>
+                    <button
+                      onClick={() => {
+                        setCustomInputActive({ ...customInputActive, circumstance: !customInputActive.circumstance })
+                        if (!customInputActive.circumstance) {
+                          setSelection({ ...selection, circumstance: '' })
+                        }
+                      }}
+                      className="btn btn-ghost"
+                      style={{
+                        padding: '6px 12px',
+                        fontSize: '13px',
+                        background: customInputActive.circumstance ? 'var(--color-warning)' : 'var(--color-surface-alt)',
+                        color: customInputActive.circumstance ? 'white' : 'var(--color-text-secondary)'
+                      }}
+                    >
+                      <span>{customInputActive.circumstance ? '✎ Custom' : '🃏 Cards'}</span>
+                    </button>
+                  </div>
+                  {customInputActive.circumstance ? (
+                    <input
+                      type="text"
+                      value={selection.circumstance}
+                      onChange={(e) => setSelection({ ...selection, circumstance: e.target.value })}
+                      placeholder="Enter custom circumstance..."
+                      maxLength={80}
+                      className="input font-script text-lg"
+                      style={{
+                        background: 'var(--color-surface-alt)',
+                        border: '2px solid var(--color-warning)',
+                        fontStyle: 'italic'
+                      }}
+                    />
+                  ) : (
+                    <CardCarousel
+                      label="Circumstance"
+                      icon="⚡"
+                      options={availableCards.circumstances}
+                      value={selection.circumstance}
+                      onChange={(value) => setSelection({ ...selection, circumstance: value })}
+                      color="var(--color-warning)"
+                    />
+                  )}
+                </div>
+
+                {/* Selection Preview */}
+                {(selection.character || selection.setting || selection.circumstance) && (
+                  <motion.div
+                    className="p-4 rounded-lg"
+                    style={{ background: 'var(--color-highlight)', border: '2px solid var(--color-accent)' }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>YOUR SELECTION:</p>
+                    <div className="text-sm space-y-1">
+                      {selection.character && (
+                        <p style={{ color: 'var(--color-text-primary)' }}>
+                          <span className="font-bold">🎭 Character:</span> {selection.character}
+                        </p>
+                      )}
+                      {selection.setting && (
+                        <p style={{ color: 'var(--color-text-primary)' }}>
+                          <span className="font-bold">🏛️ Setting:</span> {selection.setting}
+                        </p>
+                      )}
+                      {selection.circumstance && (
+                        <p style={{ color: 'var(--color-text-primary)' }}>
+                          <span className="font-bold">⚡ Circumstance:</span> {selection.circumstance}
+                        </p>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+
+                <motion.button
+                  onClick={handleSubmitSoloCards}
+                  disabled={!selection.character || !selection.setting || !selection.circumstance || isSubmittingCards}
+                  className="btn btn-primary btn-large w-full"
+                  style={{
+                    marginTop: '24px',
+                    opacity: (!selection.character || !selection.setting || !selection.circumstance || isSubmittingCards) ? 0.6 : 1
+                  }}
+                  whileHover={{ scale: isSubmittingCards ? 1 : 1.02 }}
+                  whileTap={{ scale: isSubmittingCards ? 1 : 0.98 }}
+                  animate={
+                    (selection.character && selection.setting && selection.circumstance && !isSubmittingCards)
+                      ? {
+                          boxShadow: [
+                            '0 0 0 0 rgba(245, 158, 66, 0)',
+                            '0 0 0 10px rgba(245, 158, 66, 0.3)',
+                            '0 0 0 0 rgba(245, 158, 66, 0)'
+                          ]
+                        }
+                      : {}
+                  }
+                  transition={
+                    (selection.character && selection.setting && selection.circumstance && !isSubmittingCards)
+                      ? { duration: 2, repeat: Infinity }
+                      : {}
+                  }
+                >
+                  {isSubmittingCards ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      >
+                        ⏳
+                      </motion.span>
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>✨</span>
+                      <span>
+                        {(!selection.character || !selection.setting || !selection.circumstance)
+                          ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)`
+                          : 'Submit Cards - Ready!'}
+                      </span>
+                    </>
+                  )}
+                </motion.button>
+              </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {gameState === 'SELECTION' && settings.gameMode === 'SOLO' && hasSubmittedSelection && (
+          <motion.div
+            key="solo-waiting"
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="container max-w-lg text-center"
+          >
+            <div className="card">
+              <motion.div
+                className="text-8xl mb-6"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', bounce: 0.5 }}
+              >
+                ✓
+              </motion.div>
+              <motion.h1
+                className="text-4xl font-display mb-4"
+                style={{ color: 'var(--color-success)' }}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
+                Cards Submitted!
+              </motion.h1>
+              <motion.p
+                className="text-lg mb-6"
+                style={{ color: 'var(--color-text-secondary)' }}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                Generating your scene...
+              </motion.p>
+
+              {/* Selection Summary */}
+              <motion.div
+                className="p-4 rounded-lg text-left"
+                style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                <p className="text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>YOUR SCENE:</p>
+                <div className="space-y-2 text-sm">
+                  <p style={{ color: 'var(--color-text-primary)' }}>
+                    <span className="font-bold">🎭</span> {selection.character}
+                  </p>
+                  <p style={{ color: 'var(--color-text-primary)' }}>
+                    <span className="font-bold">🏛️</span> {selection.setting}
+                  </p>
+                  <p style={{ color: 'var(--color-text-primary)' }}>
+                    <span className="font-bold">⚡</span> {selection.circumstance}
+                  </p>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+
+        {gameState === 'SELECTION' && settings.gameMode !== 'SOLO' && (
           <motion.div
             key="selection"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-2xl text-center"
           >
             <motion.h1
@@ -758,9 +1370,10 @@ export default function HostPage() {
         {gameState === 'LOADING' && (
           <motion.div
             key="loading"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-2xl text-center"
           >
             <motion.h1
@@ -771,16 +1384,35 @@ export default function HostPage() {
               🎬 Writing Script
             </motion.h1>
             <div className="card">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="text-8xl mb-8"
-              >
-                🤖
-              </motion.div>
-              <p className="text-xl mb-8" style={{ color: 'var(--color-text-secondary)' }}>
-                Claude is crafting your comedy...
-              </p>
+              {/* Animated stage icon */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={getCurrentLoadingStage().icon}
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  exit={{ scale: 0, rotate: 180 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  className="text-8xl mb-6"
+                >
+                  {getCurrentLoadingStage().icon}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Dynamic stage message */}
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={getCurrentLoadingStage().message}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-xl mb-8 font-display"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  {getCurrentLoadingStage().message}
+                </motion.p>
+              </AnimatePresence>
+
               {settings.gameMode === 'SOLO' && (
                 <motion.div
                   className="card"
@@ -794,12 +1426,14 @@ export default function HostPage() {
                   </p>
                 </motion.div>
               )}
-              <div className="progress mb-8">
+
+              {/* Progress bar with shimmer */}
+              <div className="progress mb-8" style={{ position: 'relative' }}>
                 <motion.div
-                  className="progress-bar"
+                  className="progress-bar progress-bar-shimmer"
                   initial={{ width: "0%" }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: 15, ease: "easeInOut" }}
+                  animate={{ width: `${Math.min(loadingProgress, 100)}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
                 />
               </div>
               <AnimatePresence mode="wait">
@@ -875,9 +1509,10 @@ export default function HostPage() {
         {gameState === 'PERFORMING' && script && (
           <motion.div
             key="performing"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-5xl"
           >
             {/* Audience Interaction Components */}
@@ -889,8 +1524,24 @@ export default function HostPage() {
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
             >
-              <div className="flex items-baseline gap-4 mb-2">
+              <div className="flex items-center justify-between gap-4 mb-2">
                 <h2 className="text-3xl font-display" style={{ color: 'var(--color-text-primary)' }}>{script.title}</h2>
+                {networkLatency !== null && (
+                  <motion.div
+                    className="flex items-center gap-2 px-3 py-1 rounded-full text-xs"
+                    style={{
+                      background: networkLatency < 100 ? 'var(--color-success)' : networkLatency < 300 ? 'var(--color-warning)' : 'var(--color-danger)',
+                      color: 'white',
+                      opacity: 0.8
+                    }}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 0.8, scale: 1 }}
+                    title={`Network latency: ${networkLatency}ms`}
+                  >
+                    <span>{networkLatency < 100 ? '🟢' : networkLatency < 300 ? '🟡' : '🔴'}</span>
+                    <span>{networkLatency}ms</span>
+                  </motion.div>
+                )}
               </div>
               <p className="text-lg italic mb-4" style={{ color: 'var(--color-text-secondary)' }}>{script.synopsis}</p>
               <p className="text-sm mb-4" style={{ color: 'var(--color-text-tertiary)' }}>
@@ -973,10 +1624,11 @@ export default function HostPage() {
                   onClick={previousLine}
                   disabled={currentLineIndex === 0}
                   className="btn btn-ghost"
-                  whileHover={{ scale: currentLineIndex === 0 ? 1 : 1.05 }}
+                  style={{ opacity: currentLineIndex === 0 ? 0.5 : 1 }}
+                  whileHover={{ scale: currentLineIndex === 0 ? 1 : 1.05, x: currentLineIndex === 0 ? 0 : -2 }}
                   whileTap={{ scale: currentLineIndex === 0 ? 1 : 0.95 }}
                 >
-                  ← Prev
+                  ← Previous
                 </motion.button>
                 <motion.button
                   onClick={togglePlayPause}
@@ -990,15 +1642,27 @@ export default function HostPage() {
                   onClick={nextLine}
                   disabled={currentLineIndex >= script.lines.length - 1}
                   className="btn btn-ghost"
-                  whileHover={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 1.05 }}
+                  style={{ opacity: currentLineIndex >= script.lines.length - 1 ? 0.5 : 1 }}
+                  whileHover={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 1.05, x: currentLineIndex >= script.lines.length - 1 ? 0 : 2 }}
                   whileTap={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 0.95 }}
                 >
                   Next →
                 </motion.button>
               </div>
-              <p className="text-center text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                Keyboard: ← | Space | →
-              </p>
+              <motion.p
+                className="text-center text-xs flex items-center justify-center gap-2"
+                style={{ color: 'var(--color-text-tertiary)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <kbd style={{ background: 'var(--color-surface-alt)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px' }}>←</kbd>
+                <span>Previous</span>
+                <kbd style={{ background: 'var(--color-surface-alt)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px' }}>Space</kbd>
+                <span>Play/Pause</span>
+                <kbd style={{ background: 'var(--color-surface-alt)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px' }}>→</kbd>
+                <span>Next</span>
+              </motion.p>
             </motion.div>
           </motion.div>
         )}
@@ -1006,9 +1670,10 @@ export default function HostPage() {
         {gameState === 'VOTING' && (
           <motion.div
             key="voting"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-4xl text-center"
           >
             <motion.h1
@@ -1067,9 +1732,10 @@ export default function HostPage() {
         {gameState === 'RESULTS' && (
           <motion.div
             key="results"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-4xl"
           >
             <div className="card text-center">
@@ -1237,6 +1903,7 @@ export default function HostPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
     </div>
   )
 }

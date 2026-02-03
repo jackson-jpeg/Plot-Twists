@@ -28,10 +28,10 @@ export default function Home() {
       <motion.button
         onClick={() => router.push('/profile')}
         className="fixed top-4 right-4 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg shadow-lg hover:shadow-xl transition-shadow"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.5, type: 'spring' }}
-        whileHover={{ scale: 1.1 }}
+        initial={{ scale: 0, opacity: 0, rotate: -180 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+        transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
+        whileHover={{ scale: 1.1, rotate: 5 }}
         whileTap={{ scale: 0.95 }}
         title="Your Profile & Stats"
       >
@@ -58,26 +58,13 @@ export default function Home() {
               <span className="title-emoji">🎭</span>
             </h1>
             <div className="polaroid-caption">
-              Create hilarious AI-generated improv scenes with friends in 5 minutes
+              Create hilarious AI-generated improv scenes with friends
             </div>
             <div className="polaroid-explainer">
-              3-6 players. 15 minutes. Zero acting skills required.
+              1-6 players. 15 minutes. Zero acting skills required.
             </div>
           </div>
 
-          {/* Hand-drawn arrow annotation */}
-          <motion.div
-            className="doodle-arrow"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, type: "spring" }}
-          >
-            <span className="doodle-text">Pick one!</span>
-            <svg viewBox="0 0 100 40" className="arrow-svg">
-              <path d="M 10 20 Q 50 10, 90 20" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-              <path d="M 85 15 L 95 20 L 85 25" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </motion.div>
         </motion.div>
 
         {/* Game buttons styled like tickets with distinct colors */}
@@ -215,19 +202,23 @@ export default function Home() {
                   <div className="how-it-works-badges">
                     <span className="retro-badge-inline" style={{ transform: 'rotate(-1deg)' }}>No Acting Skills</span>
                     <span className="retro-badge-inline" style={{ transform: 'rotate(1deg)' }}>Theater Kids OK</span>
-                    <span className="retro-badge-inline" style={{ transform: 'rotate(-0.5deg)' }}>2-6 Players</span>
+                    <span className="retro-badge-inline" style={{ transform: 'rotate(-0.5deg)' }}>1-6 Players</span>
                   </div>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Handwritten note */}
+          {/* Handwritten note - clickable */}
           <motion.div
             className="sticky-note"
+            onClick={() => setShowHowItWorks(!showHowItWorks)}
+            style={{ cursor: 'pointer' }}
             initial={{ opacity: 0, rotate: 5, scale: 0.8 }}
             animate={{ opacity: 1, rotate: 8, scale: 1 }}
             transition={{ delay: 0.8 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             Click to<br/>learn more!
           </motion.div>

@@ -518,7 +518,8 @@ p {
   transition:
     border-color var(--duration-fast) var(--easing-out),
     box-shadow var(--duration-fast) var(--easing-out),
-    background var(--duration-fast) var(--easing-out);
+    background var(--duration-fast) var(--easing-out),
+    transform var(--duration-fast) var(--easing-out);
 }
 
 .input:hover:not(:disabled) {
@@ -528,8 +529,9 @@ p {
 .input:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-highlight);
+  box-shadow: 0 0 0 3px var(--color-highlight), 0 0 20px rgba(245, 158, 66, 0.15);
   background: var(--color-surface-elevated);
+  transform: scale(1.01);
 }
 
 .input::placeholder {
@@ -689,6 +691,36 @@ p {
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1), 0 0 15px var(--glow-color, var(--color-accent));
+  }
+  50% {
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1), 0 0 30px var(--glow-color, var(--color-accent));
+  }
+}
+
+@keyframes shimmer-slide {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.progress-bar-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer-slide 1.5s infinite;
 }
 
 /* Skeleton Loader */
@@ -870,6 +902,72 @@ p {
 @keyframes gentle-pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.02); }
+}
+
+@keyframes your-turn-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--color-accent), 0 0 15px var(--color-accent), 0 0 25px rgba(245, 158, 66, 0.3);
+    border-color: var(--color-accent);
+  }
+  50% {
+    box-shadow: 0 0 10px var(--color-accent), 0 0 25px var(--color-accent), 0 0 40px rgba(245, 158, 66, 0.5);
+    border-color: var(--color-accent-hover);
+  }
+}
+
+.your-turn-enhanced {
+  animation: your-turn-glow 1.5s ease-in-out infinite, gentle-pulse 2s ease-in-out infinite;
+  border: 3px solid var(--color-accent) !important;
+}
+
+/* Connection status indicator */
+@keyframes pulse-live {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}
+
+.connection-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.connection-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+.connection-indicator-connected {
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.connection-indicator-connected .connection-indicator-dot {
+  background: var(--color-success);
+}
+
+.connection-indicator-disconnected {
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+.connection-indicator-disconnected .connection-indicator-dot {
+  background: var(--color-danger);
+  animation: none;
 }
 
 /* Mobile script optimization */

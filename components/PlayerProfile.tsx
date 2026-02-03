@@ -82,6 +82,69 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
   const unlockedAchievements = stats.achievements.filter(a => a.unlockedAt)
   const lockedAchievements = stats.achievements.filter(a => !a.unlockedAt)
 
+  // Show onboarding for new players with no games
+  if (stats.gamesPlayed === 0) {
+    return (
+      <div className="text-center py-8">
+        <motion.div
+          className="text-7xl mb-6"
+          animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
+          transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+        >
+          🎭
+        </motion.div>
+        <h2 className="text-2xl font-bold text-white mb-3">Ready for Your Debut?</h2>
+        <p className="text-gray-400 mb-6 max-w-xs mx-auto">
+          Play your first game to start tracking stats and unlock achievements!
+        </p>
+
+        {/* What you'll unlock */}
+        <div className="grid grid-cols-3 gap-3 mb-8 text-center">
+          <motion.div
+            className="p-3 rounded-lg bg-gray-800/50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="text-2xl mb-1">📊</div>
+            <div className="text-xs text-gray-400">Stats</div>
+          </motion.div>
+          <motion.div
+            className="p-3 rounded-lg bg-gray-800/50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="text-2xl mb-1">🏅</div>
+            <div className="text-xs text-gray-400">Achievements</div>
+          </motion.div>
+          <motion.div
+            className="p-3 rounded-lg bg-gray-800/50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="text-2xl mb-1">🏆</div>
+            <div className="text-xs text-gray-400">Leaderboard</div>
+          </motion.div>
+        </div>
+
+        <motion.a
+          href="/"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg"
+          whileHover={{ scale: 1.05, boxShadow: '0 10px 40px rgba(168, 85, 247, 0.4)' }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          <span className="text-xl">🎬</span>
+          <span>Start Playing</span>
+        </motion.a>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -433,7 +496,11 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
       {loading ? (
         <div className="text-center py-8 text-gray-400">Loading...</div>
       ) : entries.length === 0 ? (
-        <div className="text-center py-8 text-gray-400">No entries yet</div>
+        <div className="text-center py-8">
+          <div className="text-4xl mb-3">🏆</div>
+          <h3 className="text-lg font-semibold text-white mb-2">The Hall of Fame Awaits</h3>
+          <p className="text-gray-400">Play more games to compete on the leaderboard!</p>
+        </div>
       ) : (
         <div className="space-y-2">
           {entries.map((entry, index) => (

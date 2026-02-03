@@ -46,6 +46,14 @@ function JoinPageContent() {
   const [isJoining, setIsJoining] = useState(false)
   const [roomCodeTouched, setRoomCodeTouched] = useState(false)
   const [nicknameTouched, setNicknameTouched] = useState(false)
+  const [roomPreview, setRoomPreview] = useState<{
+    gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE'
+    playerCount: number
+    maxPlayers: number
+    isMature: boolean
+    gameState: string
+  } | null>(null)
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
 
   // Room code validation regex (matches server's ROOM_CODE_CHARS: A-Z excluding I, L, O and 2-9)
   const VALID_ROOM_CODE_REGEX = /^[A-HJ-NP-Y2-9]{4}$/
@@ -80,10 +88,32 @@ function JoinPageContent() {
 
   const handleRoomCodeChange = (value: string) => {
     setRoomCode(value.toUpperCase())
+    setRoomPreview(null) // Clear preview when code changes
     if (roomCodeTouched) {
       setRoomCodeError(validateRoomCode(value))
     }
   }
+
+  // Fetch room preview when valid room code is entered
+  React.useEffect(() => {
+    if (!socket || !isConnected) return
+
+    const upperCode = roomCode.toUpperCase()
+    if (!VALID_ROOM_CODE_REGEX.test(upperCode)) {
+      setRoomPreview(null)
+      return
+    }
+
+    setIsLoadingPreview(true)
+    socket.emit('get_room_preview', upperCode, (response) => {
+      setIsLoadingPreview(false)
+      if (response.success && response.preview) {
+        setRoomPreview(response.preview)
+      } else {
+        setRoomPreview(null)
+      }
+    })
+  }, [socket, isConnected, roomCode])
 
   const handleNicknameChange = (value: string) => {
     setNickname(value)
@@ -110,6 +140,7 @@ function JoinPageContent() {
   })
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasTriggeredSelectionConfetti, setHasTriggeredSelectionConfetti] = useState(false)
   const [script, setScript] = useState<Script | null>(null)
   const [currentLineIndex, setCurrentLineIndex] = useState(0)
   const [myCharacter, setMyCharacter] = useState('')
@@ -123,6 +154,65 @@ function JoinPageContent() {
   const [networkLatency, setNetworkLatency] = useState<number | null>(null)
   const [hostDisconnected, setHostDisconnected] = useState(false)
   const previousSpeaker = React.useRef<string>('')
+
+  // Enhanced page transition variants with blur/scale effects
+  const pageTransitionVariants = {
+    initial: { opacity: 0, scale: 0.95, y: 20, filter: 'blur(8px)' },
+    animate: {
+      opacity: 1, scale: 1, y: 0, filter: 'blur(0px)',
+      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }
+    },
+    exit: {
+      opacity: 0, scale: 1.02, y: -10, filter: 'blur(4px)',
+      transition: { duration: 0.25 }
+    }
+  }
+
+  // Loading stage messages based on progress
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const loadingIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
+
+  const loadingStages = [
+    { percent: 0, message: "Gathering inspiration...", icon: "🎬" },
+    { percent: 20, message: "Assembling characters...", icon: "🎭" },
+    { percent: 40, message: "Writing dialogue...", icon: "✍️" },
+    { percent: 60, message: "Adding comedic timing...", icon: "😂" },
+    { percent: 80, message: "Polishing the script...", icon: "✨" },
+    { percent: 95, message: "Almost ready...", icon: "🎪" }
+  ]
+
+  const getCurrentLoadingStage = () => {
+    for (let i = loadingStages.length - 1; i >= 0; i--) {
+      if (loadingProgress >= loadingStages[i].percent) {
+        return loadingStages[i]
+      }
+    }
+    return loadingStages[0]
+  }
+
+  // Start/stop loading progress animation when entering/leaving LOADING state
+  useEffect(() => {
+    if (gameState === 'LOADING') {
+      setLoadingProgress(0)
+      loadingIntervalRef.current = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 95) return 95
+          return prev + Math.random() * 8 + 2
+        })
+      }, 1500)
+    } else {
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current)
+        loadingIntervalRef.current = null
+      }
+      setLoadingProgress(0)
+    }
+    return () => {
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current)
+      }
+    }
+  }, [gameState])
 
   useEffect(() => {
     if (!script || gameState !== 'PERFORMING') return
@@ -140,9 +230,37 @@ function JoinPageContent() {
     }
   }, [gameState, gameResults, confetti])
 
+  // Trigger mini confetti when all cards are selected for the first time
+  useEffect(() => {
+    if (
+      selection.character &&
+      selection.setting &&
+      selection.circumstance &&
+      !hasTriggeredSelectionConfetti &&
+      gameState === 'SELECTION' &&
+      !hasSubmitted
+    ) {
+      setHasTriggeredSelectionConfetti(true)
+      confetti.fireWinnerConfetti()
+      toast.success('All cards selected! Ready to submit!')
+    }
+  }, [selection, hasTriggeredSelectionConfetti, gameState, hasSubmitted, confetti, toast])
+
+  // Reset confetti trigger when selection resets
+  useEffect(() => {
+    if (!selection.character && !selection.setting && !selection.circumstance) {
+      setHasTriggeredSelectionConfetti(false)
+    }
+  }, [selection])
+
   useEffect(() => {
     if (!socket || !isConnected) return
     socket.on('players_update', setPlayers)
+    socket.on('player_joined', (player: Player) => {
+      if (gameState === 'LOBBY' && player.id !== myPlayerId && !player.isHost) {
+        toast.success(`${player.nickname} joined!`)
+      }
+    })
     socket.on('game_state_change', setGameState)
     socket.on('available_cards', setAvailableCards)
     socket.on('green_room_prompt', setGreenRoomQuestion)
@@ -205,6 +323,7 @@ function JoinPageContent() {
     })
     return () => {
       socket.off('players_update')
+      socket.off('player_joined')
       socket.off('game_state_change')
       socket.off('available_cards')
       socket.off('green_room_prompt')
@@ -218,7 +337,7 @@ function JoinPageContent() {
       socket.off('latency_ping')
       socket.off('latency_pong_response')
     }
-  }, [socket, isConnected, selection, myRole])
+  }, [socket, isConnected, selection, myRole, gameState, myPlayerId, toast])
 
   const handleJoin = () => {
     // Validate all fields first
@@ -404,6 +523,109 @@ function JoinPageContent() {
                 {roomCodeTouched && roomCodeError && (
                   <p className="error-text">⚠️ {roomCodeError}</p>
                 )}
+
+                {/* Room Preview */}
+                <AnimatePresence>
+                  {isLoadingPreview && isRoomCodeValid && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-3 p-3 rounded-lg"
+                      style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <motion.span
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        >
+                          🔍
+                        </motion.span>
+                        <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          Looking for room...
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                  {roomPreview && !isLoadingPreview && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="mt-3 p-4 rounded-lg"
+                      style={{
+                        background: roomPreview.playerCount >= roomPreview.maxPlayers
+                          ? 'var(--color-highlight-pink)'
+                          : 'var(--color-highlight)',
+                        border: roomPreview.playerCount >= roomPreview.maxPlayers
+                          ? '2px solid var(--color-warning)'
+                          : '2px solid var(--color-success)'
+                      }}
+                    >
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2">
+                          <motion.span
+                            className="text-2xl"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: 'spring', bounce: 0.5 }}
+                          >
+                            {roomPreview.gameMode === 'SOLO' ? '🎤' : roomPreview.gameMode === 'HEAD_TO_HEAD' ? '⚔️' : '🎭'}
+                          </motion.span>
+                          <div>
+                            <span className="font-semibold text-sm block" style={{ color: 'var(--color-text-primary)' }}>
+                              {roomPreview.gameMode === 'SOLO' ? 'Solo Mode' : roomPreview.gameMode === 'HEAD_TO_HEAD' ? 'Head-to-Head' : 'Ensemble'}
+                            </span>
+                            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                              {roomPreview.gameMode === 'SOLO' ? 'You vs. AI' : roomPreview.gameMode === 'HEAD_TO_HEAD' ? '1v1 showdown' : 'Group improv'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="px-3 py-1 rounded-full text-sm font-semibold"
+                            style={{
+                              background: roomPreview.playerCount >= roomPreview.maxPlayers ? 'var(--color-warning)' : 'var(--color-success)',
+                              color: 'white'
+                            }}
+                          >
+                            {roomPreview.playerCount}/{roomPreview.maxPlayers}
+                          </div>
+                          {roomPreview.isMature && (
+                            <span
+                              className="px-2 py-1 rounded text-xs font-bold"
+                              style={{ background: 'var(--color-danger)', color: 'white' }}
+                            >
+                              18+
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {roomPreview.playerCount >= roomPreview.maxPlayers && (
+                        <motion.p
+                          className="text-xs text-center p-2 rounded"
+                          style={{ background: 'rgba(255,255,255,0.5)', color: 'var(--color-warning)' }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                        >
+                          👁️ Room is full — you'll join as a spectator
+                        </motion.p>
+                      )}
+
+                      {roomPreview.gameState !== 'LOBBY' && (
+                        <motion.p
+                          className="text-xs text-center p-2 rounded mt-2"
+                          style={{ background: 'rgba(255,255,255,0.5)', color: 'var(--color-danger)' }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                        >
+                          ⚠️ Game already in progress — wait for next round
+                        </motion.p>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               <div>
@@ -524,9 +746,10 @@ function JoinPageContent() {
         {gameState === 'LOBBY' && (
           <motion.div
             key="lobby"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-lg text-center"
           >
             <div className="card">
@@ -580,9 +803,10 @@ function JoinPageContent() {
         {gameState === 'SELECTION' && !hasSubmitted && myRole === 'SPECTATOR' && (
           <motion.div
             key="spectator-waiting"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-lg text-center"
           >
             <div className="card">
@@ -598,9 +822,10 @@ function JoinPageContent() {
         {gameState === 'SELECTION' && !hasSubmitted && myRole !== 'SPECTATOR' && (
           <motion.div
             key="selection"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-2xl"
           >
             <div className="card">
@@ -926,9 +1151,10 @@ function JoinPageContent() {
         {gameState === 'SELECTION' && hasSubmitted && (
           <motion.div
             key="waiting"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-lg text-center"
           >
             <div className="card">
@@ -942,28 +1168,51 @@ function JoinPageContent() {
         {gameState === 'LOADING' && (
           <motion.div
             key="loading"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-lg text-center"
           >
             <div className="card">
-              <h1 className="text-3xl font-display mb-8" style={{ color: 'var(--color-text-primary)' }}>Get Ready!</h1>
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="text-8xl mb-8"
-              >
-                🤖
-              </motion.div>
-              <p className="text-xl mb-8" style={{ color: 'var(--color-text-secondary)' }}>Claude is writing your script...</p>
+              <h1 className="text-3xl font-display mb-6" style={{ color: 'var(--color-text-primary)' }}>Get Ready!</h1>
 
-              <div className="progress mb-8">
+              {/* Animated stage icon */}
+              <AnimatePresence mode="wait">
                 <motion.div
-                  className="progress-bar"
+                  key={getCurrentLoadingStage().icon}
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  exit={{ scale: 0, rotate: 180 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  className="text-8xl mb-4"
+                >
+                  {getCurrentLoadingStage().icon}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Dynamic stage message */}
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={getCurrentLoadingStage().message}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-xl mb-8 font-display"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  {getCurrentLoadingStage().message}
+                </motion.p>
+              </AnimatePresence>
+
+              {/* Progress bar with shimmer */}
+              <div className="progress mb-8" style={{ position: 'relative' }}>
+                <motion.div
+                  className="progress-bar progress-bar-shimmer"
                   initial={{ width: "0%" }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: 15, ease: "easeInOut" }}
+                  animate={{ width: `${Math.min(loadingProgress, 100)}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
                 />
               </div>
 
@@ -987,9 +1236,10 @@ function JoinPageContent() {
         {gameState === 'PERFORMING' && script && (
           <motion.div
             key="performing"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="min-h-screen flex flex-col"
           >
             {/* Audience Interaction - show for spectators and players not currently speaking */}
@@ -1065,7 +1315,7 @@ function JoinPageContent() {
                     </motion.div>
 
                   <div
-                    className="card p-8"
+                    className={`card p-8 ${script.lines[currentLineIndex].speaker === myCharacter ? 'your-turn-enhanced' : ''}`}
                     style={{
                       borderLeft: script.lines[currentLineIndex].speaker === myCharacter
                         ? '3px solid var(--color-accent)'
@@ -1107,10 +1357,10 @@ function JoinPageContent() {
                     opacity: currentLineIndex === 0 ? 0.5 : 1,
                     padding: '12px 20px'
                   }}
-                  whileHover={currentLineIndex > 0 ? { scale: 1.05 } : {}}
+                  whileHover={currentLineIndex > 0 ? { scale: 1.05, x: -2 } : {}}
                   whileTap={currentLineIndex > 0 ? { scale: 0.95 } : {}}
                 >
-                  ← Back
+                  ← Previous
                 </motion.button>
 
                 <span className="font-script text-sm" style={{ color: 'var(--color-text-secondary)' }}>
@@ -1125,15 +1375,21 @@ function JoinPageContent() {
                     opacity: currentLineIndex >= script.lines.length - 1 ? 0.5 : 1,
                     padding: '12px 20px'
                   }}
-                  whileHover={currentLineIndex < script.lines.length - 1 ? { scale: 1.05 } : {}}
+                  whileHover={currentLineIndex < script.lines.length - 1 ? { scale: 1.05, x: 2 } : {}}
                   whileTap={currentLineIndex < script.lines.length - 1 ? { scale: 0.95 } : {}}
                 >
                   Next →
                 </motion.button>
               </div>
-              <p className="text-center text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
-                Navigation syncs with everyone
-              </p>
+              <motion.p
+                className="text-center text-xs mt-2"
+                style={{ color: 'var(--color-text-tertiary)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                🔄 Navigation syncs with all players
+              </motion.p>
             </div>
           </motion.div>
         )}
@@ -1141,9 +1397,10 @@ function JoinPageContent() {
         {gameState === 'VOTING' && (
           <motion.div
             key="voting"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-lg"
           >
             <div className="card">
@@ -1188,9 +1445,10 @@ function JoinPageContent() {
         {gameState === 'RESULTS' && (
           <motion.div
             key="results"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={pageTransitionVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             className="container max-w-lg"
           >
             <div className="card text-center">

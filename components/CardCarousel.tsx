@@ -114,14 +114,25 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
             className="absolute inset-0"
             style={{ transformStyle: 'preserve-3d' }}
           >
-            <div
+            <motion.div
               className="card h-full flex items-center justify-center p-6"
               style={{
                 borderLeft: hasSelection ? `4px solid ${color}` : '1px solid var(--color-border)',
                 background: hasSelection ? 'var(--color-surface)' : 'var(--color-surface-alt)',
-                boxShadow: hasSelection ? '0 8px 16px rgba(0,0,0,0.1)' : 'none',
                 transform: hasSelection ? 'translateY(-2px)' : 'none'
               }}
+              animate={hasSelection ? {
+                boxShadow: [
+                  `0 8px 16px rgba(0,0,0,0.1), 0 0 15px ${color}40`,
+                  `0 8px 16px rgba(0,0,0,0.1), 0 0 30px ${color}60`,
+                  `0 8px 16px rgba(0,0,0,0.1), 0 0 15px ${color}40`
+                ]
+              } : {
+                boxShadow: 'none'
+              }}
+              transition={hasSelection ? {
+                boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+              } : {}}
             >
               {hasSelection ? (
                 <p
@@ -138,7 +149,7 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
                   Click Next or Shuffle to select
                 </p>
               )}
-            </div>
+            </motion.div>
           </motion.div>
         </AnimatePresence>
 

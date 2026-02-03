@@ -759,10 +759,11 @@ app.prepare().then(() => {
 
       try {
         const code = generateRoomCode()
+        const isSoloMode = settings.gameMode === 'SOLO'
         const hostPlayer: Player = {
           id: uuidv4(),
-          nickname: 'Host',
-          role: 'HOST',
+          nickname: isSoloMode ? 'You' : 'Host',
+          role: isSoloMode ? 'PLAYER' : 'HOST', // In Solo mode, host is the player
           isHost: true,
           socketId: socket.id
         }
@@ -937,10 +938,10 @@ app.prepare().then(() => {
         console.log(`Player ${playerId} submitted selections for room ${roomCode}`)
         callback({ success: true })
 
-        // Solo mode: Start immediately when single player submits
+        // Solo mode: Start immediately when the host (as player) submits
         if (room.gameMode === 'SOLO') {
-          const activePlayers = Array.from(room.players.values()).filter(p => p.role === 'PLAYER')
-          if (activePlayers.length === 1 && activePlayers[0].hasSubmittedSelection) {
+          const hostPlayer = room.players.get(playerId)
+          if (hostPlayer && hostPlayer.isHost && hostPlayer.hasSubmittedSelection) {
             startScriptGeneration(room, io)
           }
           return
@@ -1343,6 +1344,42 @@ app.prepare().then(() => {
       console.log(`✅ New game started in room ${roomCode}`)
     })
 
+    // Get room preview (for join page)
+    socket.on('get_room_preview', (roomCode, callback) => {
+      try {
+        if (!isValidRoomCode(roomCode)) {
+          callback({ success: false, error: 'Invalid room code format' })
+          return
+        }
+
+        const room = rooms.get(roomCode.toUpperCase())
+        if (!room) {
+          callback({ success: false, error: 'Room not found' })
+          return
+        }
+
+        // Count active players (excluding host and spectators in non-solo modes)
+        const activePlayers = Array.from(room.players.values()).filter(p =>
+          room.gameMode === 'SOLO' ? p.isHost : (p.role === 'PLAYER' && !p.isHost)
+        )
+        const maxPlayers = room.gameMode === 'SOLO' ? 1 : room.gameMode === 'HEAD_TO_HEAD' ? 2 : 6
+
+        callback({
+          success: true,
+          preview: {
+            gameMode: room.gameMode,
+            playerCount: activePlayers.length,
+            maxPlayers,
+            isMature: room.isMature,
+            gameState: room.gameState
+          }
+        })
+      } catch (error) {
+        console.error('Error getting room preview:', error)
+        callback({ success: false, error: 'Failed to get room info' })
+      }
+    })
+
     // Update room settings
     socket.on('update_room_settings', (roomCode, settings) => {
       const room = rooms.get(roomCode)
@@ -1353,6 +1390,18 @@ app.prepare().then(() => {
       }
       if (settings.gameMode !== undefined) {
         room.gameMode = settings.gameMode
+        // Update host role when switching to/from Solo mode
+        if (settings.gameMode === 'SOLO') {
+          room.host.role = 'PLAYER'
+          room.host.nickname = 'You'
+        } else if (room.host.role === 'PLAYER') {
+          // Switching away from Solo mode, revert host role
+          room.host.role = 'HOST'
+          room.host.nickname = 'Host'
+        }
+        // Update the host in the players map
+        room.players.set(room.host.id, room.host)
+        io.to(roomCode).emit('players_update', Array.from(room.players.values()))
       }
       // Feature 2: Script Customization
       if (settings.scriptCustomization !== undefined) {

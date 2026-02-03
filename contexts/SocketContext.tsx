@@ -6,14 +6,18 @@ import type { ServerToClientEvents, ClientToServerEvents } from '@/lib/types'
 
 type SocketType = Socket<ServerToClientEvents, ClientToServerEvents>
 
+export type ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'reconnecting'
+
 interface SocketContextType {
   socket: SocketType | null
   isConnected: boolean
+  connectionState: ConnectionState
 }
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
-  isConnected: false
+  isConnected: false,
+  connectionState: 'disconnected'
 })
 
 export function useSocket() {
@@ -26,6 +30,7 @@ let globalSocket: SocketType | null = null
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<SocketType | null>(null)
   const [isConnected, setIsConnected] = useState(false)
+  const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected')
   const initRef = useRef(false)
 
   useEffect(() => {
@@ -88,18 +93,34 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
       console.log('  - Transport mode:', isProduction ? 'polling-only (production)' : 'polling + websocket (dev)')
 
+      // Set initial connecting state
+      setConnectionState('connecting')
+
       globalSocket.on('connect', () => {
         console.log('Socket connected:', globalSocket?.id)
         setIsConnected(true)
+        setConnectionState('connected')
       })
 
       globalSocket.on('disconnect', (reason) => {
         console.log('Socket disconnected:', reason)
         setIsConnected(false)
+        setConnectionState('disconnected')
       })
 
       globalSocket.on('connect_error', (error) => {
         console.error('Socket connection error:', error)
+        setConnectionState('disconnected')
+      })
+
+      globalSocket.io.on('reconnect_attempt', () => {
+        console.log('Socket reconnecting...')
+        setConnectionState('reconnecting')
+      })
+
+      globalSocket.io.on('reconnect', () => {
+        console.log('Socket reconnected')
+        setConnectionState('connected')
       })
     }
 
@@ -117,8 +138,38 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected }}>
+    <SocketContext.Provider value={{ socket, isConnected, connectionState }}>
       {children}
     </SocketContext.Provider>
+  )
+}
+
+// Connection Status Component
+export function ConnectionStatus({ showLabel = true }: { showLabel?: boolean }) {
+  const { connectionState } = useSocket()
+
+  const stateConfig: Record<ConnectionState, { color: string; label: string; animate: boolean }> = {
+    connecting: { color: 'var(--color-warning)', label: 'Connecting...', animate: true },
+    connected: { color: 'var(--color-success)', label: 'Connected', animate: true },
+    disconnected: { color: 'var(--color-danger)', label: 'Disconnected', animate: false },
+    reconnecting: { color: 'var(--color-warning)', label: 'Reconnecting...', animate: true }
+  }
+
+  const config = stateConfig[connectionState]
+
+  return (
+    <div className="connection-indicator" style={{
+      background: `${config.color}20`,
+      color: config.color
+    }}>
+      <span
+        className="connection-indicator-dot"
+        style={{
+          background: config.color,
+          animation: config.animate ? 'pulse-live 2s ease-in-out infinite' : 'none'
+        }}
+      />
+      {showLabel && <span>{config.label}</span>}
+    </div>
   )
 }

@@ -129,6 +129,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
                 whileTap={{ scale: 0.9 }}
                 className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-2xl transition-colors disabled:opacity-50"
                 title={REACTION_LABELS[type]}
+                aria-label={`Send ${REACTION_LABELS[type]} reaction`}
               >
                 {REACTION_EMOJIS[type]}
               </motion.button>

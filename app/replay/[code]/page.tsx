@@ -5,6 +5,29 @@ import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { SavedGame } from '@/lib/types'
+import Head from 'next/head'
+
+// Share button configuration
+const SHARE_PLATFORMS = [
+  {
+    name: 'Twitter',
+    icon: '𝕏',
+    getUrl: (url: string, title: string) =>
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this hilarious improv scene: "${title}"`)}&url=${encodeURIComponent(url)}`
+  },
+  {
+    name: 'Facebook',
+    icon: '📘',
+    getUrl: (url: string) =>
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
+  },
+  {
+    name: 'WhatsApp',
+    icon: '💬',
+    getUrl: (url: string, title: string) =>
+      `https://wa.me/?text=${encodeURIComponent(`Check out this improv scene: "${title}" ${url}`)}`
+  }
+]
 
 export default function ReplayPage() {
   const params = useParams()
@@ -18,6 +41,9 @@ export default function ReplayPage() {
   const [currentLineIndex, setCurrentLineIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showShareMenu, setShowShareMenu] = useState(false)
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
 
   const fetchGame = useCallback(() => {
     if (!socket || !shareCode) return
@@ -54,11 +80,28 @@ export default function ReplayPage() {
     return () => clearTimeout(timer)
   }, [isPlaying, currentLineIndex, game])
 
-  const handleShare = () => {
-    const url = window.location.href
-    navigator.clipboard.writeText(url)
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleSocialShare = (platform: typeof SHARE_PLATFORMS[number]) => {
+    if (!game) return
+    const url = platform.getUrl(shareUrl, game.title)
+    window.open(url, '_blank', 'width=600,height=400')
+    setShowShareMenu(false)
+  }
+
+  const handleRematch = () => {
+    // Navigate to home with rematch settings from this game
+    const params = new URLSearchParams({
+      rematch: 'true',
+      mode: game?.gameMode || 'HEAD_TO_HEAD',
+      cardPack: game?.cardPackUsed || 'standard',
+      style: game?.comedyStyle || 'witty'
+    })
+    router.push(`/?${params.toString()}`)
   }
 
   const getMoodColor = (mood: string) => {
@@ -130,12 +173,44 @@ export default function ReplayPage() {
               {new Date(game.playedAt).toLocaleDateString()}
             </p>
           </div>
-          <button
-            onClick={handleShare}
-            className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors"
-          >
-            {copied ? '✓ Copied!' : '🔗 Share'}
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowShareMenu(!showShareMenu)}
+              className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors"
+              aria-label="Share options"
+            >
+              🔗 Share
+            </button>
+
+            {/* Share dropdown menu */}
+            <AnimatePresence>
+              {showShareMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-20"
+                >
+                  <button
+                    onClick={handleCopyLink}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
+                  >
+                    {copied ? '✓' : '📋'} {copied ? 'Copied!' : 'Copy Link'}
+                  </button>
+                  <div className="border-t border-gray-700" />
+                  {SHARE_PLATFORMS.map(platform => (
+                    <button
+                      key={platform.name}
+                      onClick={() => handleSocialShare(platform)}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
+                    >
+                      {platform.icon} {platform.name}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
@@ -295,7 +370,36 @@ export default function ReplayPage() {
             <p className="text-yellow-400/80">as {game.winner.character}</p>
           </motion.div>
         )}
+
+        {/* Rematch Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+        >
+          <button
+            onClick={handleRematch}
+            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
+          >
+            🎭 Play Again with Same Settings
+          </button>
+          <button
+            onClick={() => router.push('/')}
+            className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors"
+          >
+            🏠 Back to Home
+          </button>
+        </motion.div>
       </div>
+
+      {/* Click outside to close share menu */}
+      {showShareMenu && (
+        <div
+          className="fixed inset-0 z-10"
+          onClick={() => setShowShareMenu(false)}
+        />
+      )}
     </div>
   )
 }

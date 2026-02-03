@@ -206,16 +206,22 @@ export default function HostPage() {
       if (newState === 'LOADING') {
         setScriptGenerationTimedOut(false)
         setLoadingProgress(0)
-        // Animate progress in stages
+        // Animate progress in stages - slower to match 45s timeout
         loadingIntervalRef.current = setInterval(() => {
           setLoadingProgress(prev => {
             if (prev >= 95) return 95
-            return prev + Math.random() * 8 + 2
+            // Slow down as we get higher to avoid reaching 95% too quickly
+            const increment = prev < 50
+              ? Math.random() * 6 + 2  // 2-8% early on
+              : prev < 80
+                ? Math.random() * 4 + 1  // 1-5% mid-way
+                : Math.random() * 2 + 0.5  // 0.5-2.5% near the end
+            return prev + increment
           })
-        }, 1500)
+        }, 2000) // Update every 2 seconds instead of 1.5s
         scriptGenerationTimeoutRef.current = setTimeout(() => {
           setScriptGenerationTimedOut(true)
-        }, 30000) // 30 second timeout
+        }, 45000) // 45 second timeout (scripts can take up to 60s)
       }
     })
     socket.on('green_room_prompt', setGreenRoomQuestion)
@@ -1511,7 +1517,7 @@ export default function HostPage() {
                           }
                           scriptGenerationTimeoutRef.current = setTimeout(() => {
                             setScriptGenerationTimedOut(true)
-                          }, 30000)
+                          }, 45000) // 45 second timeout (scripts can take up to 60s)
                         }}
                         className="btn btn-primary"
                         whileHover={{ scale: 1.05 }}

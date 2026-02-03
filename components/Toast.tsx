@@ -118,7 +118,7 @@ export function Toast({
       className={`
         relative overflow-hidden
         w-full sm:w-auto sm:min-w-[320px] sm:max-w-[420px]
-        bg-gray-900/95 backdrop-blur-lg
+        bg-[var(--color-surface)] backdrop-blur-lg border border-[var(--glass-border)]
         border-l-4 ${styles.border}
         rounded-lg shadow-2xl
         cursor-grab active:cursor-grabbing
@@ -146,7 +146,7 @@ export function Toast({
           {title && (
             <p className="font-semibold text-white text-sm mb-0.5">{title}</p>
           )}
-          <p className="text-gray-300 text-sm leading-relaxed break-words">
+          <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed break-words">
             {message}
           </p>
 
@@ -167,7 +167,7 @@ export function Toast({
         {/* Close button */}
         <button
           onClick={onClose}
-          className="text-gray-500 hover:text-white text-xl leading-none p-1 -mr-1 -mt-1 flex-shrink-0 transition-colors"
+          className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] text-xl leading-none p-1 -mr-1 -mt-1 flex-shrink-0 transition-colors"
           aria-label="Dismiss"
         >
           ×
@@ -176,7 +176,7 @@ export function Toast({
 
       {/* Swipe hint on mobile */}
       <div className="absolute bottom-1 left-1/2 -translate-x-1/2 sm:hidden">
-        <div className="w-8 h-1 bg-gray-700 rounded-full" />
+        <div className="w-8 h-1 bg-[var(--color-border)] rounded-full" />
       </div>
     </motion.div>
   )
@@ -238,7 +238,7 @@ export function ToastContainer({
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            className="text-center text-gray-500 text-xs py-1 pointer-events-auto"
+            className="text-center text-[var(--color-text-tertiary)] text-xs py-1 pointer-events-auto"
           >
             +{hiddenCount} more notification{hiddenCount > 1 ? 's' : ''}
           </motion.div>
@@ -289,7 +289,7 @@ export function InlineToast({ message, type = 'info', onClose, className = '' }:
       {onClose && (
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-white"
+          className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
         >
           ×
         </button>

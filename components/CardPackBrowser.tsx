@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { CardPackMetadata } from '@/lib/types'
 import { StarRating } from './StarRating'
+import { CardSkeleton } from './EmptyState'
 
 interface CardPackBrowserProps {
   isOpen: boolean
@@ -181,6 +182,8 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                         ? 'bg-purple-600 text-white'
                         : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
                     }`}
+                    aria-label={`Filter by ${theme.label} theme`}
+                    aria-pressed={selectedTheme === theme.value}
                   >
                     {theme.emoji} {theme.label}
                   </button>
@@ -205,8 +208,8 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
             {loading ? (
-              <div className="text-center py-12 text-gray-400">
-                Loading packs...
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <CardSkeleton count={6} className="grid-cols-1" />
               </div>
             ) : error ? (
               <div className="text-center py-12 text-red-400">
@@ -220,7 +223,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                       <span>⭐</span> Featured Packs
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {featuredPacks.slice(0, 4).map(pack => (
                         <motion.button
                           key={pack.id}
@@ -263,7 +266,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                       )}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {filteredPacks.map(pack => (
                         <motion.button
                           key={pack.id}

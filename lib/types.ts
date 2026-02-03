@@ -506,3 +506,34 @@ export interface TeleprompterSyncData {
 export interface NewGameOptions {
   keepSelections?: boolean
 }
+
+// ============================================================
+// User Profile (for persistent user data)
+// ============================================================
+
+export interface UserProfile {
+  uid: string
+  displayName: string
+  email?: string
+  phoneNumber?: string
+  linkedAccounts: ('google' | 'email' | 'phone')[]
+  migratedFromAnonymousId?: string
+  createdAt: number
+  lastSeenAt: number
+  preferences?: UserPreferences
+}
+
+export interface UserPreferences {
+  defaultNickname?: string
+  preferredGameMode?: GameMode
+  soundEffectsEnabled?: boolean
+  notificationsEnabled?: boolean
+}
+
+export interface UserMigrationData {
+  oldPlayerId: string
+  newUserId: string
+  migratedAt: number
+  statsTransferred: boolean
+  historyTransferred: boolean
+}

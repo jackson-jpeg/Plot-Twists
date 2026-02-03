@@ -87,7 +87,7 @@ export function EmptyState({
         }}
       >
         {/* Glow effect */}
-        <div className="absolute inset-0 blur-xl opacity-30 bg-purple-500 rounded-full scale-150" />
+        <div className="absolute inset-0 blur-xl opacity-30 bg-[var(--color-purple)] rounded-full scale-150" />
 
         {/* Main emoji */}
         <span className="relative text-7xl block">{config.emoji}</span>
@@ -95,7 +95,7 @@ export function EmptyState({
 
       {/* Title */}
       <motion.h3
-        className="text-xl font-semibold text-white mb-2"
+        className="text-xl font-semibold text-[var(--color-text-primary)] mb-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -105,7 +105,7 @@ export function EmptyState({
 
       {/* Description */}
       <motion.p
-        className="text-gray-400 max-w-sm mb-6"
+        className="text-[var(--color-text-tertiary)] max-w-sm mb-6"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
@@ -117,7 +117,7 @@ export function EmptyState({
       {action && (
         <motion.button
           onClick={action.onClick}
-          className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+          className="px-6 py-3 bg-[var(--color-purple)] hover:bg-[var(--color-purple-hover)] text-white rounded-lg font-semibold transition-colors"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
@@ -156,7 +156,7 @@ export function Skeleton({
   height,
   className = ''
 }: SkeletonProps) {
-  const baseClasses = 'bg-gray-700 animate-pulse'
+  const baseClasses = 'bg-[var(--color-surface-alt)] animate-pulse'
 
   const variantClasses = {
     text: 'h-4 rounded',
@@ -228,7 +228,7 @@ export function CardSkeleton({ count = 1, className = '' }: CardSkeletonProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: i * 0.1 }}
-          className="bg-gray-800/50 rounded-xl p-4 space-y-3"
+          className="bg-[var(--color-surface-alt)] rounded-xl p-4 space-y-3"
         >
           <div className="flex items-center gap-3">
             <Skeleton variant="circle" width={48} height={48} />
@@ -258,7 +258,7 @@ export function StatsSkeleton() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: i * 0.1 }}
-          className="bg-gray-800/50 rounded-xl p-4 text-center"
+          className="bg-[var(--color-surface-alt)] rounded-xl p-4 text-center"
         >
           <Skeleton variant="text" width="40%" height={32} className="mx-auto mb-2" />
           <Skeleton variant="text" width="60%" height={14} className="mx-auto" />

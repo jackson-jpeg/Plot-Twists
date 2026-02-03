@@ -442,10 +442,11 @@ p {
 }
 
 .btn:disabled {
-  opacity: 0.4;
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
   pointer-events: none;
+  filter: saturate(0.6);
 }
 
 .btn-primary {
@@ -1218,13 +1219,27 @@ p {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 3px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 6px rgba(245, 158, 66, 0.2);
 }
 
-button:focus-visible {
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   outline-color: var(--color-accent);
+  box-shadow: 0 0 0 6px rgba(245, 158, 66, 0.2);
+}
+
+/* Ensure interactive elements inherit focus styles */
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(245, 158, 66, 0.2);
 }
 
 .sr-only {

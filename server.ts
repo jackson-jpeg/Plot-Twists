@@ -38,7 +38,10 @@ import {
   votePlotTwist,
   finalizePlotTwist,
   generateTwistInjection,
-  resetReactionCounts
+  resetReactionCounts,
+  preGenerateTwistsForRoom,
+  regenerateTwistsForRoom,
+  generateAITwistInjection
 } from './server/services/audience.service'
 import {
   buildCustomizationPrompt,
@@ -1262,6 +1265,18 @@ app.prepare().then(() => {
           resetReactionCounts(room.audienceInteraction)
         }
 
+        // Pre-generate AI plot twists in background
+        preGenerateTwistsForRoom(
+          roomCode,
+          finalScript,
+          chosenSetting,
+          room.isMature,
+          room.scriptCustomization?.comedyStyle
+        )
+
+        // Store setting for later twist generation
+        ;(room as Room & { _setting?: string })._setting = chosenSetting
+
         // Broadcast new script to all clients
         io.to(roomCode).emit('script_ready', finalScript)
         io.to(roomCode).emit('game_state_change', 'PERFORMING')
@@ -1490,28 +1505,65 @@ app.prepare().then(() => {
       // Check if there's already an active twist
       if (room.audienceInteraction.activePlotTwist?.isActive) return
 
-      const twist = startPlotTwist(room.audienceInteraction, 15000) // 15 seconds to vote
+      // Use pre-generated AI twists if available (pass roomCode)
+      const twist = startPlotTwist(room.audienceInteraction, 15000, roomCode) // 15 seconds to vote
       room.lastActivity = Date.now()
+
+      // Emit dramatic sound effect when twist starts
+      io.to(roomCode).emit('play_sound_effect', 'plot_twist_trigger' as SoundEffectType)
 
       io.to(roomCode).emit('plot_twist_started', twist)
 
       // Set timeout to finalize and inject
-      const timeout = setTimeout(() => {
+      const timeout = setTimeout(async () => {
         if (!room.audienceInteraction) return
 
         const winningTwist = finalizePlotTwist(room.audienceInteraction)
         if (winningTwist) {
+          // Emit reveal sound effect
+          io.to(roomCode).emit('play_sound_effect', 'plot_twist_reveal' as SoundEffectType)
           io.to(roomCode).emit('plot_twist_result', winningTwist)
 
-          // Generate and inject new lines
+          // Get context for AI injection
           const speakers = room.script?.lines.map(l => l.speaker).filter((v, i, a) => a.indexOf(v) === i) || []
-          const injectedLines = generateTwistInjection(winningTwist, speakers)
+          const setting = (room as Room & { _setting?: string })._setting || ''
+          const recentDialogue = room.script?.lines.slice(
+            Math.max(0, room.currentLineIndex - 5),
+            room.currentLineIndex + 1
+          ) || []
+
+          // Generate AI-powered character reactions (with fallback)
+          const injectedLines = await generateAITwistInjection(
+            winningTwist,
+            speakers,
+            {
+              setting,
+              characters: speakers,
+              recentDialogue,
+              scriptPosition: room.currentLineIndex / (room.script?.lines.length || 1) < 0.33 ? 'early' :
+                room.currentLineIndex / (room.script?.lines.length || 1) < 0.66 ? 'mid' : 'late',
+              comedyStyle: room.scriptCustomization?.comedyStyle,
+              isMature: room.isMature
+            }
+          )
 
           if (room.script && injectedLines.length > 0) {
             // Insert lines after current position
             const insertIndex = room.currentLineIndex + 1
             room.script.lines.splice(insertIndex, 0, ...injectedLines)
             io.to(roomCode).emit('plot_twist_injected', insertIndex, injectedLines)
+          }
+
+          // Regenerate twist options in background for next time
+          if (room.script) {
+            regenerateTwistsForRoom(
+              roomCode,
+              room.script as Script,
+              room.currentLineIndex,
+              setting,
+              room.isMature,
+              room.scriptCustomization?.comedyStyle
+            )
           }
         }
 
@@ -1984,6 +2036,18 @@ app.prepare().then(() => {
       if (room.audienceInteraction) {
         resetReactionCounts(room.audienceInteraction)
       }
+
+      // Pre-generate AI plot twists in background
+      preGenerateTwistsForRoom(
+        room.code,
+        finalScript,
+        chosenSetting,
+        room.isMature,
+        room.scriptCustomization?.comedyStyle
+      )
+
+      // Store setting for later twist generation
+      ;(room as Room & { _setting?: string })._setting = chosenSetting
 
       io.to(room.code).emit('script_ready', finalScript)
       io.to(room.code).emit('game_state_change', 'PERFORMING')

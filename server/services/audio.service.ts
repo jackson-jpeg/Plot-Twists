@@ -23,7 +23,9 @@ const SOUND_EFFECT_URLS: Record<SoundEffectType, string> = {
   record_scratch: '/sounds/record-scratch.mp3',
   crickets: '/sounds/crickets.mp3',
   explosion: '/sounds/explosion.mp3',
-  magic_sparkle: '/sounds/magic-sparkle.mp3'
+  magic_sparkle: '/sounds/magic-sparkle.mp3',
+  plot_twist_trigger: '/sounds/plot-twist-trigger.mp3',
+  plot_twist_reveal: '/sounds/plot-twist-reveal.mp3'
 }
 
 // Ambience tracks by setting type

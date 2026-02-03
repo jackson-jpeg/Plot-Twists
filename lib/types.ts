@@ -151,7 +151,7 @@ export interface CardPackMetadata {
 // ============================================================
 
 export type VoiceProvider = 'browser' | 'elevenlabs' | 'openai'
-export type SoundEffectType = 'door_slam' | 'laugh_track' | 'dramatic_sting' | 'applause' | 'record_scratch' | 'crickets' | 'explosion' | 'magic_sparkle'
+export type SoundEffectType = 'door_slam' | 'laugh_track' | 'dramatic_sting' | 'applause' | 'record_scratch' | 'crickets' | 'explosion' | 'magic_sparkle' | 'plot_twist_trigger' | 'plot_twist_reveal'
 
 export interface VoiceSettings {
   enabled: boolean

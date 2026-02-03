@@ -28,14 +28,12 @@ export const isFirebaseConfigured = Boolean(
   firebaseConfig.projectId
 )
 
-// Firebase types - using unknown since Firebase may not be installed
-// These will be narrowed through type guards when Firebase is available
-type FirebaseApp = { name: string; options: Record<string, unknown> }
-type FirebaseAuth = { currentUser: unknown; onAuthStateChanged: (callback: (user: unknown) => void) => () => void }
-
-// Dynamic imports to handle cases where Firebase isn't installed
-let app: FirebaseApp | null = null
-let auth: FirebaseAuth | null = null
+// Firebase types - using any since Firebase may not be installed
+// and types aren't guaranteed to align across versions
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let app: any = null
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let auth: any = null
 let initialized = false
 
 export async function initializeFirebase(): Promise<boolean> {
@@ -68,10 +66,12 @@ export async function initializeFirebase(): Promise<boolean> {
   }
 }
 
-export function getFirebaseAuth(): FirebaseAuth | null {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getFirebaseAuth(): any {
   return auth
 }
 
-export function getFirebaseApp(): FirebaseApp | null {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function getFirebaseApp(): any {
   return app
 }

@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (auth) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          unsubscribe = onAuthStateChanged(auth, (firebaseUser: any) => {
+          unsubscribe = onAuthStateChanged(auth as any, (firebaseUser: any) => {
             if (firebaseUser) {
               setUser({
                 uid: firebaseUser.uid,
@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const firebaseAuth = await import('firebase/auth')
       const { signInWithEmailAndPassword } = firebaseAuth
       const auth = getFirebaseAuth()
-      await signInWithEmailAndPassword(auth, email, password)
+      await signInWithEmailAndPassword(auth as any, email, password)
       return { success: true }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Sign in failed'
@@ -128,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const firebaseAuth = await import('firebase/auth')
       const { createUserWithEmailAndPassword, updateProfile } = firebaseAuth
       const auth = getFirebaseAuth()
-      const result = await createUserWithEmailAndPassword(auth, email, password)
+      const result = await createUserWithEmailAndPassword(auth as any, email, password)
       await updateProfile(result.user, { displayName })
       return { success: true }
     } catch (error: unknown) {
@@ -147,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { signInWithPopup, GoogleAuthProvider } = firebaseAuth
       const auth = getFirebaseAuth()
       const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth, provider)
+      await signInWithPopup(auth as any, provider)
       return { success: true }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Google sign in failed'
@@ -162,7 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const firebaseAuth = await import('firebase/auth')
       const { signOut: firebaseSignOut } = firebaseAuth
       const auth = getFirebaseAuth()
-      await firebaseSignOut(auth)
+      await firebaseSignOut(auth as any)
     } catch (error) {
       console.error('Sign out error:', error)
     }

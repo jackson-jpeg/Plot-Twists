@@ -25,3 +25,35 @@ export const AI_MAX_TOKENS = {
 } as const
 
 export const AI_TEMPERATURE = 1 // Maximum creativity
+
+// ============================================================
+// Teleprompter Timing Constants
+// ============================================================
+
+// Punctuation pauses (milliseconds)
+export const PUNCTUATION_PAUSES: Record<string, number> = {
+  '.': 400,
+  '!': 500,
+  '?': 450,
+  ',': 200,
+  ':': 300,
+  ';': 250,
+  '...': 800,
+  '--': 400
+}
+
+// Mood timing multipliers (faster/slower reading)
+export const MOOD_TIMING_MULTIPLIERS: Record<string, number> = {
+  angry: 0.9,      // Angry lines are delivered faster
+  happy: 1.0,      // Normal pace
+  confused: 1.2,   // Confused lines slower, more hesitation
+  whispering: 1.3, // Whispered lines need more time
+  neutral: 1.0     // Normal pace
+}
+
+// Stage direction base time (ms)
+export const STAGE_DIRECTION_BASE_TIME = 2000
+
+// Minimum/maximum line display times (ms)
+export const MIN_LINE_DISPLAY_TIME = 1500
+export const MAX_LINE_DISPLAY_TIME = 15000

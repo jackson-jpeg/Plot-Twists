@@ -17,8 +17,10 @@ import type {
   ScriptCustomization,
   AudioSettings,
   CardPack,
-  SoundEffectType
+  SoundEffectType,
+  NewGameOptions
 } from './lib/types'
+import { calculateLineDisplayTime } from './server/utils/timing'
 import { getFilteredContent, getGreenRoomQuestion } from './lib/content'
 import { v4 as uuidv4 } from 'uuid'
 import Anthropic from '@anthropic-ai/sdk'
@@ -128,6 +130,20 @@ function sanitizeInput(input: string): string {
   return sanitizeUserInput(input, 50)
 }
 
+// Validate room exists and return it, or emit error and return null
+function validateRoom(roomCode: string, socket: { emit: (event: 'error', message: string) => void }): Room | null {
+  if (!roomCode || !isValidRoomCode(roomCode)) {
+    socket.emit('error', 'Invalid room code')
+    return null
+  }
+  const room = rooms.get(roomCode.toUpperCase())
+  if (!room) {
+    socket.emit('error', 'Room not found')
+    return null
+  }
+  return room
+}
+
 // Clean up inactive rooms (runs every 5 minutes)
 setInterval(() => {
   const now = Date.now()
@@ -135,6 +151,17 @@ setInterval(() => {
   for (const [code, room] of rooms.entries()) {
     if (now - room.lastActivity > oneHour) {
       console.log(`Cleaning up inactive room: ${code}`)
+      // Clean up associated timeouts before deleting room
+      const roomTimeout = roomTimeouts.get(code)
+      if (roomTimeout) {
+        clearTimeout(roomTimeout)
+        roomTimeouts.delete(code)
+      }
+      const plotTwistTimeout = plotTwistTimeouts.get(code)
+      if (plotTwistTimeout) {
+        clearTimeout(plotTwistTimeout)
+        plotTwistTimeouts.delete(code)
+      }
       rooms.delete(code)
     }
   }
@@ -692,8 +719,8 @@ app.prepare().then(() => {
           return callback(null, true)
         }
 
-        // In production, allow all Vercel preview deployments
-        if (!dev && origin.endsWith('.vercel.app')) {
+        // In production, allow only plot-twists Vercel preview deployments
+        if (!dev && origin.match(/^https:\/\/plot-twists(-[a-z0-9]+)?\.vercel\.app$/)) {
           return callback(null, true)
         }
 
@@ -1021,8 +1048,7 @@ app.prepare().then(() => {
 
       console.log(`Script resumed for room ${roomCode}`)
 
-      // Restart teleprompter from current line
-      const WPM = 120
+      // Restart teleprompter from current line using smart timing
       const advanceLine = (lineIndex: number) => {
         if (room.isPaused) return
 
@@ -1039,13 +1065,18 @@ app.prepare().then(() => {
         }
 
         const currentLine = room.script.lines[lineIndex]
-        const wordCount = currentLine.text.split(' ').length
-        const readingTimeMs = (wordCount / WPM) * 60 * 1000
+        const readingTimeMs = calculateLineDisplayTime(currentLine)
 
         const timeout = setTimeout(() => {
           if (!room.script) return
           room.currentLineIndex++
-          io.to(room.code).emit('sync_teleprompter', room.currentLineIndex)
+          io.to(room.code).emit('sync_teleprompter', {
+            lineIndex: room.currentLineIndex,
+            serverTimestamp: Date.now(),
+            expectedDuration: room.script.lines[room.currentLineIndex]
+              ? calculateLineDisplayTime(room.script.lines[room.currentLineIndex])
+              : undefined
+          })
           advanceLine(room.currentLineIndex)
         }, readingTimeMs)
 
@@ -1055,10 +1086,13 @@ app.prepare().then(() => {
       advanceLine(room.currentLineIndex)
     })
 
-    // Jump to specific line
+    // Jump to specific line (host control)
     socket.on('jump_to_line', (roomCode, lineIndex) => {
       const room = rooms.get(roomCode)
       if (!room || !room.script) return
+
+      // Validate line index
+      if (lineIndex < 0 || lineIndex >= room.script.lines.length) return
 
       // Clear existing timeout
       const timeout = roomTimeouts.get(roomCode)
@@ -1071,14 +1105,17 @@ app.prepare().then(() => {
       room.currentLineIndex = lineIndex
       room.lastActivity = Date.now()
 
-      // Broadcast new line to all clients
-      io.to(roomCode).emit('sync_teleprompter', room.currentLineIndex)
+      // Broadcast new line to all clients with timestamp
+      io.to(roomCode).emit('sync_teleprompter', {
+        lineIndex: room.currentLineIndex,
+        serverTimestamp: Date.now(),
+        expectedDuration: calculateLineDisplayTime(room.script.lines[lineIndex])
+      })
 
       console.log(`Jumped to line ${lineIndex} in room ${roomCode}`)
 
-      // If not paused, restart timer for new line
+      // If not paused, restart timer for new line using smart timing
       if (!room.isPaused) {
-        const WPM = 120
         const advanceLine = (currentLineIndex: number) => {
           if (room.isPaused) return
 
@@ -1095,13 +1132,18 @@ app.prepare().then(() => {
           }
 
           const currentLine = room.script.lines[currentLineIndex]
-          const wordCount = currentLine.text.split(' ').length
-          const readingTimeMs = (wordCount / WPM) * 60 * 1000
+          const readingTimeMs = calculateLineDisplayTime(currentLine)
 
           const newTimeout = setTimeout(() => {
             if (!room.script) return
             room.currentLineIndex++
-            io.to(room.code).emit('sync_teleprompter', room.currentLineIndex)
+            io.to(room.code).emit('sync_teleprompter', {
+              lineIndex: room.currentLineIndex,
+              serverTimestamp: Date.now(),
+              expectedDuration: room.script.lines[room.currentLineIndex]
+                ? calculateLineDisplayTime(room.script.lines[room.currentLineIndex])
+                : undefined
+            })
             advanceLine(room.currentLineIndex)
           }, readingTimeMs)
 
@@ -1110,6 +1152,41 @@ app.prepare().then(() => {
 
         advanceLine(lineIndex)
       }
+    })
+
+    // Player jump to line (synced navigation - all clients move together)
+    socket.on('player_jump_to_line', (roomCode, lineIndex) => {
+      const room = validateRoom(roomCode, socket)
+      if (!room || room.gameState !== 'PERFORMING' || !room.script) return
+
+      // Validate line index
+      if (lineIndex < 0 || lineIndex >= room.script.lines.length) return
+
+      // Clear existing timeout, pause auto-advance briefly
+      const timeout = roomTimeouts.get(roomCode)
+      if (timeout) {
+        clearTimeout(timeout)
+        roomTimeouts.delete(roomCode)
+      }
+
+      room.currentLineIndex = lineIndex
+      room.lastActivity = Date.now()
+
+      // Broadcast to ALL clients (host + players)
+      io.to(roomCode).emit('sync_teleprompter', {
+        lineIndex,
+        serverTimestamp: Date.now(),
+        expectedDuration: calculateLineDisplayTime(room.script.lines[lineIndex])
+      })
+
+      console.log(`Player navigated to line ${lineIndex} in room ${roomCode}`)
+
+      // Resume auto-advance from new position after brief delay
+      setTimeout(() => {
+        if (room.gameState === 'PERFORMING' && !room.isPaused && room.script) {
+          startTeleprompterSync(room, io)
+        }
+      }, 500)
     })
 
     // Request sequel
@@ -1124,6 +1201,12 @@ app.prepare().then(() => {
 
       // Save the current script as previous
       const previousScript = room.script
+
+      // Reset votes for the new round (Phase 5 fix)
+      room.votes.clear()
+      for (const player of room.players.values()) {
+        player.hasSubmittedVote = false
+      }
 
       // Set loading state
       room.gameState = 'LOADING'
@@ -1202,6 +1285,64 @@ app.prepare().then(() => {
       }
     })
 
+    // Request new game (keeps players in room, no page reload)
+    socket.on('request_new_game', (roomCode, options?: NewGameOptions) => {
+      const room = rooms.get(roomCode)
+      if (!room) {
+        console.log(`Cannot start new game: room not found for ${roomCode}`)
+        return
+      }
+
+      // Verify this is the host
+      if (room.host.socketId !== socket.id) {
+        console.log(`Non-host tried to start new game in room ${roomCode}`)
+        return
+      }
+
+      console.log(`🎮 New game requested for room ${roomCode}`)
+
+      // Clear teleprompter timeout
+      const timeout = roomTimeouts.get(roomCode)
+      if (timeout) {
+        clearTimeout(timeout)
+        roomTimeouts.delete(roomCode)
+      }
+
+      // Reset room state
+      room.gameState = 'LOBBY'
+      room.script = undefined
+      room.currentLineIndex = 0
+      room.isPaused = false
+      room.lastActivity = Date.now()
+
+      // Clear votes
+      room.votes.clear()
+
+      // Reset player state
+      for (const player of room.players.values()) {
+        player.hasSubmittedVote = false
+        player.hasSubmittedSelection = false
+      }
+
+      // Optionally keep selections for quick replay
+      if (!options?.keepSelections) {
+        room.selections.clear()
+      }
+
+      // Reset audience interaction if enabled
+      if (room.audienceInteraction) {
+        resetReactionCounts(room.audienceInteraction)
+        room.audienceInteraction.plotTwistHistory = []
+      }
+
+      // Notify all clients
+      io.to(roomCode).emit('new_game_started', { keepSelections: options?.keepSelections || false })
+      io.to(roomCode).emit('game_state_change', 'LOBBY')
+      io.to(roomCode).emit('players_update', Array.from(room.players.values()))
+
+      console.log(`✅ New game started in room ${roomCode}`)
+    })
+
     // Update room settings
     socket.on('update_room_settings', (roomCode, settings) => {
       const room = rooms.get(roomCode)
@@ -1257,7 +1398,7 @@ app.prepare().then(() => {
         return
       }
 
-      const room = rooms.get(roomCode)
+      const room = validateRoom(roomCode, socket)
       if (!room || !room.audienceInteraction) return
 
       // Find sender
@@ -1333,7 +1474,7 @@ app.prepare().then(() => {
 
     // Vote on a plot twist option
     socket.on('vote_plot_twist', (roomCode, optionId) => {
-      const room = rooms.get(roomCode)
+      const room = validateRoom(roomCode, socket)
       if (!room || !room.audienceInteraction) return
 
       // Find voter
@@ -1511,7 +1652,7 @@ app.prepare().then(() => {
 
     // Update audio settings
     socket.on('update_audio_settings', (roomCode, settings) => {
-      const room = rooms.get(roomCode)
+      const room = validateRoom(roomCode, socket)
       if (!room) return
 
       // Only host can change audio settings
@@ -1528,7 +1669,7 @@ app.prepare().then(() => {
 
     // Trigger sound effect (host only)
     socket.on('trigger_sound_effect', (roomCode, effect) => {
-      const room = rooms.get(roomCode)
+      const room = validateRoom(roomCode, socket)
       if (!room) return
 
       // Only host can trigger sound effects
@@ -1640,6 +1781,20 @@ app.prepare().then(() => {
       }
     })
 
+    // ============================================================
+    // Latency Measurement
+    // ============================================================
+
+    // Respond to latency pong from client
+    socket.on('latency_pong', (serverTimestamp: number, clientTimestamp: number) => {
+      const now = Date.now()
+      const roundTripTime = now - serverTimestamp
+      const latency = Math.round(roundTripTime / 2)
+
+      // Send latency result back to client
+      socket.emit('latency_pong_response', { latency })
+    })
+
     // Handle disconnect
     socket.on('disconnect', (reason) => {
       console.log('Client disconnected:', socket.id, 'Reason:', reason)
@@ -1666,10 +1821,32 @@ app.prepare().then(() => {
               // Only delete room if it's empty or has been too long
               if (player.isHost && room.gameState === 'LOBBY' && room.players.size === 0) {
                 console.log(`Deleting empty room ${code}`)
+                // Clean up timeouts before deleting room
+                const roomTimeout = roomTimeouts.get(code)
+                if (roomTimeout) {
+                  clearTimeout(roomTimeout)
+                  roomTimeouts.delete(code)
+                }
+                const plotTwistTimeout = plotTwistTimeouts.get(code)
+                if (plotTwistTimeout) {
+                  clearTimeout(plotTwistTimeout)
+                  plotTwistTimeouts.delete(code)
+                }
                 rooms.delete(code)
               } else if (player.isHost) {
-                // Host left during game - notify but don't delete immediately
-                io.to(code).emit('error', 'Host disconnected')
+                // Host left during game - notify players with specific event and cleanup timeouts
+                console.log(`Host disconnected from room ${code}`)
+                const roomTimeout = roomTimeouts.get(code)
+                if (roomTimeout) {
+                  clearTimeout(roomTimeout)
+                  roomTimeouts.delete(code)
+                }
+                const plotTwistTimeout = plotTwistTimeouts.get(code)
+                if (plotTwistTimeout) {
+                  clearTimeout(plotTwistTimeout)
+                  plotTwistTimeouts.delete(code)
+                }
+                io.to(code).emit('host_disconnected', { message: 'The host has left the game. You can wait for them to reconnect or return to the home page.' })
               }
               break
             }
@@ -1796,9 +1973,7 @@ app.prepare().then(() => {
   function startTeleprompterSync(room: Room, io: SocketIOServer) {
     if (!room.script) return
 
-    const WPM = 120 // Words per minute
-
-    // Calculate reading time for each line individually
+    // Calculate reading time for each line individually using smart timing
     const advanceLine = (lineIndex: number) => {
       // Check if paused
       if (room.isPaused) {
@@ -1821,16 +1996,22 @@ app.prepare().then(() => {
         return
       }
 
-      // Calculate time for the CURRENT line being displayed
+      // Calculate time using smart timing (punctuation, mood, etc.)
       const currentLine = room.script.lines[lineIndex]
-      const wordCount = currentLine.text.split(' ').length
-      const readingTimeMs = (wordCount / WPM) * 60 * 1000
+      const readingTimeMs = calculateLineDisplayTime(currentLine)
 
       // Schedule next line advance based on current line's reading time
       const timeout = setTimeout(() => {
         if (!room.script) return
         room.currentLineIndex++
-        io.to(room.code).emit('sync_teleprompter', room.currentLineIndex)
+        // Emit with timestamp for client sync
+        io.to(room.code).emit('sync_teleprompter', {
+          lineIndex: room.currentLineIndex,
+          serverTimestamp: Date.now(),
+          expectedDuration: room.script.lines[room.currentLineIndex]
+            ? calculateLineDisplayTime(room.script.lines[room.currentLineIndex])
+            : undefined
+        })
         advanceLine(room.currentLineIndex)
       }, readingTimeMs)
 

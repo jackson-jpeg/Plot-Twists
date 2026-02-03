@@ -4,7 +4,7 @@
 import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, GameState, Script, CardSelection, GameResults, PlayerRole } from '@/lib/types'
+import type { Player, GameState, Script, CardSelection, GameResults, PlayerRole, TeleprompterSyncData } from '@/lib/types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
@@ -41,6 +41,56 @@ function JoinPageContent() {
   const [nickname, setNickname] = useState('')
   const [hasJoined, setHasJoined] = useState(false)
   const [error, setError] = useState('')
+  const [roomCodeError, setRoomCodeError] = useState('')
+  const [nicknameError, setNicknameError] = useState('')
+  const [isJoining, setIsJoining] = useState(false)
+  const [roomCodeTouched, setRoomCodeTouched] = useState(false)
+  const [nicknameTouched, setNicknameTouched] = useState(false)
+
+  // Room code validation regex (matches server's ROOM_CODE_CHARS: A-Z excluding I, L, O and 2-9)
+  const VALID_ROOM_CODE_REGEX = /^[A-HJ-NP-Y2-9]{4}$/
+
+  const validateRoomCode = (code: string): string => {
+    if (!code) return 'Room code is required'
+    if (code.length !== 4) return 'Room code must be 4 characters'
+    if (!VALID_ROOM_CODE_REGEX.test(code.toUpperCase())) return 'Invalid room code format'
+    return ''
+  }
+
+  const validateNickname = (name: string): string => {
+    if (!name) return 'Nickname is required'
+    if (name.trim().length < 1) return 'Nickname cannot be empty'
+    if (name.length > 20) return 'Nickname must be 20 characters or less'
+    return ''
+  }
+
+  const isRoomCodeValid = roomCode && VALID_ROOM_CODE_REGEX.test(roomCode.toUpperCase())
+  const isNicknameValid = nickname && nickname.trim().length >= 1 && nickname.length <= 20
+  const isFormValid = () => isRoomCodeValid && isNicknameValid
+
+  const handleRoomCodeBlur = () => {
+    setRoomCodeTouched(true)
+    setRoomCodeError(validateRoomCode(roomCode))
+  }
+
+  const handleNicknameBlur = () => {
+    setNicknameTouched(true)
+    setNicknameError(validateNickname(nickname))
+  }
+
+  const handleRoomCodeChange = (value: string) => {
+    setRoomCode(value.toUpperCase())
+    if (roomCodeTouched) {
+      setRoomCodeError(validateRoomCode(value))
+    }
+  }
+
+  const handleNicknameChange = (value: string) => {
+    setNickname(value)
+    if (nicknameTouched) {
+      setNicknameError(validateNickname(value))
+    }
+  }
   const [gameState, setGameState] = useState<GameState>('LOBBY')
   const [players, setPlayers] = useState<Player[]>([])
   const [availableCards, setAvailableCards] = useState<{
@@ -59,6 +109,7 @@ function JoinPageContent() {
     circumstance: false
   })
   const [hasSubmitted, setHasSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [script, setScript] = useState<Script | null>(null)
   const [currentLineIndex, setCurrentLineIndex] = useState(0)
   const [myCharacter, setMyCharacter] = useState('')
@@ -69,6 +120,8 @@ function JoinPageContent() {
   const [copySuccess, setCopySuccess] = useState(false)
   const [myRole, setMyRole] = useState<PlayerRole>('PLAYER')
   const [selectedPackName, setSelectedPackName] = useState<string | null>(null)
+  const [networkLatency, setNetworkLatency] = useState<number | null>(null)
+  const [hostDisconnected, setHostDisconnected] = useState(false)
   const previousSpeaker = React.useRef<string>('')
 
   useEffect(() => {
@@ -101,11 +154,24 @@ function JoinPageContent() {
         setMyCharacter(selection.character)
       }
     })
-    socket.on('sync_teleprompter', setCurrentLineIndex)
+    // Handle both legacy (number) and new (object) sync formats
+    socket.on('sync_teleprompter', (data: TeleprompterSyncData | number) => {
+      if (typeof data === 'number') {
+        setCurrentLineIndex(data)
+      } else {
+        setCurrentLineIndex(data.lineIndex)
+      }
+    })
     socket.on('game_over', setGameResults)
     socket.on('error', (errorMsg: string) => {
       toast.error(errorMsg)
       setError(errorMsg)
+    })
+    socket.on('host_disconnected', (data: { message: string }) => {
+      toast.error('Host Disconnected')
+      setError(data.message)
+      // Set a flag to show recovery UI
+      setHostDisconnected(true)
     })
     socket.on('card_pack_selected', (packId: string) => {
       // Display a friendly name based on pack ID
@@ -119,6 +185,24 @@ function JoinPageContent() {
         setSelectedPackName('Custom Pack')
       }
     })
+    // Handle new game started (play again without reload)
+    socket.on('new_game_started', () => {
+      setGameState('LOBBY')
+      setScript(null)
+      setCurrentLineIndex(0)
+      setGameResults(null)
+      setHasSubmitted(false)
+      setMyCharacter('')
+      setSelection({ character: '', setting: '', circumstance: '' })
+      setGreenRoomQuestion('')
+    })
+    // Latency measurement
+    socket.on('latency_ping', (serverTimestamp: number) => {
+      socket.emit('latency_pong', serverTimestamp, Date.now())
+    })
+    socket.on('latency_pong_response', (data: { latency: number }) => {
+      setNetworkLatency(data.latency)
+    })
     return () => {
       socket.off('players_update')
       socket.off('game_state_change')
@@ -128,22 +212,49 @@ function JoinPageContent() {
       socket.off('sync_teleprompter')
       socket.off('game_over')
       socket.off('error')
+      socket.off('host_disconnected')
       socket.off('card_pack_selected')
+      socket.off('new_game_started')
+      socket.off('latency_ping')
+      socket.off('latency_pong_response')
     }
   }, [socket, isConnected, selection, myRole])
 
   const handleJoin = () => {
-    if (!socket || !roomCode || !nickname) {
-      toast.error('Please enter both room code and nickname')
+    // Validate all fields first
+    const roomErr = validateRoomCode(roomCode)
+    const nickErr = validateNickname(nickname)
+
+    setRoomCodeTouched(true)
+    setNicknameTouched(true)
+    setRoomCodeError(roomErr)
+    setNicknameError(nickErr)
+
+    if (roomErr || nickErr) {
+      toast.error('Please fix the errors above')
       return
     }
-    if (roomCode.length !== 4) {
-      toast.error('Room code must be 4 characters')
+
+    if (!socket) {
+      toast.error('Not connected to server')
       return
     }
+
     setError('')
+    setIsJoining(true)
     const upperRoomCode = roomCode.toUpperCase()
+
+    // Set up timeout
+    const timeoutId = setTimeout(() => {
+      setIsJoining(false)
+      setError('Connection timed out. Please try again.')
+      toast.error('Connection timed out')
+    }, 5000)
+
     socket.emit('join_room', upperRoomCode, nickname, (response) => {
+      clearTimeout(timeoutId)
+      setIsJoining(false)
+
       if (response.success) {
         setHasJoined(true)
 
@@ -166,7 +277,9 @@ function JoinPageContent() {
           if (myPlayer) setMyPlayerId(myPlayer.id)
         }
       } else {
-        toast.error(response.error || 'Failed to join room')
+        const errorMsg = response.error || 'Room not found'
+        setError(errorMsg)
+        toast.error(errorMsg)
       }
     })
   }
@@ -176,7 +289,9 @@ function JoinPageContent() {
       toast.error('Please select all cards')
       return
     }
+    setIsSubmitting(true)
     socket.emit('submit_cards', roomCode, selection, (response) => {
+      setIsSubmitting(false)
       if (response.success) {
         setHasSubmitted(true)
         toast.success('Cards submitted!')
@@ -187,6 +302,19 @@ function JoinPageContent() {
   }
 
   const handleVote = (playerId: string) => socket?.emit('submit_vote', roomCode, playerId)
+
+  // Player navigation (synced with all clients)
+  const goToPreviousLine = () => {
+    if (currentLineIndex > 0) {
+      socket?.emit('player_jump_to_line', roomCode.toUpperCase(), currentLineIndex - 1)
+    }
+  }
+
+  const goToNextLine = () => {
+    if (script && currentLineIndex < script.lines.length - 1) {
+      socket?.emit('player_jump_to_line', roomCode.toUpperCase(), currentLineIndex + 1)
+    }
+  }
 
   const handleCopyScript = async () => {
     if (script) {
@@ -256,26 +384,50 @@ function JoinPageContent() {
             <div className="stack">
               <div>
                 <label className="label">Room Code</label>
-                <input
-                  type="text"
-                  value={roomCode}
-                  onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                  placeholder="ABCD"
-                  maxLength={4}
-                  className="input font-script text-center text-3xl"
-                />
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    value={roomCode}
+                    onChange={(e) => handleRoomCodeChange(e.target.value)}
+                    onBlur={handleRoomCodeBlur}
+                    placeholder="Enter code (e.g., QUIZ)"
+                    maxLength={4}
+                    className={`input font-script text-center text-3xl ${
+                      roomCodeTouched && roomCodeError ? 'input-error' : ''
+                    } ${isRoomCodeValid ? 'input-valid' : ''}`}
+                    style={{ paddingRight: isRoomCodeValid ? '44px' : '16px' }}
+                  />
+                  {isRoomCodeValid && (
+                    <span className="input-check">✓</span>
+                  )}
+                </div>
+                {roomCodeTouched && roomCodeError && (
+                  <p className="error-text">⚠️ {roomCodeError}</p>
+                )}
               </div>
 
               <div>
                 <label className="label">Your Name</label>
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  placeholder="Enter your name"
-                  maxLength={20}
-                  className="input text-lg"
-                />
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    value={nickname}
+                    onChange={(e) => handleNicknameChange(e.target.value)}
+                    onBlur={handleNicknameBlur}
+                    placeholder="Enter your name"
+                    maxLength={20}
+                    className={`input text-lg ${
+                      nicknameTouched && nicknameError ? 'input-error' : ''
+                    } ${isNicknameValid ? 'input-valid' : ''}`}
+                    style={{ paddingRight: isNicknameValid ? '44px' : '16px' }}
+                  />
+                  {isNicknameValid && (
+                    <span className="input-check">✓</span>
+                  )}
+                </div>
+                {nicknameTouched && nicknameError && (
+                  <p className="error-text">⚠️ {nicknameError}</p>
+                )}
               </div>
 
               {error && (
@@ -284,14 +436,33 @@ function JoinPageContent() {
                 </div>
               )}
 
-              <button
-                onClick={handleJoin}
-                disabled={!roomCode || !nickname}
-                className="btn btn-primary btn-large w-full"
-              >
-                <span>🚀</span>
-                <span>Join</span>
-              </button>
+              <div>
+                <button
+                  onClick={handleJoin}
+                  disabled={!isFormValid() || isJoining}
+                  className="btn btn-primary btn-large w-full"
+                >
+                  {isJoining ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      >
+                        ⏳
+                      </motion.span>
+                      <span>Joining...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>🚀</span>
+                      <span>Join</span>
+                    </>
+                  )}
+                </button>
+                {!isFormValid() && !isJoining && (
+                  <p className="btn-helper-text">Fill in all fields to continue</p>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -302,6 +473,53 @@ function JoinPageContent() {
   return (
     <div className="page-container">
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="join" />
+
+      {/* Host Disconnected Overlay */}
+      <AnimatePresence>
+        {hostDisconnected && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(0, 0, 0, 0.8)' }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="card max-w-md w-full text-center"
+            >
+              <div className="text-6xl mb-4">😢</div>
+              <h2 className="text-2xl font-display mb-4" style={{ color: 'var(--color-text-primary)' }}>
+                Host Disconnected
+              </h2>
+              <p className="mb-6" style={{ color: 'var(--color-text-secondary)' }}>
+                The host has left the game. You can wait for them to reconnect or return to the home page.
+              </p>
+              <div className="flex flex-col gap-3">
+                <motion.button
+                  onClick={() => setHostDisconnected(false)}
+                  className="btn btn-secondary w-full"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Wait for Reconnection
+                </motion.button>
+                <motion.button
+                  onClick={() => router.push('/')}
+                  className="btn btn-primary w-full"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Return Home
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {gameState === 'LOBBY' && (
           <motion.div
@@ -654,16 +872,16 @@ function JoinPageContent() {
 
                 <motion.button
                   onClick={handleSubmitCards}
-                  disabled={!selection.character || !selection.setting || !selection.circumstance}
+                  disabled={!selection.character || !selection.setting || !selection.circumstance || isSubmitting}
                   className="btn btn-primary btn-large w-full"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+                  whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
                   style={{
                     marginTop: '24px',
-                    opacity: (!selection.character || !selection.setting || !selection.circumstance) ? 0.5 : 1
+                    opacity: (!selection.character || !selection.setting || !selection.circumstance || isSubmitting) ? 0.5 : 1
                   }}
                   animate={
-                    (selection.character && selection.setting && selection.circumstance)
+                    (selection.character && selection.setting && selection.circumstance && !isSubmitting)
                       ? {
                           boxShadow: [
                             '0 0 0 0 rgba(245, 158, 66, 0)',
@@ -674,17 +892,31 @@ function JoinPageContent() {
                       : {}
                   }
                   transition={
-                    (selection.character && selection.setting && selection.circumstance)
+                    (selection.character && selection.setting && selection.circumstance && !isSubmitting)
                       ? { duration: 2, repeat: Infinity }
                       : {}
                   }
                 >
-                  <span>✨</span>
-                  <span>
-                    {(!selection.character || !selection.setting || !selection.circumstance)
-                      ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)`
-                      : 'Submit Cards - Ready!'}
-                  </span>
+                  {isSubmitting ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      >
+                        ⏳
+                      </motion.span>
+                      <span>Submitting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>✨</span>
+                      <span>
+                        {(!selection.character || !selection.setting || !selection.circumstance)
+                          ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)`
+                          : 'Submit Cards - Ready!'}
+                      </span>
+                    </>
+                  )}
                 </motion.button>
               </div>
             </div>
@@ -863,6 +1095,46 @@ function JoinPageContent() {
                 )
               })()}
             </div>
+
+            {/* Player Navigation Controls */}
+            <div className="p-4" style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}>
+              <div className="flex items-center justify-between max-w-md mx-auto">
+                <motion.button
+                  onClick={goToPreviousLine}
+                  disabled={currentLineIndex === 0}
+                  className="btn btn-ghost"
+                  style={{
+                    opacity: currentLineIndex === 0 ? 0.5 : 1,
+                    padding: '12px 20px'
+                  }}
+                  whileHover={currentLineIndex > 0 ? { scale: 1.05 } : {}}
+                  whileTap={currentLineIndex > 0 ? { scale: 0.95 } : {}}
+                >
+                  ← Back
+                </motion.button>
+
+                <span className="font-script text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  {currentLineIndex + 1} / {script.lines.length}
+                </span>
+
+                <motion.button
+                  onClick={goToNextLine}
+                  disabled={currentLineIndex >= script.lines.length - 1}
+                  className="btn btn-ghost"
+                  style={{
+                    opacity: currentLineIndex >= script.lines.length - 1 ? 0.5 : 1,
+                    padding: '12px 20px'
+                  }}
+                  whileHover={currentLineIndex < script.lines.length - 1 ? { scale: 1.05 } : {}}
+                  whileTap={currentLineIndex < script.lines.length - 1 ? { scale: 0.95 } : {}}
+                >
+                  Next →
+                </motion.button>
+              </div>
+              <p className="text-center text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
+                Navigation syncs with everyone
+              </p>
+            </div>
           </motion.div>
         )}
 
@@ -1025,18 +1297,27 @@ function JoinPageContent() {
                 </motion.div>
               )}
 
-              <motion.button
-                onClick={() => window.location.reload()}
-                className="btn btn-primary btn-large"
+              <motion.div
+                className="card text-center"
+                style={{ background: 'var(--color-highlight)', padding: '24px' }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
               >
-                <span>🔄</span>
-                <span>Play Again</span>
-              </motion.button>
+                <motion.div
+                  className="text-4xl mb-3"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  ⏳
+                </motion.div>
+                <p className="font-display text-lg mb-1" style={{ color: 'var(--color-text-primary)' }}>
+                  Waiting for Host...
+                </p>
+                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  The host will start the next game
+                </p>
+              </motion.div>
             </div>
           </motion.div>
         )}

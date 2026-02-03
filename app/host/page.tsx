@@ -67,6 +67,7 @@ export default function HostPage() {
   })
   const [selectedPackId, setSelectedPackId] = useState('standard')
   const [networkLatency, setNetworkLatency] = useState<number | null>(null)
+  const [gameSetupMode, setGameSetupMode] = useState<'quick' | 'custom'>('quick')
   const [scriptGenerationTimedOut, setScriptGenerationTimedOut] = useState(false)
   const scriptGenerationTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 
@@ -204,6 +205,33 @@ export default function HostPage() {
         setCopySuccess(true)
         setTimeout(() => setCopySuccess(false), 2000)
       }
+    }
+  }
+
+  const handleSetupModeChange = (mode: 'quick' | 'custom') => {
+    setGameSetupMode(mode)
+    if (mode === 'quick') {
+      // Reset to recommended defaults
+      const newSettings = { ...settings, isMature: false, gameMode: 'ENSEMBLE' as const }
+      setSettings(newSettings)
+      socket?.emit('update_room_settings', roomCode, { isMature: false, gameMode: 'ENSEMBLE' })
+      setSelectedPackId('standard')
+      setScriptCustomization({
+        comedyStyle: 'witty',
+        scriptLength: 'standard',
+        difficulty: 'intermediate',
+        physicalComedy: 'minimal',
+        enableCallbacks: true
+      })
+      setAudioSettings({
+        voiceEnabled: false,
+        voiceSettings: { enabled: false, provider: 'browser', speed: 1.0, pitch: 1.0, volume: 0.8 },
+        soundEffectsEnabled: true,
+        soundEffectsVolume: 0.5,
+        ambienceEnabled: false,
+        ambienceVolume: 0.3,
+        turnChimeEnabled: true
+      })
     }
   }
 
@@ -454,6 +482,45 @@ export default function HostPage() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
+              {/* Quick/Custom Game Mode Tabs */}
+              <div className="card">
+                <div className="flex gap-2 mb-4">
+                  <motion.button
+                    onClick={() => handleSetupModeChange('quick')}
+                    className="btn flex-1"
+                    style={{
+                      background: gameSetupMode === 'quick' ? 'var(--color-success)' : 'var(--color-surface-alt)',
+                      color: gameSetupMode === 'quick' ? 'white' : 'var(--color-text-secondary)',
+                      border: gameSetupMode === 'quick' ? '2px solid var(--color-success)' : '1px solid var(--color-border)'
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span>⚡</span>
+                    <span>Quick Game</span>
+                  </motion.button>
+                  <motion.button
+                    onClick={() => handleSetupModeChange('custom')}
+                    className="btn flex-1"
+                    style={{
+                      background: gameSetupMode === 'custom' ? 'var(--color-purple)' : 'var(--color-surface-alt)',
+                      color: gameSetupMode === 'custom' ? 'white' : 'var(--color-text-secondary)',
+                      border: gameSetupMode === 'custom' ? '2px solid var(--color-purple)' : '1px solid var(--color-border)'
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span>🎛️</span>
+                    <span>Custom Game</span>
+                  </motion.button>
+                </div>
+                <p className="text-center text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {gameSetupMode === 'quick'
+                    ? 'Recommended settings for fast setup'
+                    : 'Customize all game options'}
+                </p>
+              </div>
+
               {/* Game Mode Selection */}
               <div className="card">
                 <h3 className="font-display text-lg mb-4" style={{ color: 'var(--color-text-primary)' }}>
@@ -501,11 +568,26 @@ export default function HostPage() {
                       padding: '16px',
                       border: settings.gameMode === 'ENSEMBLE' ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
                       cursor: 'pointer',
-                      background: settings.gameMode === 'ENSEMBLE' ? 'var(--color-highlight)' : 'var(--color-surface)'
+                      background: settings.gameMode === 'ENSEMBLE' ? 'var(--color-highlight)' : 'var(--color-surface)',
+                      position: 'relative'
                     }}
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}
                   >
+                    {gameSetupMode === 'quick' && (
+                      <div
+                        className="badge badge-success"
+                        style={{
+                          position: 'absolute',
+                          top: '-8px',
+                          right: '-8px',
+                          fontSize: '9px',
+                          padding: '2px 6px'
+                        }}
+                      >
+                        Recommended
+                      </div>
+                    )}
                     <div className="text-2xl mb-2">🎭</div>
                     <div className="font-display font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>Ensemble</div>
                     <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>3-6 players</div>
@@ -513,40 +595,45 @@ export default function HostPage() {
                 </div>
               </div>
 
-              <div className="card split">
-                <div>
-                  <h3 className="font-display text-lg mb-1" style={{ color: 'var(--color-text-primary)' }}>
-                    {settings.isMature ? '🔞 After Dark' : '👨‍👩‍👧‍👦 Family Friendly'}
-                  </h3>
-                  <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>Content Rating</p>
-                </div>
-                <motion.button
-                  onClick={toggleMature}
-                  className={settings.isMature ? 'btn btn-ghost' : 'btn btn-secondary'}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Switch Mode
-                </motion.button>
-              </div>
+              {/* Custom settings - only shown in custom mode */}
+              {gameSetupMode === 'custom' && (
+                <>
+                  <div className="card split">
+                    <div>
+                      <h3 className="font-display text-lg mb-1" style={{ color: 'var(--color-text-primary)' }}>
+                        {settings.isMature ? '🔞 After Dark' : '👨‍👩‍👧‍👦 Family Friendly'}
+                      </h3>
+                      <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>Content Rating</p>
+                    </div>
+                    <motion.button
+                      onClick={toggleMature}
+                      className={settings.isMature ? 'btn btn-ghost' : 'btn btn-secondary'}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Switch Mode
+                    </motion.button>
+                  </div>
 
-              {/* New Feature Panels */}
-              <CardPackSelector
-                roomCode={roomCode}
-                selectedPackId={selectedPackId}
-                onSelect={setSelectedPackId}
-                showCreateButton={true}
-              />
+                  {/* New Feature Panels */}
+                  <CardPackSelector
+                    roomCode={roomCode}
+                    selectedPackId={selectedPackId}
+                    onSelect={setSelectedPackId}
+                    showCreateButton={true}
+                  />
 
-              <ScriptCustomizationPanel
-                customization={scriptCustomization}
-                onChange={setScriptCustomization}
-              />
+                  <ScriptCustomizationPanel
+                    customization={scriptCustomization}
+                    onChange={setScriptCustomization}
+                  />
 
-              <AudioSettingsPanel
-                settings={audioSettings}
-                onChange={setAudioSettings}
-              />
+                  <AudioSettingsPanel
+                    settings={audioSettings}
+                    onChange={setAudioSettings}
+                  />
+                </>
+              )}
 
               <AnimatePresence>
                 {((settings.gameMode === 'SOLO' && nonHostPlayers.length === 1) ||

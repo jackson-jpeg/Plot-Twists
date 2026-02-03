@@ -41,6 +41,56 @@ function JoinPageContent() {
   const [nickname, setNickname] = useState('')
   const [hasJoined, setHasJoined] = useState(false)
   const [error, setError] = useState('')
+  const [roomCodeError, setRoomCodeError] = useState('')
+  const [nicknameError, setNicknameError] = useState('')
+  const [isJoining, setIsJoining] = useState(false)
+  const [roomCodeTouched, setRoomCodeTouched] = useState(false)
+  const [nicknameTouched, setNicknameTouched] = useState(false)
+
+  // Room code validation regex (matches server's ROOM_CODE_CHARS: A-Z excluding I, L, O and 2-9)
+  const VALID_ROOM_CODE_REGEX = /^[A-HJ-NP-Y2-9]{4}$/
+
+  const validateRoomCode = (code: string): string => {
+    if (!code) return 'Room code is required'
+    if (code.length !== 4) return 'Room code must be 4 characters'
+    if (!VALID_ROOM_CODE_REGEX.test(code.toUpperCase())) return 'Invalid room code format'
+    return ''
+  }
+
+  const validateNickname = (name: string): string => {
+    if (!name) return 'Nickname is required'
+    if (name.trim().length < 1) return 'Nickname cannot be empty'
+    if (name.length > 20) return 'Nickname must be 20 characters or less'
+    return ''
+  }
+
+  const isRoomCodeValid = roomCode && VALID_ROOM_CODE_REGEX.test(roomCode.toUpperCase())
+  const isNicknameValid = nickname && nickname.trim().length >= 1 && nickname.length <= 20
+  const isFormValid = () => isRoomCodeValid && isNicknameValid
+
+  const handleRoomCodeBlur = () => {
+    setRoomCodeTouched(true)
+    setRoomCodeError(validateRoomCode(roomCode))
+  }
+
+  const handleNicknameBlur = () => {
+    setNicknameTouched(true)
+    setNicknameError(validateNickname(nickname))
+  }
+
+  const handleRoomCodeChange = (value: string) => {
+    setRoomCode(value.toUpperCase())
+    if (roomCodeTouched) {
+      setRoomCodeError(validateRoomCode(value))
+    }
+  }
+
+  const handleNicknameChange = (value: string) => {
+    setNickname(value)
+    if (nicknameTouched) {
+      setNicknameError(validateNickname(value))
+    }
+  }
   const [gameState, setGameState] = useState<GameState>('LOBBY')
   const [players, setPlayers] = useState<Player[]>([])
   const [availableCards, setAvailableCards] = useState<{
@@ -171,17 +221,40 @@ function JoinPageContent() {
   }, [socket, isConnected, selection, myRole])
 
   const handleJoin = () => {
-    if (!socket || !roomCode || !nickname) {
-      toast.error('Please enter both room code and nickname')
+    // Validate all fields first
+    const roomErr = validateRoomCode(roomCode)
+    const nickErr = validateNickname(nickname)
+
+    setRoomCodeTouched(true)
+    setNicknameTouched(true)
+    setRoomCodeError(roomErr)
+    setNicknameError(nickErr)
+
+    if (roomErr || nickErr) {
+      toast.error('Please fix the errors above')
       return
     }
-    if (roomCode.length !== 4) {
-      toast.error('Room code must be 4 characters')
+
+    if (!socket) {
+      toast.error('Not connected to server')
       return
     }
+
     setError('')
+    setIsJoining(true)
     const upperRoomCode = roomCode.toUpperCase()
+
+    // Set up timeout
+    const timeoutId = setTimeout(() => {
+      setIsJoining(false)
+      setError('Connection timed out. Please try again.')
+      toast.error('Connection timed out')
+    }, 5000)
+
     socket.emit('join_room', upperRoomCode, nickname, (response) => {
+      clearTimeout(timeoutId)
+      setIsJoining(false)
+
       if (response.success) {
         setHasJoined(true)
 
@@ -204,7 +277,9 @@ function JoinPageContent() {
           if (myPlayer) setMyPlayerId(myPlayer.id)
         }
       } else {
-        toast.error(response.error || 'Failed to join room')
+        const errorMsg = response.error || 'Room not found'
+        setError(errorMsg)
+        toast.error(errorMsg)
       }
     })
   }
@@ -309,26 +384,50 @@ function JoinPageContent() {
             <div className="stack">
               <div>
                 <label className="label">Room Code</label>
-                <input
-                  type="text"
-                  value={roomCode}
-                  onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                  placeholder="ABCD"
-                  maxLength={4}
-                  className="input font-script text-center text-3xl"
-                />
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    value={roomCode}
+                    onChange={(e) => handleRoomCodeChange(e.target.value)}
+                    onBlur={handleRoomCodeBlur}
+                    placeholder="Enter code (e.g., QUIZ)"
+                    maxLength={4}
+                    className={`input font-script text-center text-3xl ${
+                      roomCodeTouched && roomCodeError ? 'input-error' : ''
+                    } ${isRoomCodeValid ? 'input-valid' : ''}`}
+                    style={{ paddingRight: isRoomCodeValid ? '44px' : '16px' }}
+                  />
+                  {isRoomCodeValid && (
+                    <span className="input-check">✓</span>
+                  )}
+                </div>
+                {roomCodeTouched && roomCodeError && (
+                  <p className="error-text">⚠️ {roomCodeError}</p>
+                )}
               </div>
 
               <div>
                 <label className="label">Your Name</label>
-                <input
-                  type="text"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
-                  placeholder="Enter your name"
-                  maxLength={20}
-                  className="input text-lg"
-                />
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    value={nickname}
+                    onChange={(e) => handleNicknameChange(e.target.value)}
+                    onBlur={handleNicknameBlur}
+                    placeholder="Enter your name"
+                    maxLength={20}
+                    className={`input text-lg ${
+                      nicknameTouched && nicknameError ? 'input-error' : ''
+                    } ${isNicknameValid ? 'input-valid' : ''}`}
+                    style={{ paddingRight: isNicknameValid ? '44px' : '16px' }}
+                  />
+                  {isNicknameValid && (
+                    <span className="input-check">✓</span>
+                  )}
+                </div>
+                {nicknameTouched && nicknameError && (
+                  <p className="error-text">⚠️ {nicknameError}</p>
+                )}
               </div>
 
               {error && (
@@ -337,14 +436,33 @@ function JoinPageContent() {
                 </div>
               )}
 
-              <button
-                onClick={handleJoin}
-                disabled={!roomCode || !nickname}
-                className="btn btn-primary btn-large w-full"
-              >
-                <span>🚀</span>
-                <span>Join</span>
-              </button>
+              <div>
+                <button
+                  onClick={handleJoin}
+                  disabled={!isFormValid() || isJoining}
+                  className="btn btn-primary btn-large w-full"
+                >
+                  {isJoining ? (
+                    <>
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      >
+                        ⏳
+                      </motion.span>
+                      <span>Joining...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>🚀</span>
+                      <span>Join</span>
+                    </>
+                  )}
+                </button>
+                {!isFormValid() && !isJoining && (
+                  <p className="btn-helper-text">Fill in all fields to continue</p>
+                )}
+              </div>
             </div>
           </div>
         </motion.div>

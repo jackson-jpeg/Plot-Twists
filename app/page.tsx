@@ -58,7 +58,10 @@ export default function Home() {
               <span className="title-emoji">🎭</span>
             </h1>
             <div className="polaroid-caption">
-              The party game where AI writes your chaos
+              Create hilarious AI-generated improv scenes with friends in 5 minutes
+            </div>
+            <div className="polaroid-explainer">
+              3-6 players. 15 minutes. Zero acting skills required.
             </div>
           </div>
 
@@ -106,7 +109,7 @@ export default function Home() {
             </motion.div>
             <div className="ticket-main">
               <div className="ticket-title ticket-title-large">Host a Game</div>
-              <div className="ticket-subtitle">Start the show</div>
+              <div className="ticket-subtitle">Create Room</div>
             </div>
             <div className="ticket-notch"></div>
           </motion.button>
@@ -138,7 +141,7 @@ export default function Home() {
             </motion.div>
             <div className="ticket-main">
               <div className="ticket-title ticket-title-large">Join Game</div>
-              <div className="ticket-subtitle">Jump into action</div>
+              <div className="ticket-subtitle">Join Room</div>
             </div>
             <div className="ticket-notch"></div>
           </motion.button>
@@ -184,22 +187,27 @@ export default function Home() {
                     <div className="how-it-works-step">
                       <div className="step-number">1</div>
                       <div className="step-text">Pick cards</div>
+                      <div className="step-example">"Darth Vader at a job interview"</div>
                     </div>
                     <div className="how-it-works-step">
                       <div className="step-number">2</div>
                       <div className="step-text">AI writes scene</div>
+                      <div className="step-example">Claude creates a 2-min comedy script</div>
                     </div>
                     <div className="how-it-works-step">
                       <div className="step-number">3</div>
                       <div className="step-text">Act it out</div>
+                      <div className="step-example">Follow the teleprompter on your phone</div>
                     </div>
                     <div className="how-it-works-step">
                       <div className="step-number">4</div>
                       <div className="step-text">Vote MVP</div>
+                      <div className="step-example">Best performance wins the round</div>
                     </div>
                     <div className="how-it-works-step">
                       <div className="step-number">5</div>
                       <div className="step-text">Laugh & repeat</div>
+                      <div className="step-example">Generate a sequel or new scene</div>
                     </div>
                   </div>
 

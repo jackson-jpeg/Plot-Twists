@@ -1,6 +1,6 @@
 /**
  * Image Generation Service
- * Uses Google Gemini (Imagen 3) to generate movie posters for scripts
+ * Uses Google Gemini (Imagen 4) to generate movie posters for scripts
  */
 
 import { GoogleGenAI } from '@google/genai'
@@ -35,7 +35,7 @@ Style: Vibrant Pixar-quality 3D art, dramatic composition, include title text at
     console.log(`[Image Service] Generating poster for "${title}"...`)
 
     const response = await genAI.models.generateImages({
-      model: 'imagen-3.0-generate-002',
+      model: 'imagen-4.0-generate-001',
       prompt,
       config: { numberOfImages: 1 }
     })

@@ -2056,7 +2056,7 @@ app.prepare().then(() => {
       // Generate poster in background (non-blocking)
       generateTitleCard(finalScript.title, finalScript.synopsis, chosenSetting)
         .then((imageUrl) => {
-          if (imageUrl && imageUrl !== '/images/default-poster.svg') {
+          if (imageUrl) {
             if (room.script) room.script.imageUrl = imageUrl
             io.to(room.code).emit('script_image_update', imageUrl)
           }

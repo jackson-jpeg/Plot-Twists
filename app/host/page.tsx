@@ -111,6 +111,7 @@ export default function HostPage() {
   const loadingIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
   const scriptContainerRef = React.useRef<HTMLDivElement | null>(null)
   const [scriptImageUrl, setScriptImageUrl] = useState<string | null>(null)
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false)
 
   // Teleprompter settings hook
   const {
@@ -284,8 +285,10 @@ export default function HostPage() {
       setScript(newScript)
       setCurrentLineIndex(0)
       setScriptImageUrl(newScript.imageUrl || null)
+      setIsGeneratingImage(true)  // Start loading indicator for poster
     })
     socket.on('script_image_update', (imageUrl) => {
+      setIsGeneratingImage(false)  // Always stop loading indicator
       // Only display real generated images, not fallback placeholder
       if (imageUrl && !imageUrl.includes('default-poster')) {
         setScriptImageUrl(imageUrl)
@@ -306,6 +309,7 @@ export default function HostPage() {
       setGameState('LOBBY')
       setScript(null)
       setScriptImageUrl(null)  // Clear previous poster
+      setIsGeneratingImage(false)  // Reset loading state
       setCurrentLineIndex(0)
       setGameResults(null)
       setIsPlaying(true)
@@ -1660,7 +1664,7 @@ export default function HostPage() {
 
             {/* Subtle loading indicator when poster is generating */}
             <AnimatePresence>
-              {!scriptImageUrl && script && (
+              {isGeneratingImage && script && (
                 <motion.div
                   className="text-center mb-2"
                   initial={{ opacity: 0 }}

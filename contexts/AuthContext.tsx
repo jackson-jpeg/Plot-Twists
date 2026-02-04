@@ -72,6 +72,18 @@ export function useAuth() {
   return useContext(AuthContext)
 }
 
+// Debug helper to get missing Firebase config variables
+export function getMissingFirebaseConfig(): string[] {
+  const missing: string[] = []
+  if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) missing.push('NEXT_PUBLIC_FIREBASE_API_KEY')
+  if (!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) missing.push('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN')
+  if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) missing.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID')
+  if (!process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) missing.push('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET')
+  if (!process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID) missing.push('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID')
+  if (!process.env.NEXT_PUBLIC_FIREBASE_APP_ID) missing.push('NEXT_PUBLIC_FIREBASE_APP_ID')
+  return missing
+}
+
 // Generate or get anonymous player ID from localStorage
 function getAnonymousPlayerId(): string {
   if (typeof window === 'undefined') return ''
@@ -88,6 +100,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [firebaseReady, setFirebaseReady] = useState(false)
+
+  // Debug: Log Firebase config status on mount
+  useEffect(() => {
+    const missing = getMissingFirebaseConfig()
+    if (missing.length > 0) {
+      console.warn('[AuthContext] Missing Firebase env vars:', missing)
+    } else {
+      console.log('[AuthContext] Firebase config complete, isFirebaseConfigured:', isFirebaseConfigured)
+    }
+  }, [])
 
   // Sign in anonymously (called automatically if no user on load)
   const signInAnonymously = useCallback(async (): Promise<AuthResult> => {

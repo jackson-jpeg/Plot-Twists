@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth, getMissingFirebaseConfig } from '@/contexts/AuthContext'
 import { AuthModal } from './AuthModal'
 
 export function UserMenu() {
@@ -10,6 +10,7 @@ export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin')
+  const [showDebugInfo, setShowDebugInfo] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
@@ -71,9 +72,63 @@ export function UserMenu() {
     )
   }
 
-  // Not configured - don't show anything
+  // Not configured - show debug badge
   if (!isConfigured) {
-    return null
+    const missingVars = getMissingFirebaseConfig()
+    return (
+      <div className="user-menu" ref={dropdownRef}>
+        <button
+          onClick={() => setShowDebugInfo(!showDebugInfo)}
+          className="user-menu-btn"
+          style={{
+            backgroundColor: '#f59e0b',
+            color: '#000',
+            padding: '0.5rem 1rem',
+            borderRadius: '0.5rem',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+          }}
+          title="Firebase auth not configured - click for details"
+        >
+          Setup Incomplete
+        </button>
+        {showDebugInfo && (
+          <div
+            className="user-menu-dropdown"
+            style={{
+              position: 'absolute',
+              top: '100%',
+              right: 0,
+              marginTop: '0.5rem',
+              backgroundColor: '#1f2937',
+              border: '1px solid #374151',
+              borderRadius: '0.5rem',
+              padding: '1rem',
+              minWidth: '280px',
+              zIndex: 50,
+            }}
+          >
+            <div style={{ color: '#f59e0b', fontWeight: 600, marginBottom: '0.5rem' }}>
+              Missing Environment Variables:
+            </div>
+            {missingVars.length > 0 ? (
+              <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#9ca3af', fontSize: '0.75rem' }}>
+                {missingVars.map((v) => (
+                  <li key={v} style={{ marginBottom: '0.25rem' }}>{v}</li>
+                ))}
+              </ul>
+            ) : (
+              <div style={{ color: '#9ca3af', fontSize: '0.75rem' }}>
+                All env vars present but Firebase failed to initialize. Check console for errors.
+              </div>
+            )}
+            <div style={{ marginTop: '0.75rem', color: '#6b7280', fontSize: '0.625rem' }}>
+              Add these to .env.local and restart the dev server.
+            </div>
+          </div>
+        )}
+      </div>
+    )
   }
 
   // Guest/Anonymous user - show sign in/up buttons

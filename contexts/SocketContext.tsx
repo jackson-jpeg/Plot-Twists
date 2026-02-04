@@ -53,17 +53,19 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           socketUrl = 'http://localhost:3000'
         } else if (process.env.NEXT_PUBLIC_WS_URL) {
           // Production: Use Railway backend
-          // Add https:// if not present
+          // Strip any existing protocol, then add https://
           const wsUrl = process.env.NEXT_PUBLIC_WS_URL
-          socketUrl = wsUrl.startsWith('http') ? wsUrl : `https://${wsUrl}`
+          const cleanUrl = wsUrl.replace(/^(wss?|https?):\/\//, '')
+          socketUrl = `https://${cleanUrl}`
         } else {
           // Fallback to same origin
           socketUrl = window.location.origin
         }
       } else {
         // Server-side fallback
-        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'
-        socketUrl = wsUrl.startsWith('http') ? wsUrl : `https://${wsUrl}`
+        const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'localhost:3000'
+        const cleanUrl = wsUrl.replace(/^(wss?|https?):\/\//, '')
+        socketUrl = `https://${cleanUrl}`
       }
 
       console.log('🔌 Socket connection config:')
@@ -86,7 +88,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         upgrade: !isProduction, // Disable WebSocket upgrade in production
         timeout: 20000,
         autoConnect: true,
-        withCredentials: true,
+        withCredentials: false,
         forceNew: false,
         multiplex: true
       })

@@ -4,6 +4,7 @@ import { parse } from 'url'
 import next from 'next'
 import { Server as SocketIOServer } from 'socket.io'
 import express from 'express'
+import cors from 'cors'
 import type {
   ServerToClientEvents,
   ClientToServerEvents,
@@ -692,12 +693,48 @@ function getGreenRoomTrivia(setting: string): string {
   return getGreenRoomQuestion(setting)
 }
 
+// Shared CORS origin logic
+function getAllowedOrigins(): string[] {
+  if (dev) return ['http://localhost:3000', 'http://localhost:3001']
+  const origins = [
+    'https://plot-twists.com',
+    'https://www.plot-twists.com',
+    'https://web-production-c7981.up.railway.app'
+  ]
+  const envOrigins = process.env.ALLOWED_ORIGINS
+  if (envOrigins) {
+    envOrigins.split(',').forEach(o => { if (o.trim()) origins.push(o.trim()) })
+  }
+  return origins
+}
+
+const VERCEL_PREVIEW_REGEX = /^https:\/\/plot-twists(-[a-z0-9-]+)*\.vercel\.app$/
+
+function isAllowedOrigin(origin: string): boolean {
+  if (getAllowedOrigins().includes(origin)) return true
+  if (!dev && VERCEL_PREVIEW_REGEX.test(origin)) return true
+  return false
+}
+
 app.prepare().then(async () => {
   // Initialize database and services
   await initializeDatabase()
   await initializeCardPackService()
 
   const expressApp = express()
+
+  // Express-level CORS middleware (ensures ALL responses have CORS headers, not just Socket.IO)
+  expressApp.use(cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true)
+      if (isAllowedOrigin(origin)) return callback(null, true)
+      console.log(`Express CORS blocked origin: ${origin}`)
+      callback(new Error('Not allowed by CORS'))
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }))
 
   // Configure security middleware
   configureSecurityMiddleware(expressApp)
@@ -707,31 +744,9 @@ app.prepare().then(async () => {
   const io = new SocketIOServer<ClientToServerEvents, ServerToClientEvents>(server, {
     cors: {
       origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true)
-
-        const allowedOrigins = dev ? [
-          'http://localhost:3000',
-          'http://localhost:3001'
-        ] : [
-          'https://plot-twists.com',
-          'https://www.plot-twists.com',
-          'https://plot-twists-dvkmt8tyq-jackson-sangers-projects.vercel.app',
-          'https://web-production-c7981.up.railway.app'
-        ]
-
-        // Check exact matches
-        if (allowedOrigins.includes(origin)) {
-          return callback(null, true)
-        }
-
-        // In production, allow only plot-twists Vercel preview deployments
-        if (!dev && origin.match(/^https:\/\/plot-twists(-[a-z0-9]+)?\.vercel\.app$/)) {
-          return callback(null, true)
-        }
-
-        // Reject all other origins
-        console.log(`CORS blocked origin: ${origin}`)
+        if (isAllowedOrigin(origin)) return callback(null, true)
+        console.log(`Socket.IO CORS blocked origin: ${origin}`)
         callback(new Error('Not allowed by CORS'))
       },
       methods: ['GET', 'POST', 'OPTIONS'],

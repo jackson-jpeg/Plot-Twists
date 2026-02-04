@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { AuthModal } from '@/components/AuthModal'
+import { UserMenu } from '@/components/UserMenu'
 
 export default function Home() {
   const router = useRouter()
-  const { user, loading, isConfigured } = useAuth()
+  const { user, isConfigured } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [showHowItWorks, setShowHowItWorks] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -39,60 +40,15 @@ export default function Home() {
         initialMode={authModalMode}
       />
 
-      {/* Header Auth Buttons */}
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-        {/* Show auth buttons only when not loading and user is guest */}
-        {!loading && isGuest && isConfigured && (
-          <>
-            <motion.button
-              onClick={() => {
-                setAuthModalMode('signin')
-                setShowAuthModal(true)
-              }}
-              className="auth-header-btn auth-header-btn-secondary"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Log In
-            </motion.button>
-            <motion.button
-              onClick={() => {
-                setAuthModalMode('signup')
-                setShowAuthModal(true)
-              }}
-              className="auth-header-btn auth-header-btn-primary"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Sign Up Free
-            </motion.button>
-          </>
-        )}
-
-        {/* Profile Button - always visible */}
-        <motion.button
-          onClick={() => router.push('/profile')}
-          className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg shadow-lg hover:shadow-xl transition-shadow"
-          initial={{ scale: 0, opacity: 0, rotate: -180 }}
-          animate={{ scale: 1, opacity: 1, rotate: 0 }}
-          transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
-          whileHover={{ scale: 1.1, rotate: 5 }}
-          whileTap={{ scale: 0.95 }}
-          title="Your Profile & Stats"
-        >
-          {user && !user.isAnonymous && user.displayName ? (
-            <span className="text-xl">{user.displayName.charAt(0).toUpperCase()}</span>
-          ) : (
-            <span className="text-2xl">👤</span>
-          )}
-        </motion.button>
-      </div>
+      {/* Header with UserMenu */}
+      <motion.div
+        className="fixed top-4 right-4 z-50"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <UserMenu />
+      </motion.div>
 
       <div className="container max-w-3xl">
 

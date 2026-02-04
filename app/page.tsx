@@ -11,7 +11,7 @@ export default function Home() {
   const router = useRouter()
   const { user, isConfigured } = useAuth()
   const [mounted, setMounted] = useState(false)
-  const [showHowItWorks, setShowHowItWorks] = useState(false)
+  const [showHowItWorks, setShowHowItWorks] = useState(true)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signup')
 
@@ -20,13 +20,6 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true)
-
-    // Auto-expand "How it Works" for first-time visitors
-    const hasVisited = localStorage.getItem('plottwists_visited')
-    if (!hasVisited) {
-      setShowHowItWorks(true)
-      localStorage.setItem('plottwists_visited', 'true')
-    }
   }, [])
 
   if (!mounted) {
@@ -153,32 +146,6 @@ export default function Home() {
           </motion.button>
         </div>
 
-        {/* Gameplay Demo - Social Proof */}
-        <motion.div
-          className="gameplay-demo-section"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          style={{ textAlign: 'center', margin: '2rem 0' }}
-        >
-          <img
-            src="/demo.gif"
-            alt="Gameplay demo"
-            style={{
-              maxWidth: '100%',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-lg)'
-            }}
-          />
-          <p className="demo-caption" style={{
-            marginTop: '0.75rem',
-            color: 'var(--color-text-secondary)',
-            fontStyle: 'italic'
-          }}>
-            See the chaos in action
-          </p>
-        </motion.div>
-
         {/* Compact How It Works with toggle */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -255,63 +222,6 @@ export default function Home() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Account Benefits Section - shown to guests only */}
-        {isGuest && isConfigured && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="account-benefits-section"
-            style={{ transform: 'rotate(0.5deg)' }}
-          >
-            <div className="tape-top-center"></div>
-            <div className="benefits-header">
-              <h2 className="benefits-title">Level Up Your Experience</h2>
-            </div>
-            <div className="benefits-grid">
-              <div className="benefit-item">
-                <span className="benefit-icon">📊</span>
-                <div className="benefit-content">
-                  <div className="benefit-label">Track Your Stats</div>
-                  <div className="benefit-description">See wins, games played, MVP awards</div>
-                </div>
-              </div>
-              <div className="benefit-item">
-                <span className="benefit-icon">🏆</span>
-                <div className="benefit-content">
-                  <div className="benefit-label">Compete on Leaderboards</div>
-                  <div className="benefit-description">Rise through the ranks</div>
-                </div>
-              </div>
-              <div className="benefit-item">
-                <span className="benefit-icon">☁️</span>
-                <div className="benefit-content">
-                  <div className="benefit-label">Save Your Progress</div>
-                  <div className="benefit-description">Sync across all devices</div>
-                </div>
-              </div>
-              <div className="benefit-item">
-                <span className="benefit-icon">🎬</span>
-                <div className="benefit-content">
-                  <div className="benefit-label">Share Replays</div>
-                  <div className="benefit-description">Save and share your best scenes</div>
-                </div>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                setAuthModalMode('signup')
-                setShowAuthModal(true)
-              }}
-              className="benefits-cta"
-            >
-              Create Free Account
-            </button>
-            <div className="benefits-footnote">
-              Takes 30 seconds. No credit card required.
-            </div>
-          </motion.div>
-        )}
       </div>
     </main>
   )

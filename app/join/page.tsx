@@ -11,7 +11,7 @@ import { ToastContainer } from '@/components/Toast'
 import { useConfetti } from '@/hooks/useConfetti'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
-import { CardCarousel } from '@/components/CardCarousel'
+import { SmartCardSelector } from '@/components/SmartCardSelector'
 import { downloadScript, copyScriptToClipboard, getCharactersInScene } from '@/lib/scriptUtils'
 import { AudienceReactionBar } from '@/components/AudienceReactionBar'
 import { PlotTwistVoting } from '@/components/PlotTwistVoting'
@@ -109,6 +109,7 @@ function JoinPageContent() {
       setIsLoadingPreview(false)
       if (response.success && response.preview) {
         setRoomPreview(response.preview)
+        setRoomIsMature(response.preview.isMature)
       } else {
         setRoomPreview(null)
       }
@@ -153,6 +154,7 @@ function JoinPageContent() {
   const [selectedPackName, setSelectedPackName] = useState<string | null>(null)
   const [networkLatency, setNetworkLatency] = useState<number | null>(null)
   const [hostDisconnected, setHostDisconnected] = useState(false)
+  const [roomIsMature, setRoomIsMature] = useState(false)
   const previousSpeaker = React.useRef<string>('')
 
   // Enhanced page transition variants with blur/scale effects
@@ -898,8 +900,7 @@ function JoinPageContent() {
               <div className="stack">
                 {/* Character Input */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="label" style={{ marginBottom: 0 }}>🎭 Character</label>
+                  <div className="flex items-center justify-end mb-2">
                     <button
                       onClick={() => {
                         setCustomInputActive({ ...customInputActive, character: !customInputActive.character })
@@ -921,24 +922,30 @@ function JoinPageContent() {
                   </div>
 
                   {customInputActive.character ? (
-                    <input
-                      type="text"
-                      value={selection.character}
-                      onChange={(e) => setSelection({ ...selection, character: e.target.value })}
-                      placeholder="Enter custom character (e.g., SpongeBob)..."
-                      maxLength={50}
-                      className="input font-script text-lg"
-                      style={{
-                        background: '#f0f0f0',
-                        border: '2px solid var(--color-accent)',
-                        fontStyle: 'italic'
-                      }}
-                    />
+                    <>
+                      <label className="label flex items-center gap-2 mb-3">
+                        <span className="text-2xl">🎭</span>
+                        <span className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>Character</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={selection.character}
+                        onChange={(e) => setSelection({ ...selection, character: e.target.value })}
+                        placeholder="Enter custom character (e.g., SpongeBob)..."
+                        maxLength={50}
+                        className="input font-script text-lg"
+                        style={{
+                          background: '#f0f0f0',
+                          border: '2px solid var(--color-accent)',
+                          fontStyle: 'italic'
+                        }}
+                      />
+                    </>
                   ) : (
-                    <CardCarousel
+                    <SmartCardSelector
                       label="Character"
                       icon="🎭"
-                      options={availableCards.characters}
+                      type="characters"
                       value={selection.character}
                       onChange={(value) => {
                         setSelection({ ...selection, character: value })
@@ -947,14 +954,14 @@ function JoinPageContent() {
                         }
                       }}
                       color="var(--color-accent)"
+                      isMature={roomIsMature}
                     />
                   )}
                 </div>
 
                 {/* Setting Input */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="label" style={{ marginBottom: 0 }}>🏛️ Setting</label>
+                  <div className="flex items-center justify-end mb-2">
                     <button
                       onClick={() => {
                         setCustomInputActive({ ...customInputActive, setting: !customInputActive.setting })
@@ -975,24 +982,30 @@ function JoinPageContent() {
                   </div>
 
                   {customInputActive.setting ? (
-                    <input
-                      type="text"
-                      value={selection.setting}
-                      onChange={(e) => setSelection({ ...selection, setting: e.target.value })}
-                      placeholder="Enter custom setting (e.g., The Simpsons Living Room)..."
-                      maxLength={50}
-                      className="input font-script text-lg"
-                      style={{
-                        background: '#f0f0f0',
-                        border: '2px solid var(--color-accent-2)',
-                        fontStyle: 'italic'
-                      }}
-                    />
+                    <>
+                      <label className="label flex items-center gap-2 mb-3">
+                        <span className="text-2xl">🏛️</span>
+                        <span className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>Setting</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={selection.setting}
+                        onChange={(e) => setSelection({ ...selection, setting: e.target.value })}
+                        placeholder="Enter custom setting (e.g., The Simpsons Living Room)..."
+                        maxLength={50}
+                        className="input font-script text-lg"
+                        style={{
+                          background: '#f0f0f0',
+                          border: '2px solid var(--color-accent-2)',
+                          fontStyle: 'italic'
+                        }}
+                      />
+                    </>
                   ) : (
-                    <CardCarousel
+                    <SmartCardSelector
                       label="Setting"
                       icon="🏛️"
-                      options={availableCards.settings}
+                      type="settings"
                       value={selection.setting}
                       onChange={(value) => {
                         setSelection({ ...selection, setting: value })
@@ -1001,14 +1014,14 @@ function JoinPageContent() {
                         }
                       }}
                       color="var(--color-accent-2)"
+                      isMature={roomIsMature}
                     />
                   )}
                 </div>
 
                 {/* Circumstance Input */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="label" style={{ marginBottom: 0 }}>⚡ Circumstance</label>
+                  <div className="flex items-center justify-end mb-2">
                     <button
                       onClick={() => {
                         setCustomInputActive({ ...customInputActive, circumstance: !customInputActive.circumstance })
@@ -1029,24 +1042,30 @@ function JoinPageContent() {
                   </div>
 
                   {customInputActive.circumstance ? (
-                    <input
-                      type="text"
-                      value={selection.circumstance}
-                      onChange={(e) => setSelection({ ...selection, circumstance: e.target.value })}
-                      placeholder="Enter custom circumstance (e.g., Must apologize for a misunderstanding)..."
-                      maxLength={80}
-                      className="input font-script text-lg"
-                      style={{
-                        background: '#f0f0f0',
-                        border: '2px solid var(--color-warning)',
-                        fontStyle: 'italic'
-                      }}
-                    />
+                    <>
+                      <label className="label flex items-center gap-2 mb-3">
+                        <span className="text-2xl">⚡</span>
+                        <span className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>Circumstance</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={selection.circumstance}
+                        onChange={(e) => setSelection({ ...selection, circumstance: e.target.value })}
+                        placeholder="Enter custom circumstance (e.g., Must apologize for a misunderstanding)..."
+                        maxLength={80}
+                        className="input font-script text-lg"
+                        style={{
+                          background: '#f0f0f0',
+                          border: '2px solid var(--color-warning)',
+                          fontStyle: 'italic'
+                        }}
+                      />
+                    </>
                   ) : (
-                    <CardCarousel
+                    <SmartCardSelector
                       label="Circumstance"
                       icon="⚡"
-                      options={availableCards.circumstances}
+                      type="circumstances"
                       value={selection.circumstance}
                       onChange={(value) => {
                         setSelection({ ...selection, circumstance: value })
@@ -1055,6 +1074,7 @@ function JoinPageContent() {
                         }
                       }}
                       color="var(--color-warning)"
+                      isMature={roomIsMature}
                     />
                   )}
                 </div>

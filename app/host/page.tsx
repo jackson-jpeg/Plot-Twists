@@ -17,7 +17,7 @@ import { CardPackSelector } from '@/components/CardPackSelector'
 import { AudioSettingsPanel } from '@/components/AudioSettingsPanel'
 import { AudienceReactionBar } from '@/components/AudienceReactionBar'
 import { PlotTwistVoting } from '@/components/PlotTwistVoting'
-import { CardCarousel } from '@/components/CardCarousel'
+import { SmartCardSelector } from '@/components/SmartCardSelector'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
 import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
@@ -1132,8 +1132,7 @@ export default function HostPage() {
               <div className="stack">
                 {/* Character */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="label" style={{ marginBottom: 0 }}>🎭 Character</label>
+                  <div className="flex items-center justify-end mb-2">
                     <button
                       onClick={() => {
                         setCustomInputActive({ ...customInputActive, character: !customInputActive.character })
@@ -1153,35 +1152,41 @@ export default function HostPage() {
                     </button>
                   </div>
                   {customInputActive.character ? (
-                    <input
-                      type="text"
-                      value={selection.character}
-                      onChange={(e) => setSelection({ ...selection, character: e.target.value })}
-                      placeholder="Enter custom character (e.g., SpongeBob)..."
-                      maxLength={50}
-                      className="input font-script text-lg"
-                      style={{
-                        background: 'var(--color-surface-alt)',
-                        border: '2px solid var(--color-accent)',
-                        fontStyle: 'italic'
-                      }}
-                    />
+                    <>
+                      <label className="label flex items-center gap-2 mb-3">
+                        <span className="text-2xl">🎭</span>
+                        <span className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>Character</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={selection.character}
+                        onChange={(e) => setSelection({ ...selection, character: e.target.value })}
+                        placeholder="Enter custom character (e.g., SpongeBob)..."
+                        maxLength={50}
+                        className="input font-script text-lg"
+                        style={{
+                          background: 'var(--color-surface-alt)',
+                          border: '2px solid var(--color-accent)',
+                          fontStyle: 'italic'
+                        }}
+                      />
+                    </>
                   ) : (
-                    <CardCarousel
+                    <SmartCardSelector
                       label="Character"
                       icon="🎭"
-                      options={availableCards.characters}
+                      type="characters"
                       value={selection.character}
                       onChange={(value) => setSelection({ ...selection, character: value })}
                       color="var(--color-accent)"
+                      isMature={settings.isMature}
                     />
                   )}
                 </div>
 
                 {/* Setting */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="label" style={{ marginBottom: 0 }}>🏛️ Setting</label>
+                  <div className="flex items-center justify-end mb-2">
                     <button
                       onClick={() => {
                         setCustomInputActive({ ...customInputActive, setting: !customInputActive.setting })
@@ -1201,35 +1206,41 @@ export default function HostPage() {
                     </button>
                   </div>
                   {customInputActive.setting ? (
-                    <input
-                      type="text"
-                      value={selection.setting}
-                      onChange={(e) => setSelection({ ...selection, setting: e.target.value })}
-                      placeholder="Enter custom setting (e.g., The Simpsons Living Room)..."
-                      maxLength={50}
-                      className="input font-script text-lg"
-                      style={{
-                        background: 'var(--color-surface-alt)',
-                        border: '2px solid var(--color-accent-2)',
-                        fontStyle: 'italic'
-                      }}
-                    />
+                    <>
+                      <label className="label flex items-center gap-2 mb-3">
+                        <span className="text-2xl">🏛️</span>
+                        <span className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>Setting</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={selection.setting}
+                        onChange={(e) => setSelection({ ...selection, setting: e.target.value })}
+                        placeholder="Enter custom setting (e.g., The Simpsons Living Room)..."
+                        maxLength={50}
+                        className="input font-script text-lg"
+                        style={{
+                          background: 'var(--color-surface-alt)',
+                          border: '2px solid var(--color-accent-2)',
+                          fontStyle: 'italic'
+                        }}
+                      />
+                    </>
                   ) : (
-                    <CardCarousel
+                    <SmartCardSelector
                       label="Setting"
                       icon="🏛️"
-                      options={availableCards.settings}
+                      type="settings"
                       value={selection.setting}
                       onChange={(value) => setSelection({ ...selection, setting: value })}
                       color="var(--color-accent-2)"
+                      isMature={settings.isMature}
                     />
                   )}
                 </div>
 
                 {/* Circumstance */}
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="label" style={{ marginBottom: 0 }}>⚡ Circumstance</label>
+                  <div className="flex items-center justify-end mb-2">
                     <button
                       onClick={() => {
                         setCustomInputActive({ ...customInputActive, circumstance: !customInputActive.circumstance })
@@ -1249,27 +1260,34 @@ export default function HostPage() {
                     </button>
                   </div>
                   {customInputActive.circumstance ? (
-                    <input
-                      type="text"
-                      value={selection.circumstance}
-                      onChange={(e) => setSelection({ ...selection, circumstance: e.target.value })}
-                      placeholder="Enter custom circumstance..."
-                      maxLength={80}
-                      className="input font-script text-lg"
-                      style={{
-                        background: 'var(--color-surface-alt)',
-                        border: '2px solid var(--color-warning)',
-                        fontStyle: 'italic'
-                      }}
-                    />
+                    <>
+                      <label className="label flex items-center gap-2 mb-3">
+                        <span className="text-2xl">⚡</span>
+                        <span className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>Circumstance</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={selection.circumstance}
+                        onChange={(e) => setSelection({ ...selection, circumstance: e.target.value })}
+                        placeholder="Enter custom circumstance..."
+                        maxLength={80}
+                        className="input font-script text-lg"
+                        style={{
+                          background: 'var(--color-surface-alt)',
+                          border: '2px solid var(--color-warning)',
+                          fontStyle: 'italic'
+                        }}
+                      />
+                    </>
                   ) : (
-                    <CardCarousel
+                    <SmartCardSelector
                       label="Circumstance"
                       icon="⚡"
-                      options={availableCards.circumstances}
+                      type="circumstances"
                       value={selection.circumstance}
                       onChange={(value) => setSelection({ ...selection, circumstance: value })}
                       color="var(--color-warning)"
+                      isMature={settings.isMature}
                     />
                   )}
                 </div>

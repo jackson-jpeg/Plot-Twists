@@ -27,6 +27,7 @@ const authErrorMessages: Record<string, string> = {
   'auth/credential-already-in-use': 'This account is already linked to another user',
   'auth/provider-already-linked': 'This provider is already linked to your account',
   'auth/requires-recent-login': 'Please sign in again to complete this action',
+  'auth/account-exists-with-different-credential': 'This email is already registered with a different sign-in method. Try signing in with Google instead.',
 
   // General errors
   'auth/network-request-failed': 'Network error. Please check your connection',

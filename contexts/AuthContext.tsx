@@ -43,6 +43,7 @@ interface AuthContextType {
   linkWithPhone: (verificationId: string, code: string) => Promise<AuthResult>
   updateDisplayName: (displayName: string) => Promise<AuthResult>
   changePassword: (currentPassword: string, newPassword: string) => Promise<AuthResult>
+  sendPasswordResetEmail: (email: string) => Promise<AuthResult>
   signOut: () => Promise<void>
   getPlayerId: () => string
 }
@@ -62,6 +63,7 @@ const AuthContext = createContext<AuthContextType>({
   linkWithPhone: async () => ({ success: false, error: 'Not configured' }),
   updateDisplayName: async () => ({ success: false, error: 'Not configured' }),
   changePassword: async () => ({ success: false, error: 'Not configured' }),
+  sendPasswordResetEmail: async () => ({ success: false, error: 'Not configured' }),
   signOut: async () => {},
   getPlayerId: () => ''
 })
@@ -397,6 +399,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [firebaseReady])
 
+  // Send password reset email
+  const sendPasswordResetEmail = useCallback(async (email: string): Promise<AuthResult> => {
+    if (!firebaseReady) {
+      return { success: false, error: 'Authentication not configured' }
+    }
+
+    try {
+      const firebaseAuth = await import('firebase/auth')
+      const { sendPasswordResetEmail: firebaseSendReset } = firebaseAuth
+      const auth = getFirebaseAuth()
+      await firebaseSendReset(auth as any, email)
+      return { success: true }
+    } catch (error: unknown) {
+      return { success: false, error: getFirebaseErrorMessage(error) }
+    }
+  }, [firebaseReady])
+
   const signOut = useCallback(async (): Promise<void> => {
     if (!firebaseReady) return
 
@@ -433,6 +452,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     linkWithPhone,
     updateDisplayName,
     changePassword,
+    sendPasswordResetEmail,
     signOut,
     getPlayerId
   }

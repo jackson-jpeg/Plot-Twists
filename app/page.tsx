@@ -153,12 +153,114 @@ export default function Home() {
           </motion.button>
         </div>
 
+        {/* Gameplay Demo - Social Proof */}
+        <motion.div
+          className="gameplay-demo-section"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          style={{ textAlign: 'center', margin: '2rem 0' }}
+        >
+          <img
+            src="/demo.gif"
+            alt="Gameplay demo"
+            style={{
+              maxWidth: '100%',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-lg)'
+            }}
+          />
+          <p className="demo-caption" style={{
+            marginTop: '0.75rem',
+            color: 'var(--color-text-secondary)',
+            fontStyle: 'italic'
+          }}>
+            See the chaos in action
+          </p>
+        </motion.div>
+
+        {/* Compact How It Works with toggle */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="how-it-works-compact"
+          style={{ transform: 'rotate(-0.5deg)' }}
+        >
+          <button
+            onClick={() => setShowHowItWorks(!showHowItWorks)}
+            className="how-it-works-toggle"
+          >
+            <span className="text-2xl">✨</span>
+            <span className="how-it-works-toggle-text">How it works</span>
+            <motion.span
+              className="text-xl"
+              animate={{ rotate: showHowItWorks ? 180 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              ↓
+            </motion.span>
+          </button>
+
+          <AnimatePresence>
+            {showHowItWorks && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div className="how-it-works-content">
+                  <div className="tape-piece tape-top-left"></div>
+                  <div className="tape-piece tape-top-right"></div>
+
+                  <div className="how-it-works-grid">
+                    <div className="how-it-works-step">
+                      <div className="step-number">1</div>
+                      <div className="step-text font-bold text-lg">Pick cards</div>
+                      <div className="step-example">"Darth Vader at a job interview"</div>
+                    </div>
+                    <div className="how-it-works-step">
+                      <div className="step-number">2</div>
+                      <div className="step-text font-bold text-lg">AI writes scene</div>
+                      <div className="step-example">Claude creates a 2-min comedy script</div>
+                    </div>
+                    <div className="how-it-works-step">
+                      <div className="step-number">3</div>
+                      <div className="step-text font-bold text-lg">Act it out</div>
+                      <div className="step-example">Follow the teleprompter on your phone</div>
+                    </div>
+                    <div className="how-it-works-step">
+                      <div className="step-number">4</div>
+                      <div className="step-text font-bold text-lg">Vote MVP</div>
+                      <div className="step-example">Best performance wins the round</div>
+                    </div>
+                    <div className="how-it-works-step">
+                      <div className="step-number">5</div>
+                      <div className="step-text font-bold text-lg">Laugh & repeat</div>
+                      <div className="step-example">Generate a sequel or new scene</div>
+                    </div>
+                  </div>
+
+                  {/* Footer badges inside card */}
+                  <div className="how-it-works-badges">
+                    <span className="retro-badge-inline" style={{ transform: 'rotate(-1deg)' }}>No Acting Skills</span>
+                    <span className="retro-badge-inline" style={{ transform: 'rotate(1deg)' }}>Theater Kids OK</span>
+                    <span className="retro-badge-inline" style={{ transform: 'rotate(-0.5deg)' }}>1-6 Players</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
         {/* Account Benefits Section - shown to guests only */}
         {isGuest && isConfigured && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.6 }}
             className="account-benefits-section"
             style={{ transform: 'rotate(0.5deg)' }}
           >
@@ -210,96 +312,6 @@ export default function Home() {
             </div>
           </motion.div>
         )}
-
-        {/* Compact How It Works with toggle */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="how-it-works-compact"
-          style={{ transform: 'rotate(-0.5deg)' }}
-        >
-          <button
-            onClick={() => setShowHowItWorks(!showHowItWorks)}
-            className="how-it-works-toggle"
-          >
-            <span className="text-2xl">✨</span>
-            <span className="how-it-works-toggle-text">How it works</span>
-            <motion.span
-              className="text-xl"
-              animate={{ rotate: showHowItWorks ? 180 : 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              ↓
-            </motion.span>
-          </button>
-
-          <AnimatePresence>
-            {showHowItWorks && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                style={{ overflow: 'hidden' }}
-              >
-                <div className="how-it-works-content">
-                  <div className="tape-piece tape-top-left"></div>
-                  <div className="tape-piece tape-top-right"></div>
-
-                  <div className="how-it-works-grid">
-                    <div className="how-it-works-step">
-                      <div className="step-number">1</div>
-                      <div className="step-text">Pick cards</div>
-                      <div className="step-example">"Darth Vader at a job interview"</div>
-                    </div>
-                    <div className="how-it-works-step">
-                      <div className="step-number">2</div>
-                      <div className="step-text">AI writes scene</div>
-                      <div className="step-example">Claude creates a 2-min comedy script</div>
-                    </div>
-                    <div className="how-it-works-step">
-                      <div className="step-number">3</div>
-                      <div className="step-text">Act it out</div>
-                      <div className="step-example">Follow the teleprompter on your phone</div>
-                    </div>
-                    <div className="how-it-works-step">
-                      <div className="step-number">4</div>
-                      <div className="step-text">Vote MVP</div>
-                      <div className="step-example">Best performance wins the round</div>
-                    </div>
-                    <div className="how-it-works-step">
-                      <div className="step-number">5</div>
-                      <div className="step-text">Laugh & repeat</div>
-                      <div className="step-example">Generate a sequel or new scene</div>
-                    </div>
-                  </div>
-
-                  {/* Footer badges inside card */}
-                  <div className="how-it-works-badges">
-                    <span className="retro-badge-inline" style={{ transform: 'rotate(-1deg)' }}>No Acting Skills</span>
-                    <span className="retro-badge-inline" style={{ transform: 'rotate(1deg)' }}>Theater Kids OK</span>
-                    <span className="retro-badge-inline" style={{ transform: 'rotate(-0.5deg)' }}>1-6 Players</span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Handwritten note - clickable */}
-          <motion.div
-            className="sticky-note"
-            onClick={() => setShowHowItWorks(!showHowItWorks)}
-            style={{ cursor: 'pointer' }}
-            initial={{ opacity: 0, rotate: 5, scale: 0.8 }}
-            animate={{ opacity: 1, rotate: 8, scale: 1 }}
-            transition={{ delay: 0.8 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Click to<br/>learn more!
-          </motion.div>
-        </motion.div>
       </div>
     </main>
   )

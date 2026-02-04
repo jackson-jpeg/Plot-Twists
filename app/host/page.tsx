@@ -548,8 +548,7 @@ export default function HostPage() {
                         Share this code with players:
                       </p>
                       <div className={`connection-indicator ${isConnected ? 'connection-indicator-connected' : 'connection-indicator-disconnected'}`}>
-                        <div className="connection-indicator-dot" />
-                        <span>{isConnected ? 'Connected' : 'Reconnecting...'}</span>
+                        <span>{isConnected ? '🟢 Room Active' : '🔴 Reconnecting...'}</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-center gap-3">
@@ -997,53 +996,57 @@ export default function HostPage() {
                 </>
               )}
 
-              <AnimatePresence>
-                {((settings.gameMode === 'SOLO') ||
+              {/* Always visible Start Game button */}
+              {(() => {
+                const canStartGame =
+                  settings.gameMode === 'SOLO' ||
                   (settings.gameMode === 'HEAD_TO_HEAD' && nonHostPlayers.length === 2) ||
-                  (settings.gameMode === 'ENSEMBLE' && nonHostPlayers.length >= 3)) && (
-                  <motion.button
-                    onClick={startGame}
-                    className="btn btn-primary btn-large w-full"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <span>🎬</span>
-                    <span>{settings.gameMode === 'SOLO' ? 'Start Solo Game' : 'Start Game'}</span>
-                  </motion.button>
-                )}
+                  (settings.gameMode === 'ENSEMBLE' && nonHostPlayers.length >= 3)
 
-                {/* Player count hints - only for multiplayer modes */}
-                {settings.gameMode === 'HEAD_TO_HEAD' && nonHostPlayers.length === 1 && (
-                  <motion.div
-                    className="card text-center"
-                    style={{ background: 'var(--color-highlight)', padding: '16px', border: '1px solid var(--color-warning)' }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
-                      ⚔️ Head-to-Head needs exactly 2 players
-                    </p>
-                  </motion.div>
-                )}
+                const getStartGameRequirement = () => {
+                  if (settings.gameMode === 'HEAD_TO_HEAD') {
+                    const needed = 2 - nonHostPlayers.length
+                    return `Need ${needed} more player${needed !== 1 ? 's' : ''} to start`
+                  }
+                  if (settings.gameMode === 'ENSEMBLE') {
+                    const needed = 3 - nonHostPlayers.length
+                    if (needed > 0) {
+                      return `Need ${needed} more player${needed !== 1 ? 's' : ''} to start`
+                    }
+                  }
+                  return ''
+                }
 
-                {settings.gameMode === 'ENSEMBLE' && nonHostPlayers.length > 0 && nonHostPlayers.length < 3 && (
-                  <motion.div
-                    className="card text-center"
-                    style={{ background: 'var(--color-highlight)', padding: '16px', border: '1px solid var(--color-warning)' }}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
-                      🎭 Ensemble needs 3-6 players ({nonHostPlayers.length}/3)
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                return (
+                  <>
+                    <motion.button
+                      onClick={startGame}
+                      disabled={!canStartGame}
+                      className="btn btn-primary btn-large w-full"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{ opacity: canStartGame ? 1 : 0.6 }}
+                      whileHover={canStartGame ? { scale: 1.02 } : {}}
+                      whileTap={canStartGame ? { scale: 0.98 } : {}}
+                    >
+                      <span>🎬</span>
+                      <span>{settings.gameMode === 'SOLO' ? 'Start Solo Game' : 'Start Game'}</span>
+                    </motion.button>
+
+                    {/* Explanation when disabled */}
+                    {!canStartGame && (
+                      <motion.p
+                        className="text-sm text-center mt-2"
+                        style={{ color: 'var(--color-text-tertiary)' }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        {getStartGameRequirement()}
+                      </motion.p>
+                    )}
+                  </>
+                )
+              })()}
             </motion.div>
           </motion.div>
         )}

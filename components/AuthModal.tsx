@@ -183,10 +183,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
           aria-labelledby="auth-modal-title"
         >
           {/* Header */}
-          <div className="p-6" style={{ borderBottom: '1px solid var(--color-border)' }}>
-            <div className="flex items-center justify-between">
+          <div className="p-6 pb-0">
+            <div className="flex items-center justify-between mb-4">
               <h2 id="auth-modal-title" className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
-                {mode === 'signin' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Reset Password'}
+                {mode === 'reset' ? 'Reset Password' : 'Account'}
               </h2>
               <button
                 onClick={handleClose}
@@ -204,13 +204,40 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 ×
               </button>
             </div>
-            <p className="mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-              {mode === 'signin'
-                ? 'Sign in to track your stats across devices'
-                : mode === 'signup'
-                ? 'Join to save your achievements and compete on leaderboards'
-                : 'Enter your email to receive a password reset link'}
-            </p>
+
+            {/* Tab Bar */}
+            {mode !== 'reset' && (
+              <div className="flex" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                <button
+                  onClick={() => { setMode('signin'); setError(null) }}
+                  className="flex-1 py-3 font-semibold transition-colors"
+                  style={{
+                    color: mode === 'signin' ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+                    borderBottom: mode === 'signin' ? '2px solid var(--color-accent)' : '2px solid transparent',
+                    marginBottom: '-1px'
+                  }}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => { setMode('signup'); setError(null) }}
+                  className="flex-1 py-3 font-semibold transition-colors"
+                  style={{
+                    color: mode === 'signup' ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+                    borderBottom: mode === 'signup' ? '2px solid var(--color-accent)' : '2px solid transparent',
+                    marginBottom: '-1px'
+                  }}
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+
+            {mode === 'reset' && (
+              <p className="pb-4" style={{ color: 'var(--color-text-secondary)', borderBottom: '1px solid var(--color-border)' }}>
+                Enter your email to receive a password reset link
+              </p>
+            )}
           </div>
 
           {/* Content */}
@@ -551,20 +578,6 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                {/* Toggle Mode */}
-                <p className="text-center mt-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  {mode === 'signin' ? "Don't have an account? " : 'Already have an account? '}
-                  <button
-                    onClick={toggleMode}
-                    className="font-medium transition-colors"
-                    style={{ color: 'var(--color-accent)' }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-accent-hover)'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-accent)'}
-                  >
-                    {mode === 'signin' ? 'Sign up' : 'Sign in'}
-                  </button>
-                </p>
               </>
             )}
           </div>

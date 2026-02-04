@@ -285,13 +285,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: 'Authentication not configured' }
     }
 
+    if (!verifier) {
+      console.error('[Phone Auth] sendPhoneCode called with null/undefined verifier')
+      return { success: false, error: 'reCAPTCHA not initialized. Please refresh the page and try again.' }
+    }
+
+    console.log('[Phone Auth] Sending verification code to:', phone)
+
     try {
       const firebaseAuth = await import('firebase/auth')
       const { signInWithPhoneNumber } = firebaseAuth
       const auth = getFirebaseAuth()
       const confirmationResult = await signInWithPhoneNumber(auth as any, phone, verifier)
+
+      if (!confirmationResult?.verificationId) {
+        console.error('[Phone Auth] signInWithPhoneNumber returned no verificationId')
+        return { success: false, error: 'Failed to send verification code. Please try again.' }
+      }
+
+      console.log('[Phone Auth] Verification code sent successfully')
       return { success: true, verificationId: confirmationResult.verificationId }
     } catch (error: unknown) {
+      const errorCode = error && typeof error === 'object' && 'code' in error
+        ? (error as { code: string }).code
+        : 'unknown'
+      console.error('[Phone Auth] sendPhoneCode error:', errorCode, error)
+
+      if (errorCode === 'auth/operation-not-allowed') {
+        return {
+          success: false,
+          error: 'Phone authentication is not enabled in Firebase Console. Please enable it under Authentication > Sign-in method > Phone.'
+        }
+      }
+      if (errorCode === 'auth/invalid-app-credential') {
+        return {
+          success: false,
+          error: 'App verification failed. This may indicate a reCAPTCHA or API key issue. Please refresh and try again.'
+        }
+      }
+
       return { success: false, error: getFirebaseErrorMessage(error) }
     }
   }, [firebaseReady])

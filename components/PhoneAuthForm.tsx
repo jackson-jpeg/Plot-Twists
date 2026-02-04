@@ -52,14 +52,20 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
 
   // Initialize reCAPTCHA verifier
   useEffect(() => {
+    let cancelled = false
+
     const initRecaptcha = async () => {
       if (step === 'phone' && !recaptchaVerifierRef.current) {
+        // Small delay to ensure DOM element exists after AnimatePresence renders
+        await new Promise(resolve => setTimeout(resolve, 100))
+        if (cancelled) return
         recaptchaVerifierRef.current = await createRecaptchaVerifier(recaptchaContainerId)
       }
     }
     initRecaptcha()
 
     return () => {
+      cancelled = true
       if (recaptchaVerifierRef.current) {
         try {
           recaptchaVerifierRef.current.clear()
@@ -69,7 +75,7 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
         recaptchaVerifierRef.current = null
       }
     }
-  }, [step])
+  }, [step, recaptchaContainerId])
 
   const formatPhoneNumber = (value: string) => {
     // Remove all non-digits
@@ -207,8 +213,8 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
 
   return (
     <div className="space-y-4">
-      {/* Hidden reCAPTCHA container */}
-      <div id={recaptchaContainerId} />
+      {/* Hidden reCAPTCHA container - positioned off-screen for safer invisible placement */}
+      <div id={recaptchaContainerId} style={{ position: 'absolute', left: '-9999px' }} />
 
       {error && (
         <motion.div

@@ -84,33 +84,40 @@ export function getFirebaseApp(): any {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createRecaptchaVerifier(containerId: string): Promise<any | null> {
   if (!auth || typeof window === 'undefined') {
+    console.warn('[Phone Auth] Cannot create reCAPTCHA verifier: auth not initialized')
     return null
   }
 
   try {
+    const container = document.getElementById(containerId)
+    if (!container) {
+      console.error('[Phone Auth] reCAPTCHA container element not found:', containerId)
+      return null
+    }
+
     const firebaseAuth = await import('firebase/auth')
     const { RecaptchaVerifier } = firebaseAuth
 
     // Clear any existing verifier on the container
-    const container = document.getElementById(containerId)
-    if (container) {
-      container.innerHTML = ''
-    }
+    container.innerHTML = ''
 
     const verifier = new RecaptchaVerifier(auth, containerId, {
       size: 'invisible',
       callback: () => {
-        // reCAPTCHA solved - will proceed with phone auth
+        console.log('[Phone Auth] reCAPTCHA solved')
       },
       'expired-callback': () => {
-        // Response expired, user will need to re-verify
-        console.log('reCAPTCHA expired')
+        console.log('[Phone Auth] reCAPTCHA expired, user will need to re-verify')
       }
     })
 
+    // Render immediately to catch init errors early (missing container, blocked scripts)
+    await verifier.render()
+    console.log('[Phone Auth] reCAPTCHA verifier initialized and rendered')
+
     return verifier
   } catch (error) {
-    console.error('Failed to create reCAPTCHA verifier:', error)
+    console.error('[Phone Auth] Failed to create reCAPTCHA verifier:', error)
     return null
   }
 }

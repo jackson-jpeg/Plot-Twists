@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Build cache bust: 2026-02-04T15:45:00Z
 const nextConfig = {
   reactStrictMode: true,
 

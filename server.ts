@@ -52,7 +52,6 @@ import {
 import {
   listCardPacks,
   getCardPack,
-  getPackCards,
   createCardPack,
   updateCardPack,
   deleteCardPack,
@@ -60,8 +59,10 @@ import {
   incrementDownloads,
   searchCardPacks,
   getFeaturedPacks,
+  initializeCardPackService,
   STANDARD_PACK_ID
 } from './server/services/cardpack.service'
+import { initializeDatabase } from './server/db'
 import {
   enhanceScriptWithAudio,
   validateAudioSettings,
@@ -72,16 +73,13 @@ import {
 import {
   saveGame,
   getGame,
-  getGameByShareCode,
   getPlayerGames,
-  shareGame,
-  exportGameAsText
+  shareGame
 } from './server/services/gameHistory.service'
 import {
   getPlayerStats,
   recordGameResult,
-  getLeaderboard,
-  unlockAchievement
+  getLeaderboard
 } from './server/services/playerStats.service'
 import { generateTitleCard } from './server/services/image.service'
 
@@ -694,7 +692,11 @@ function getGreenRoomTrivia(setting: string): string {
   return getGreenRoomQuestion(setting)
 }
 
-app.prepare().then(() => {
+app.prepare().then(async () => {
+  // Initialize database and services
+  await initializeDatabase()
+  await initializeCardPackService()
+
   const expressApp = express()
 
   // Configure security middleware
@@ -1601,9 +1603,9 @@ app.prepare().then(() => {
     // ============================================================
 
     // List available card packs
-    socket.on('list_card_packs', (callback) => {
+    socket.on('list_card_packs', async (callback) => {
       try {
-        const packs = listCardPacks()
+        const packs = await listCardPacks()
         callback({ success: true, packs })
       } catch (error) {
         console.error('Error listing card packs:', error)
@@ -1612,7 +1614,7 @@ app.prepare().then(() => {
     })
 
     // Select a card pack for the room
-    socket.on('select_card_pack', (roomCode, packId, callback) => {
+    socket.on('select_card_pack', async (roomCode, packId, callback) => {
       const room = rooms.get(roomCode)
       if (!room) {
         callback({ success: false, error: 'Room not found' })
@@ -1626,7 +1628,7 @@ app.prepare().then(() => {
       }
 
       // Verify pack exists
-      if (packId !== STANDARD_PACK_ID && !getCardPack(packId)) {
+      if (packId !== STANDARD_PACK_ID && !(await getCardPack(packId))) {
         callback({ success: false, error: 'Card pack not found' })
         return
       }
@@ -1636,7 +1638,7 @@ app.prepare().then(() => {
 
       // Increment download count for custom packs
       if (packId !== STANDARD_PACK_ID) {
-        incrementDownloads(packId)
+        await incrementDownloads(packId)
       }
 
       io.to(roomCode).emit('card_pack_selected', packId)
@@ -1644,7 +1646,7 @@ app.prepare().then(() => {
     })
 
     // Create a new card pack
-    socket.on('create_card_pack', (packData, callback) => {
+    socket.on('create_card_pack', async (packData, callback) => {
       // Rate limiting
       if (!cardPackLimiter.check(socket.id)) {
         callback({ success: false, error: 'Too many requests. Please wait a moment.' })
@@ -1652,7 +1654,7 @@ app.prepare().then(() => {
       }
 
       try {
-        const result = createCardPack(packData)
+        const result = await createCardPack(packData)
         callback(result)
       } catch (error) {
         console.error('Error creating card pack:', error)
@@ -1661,7 +1663,7 @@ app.prepare().then(() => {
     })
 
     // Rate a card pack
-    socket.on('rate_card_pack', (packId, rating, callback) => {
+    socket.on('rate_card_pack', async (packId, rating, callback) => {
       // Rate limiting
       if (!cardPackLimiter.check(socket.id)) {
         callback({ success: false, error: 'Too many requests. Please wait a moment.' })
@@ -1669,7 +1671,7 @@ app.prepare().then(() => {
       }
 
       try {
-        const result = rateCardPack(packId, rating)
+        const result = await rateCardPack(packId, rating)
         callback(result)
       } catch (error) {
         console.error('Error rating card pack:', error)
@@ -1678,7 +1680,7 @@ app.prepare().then(() => {
     })
 
     // Update a card pack
-    socket.on('update_card_pack', (packId, updates, callback) => {
+    socket.on('update_card_pack', async (packId, updates, callback) => {
       // Rate limiting
       if (!cardPackLimiter.check(socket.id)) {
         callback({ success: false, error: 'Too many requests. Please wait a moment.' })
@@ -1686,7 +1688,7 @@ app.prepare().then(() => {
       }
 
       try {
-        const result = updateCardPack(packId, updates)
+        const result = await updateCardPack(packId, updates)
         callback(result)
       } catch (error) {
         console.error('Error updating card pack:', error)
@@ -1695,7 +1697,7 @@ app.prepare().then(() => {
     })
 
     // Delete a card pack
-    socket.on('delete_card_pack', (packId, callback) => {
+    socket.on('delete_card_pack', async (packId, callback) => {
       // Rate limiting
       if (!cardPackLimiter.check(socket.id)) {
         callback({ success: false, error: 'Too many requests. Please wait a moment.' })
@@ -1703,7 +1705,7 @@ app.prepare().then(() => {
       }
 
       try {
-        const result = deleteCardPack(packId)
+        const result = await deleteCardPack(packId)
         callback(result)
       } catch (error) {
         console.error('Error deleting card pack:', error)
@@ -1712,9 +1714,9 @@ app.prepare().then(() => {
     })
 
     // Search card packs
-    socket.on('search_card_packs', (query, callback) => {
+    socket.on('search_card_packs', async (query, callback) => {
       try {
-        const packs = searchCardPacks(query)
+        const packs = await searchCardPacks(query)
         callback({ success: true, packs })
       } catch (error) {
         console.error('Error searching card packs:', error)
@@ -1723,9 +1725,9 @@ app.prepare().then(() => {
     })
 
     // Get featured packs
-    socket.on('get_featured_packs', (limit, callback) => {
+    socket.on('get_featured_packs', async (limit, callback) => {
       try {
-        const packs = getFeaturedPacks(limit)
+        const packs = await getFeaturedPacks(limit)
         callback({ success: true, packs })
       } catch (error) {
         console.error('Error getting featured packs:', error)
@@ -1734,9 +1736,9 @@ app.prepare().then(() => {
     })
 
     // Get a specific card pack
-    socket.on('get_card_pack', (packId, callback) => {
+    socket.on('get_card_pack', async (packId, callback) => {
       try {
-        const pack = getCardPack(packId)
+        const pack = await getCardPack(packId)
         if (pack) {
           callback({ success: true, pack })
         } else {
@@ -1813,9 +1815,9 @@ app.prepare().then(() => {
     // ============================================================
 
     // Get game history for a player
-    socket.on('get_game_history', (playerId, limit, callback) => {
+    socket.on('get_game_history', async (playerId, limit, callback) => {
       try {
-        const games = getPlayerGames(playerId, limit)
+        const games = await getPlayerGames(playerId, limit)
         callback({ success: true, games })
       } catch (error) {
         console.error('Error fetching game history:', error)
@@ -1824,9 +1826,9 @@ app.prepare().then(() => {
     })
 
     // Get specific game details
-    socket.on('get_game_details', (gameId, callback) => {
+    socket.on('get_game_details', async (gameId, callback) => {
       try {
-        const game = getGame(gameId)
+        const game = await getGame(gameId)
         if (!game) {
           callback({ success: false, error: 'Game not found' })
           return
@@ -1839,9 +1841,9 @@ app.prepare().then(() => {
     })
 
     // Share a game
-    socket.on('share_game', (gameId, callback) => {
+    socket.on('share_game', async (gameId, callback) => {
       try {
-        const result = shareGame(gameId)
+        const result = await shareGame(gameId)
         if (result.success && result.shareCode) {
           const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://plottwists.app'
           callback({
@@ -1862,9 +1864,9 @@ app.prepare().then(() => {
     // ============================================================
 
     // Get player stats
-    socket.on('get_player_stats', (playerId, callback) => {
+    socket.on('get_player_stats', async (playerId, callback) => {
       try {
-        const stats = getPlayerStats(playerId)
+        const stats = await getPlayerStats(playerId)
         callback({ success: true, stats })
       } catch (error) {
         console.error('Error fetching player stats:', error)
@@ -1873,9 +1875,9 @@ app.prepare().then(() => {
     })
 
     // Get leaderboard
-    socket.on('get_leaderboard', (category, limit, callback) => {
+    socket.on('get_leaderboard', async (category, limit, callback) => {
       try {
-        const entries = getLeaderboard(category, limit)
+        const entries = await getLeaderboard(category, limit)
         callback({ success: true, entries })
       } catch (error) {
         console.error('Error fetching leaderboard:', error)
@@ -2148,7 +2150,7 @@ app.prepare().then(() => {
   }
 
   // Calculate voting results
-  function calculateResults(room: Room, io: SocketIOServer) {
+  async function calculateResults(room: Room, io: SocketIOServer) {
     const voteCounts = new Map<string, number>()
 
     for (const targetId of room.votes.values()) {
@@ -2189,7 +2191,7 @@ app.prepare().then(() => {
           : 0
 
         // Save the game
-        const savedGame = saveGame(
+        const savedGame = await saveGame(
           room.code,
           room.script,
           Array.from(room.players.values()),
@@ -2212,7 +2214,7 @@ app.prepare().then(() => {
         const players = Array.from(room.players.values()).filter(p => p.role === 'PLAYER')
         for (const player of players) {
           const voteResult = results.find(r => r.playerId === player.id)
-          const newAchievements = recordGameResult(
+          const newAchievements = await recordGameResult(
             player.id,
             player.nickname,
             savedGame,

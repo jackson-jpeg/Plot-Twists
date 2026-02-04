@@ -3,71 +3,8 @@
  * Handles user creation, lookup, and anonymous-to-authenticated migration
  */
 
-import { v4 as uuidv4 } from 'uuid'
-import * as fs from 'fs'
-import * as path from 'path'
 import type { UserProfile, UserMigrationData, UserPreferences } from '../../lib/types'
-
-// In-memory store with file persistence
-const users: Map<string, UserProfile> = new Map()
-const migrations: Map<string, UserMigrationData> = new Map() // oldId -> migration data
-
-const DATA_DIR = path.join(process.cwd(), 'data')
-const USERS_FILE = path.join(DATA_DIR, 'users.json')
-
-// ============================================================
-// Persistence
-// ============================================================
-
-function ensureDataDir(): void {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
-}
-
-function loadUsersFromFile(): void {
-  ensureDataDir()
-
-  if (fs.existsSync(USERS_FILE)) {
-    try {
-      const data = JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'))
-
-      if (data.users && Array.isArray(data.users)) {
-        data.users.forEach((user: UserProfile) => {
-          users.set(user.uid, user)
-        })
-      }
-
-      if (data.migrations && Array.isArray(data.migrations)) {
-        data.migrations.forEach((migration: UserMigrationData) => {
-          migrations.set(migration.oldPlayerId, migration)
-        })
-      }
-
-      console.log(`Loaded ${users.size} users from file`)
-    } catch (error) {
-      console.error('Failed to load users:', error)
-    }
-  }
-}
-
-function saveUsersToFile(): void {
-  ensureDataDir()
-
-  try {
-    const data = {
-      users: Array.from(users.values()),
-      migrations: Array.from(migrations.values()),
-      savedAt: Date.now()
-    }
-    fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2))
-  } catch (error) {
-    console.error('Failed to save users:', error)
-  }
-}
-
-// Load on startup
-loadUsersFromFile()
+import { getDatabase, Collections } from '../db'
 
 // ============================================================
 // Core Functions
@@ -76,26 +13,26 @@ loadUsersFromFile()
 /**
  * Get a user by ID
  */
-export function getUser(uid: string): UserProfile | null {
-  return users.get(uid) || null
+export async function getUser(uid: string): Promise<UserProfile | null> {
+  const db = getDatabase()
+  return await db.get<UserProfile>(Collections.USERS, uid)
 }
 
 /**
  * Get user by email
  */
-export function getUserByEmail(email: string): UserProfile | null {
-  for (const user of users.values()) {
-    if (user.email === email) {
-      return user
-    }
-  }
-  return null
+export async function getUserByEmail(email: string): Promise<UserProfile | null> {
+  const db = getDatabase()
+  const results = await db.query<UserProfile>(Collections.USERS, [
+    { field: 'email', operator: '==', value: email }
+  ], { limit: 1 })
+  return results[0] || null
 }
 
 /**
  * Create or update a user profile
  */
-export function upsertUser(
+export async function upsertUser(
   uid: string,
   data: {
     displayName?: string
@@ -103,8 +40,9 @@ export function upsertUser(
     phoneNumber?: string
     isAnonymous?: boolean
   }
-): UserProfile {
-  const existing = users.get(uid)
+): Promise<UserProfile> {
+  const db = getDatabase()
+  const existing = await db.get<UserProfile>(Collections.USERS, uid)
   const now = Date.now()
 
   if (existing) {
@@ -116,8 +54,7 @@ export function upsertUser(
       phoneNumber: data.phoneNumber || existing.phoneNumber,
       lastSeenAt: now
     }
-    users.set(uid, updated)
-    saveUsersToFile()
+    await db.set(Collections.USERS, uid, updated)
     return updated
   }
 
@@ -140,8 +77,7 @@ export function upsertUser(
     newUser.linkedAccounts.push('phone')
   }
 
-  users.set(uid, newUser)
-  saveUsersToFile()
+  await db.set(Collections.USERS, uid, newUser)
 
   console.log(`Created new user: ${uid} (${newUser.displayName})`)
   return newUser
@@ -150,12 +86,13 @@ export function upsertUser(
 /**
  * Link an account to an existing user
  */
-export function linkAccount(
+export async function linkAccount(
   uid: string,
   accountType: 'google' | 'email' | 'phone',
   data: { email?: string; phoneNumber?: string }
-): { success: boolean; error?: string } {
-  const user = users.get(uid)
+): Promise<{ success: boolean; error?: string }> {
+  const db = getDatabase()
+  const user = await db.get<UserProfile>(Collections.USERS, uid)
   if (!user) {
     return { success: false, error: 'User not found' }
   }
@@ -164,17 +101,20 @@ export function linkAccount(
     return { success: false, error: `Account type ${accountType} already linked` }
   }
 
-  user.linkedAccounts.push(accountType)
+  const updatedLinkedAccounts = [...user.linkedAccounts, accountType]
+  const updates: Partial<UserProfile> = {
+    linkedAccounts: updatedLinkedAccounts,
+    lastSeenAt: Date.now()
+  }
 
   if (data.email) {
-    user.email = data.email
+    updates.email = data.email
   }
   if (data.phoneNumber) {
-    user.phoneNumber = data.phoneNumber
+    updates.phoneNumber = data.phoneNumber
   }
 
-  user.lastSeenAt = Date.now()
-  saveUsersToFile()
+  await db.update(Collections.USERS, uid, updates)
 
   console.log(`Linked ${accountType} account to user ${uid}`)
   return { success: true }
@@ -183,21 +123,23 @@ export function linkAccount(
 /**
  * Update user preferences
  */
-export function updatePreferences(
+export async function updatePreferences(
   uid: string,
   preferences: Partial<UserPreferences>
-): { success: boolean; error?: string } {
-  const user = users.get(uid)
+): Promise<{ success: boolean; error?: string }> {
+  const db = getDatabase()
+  const user = await db.get<UserProfile>(Collections.USERS, uid)
   if (!user) {
     return { success: false, error: 'User not found' }
   }
 
-  user.preferences = {
-    ...user.preferences,
-    ...preferences
-  }
-  user.lastSeenAt = Date.now()
-  saveUsersToFile()
+  await db.update(Collections.USERS, uid, {
+    preferences: {
+      ...user.preferences,
+      ...preferences
+    },
+    lastSeenAt: Date.now()
+  })
 
   return { success: true }
 }
@@ -210,8 +152,11 @@ export async function migrateAnonymousUser(
   oldAnonymousId: string,
   newAuthenticatedId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const db = getDatabase()
+
   // Check if already migrated
-  if (migrations.has(oldAnonymousId)) {
+  const existingMigration = await db.get<UserMigrationData>(Collections.MIGRATIONS, oldAnonymousId)
+  if (existingMigration) {
     return { success: false, error: 'User data already migrated' }
   }
 
@@ -231,11 +176,11 @@ export async function migrateAnonymousUser(
     const { getPlayerStats } = await import('./playerStats.service')
 
     // Get old player stats if they exist
-    const oldStats = getPlayerStats(oldAnonymousId)
+    const oldStats = await getPlayerStats(oldAnonymousId)
 
     if (oldStats && oldStats.gamesPlayed > 0) {
       // Get or create new user stats
-      const newStats = getPlayerStats(newAuthenticatedId)
+      const newStats = await getPlayerStats(newAuthenticatedId)
 
       // Merge stats (add old stats to new)
       newStats.gamesPlayed += oldStats.gamesPlayed
@@ -277,20 +222,41 @@ export async function migrateAnonymousUser(
         newStats.joinedAt = oldStats.joinedAt
       }
 
+      // Save the merged stats to database
+      await db.set(Collections.PLAYER_STATS, newAuthenticatedId, newStats)
+
       migrationData.statsTransferred = true
       console.log(`Migrated stats from ${oldAnonymousId} to ${newAuthenticatedId}`)
     }
 
+    // Migrate game history - update player IDs in saved games
+    const allGames = await db.getAll<{ id: string; players: Array<{ id: string }> }>(Collections.GAME_HISTORY)
+    const gamesToUpdate = allGames.filter(game =>
+      game.players.some(p => p.id === oldAnonymousId)
+    )
+
+    if (gamesToUpdate.length > 0) {
+      for (const game of gamesToUpdate) {
+        const updatedPlayers = game.players.map(p =>
+          p.id === oldAnonymousId ? { ...p, id: newAuthenticatedId } : p
+        )
+        await db.update(Collections.GAME_HISTORY, game.id, { players: updatedPlayers })
+      }
+      migrationData.historyTransferred = true
+      console.log(`Migrated ${gamesToUpdate.length} games from ${oldAnonymousId} to ${newAuthenticatedId}`)
+    }
+
     // Update user profile with migration info
-    const user = users.get(newAuthenticatedId)
+    const user = await db.get<UserProfile>(Collections.USERS, newAuthenticatedId)
     if (user) {
-      user.migratedFromAnonymousId = oldAnonymousId
-      user.lastSeenAt = now
+      await db.update(Collections.USERS, newAuthenticatedId, {
+        migratedFromAnonymousId: oldAnonymousId,
+        lastSeenAt: now
+      })
     }
 
     // Save migration record
-    migrations.set(oldAnonymousId, migrationData)
-    saveUsersToFile()
+    await db.set(Collections.MIGRATIONS, oldAnonymousId, migrationData)
 
     return { success: true }
   } catch (error) {
@@ -302,34 +268,38 @@ export async function migrateAnonymousUser(
 /**
  * Check if an anonymous ID has been migrated
  */
-export function getMigrationStatus(oldAnonymousId: string): UserMigrationData | null {
-  return migrations.get(oldAnonymousId) || null
+export async function getMigrationStatus(oldAnonymousId: string): Promise<UserMigrationData | null> {
+  const db = getDatabase()
+  return await db.get<UserMigrationData>(Collections.MIGRATIONS, oldAnonymousId)
 }
 
 /**
  * Get all users (for admin purposes)
  */
-export function getAllUsers(): UserProfile[] {
-  return Array.from(users.values())
+export async function getAllUsers(): Promise<UserProfile[]> {
+  const db = getDatabase()
+  return await db.getAll<UserProfile>(Collections.USERS)
 }
 
 /**
  * Get user count
  */
-export function getUserCount(): number {
-  return users.size
+export async function getUserCount(): Promise<number> {
+  const db = getDatabase()
+  return await db.count(Collections.USERS)
 }
 
 /**
  * Delete a user
  */
-export function deleteUser(uid: string): { success: boolean; error?: string } {
-  if (!users.has(uid)) {
+export async function deleteUser(uid: string): Promise<{ success: boolean; error?: string }> {
+  const db = getDatabase()
+  const user = await db.get<UserProfile>(Collections.USERS, uid)
+  if (!user) {
     return { success: false, error: 'User not found' }
   }
 
-  users.delete(uid)
-  saveUsersToFile()
+  await db.delete(Collections.USERS, uid)
 
   return { success: true }
 }

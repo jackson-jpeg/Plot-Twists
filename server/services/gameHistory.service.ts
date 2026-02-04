@@ -4,8 +4,6 @@
  */
 
 import { v4 as uuidv4 } from 'uuid'
-import * as fs from 'fs'
-import * as path from 'path'
 import type {
   SavedGame,
   SavedGamePlayer,
@@ -16,78 +14,7 @@ import type {
   Player,
   GameResults
 } from '../../lib/types'
-
-// In-memory store with file persistence
-const gameHistory: Map<string, SavedGame> = new Map()
-const playerGameIndex: Map<string, string[]> = new Map() // playerId -> gameIds
-const shareCodeIndex: Map<string, string> = new Map() // shareCode -> gameId
-
-const DATA_DIR = path.join(process.cwd(), 'data')
-const HISTORY_FILE = path.join(DATA_DIR, 'game-history.json')
-
-// ============================================================
-// Persistence
-// ============================================================
-
-function ensureDataDir(): void {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
-}
-
-function loadHistoryFromFile(): void {
-  ensureDataDir()
-
-  if (fs.existsSync(HISTORY_FILE)) {
-    try {
-      const data = JSON.parse(fs.readFileSync(HISTORY_FILE, 'utf-8'))
-
-      // Load games
-      if (data.games && Array.isArray(data.games)) {
-        data.games.forEach((game: SavedGame) => {
-          gameHistory.set(game.id, game)
-
-          // Build share code index
-          if (game.shareCode) {
-            shareCodeIndex.set(game.shareCode, game.id)
-          }
-        })
-      }
-
-      // Rebuild player index
-      gameHistory.forEach((game, gameId) => {
-        game.players.forEach(player => {
-          const existing = playerGameIndex.get(player.id) || []
-          if (!existing.includes(gameId)) {
-            existing.push(gameId)
-            playerGameIndex.set(player.id, existing)
-          }
-        })
-      })
-
-      console.log(`Loaded ${gameHistory.size} games from history`)
-    } catch (error) {
-      console.error('Failed to load game history:', error)
-    }
-  }
-}
-
-function saveHistoryToFile(): void {
-  ensureDataDir()
-
-  try {
-    const data = {
-      games: Array.from(gameHistory.values()),
-      savedAt: Date.now()
-    }
-    fs.writeFileSync(HISTORY_FILE, JSON.stringify(data, null, 2))
-  } catch (error) {
-    console.error('Failed to save game history:', error)
-  }
-}
-
-// Load on startup
-loadHistoryFromFile()
+import { getDatabase, Collections } from '../db'
 
 // ============================================================
 // Share Code Generation
@@ -102,13 +29,25 @@ function generateShareCode(): string {
   return code
 }
 
-function getUniqueShareCode(): string {
+async function getUniqueShareCode(): Promise<string> {
+  const db = getDatabase()
   let code = generateShareCode()
   let attempts = 0
-  while (shareCodeIndex.has(code) && attempts < 10) {
+
+  // Check if share code already exists
+  while (attempts < 10) {
+    const existing = await db.query<SavedGame>(Collections.GAME_HISTORY, [
+      { field: 'shareCode', operator: '==', value: code }
+    ], { limit: 1 })
+
+    if (existing.length === 0) {
+      return code
+    }
+
     code = generateShareCode()
     attempts++
   }
+
   return code
 }
 
@@ -119,7 +58,7 @@ function getUniqueShareCode(): string {
 /**
  * Save a completed game to history
  */
-export function saveGame(
+export async function saveGame(
   roomCode: string,
   script: Script,
   players: Player[],
@@ -134,7 +73,8 @@ export function saveGame(
     audienceReactionCount: number
     plotTwistsUsed: string[]
   }
-): SavedGame {
+): Promise<SavedGame> {
+  const db = getDatabase()
   const gameId = uuidv4()
   const now = Date.now()
 
@@ -177,18 +117,8 @@ export function saveGame(
     likes: 0
   }
 
-  // Save to store
-  gameHistory.set(gameId, savedGame)
-
-  // Update player index
-  savedPlayers.forEach(player => {
-    const existing = playerGameIndex.get(player.id) || []
-    existing.unshift(gameId) // Add to front (most recent)
-    playerGameIndex.set(player.id, existing.slice(0, 100)) // Keep last 100 games
-  })
-
-  // Persist
-  saveHistoryToFile()
+  // Save to database
+  await db.set(Collections.GAME_HISTORY, gameId, savedGame)
 
   console.log(`Saved game: ${script.title} (${gameId})`)
 
@@ -198,49 +128,59 @@ export function saveGame(
 /**
  * Get a game by ID
  */
-export function getGame(gameId: string): SavedGame | null {
-  return gameHistory.get(gameId) || null
+export async function getGame(gameId: string): Promise<SavedGame | null> {
+  const db = getDatabase()
+  return await db.get<SavedGame>(Collections.GAME_HISTORY, gameId)
 }
 
 /**
  * Get a game by share code
  */
-export function getGameByShareCode(shareCode: string): SavedGame | null {
-  const gameId = shareCodeIndex.get(shareCode.toUpperCase())
-  if (!gameId) return null
-  return gameHistory.get(gameId) || null
+export async function getGameByShareCode(shareCode: string): Promise<SavedGame | null> {
+  const db = getDatabase()
+  const results = await db.query<SavedGame>(Collections.GAME_HISTORY, [
+    { field: 'shareCode', operator: '==', value: shareCode.toUpperCase() }
+  ], { limit: 1 })
+
+  return results[0] || null
 }
 
 /**
  * Get games for a player
  */
-export function getPlayerGames(
+export async function getPlayerGames(
   playerId: string,
   limit: number = 20,
   offset: number = 0
-): SavedGame[] {
-  const gameIds = playerGameIndex.get(playerId) || []
-  const paginatedIds = gameIds.slice(offset, offset + limit)
+): Promise<SavedGame[]> {
+  const db = getDatabase()
 
-  return paginatedIds
-    .map(id => gameHistory.get(id))
-    .filter((game): game is SavedGame => game !== null)
+  // Get all games and filter by player
+  // Note: For better performance with large datasets, consider adding a player-to-games index collection
+  const allGames = await db.getAll<SavedGame>(Collections.GAME_HISTORY)
+
+  const playerGames = allGames
+    .filter(game => game.players.some(p => p.id === playerId))
+    .sort((a, b) => b.playedAt - a.playedAt)
+    .slice(offset, offset + limit)
+
+  return playerGames
 }
 
 /**
  * Search games with filters
  */
-export function searchGames(
+export async function searchGames(
   filters: GameHistoryFilters,
   limit: number = 20,
   offset: number = 0
-): SavedGame[] {
-  let games = Array.from(gameHistory.values())
+): Promise<SavedGame[]> {
+  const db = getDatabase()
+  let games = await db.getAll<SavedGame>(Collections.GAME_HISTORY)
 
   // Apply filters
   if (filters.playerId) {
-    const playerGameIds = new Set(playerGameIndex.get(filters.playerId) || [])
-    games = games.filter(g => playerGameIds.has(g.id))
+    games = games.filter(g => g.players.some(p => p.id === filters.playerId))
   }
 
   if (filters.gameMode) {
@@ -271,8 +211,11 @@ export function searchGames(
 /**
  * Get public/featured games
  */
-export function getPublicGames(limit: number = 20): SavedGame[] {
-  return Array.from(gameHistory.values())
+export async function getPublicGames(limit: number = 20): Promise<SavedGame[]> {
+  const db = getDatabase()
+  const allGames = await db.getAll<SavedGame>(Collections.GAME_HISTORY)
+
+  return allGames
     .filter(g => g.isPublic)
     .sort((a, b) => b.likes - a.likes || b.playedAt - a.playedAt)
     .slice(0, limit)
@@ -281,35 +224,40 @@ export function getPublicGames(limit: number = 20): SavedGame[] {
 /**
  * Share a game (make it publicly accessible)
  */
-export function shareGame(gameId: string): { success: boolean, shareCode?: string, error?: string } {
-  const game = gameHistory.get(gameId)
+export async function shareGame(gameId: string): Promise<{ success: boolean, shareCode?: string, error?: string }> {
+  const db = getDatabase()
+  const game = await db.get<SavedGame>(Collections.GAME_HISTORY, gameId)
+
   if (!game) {
     return { success: false, error: 'Game not found' }
   }
 
   // Generate share code if not exists
-  if (!game.shareCode) {
-    game.shareCode = getUniqueShareCode()
-    shareCodeIndex.set(game.shareCode, gameId)
+  let shareCode = game.shareCode
+  if (!shareCode) {
+    shareCode = await getUniqueShareCode()
   }
 
-  game.isPublic = true
-  saveHistoryToFile()
+  await db.update(Collections.GAME_HISTORY, gameId, {
+    shareCode,
+    isPublic: true
+  })
 
-  return { success: true, shareCode: game.shareCode }
+  return { success: true, shareCode }
 }
 
 /**
  * Unshare a game
  */
-export function unshareGame(gameId: string): { success: boolean, error?: string } {
-  const game = gameHistory.get(gameId)
+export async function unshareGame(gameId: string): Promise<{ success: boolean, error?: string }> {
+  const db = getDatabase()
+  const game = await db.get<SavedGame>(Collections.GAME_HISTORY, gameId)
+
   if (!game) {
     return { success: false, error: 'Game not found' }
   }
 
-  game.isPublic = false
-  saveHistoryToFile()
+  await db.update(Collections.GAME_HISTORY, gameId, { isPublic: false })
 
   return { success: true }
 }
@@ -317,19 +265,22 @@ export function unshareGame(gameId: string): { success: boolean, error?: string 
 /**
  * Record a view on a shared game
  */
-export function recordView(gameId: string): void {
-  const game = gameHistory.get(gameId)
+export async function recordView(gameId: string): Promise<void> {
+  const db = getDatabase()
+  const game = await db.get<SavedGame>(Collections.GAME_HISTORY, gameId)
+
   if (game && game.isPublic) {
-    game.views++
-    // Don't save immediately to reduce writes - batch later
+    await db.update(Collections.GAME_HISTORY, gameId, { views: game.views + 1 })
   }
 }
 
 /**
  * Like a shared game
  */
-export function likeGame(gameId: string): { success: boolean, likes?: number, error?: string } {
-  const game = gameHistory.get(gameId)
+export async function likeGame(gameId: string): Promise<{ success: boolean, likes?: number, error?: string }> {
+  const db = getDatabase()
+  const game = await db.get<SavedGame>(Collections.GAME_HISTORY, gameId)
+
   if (!game) {
     return { success: false, error: 'Game not found' }
   }
@@ -338,17 +289,19 @@ export function likeGame(gameId: string): { success: boolean, likes?: number, er
     return { success: false, error: 'Game is not public' }
   }
 
-  game.likes++
-  saveHistoryToFile()
+  const newLikes = game.likes + 1
+  await db.update(Collections.GAME_HISTORY, gameId, { likes: newLikes })
 
-  return { success: true, likes: game.likes }
+  return { success: true, likes: newLikes }
 }
 
 /**
  * Delete a game from history
  */
-export function deleteGame(gameId: string, requesterId: string): { success: boolean, error?: string } {
-  const game = gameHistory.get(gameId)
+export async function deleteGame(gameId: string, requesterId: string): Promise<{ success: boolean, error?: string }> {
+  const db = getDatabase()
+  const game = await db.get<SavedGame>(Collections.GAME_HISTORY, gameId)
+
   if (!game) {
     return { success: false, error: 'Game not found' }
   }
@@ -359,18 +312,7 @@ export function deleteGame(gameId: string, requesterId: string): { success: bool
     return { success: false, error: 'Only the host can delete this game' }
   }
 
-  // Remove from indices
-  if (game.shareCode) {
-    shareCodeIndex.delete(game.shareCode)
-  }
-
-  game.players.forEach(player => {
-    const games = playerGameIndex.get(player.id) || []
-    playerGameIndex.set(player.id, games.filter(id => id !== gameId))
-  })
-
-  gameHistory.delete(gameId)
-  saveHistoryToFile()
+  await db.delete(Collections.GAME_HISTORY, gameId)
 
   return { success: true }
 }
@@ -378,15 +320,19 @@ export function deleteGame(gameId: string, requesterId: string): { success: bool
 /**
  * Get game count for a player
  */
-export function getPlayerGameCount(playerId: string): number {
-  return (playerGameIndex.get(playerId) || []).length
+export async function getPlayerGameCount(playerId: string): Promise<number> {
+  const db = getDatabase()
+  const allGames = await db.getAll<SavedGame>(Collections.GAME_HISTORY)
+
+  return allGames.filter(game => game.players.some(p => p.id === playerId)).length
 }
 
 /**
  * Export game as formatted text
  */
-export function exportGameAsText(gameId: string): string | null {
-  const game = gameHistory.get(gameId)
+export async function exportGameAsText(gameId: string): Promise<string | null> {
+  const db = getDatabase()
+  const game = await db.get<SavedGame>(Collections.GAME_HISTORY, gameId)
   if (!game) return null
 
   const lines: string[] = []

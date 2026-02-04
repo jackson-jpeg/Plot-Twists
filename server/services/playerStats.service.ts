@@ -3,23 +3,15 @@
  * Tracks player performance, stats, and unlockable achievements
  */
 
-import * as fs from 'fs'
-import * as path from 'path'
 import type {
   PlayerStats,
   Achievement,
   AchievementId,
   LeaderboardCategory,
   LeaderboardEntry,
-  GameMode,
   SavedGame
 } from '../../lib/types'
-
-// In-memory store with file persistence
-const playerStats: Map<string, PlayerStats> = new Map()
-
-const DATA_DIR = path.join(process.cwd(), 'data')
-const STATS_FILE = path.join(DATA_DIR, 'player-stats.json')
+import { getDatabase, Collections } from '../db'
 
 // ============================================================
 // Achievement Definitions
@@ -159,73 +151,8 @@ const ACHIEVEMENT_DEFINITIONS: Record<AchievementId, Omit<Achievement, 'unlocked
 }
 
 // ============================================================
-// Persistence
-// ============================================================
-
-function ensureDataDir(): void {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
-}
-
-function loadStatsFromFile(): void {
-  ensureDataDir()
-
-  if (fs.existsSync(STATS_FILE)) {
-    try {
-      const data = JSON.parse(fs.readFileSync(STATS_FILE, 'utf-8'))
-
-      if (data.players && Array.isArray(data.players)) {
-        data.players.forEach((stats: PlayerStats) => {
-          playerStats.set(stats.playerId, stats)
-        })
-      }
-
-      console.log(`Loaded stats for ${playerStats.size} players`)
-    } catch (error) {
-      console.error('Failed to load player stats:', error)
-    }
-  }
-}
-
-function saveStatsToFile(): void {
-  ensureDataDir()
-
-  try {
-    const data = {
-      players: Array.from(playerStats.values()),
-      savedAt: Date.now()
-    }
-    fs.writeFileSync(STATS_FILE, JSON.stringify(data, null, 2))
-  } catch (error) {
-    console.error('Failed to save player stats:', error)
-  }
-}
-
-// Load on startup
-loadStatsFromFile()
-
-// ============================================================
 // Core Functions
 // ============================================================
-
-/**
- * Get or create player stats
- */
-export function getPlayerStats(playerId: string, nickname?: string): PlayerStats {
-  let stats = playerStats.get(playerId)
-
-  if (!stats) {
-    stats = createInitialStats(playerId, nickname || 'Anonymous')
-    playerStats.set(playerId, stats)
-    saveStatsToFile()
-  } else if (nickname && stats.nickname !== nickname) {
-    // Update nickname if changed
-    stats.nickname = nickname
-  }
-
-  return stats
-}
 
 /**
  * Create initial stats for a new player
@@ -255,9 +182,28 @@ function createInitialStats(playerId: string, nickname: string): PlayerStats {
 }
 
 /**
+ * Get or create player stats
+ */
+export async function getPlayerStats(playerId: string, nickname?: string): Promise<PlayerStats> {
+  const db = getDatabase()
+  let stats = await db.get<PlayerStats>(Collections.PLAYER_STATS, playerId)
+
+  if (!stats) {
+    stats = createInitialStats(playerId, nickname || 'Anonymous')
+    await db.set(Collections.PLAYER_STATS, playerId, stats)
+  } else if (nickname && stats.nickname !== nickname) {
+    // Update nickname if changed
+    stats.nickname = nickname
+    await db.update(Collections.PLAYER_STATS, playerId, { nickname })
+  }
+
+  return stats
+}
+
+/**
  * Update player stats after a game
  */
-export function recordGameResult(
+export async function recordGameResult(
   playerId: string,
   nickname: string,
   game: SavedGame,
@@ -267,8 +213,9 @@ export function recordGameResult(
     isWinner: boolean
     reactionsReceived: number
   }
-): Achievement[] {
-  const stats = getPlayerStats(playerId, nickname)
+): Promise<Achievement[]> {
+  const db = getDatabase()
+  const stats = await getPlayerStats(playerId, nickname)
   const newAchievements: Achievement[] = []
 
   // Update basic stats
@@ -323,7 +270,7 @@ export function recordGameResult(
   })
 
   // Save
-  saveStatsToFile()
+  await db.set(Collections.PLAYER_STATS, playerId, stats)
 
   return newAchievements
 }
@@ -415,8 +362,9 @@ function checkAchievements(
 /**
  * Manually unlock an achievement
  */
-export function unlockAchievement(playerId: string, achievementId: AchievementId): boolean {
-  const stats = playerStats.get(playerId)
+export async function unlockAchievement(playerId: string, achievementId: AchievementId): Promise<boolean> {
+  const db = getDatabase()
+  const stats = await db.get<PlayerStats>(Collections.PLAYER_STATS, playerId)
   if (!stats) return false
 
   const definition = ACHIEVEMENT_DEFINITIONS[achievementId]
@@ -431,15 +379,16 @@ export function unlockAchievement(playerId: string, achievementId: AchievementId
     unlockedAt: Date.now()
   })
 
-  saveStatsToFile()
+  await db.set(Collections.PLAYER_STATS, playerId, stats)
   return true
 }
 
 /**
  * Get leaderboard
  */
-export function getLeaderboard(category: LeaderboardCategory, limit: number = 10): LeaderboardEntry[] {
-  const allStats = Array.from(playerStats.values())
+export async function getLeaderboard(category: LeaderboardCategory, limit: number = 10): Promise<LeaderboardEntry[]> {
+  const db = getDatabase()
+  const allStats = await db.getAll<PlayerStats>(Collections.PLAYER_STATS)
 
   // Sort by category
   let sorted: PlayerStats[]
@@ -495,11 +444,10 @@ export function getLeaderboard(category: LeaderboardCategory, limit: number = 10
 /**
  * Get achievement progress for a player
  */
-export function getAchievementProgress(playerId: string): Achievement[] {
-  const stats = playerStats.get(playerId)
+export async function getAchievementProgress(playerId: string): Promise<Achievement[]> {
+  const db = getDatabase()
+  const stats = await db.get<PlayerStats>(Collections.PLAYER_STATS, playerId)
   if (!stats) return []
-
-  const unlockedIds = new Set(stats.achievements.map(a => a.id))
 
   // Return all achievements with progress
   return Object.values(ACHIEVEMENT_DEFINITIONS).map(def => {
@@ -546,6 +494,7 @@ export function getAchievementProgress(playerId: string): Achievement[] {
 /**
  * Get total player count
  */
-export function getTotalPlayerCount(): number {
-  return playerStats.size
+export async function getTotalPlayerCount(): Promise<number> {
+  const db = getDatabase()
+  return await db.count(Collections.PLAYER_STATS)
 }

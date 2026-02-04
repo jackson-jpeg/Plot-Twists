@@ -4,16 +4,8 @@
  */
 
 import { v4 as uuidv4 } from 'uuid'
-import * as fs from 'fs'
-import * as path from 'path'
 import type { CardPack, CardPackMetadata, Card, CardPackInput } from '../../lib/types'
-
-// In-memory storage for card packs (persisted to JSON file)
-const cardPacks = new Map<string, CardPack>()
-
-// Path to card packs data file
-const DATA_DIR = path.join(process.cwd(), 'data')
-const PACKS_FILE = path.join(DATA_DIR, 'cardpacks.json')
+import { getDatabase, Collections } from '../db'
 
 // Built-in pack ID (standard content from content.ts)
 export const STANDARD_PACK_ID = 'standard'
@@ -24,21 +16,21 @@ const EXAMPLE_PACK_IDS = {
   scifi: 'example-scifi-adventures'
 }
 
+// Track initialization state
+let initialized = false
+
 /**
  * Initialize the card pack service
  */
-export function initializeCardPackService(): void {
-  // Ensure data directory exists
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
+export async function initializeCardPackService(): Promise<void> {
+  if (initialized) return
 
-  // Load existing packs from file
-  loadPacksFromFile()
+  const db = getDatabase()
 
   // Create standard pack reference if it doesn't exist
-  if (!cardPacks.has(STANDARD_PACK_ID)) {
-    const standardPack: CardPack = {
+  const standardPack = await db.get<CardPack>(Collections.CARD_PACKS, STANDARD_PACK_ID)
+  if (!standardPack) {
+    const newStandardPack: CardPack = {
       id: STANDARD_PACK_ID,
       name: 'Standard Pack',
       description: 'The original Plot Twists card collection with 200+ characters, settings, and circumstances',
@@ -56,49 +48,26 @@ export function initializeCardPackService(): void {
       createdAt: Date.now(),
       updatedAt: Date.now()
     }
-    cardPacks.set(STANDARD_PACK_ID, standardPack)
+    await db.set(Collections.CARD_PACKS, STANDARD_PACK_ID, newStandardPack)
   }
 
-  console.log(`Card Pack Service initialized with ${cardPacks.size} packs`)
-}
+  // Create example packs
+  await createExamplePacks()
 
-/**
- * Load packs from JSON file
- */
-function loadPacksFromFile(): void {
-  try {
-    if (fs.existsSync(PACKS_FILE)) {
-      const data = fs.readFileSync(PACKS_FILE, 'utf-8')
-      const packs: CardPack[] = JSON.parse(data)
-      for (const pack of packs) {
-        cardPacks.set(pack.id, pack)
-      }
-      console.log(`Loaded ${packs.length} card packs from file`)
-    }
-  } catch (error) {
-    console.error('Error loading card packs from file:', error)
-  }
-}
-
-/**
- * Save packs to JSON file
- */
-function savePacksToFile(): void {
-  try {
-    const packs = Array.from(cardPacks.values()).filter(p => !p.isBuiltIn)
-    fs.writeFileSync(PACKS_FILE, JSON.stringify(packs, null, 2))
-  } catch (error) {
-    console.error('Error saving card packs to file:', error)
-  }
+  initialized = true
+  const count = await db.count(Collections.CARD_PACKS)
+  console.log(`Card Pack Service initialized with ${count} packs`)
 }
 
 /**
  * Get all available card packs (metadata only)
  */
-export function listCardPacks(includePrivate: boolean = false): CardPackMetadata[] {
+export async function listCardPacks(includePrivate: boolean = false): Promise<CardPackMetadata[]> {
+  const db = getDatabase()
+  const allPacks = await db.getAll<CardPack>(Collections.CARD_PACKS)
   const packs: CardPackMetadata[] = []
 
-  for (const pack of cardPacks.values()) {
+  for (const pack of allPacks) {
     if (!pack.isPublic && !includePrivate) continue
 
     packs.push({
@@ -129,19 +98,21 @@ export function listCardPacks(includePrivate: boolean = false): CardPackMetadata
 /**
  * Get a specific card pack by ID
  */
-export function getCardPack(packId: string): CardPack | null {
-  return cardPacks.get(packId) || null
+export async function getCardPack(packId: string): Promise<CardPack | null> {
+  const db = getDatabase()
+  return await db.get<CardPack>(Collections.CARD_PACKS, packId)
 }
 
 /**
  * Get cards from a pack (or standard content if standard pack)
  */
-export function getPackCards(packId: string, isMature: boolean): {
+export async function getPackCards(packId: string, isMature: boolean): Promise<{
   characters: Card[],
   settings: Card[],
   circumstances: Card[]
-} | null {
-  const pack = cardPacks.get(packId)
+} | null> {
+  const db = getDatabase()
+  const pack = await db.get<CardPack>(Collections.CARD_PACKS, packId)
   if (!pack) return null
 
   // For standard pack, return empty (caller should use content.ts)
@@ -160,9 +131,9 @@ export function getPackCards(packId: string, isMature: boolean): {
 /**
  * Create a new card pack
  */
-export function createCardPack(
+export async function createCardPack(
   packData: CardPackInput
-): { success: boolean, packId?: string, error?: string } {
+): Promise<{ success: boolean, packId?: string, error?: string }> {
   // Validate pack data
   if (!packData.name || packData.name.trim().length < 3) {
     return { success: false, error: 'Pack name must be at least 3 characters' }
@@ -179,6 +150,8 @@ export function createCardPack(
   if (packData.circumstances.length < 3) {
     return { success: false, error: 'Pack must have at least 3 circumstances' }
   }
+
+  const db = getDatabase()
 
   // Generate ID and create pack
   const packId = uuidv4()
@@ -201,8 +174,7 @@ export function createCardPack(
     circumstances: packData.circumstances.map(c => ({ ...c, id: c.id || uuidv4() }))
   }
 
-  cardPacks.set(packId, newPack)
-  savePacksToFile()
+  await db.set(Collections.CARD_PACKS, packId, newPack)
 
   console.log(`Created new card pack: ${newPack.name} (${packId})`)
 
@@ -212,11 +184,13 @@ export function createCardPack(
 /**
  * Update an existing card pack
  */
-export function updateCardPack(
+export async function updateCardPack(
   packId: string,
   updates: Record<string, unknown>
-): { success: boolean, error?: string } {
-  const pack = cardPacks.get(packId)
+): Promise<{ success: boolean, error?: string }> {
+  const db = getDatabase()
+  const pack = await db.get<CardPack>(Collections.CARD_PACKS, packId)
+
   if (!pack) {
     return { success: false, error: 'Pack not found' }
   }
@@ -246,8 +220,8 @@ export function updateCardPack(
   }
 
   // Apply updates
-  Object.assign(pack, updates, { updatedAt: Date.now() })
-  savePacksToFile()
+  const updatedPack = { ...pack, ...updates, updatedAt: Date.now() }
+  await db.set(Collections.CARD_PACKS, packId, updatedPack)
 
   return { success: true }
 }
@@ -255,8 +229,10 @@ export function updateCardPack(
 /**
  * Delete a card pack
  */
-export function deleteCardPack(packId: string): { success: boolean, error?: string } {
-  const pack = cardPacks.get(packId)
+export async function deleteCardPack(packId: string): Promise<{ success: boolean, error?: string }> {
+  const db = getDatabase()
+  const pack = await db.get<CardPack>(Collections.CARD_PACKS, packId)
+
   if (!pack) {
     return { success: false, error: 'Pack not found' }
   }
@@ -265,8 +241,7 @@ export function deleteCardPack(packId: string): { success: boolean, error?: stri
     return { success: false, error: 'Cannot delete built-in packs' }
   }
 
-  cardPacks.delete(packId)
-  savePacksToFile()
+  await db.delete(Collections.CARD_PACKS, packId)
 
   console.log(`Deleted card pack: ${packId}`)
 
@@ -276,22 +251,25 @@ export function deleteCardPack(packId: string): { success: boolean, error?: stri
 /**
  * Increment download count for a pack
  */
-export function incrementDownloads(packId: string): void {
-  const pack = cardPacks.get(packId)
+export async function incrementDownloads(packId: string): Promise<void> {
+  const db = getDatabase()
+  const pack = await db.get<CardPack>(Collections.CARD_PACKS, packId)
+
   if (pack && !pack.isBuiltIn) {
-    pack.downloads++
-    savePacksToFile()
+    await db.update(Collections.CARD_PACKS, packId, { downloads: pack.downloads + 1 })
   }
 }
 
 /**
  * Rate a card pack
  */
-export function rateCardPack(
+export async function rateCardPack(
   packId: string,
   rating: number
-): { success: boolean, newRating?: number, error?: string } {
-  const pack = cardPacks.get(packId)
+): Promise<{ success: boolean, newRating?: number, error?: string }> {
+  const db = getDatabase()
+  const pack = await db.get<CardPack>(Collections.CARD_PACKS, packId)
+
   if (!pack) {
     return { success: false, error: 'Pack not found' }
   }
@@ -307,22 +285,27 @@ export function rateCardPack(
 
   // Calculate new average rating
   const totalRating = pack.rating * pack.ratingCount + rating
-  pack.ratingCount++
-  pack.rating = Math.round((totalRating / pack.ratingCount) * 10) / 10
+  const newRatingCount = pack.ratingCount + 1
+  const newRating = Math.round((totalRating / newRatingCount) * 10) / 10
 
-  savePacksToFile()
+  await db.update(Collections.CARD_PACKS, packId, {
+    rating: newRating,
+    ratingCount: newRatingCount
+  })
 
-  return { success: true, newRating: pack.rating }
+  return { success: true, newRating }
 }
 
 /**
  * Search card packs by name or theme
  */
-export function searchCardPacks(query: string): CardPackMetadata[] {
+export async function searchCardPacks(query: string): Promise<CardPackMetadata[]> {
+  const db = getDatabase()
+  const allPacks = await db.getAll<CardPack>(Collections.CARD_PACKS)
   const lowerQuery = query.toLowerCase()
   const results: CardPackMetadata[] = []
 
-  for (const pack of cardPacks.values()) {
+  for (const pack of allPacks) {
     if (!pack.isPublic) continue
 
     const matchesName = pack.name.toLowerCase().includes(lowerQuery)
@@ -355,8 +338,9 @@ export function searchCardPacks(query: string): CardPackMetadata[] {
 /**
  * Get featured/popular packs
  */
-export function getFeaturedPacks(limit: number = 5): CardPackMetadata[] {
-  return listCardPacks()
+export async function getFeaturedPacks(limit: number = 5): Promise<CardPackMetadata[]> {
+  const packs = await listCardPacks()
+  return packs
     .filter(p => !p.isBuiltIn)
     .sort((a, b) => (b.downloads * 0.7 + b.rating * 0.3) - (a.downloads * 0.7 + a.rating * 0.3))
     .slice(0, limit)
@@ -365,19 +349,21 @@ export function getFeaturedPacks(limit: number = 5): CardPackMetadata[] {
 /**
  * Create some example themed packs
  */
-export function createExamplePacks(): void {
-  // Check if example packs already exist by their deterministic IDs
-  const officeExists = cardPacks.has(EXAMPLE_PACK_IDS.office)
-  const scifiExists = cardPacks.has(EXAMPLE_PACK_IDS.scifi)
+export async function createExamplePacks(): Promise<void> {
+  const db = getDatabase()
 
-  if (officeExists && scifiExists) {
+  // Check if example packs already exist by their deterministic IDs
+  const officePack = await db.get<CardPack>(Collections.CARD_PACKS, EXAMPLE_PACK_IDS.office)
+  const scifiPack = await db.get<CardPack>(Collections.CARD_PACKS, EXAMPLE_PACK_IDS.scifi)
+
+  if (officePack && scifiPack) {
     console.log('Example packs already exist, skipping creation')
     return
   }
 
   // Office Comedy Pack
-  if (!officeExists) {
-    const officePack: CardPack = {
+  if (!officePack) {
+    const newOfficePack: CardPack = {
       id: EXAMPLE_PACK_IDS.office,
       name: 'Office Comedy',
       description: 'Characters and scenarios from your favorite workplace sitcoms',
@@ -412,13 +398,13 @@ export function createExamplePacks(): void {
       createdAt: Date.now(),
       updatedAt: Date.now()
     }
-    cardPacks.set(EXAMPLE_PACK_IDS.office, officePack)
+    await db.set(Collections.CARD_PACKS, EXAMPLE_PACK_IDS.office, newOfficePack)
     console.log('Created Office Comedy example pack')
   }
 
   // Sci-Fi Pack
-  if (!scifiExists) {
-    const scifiPack: CardPack = {
+  if (!scifiPack) {
+    const newScifiPack: CardPack = {
       id: EXAMPLE_PACK_IDS.scifi,
       name: 'Sci-Fi Adventures',
       description: 'Explore strange new worlds with familiar tropes',
@@ -451,14 +437,7 @@ export function createExamplePacks(): void {
       createdAt: Date.now(),
       updatedAt: Date.now()
     }
-    cardPacks.set(EXAMPLE_PACK_IDS.scifi, scifiPack)
+    await db.set(Collections.CARD_PACKS, EXAMPLE_PACK_IDS.scifi, newScifiPack)
     console.log('Created Sci-Fi Adventures example pack')
   }
-
-  // Save to file so they persist
-  savePacksToFile()
 }
-
-// Initialize on module load
-initializeCardPackService()
-createExamplePacks()

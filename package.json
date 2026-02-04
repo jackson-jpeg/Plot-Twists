@@ -35,6 +35,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^7.4.1",
     "firebase": "^11.0.0",
+    "firebase-admin": "^13.6.0",
     "framer-motion": "^12.26.2",
     "helmet": "^8.0.0",
     "next": "^16.1.2",

@@ -2426,3 +2426,200 @@ textarea:focus-visible {
     margin-bottom: 12px !important;
   }
 }
+
+/* ==========================================================================
+   Auth Header Buttons
+   ========================================================================== */
+
+.auth-header-btn {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--easing-out);
+  white-space: nowrap;
+}
+
+.auth-header-btn-primary {
+  background: linear-gradient(135deg, var(--color-purple), var(--color-purple-dark));
+  color: white;
+  box-shadow: 0 2px 8px var(--color-purple-glow);
+}
+
+.auth-header-btn-primary:hover {
+  background: linear-gradient(135deg, var(--color-purple-hover), var(--color-purple));
+  box-shadow: 0 4px 12px var(--color-purple-glow);
+}
+
+.auth-header-btn-secondary {
+  background: var(--glass-bg);
+  color: var(--color-text-primary);
+  border: 1px solid var(--glass-border-strong);
+  backdrop-filter: blur(10px);
+}
+
+.auth-header-btn-secondary:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--color-purple-border);
+  color: white;
+}
+
+/* ==========================================================================
+   Account Benefits Section
+   ========================================================================== */
+
+.account-benefits-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  box-shadow:
+    0 2px 4px rgba(42, 39, 34, 0.1),
+    0 8px 16px rgba(42, 39, 34, 0.12);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+  max-width: 550px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+}
+
+.benefits-header {
+  text-align: center;
+  margin-bottom: var(--space-5);
+}
+
+.benefits-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.benefit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  transition: all var(--duration-fast) var(--easing-out);
+}
+
+.benefit-item:hover {
+  border-color: var(--color-purple-border);
+  background: var(--color-purple-bg);
+}
+
+.benefit-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.benefit-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.benefit-label {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+}
+
+.benefit-description {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  line-height: 1.4;
+}
+
+.benefits-cta {
+  display: block;
+  width: 100%;
+  padding: var(--space-4);
+  background: linear-gradient(135deg, var(--color-purple), var(--color-purple-dark));
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--easing-out);
+  box-shadow: 0 4px 12px var(--color-purple-glow);
+}
+
+.benefits-cta:hover {
+  background: linear-gradient(135deg, var(--color-purple-hover), var(--color-purple));
+  box-shadow: 0 6px 20px var(--color-purple-glow);
+  transform: translateY(-2px);
+}
+
+.benefits-cta:active {
+  transform: translateY(0);
+}
+
+.benefits-footnote {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin-top: var(--space-3);
+}
+
+/* Mobile responsive for benefits section */
+@media (max-width: 480px) {
+  .benefits-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .benefits-title {
+    font-size: 20px;
+  }
+
+  .account-benefits-section {
+    padding: var(--space-5);
+  }
+
+  .benefit-item {
+    padding: var(--space-2);
+  }
+
+  .benefit-icon {
+    font-size: 20px;
+  }
+
+  .benefit-label {
+    font-size: 13px;
+  }
+
+  .benefit-description {
+    font-size: 11px;
+  }
+}
+
+/* Dark mode adjustments for benefits */
+@media (prefers-color-scheme: dark) {
+  .account-benefits-section {
+    background: var(--color-surface);
+  }
+
+  .benefit-item {
+    background: var(--color-surface-alt);
+  }
+}

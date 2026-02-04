@@ -20,6 +20,13 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true)
+
+    // Auto-expand "How it Works" for first-time visitors
+    const hasVisited = localStorage.getItem('plottwists_visited')
+    if (!hasVisited) {
+      setShowHowItWorks(true)
+      localStorage.setItem('plottwists_visited', 'true')
+    }
   }, [])
 
   if (!mounted) {

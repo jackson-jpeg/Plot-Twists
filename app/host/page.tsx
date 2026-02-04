@@ -549,7 +549,7 @@ export default function HostPage() {
                       </p>
                       <div className={`connection-indicator ${isConnected ? 'connection-indicator-connected' : 'connection-indicator-disconnected'}`}>
                         <div className="connection-indicator-dot" />
-                        <span>{isConnected ? 'Live' : 'Offline'}</span>
+                        <span>{isConnected ? 'Connected' : 'Reconnecting...'}</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-center gap-3">
@@ -870,7 +870,8 @@ export default function HostPage() {
                       border: settings.gameMode === 'ENSEMBLE' ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
                       cursor: 'pointer',
                       background: settings.gameMode === 'ENSEMBLE' ? 'var(--color-highlight)' : 'var(--color-surface)',
-                      position: 'relative'
+                      position: 'relative',
+                      overflow: 'visible'
                     }}
                     whileHover={{ scale: 1.02, y: -2 }}
                     whileTap={{ scale: 0.98 }}

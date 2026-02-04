@@ -72,8 +72,13 @@ export function UserMenu() {
     )
   }
 
-  // Not configured - show debug badge
+  // Not configured - hide debug UI in production, show in development only
   if (!isConfigured) {
+    // In production, just return null to hide the debug UI entirely
+    if (process.env.NODE_ENV === 'production') {
+      return null
+    }
+
     const missingVars = getMissingFirebaseConfig()
     return (
       <div className="user-menu" ref={dropdownRef}>

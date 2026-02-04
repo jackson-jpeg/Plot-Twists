@@ -47,6 +47,7 @@ function JoinPageContent() {
   const [isJoining, setIsJoining] = useState(false)
   const [roomCodeTouched, setRoomCodeTouched] = useState(false)
   const [nicknameTouched, setNicknameTouched] = useState(false)
+  const [shakeInvalid, setShakeInvalid] = useState(false)
   const [roomPreview, setRoomPreview] = useState<{
     gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE'
     playerCount: number
@@ -363,6 +364,8 @@ function JoinPageContent() {
     setNicknameError(nickErr)
 
     if (roomErr || nickErr) {
+      setShakeInvalid(true)
+      setTimeout(() => setShakeInvalid(false), 500)
       toast.error('Please fix the errors above')
       return
     }
@@ -666,16 +669,26 @@ function JoinPageContent() {
               </div>
 
               {error && (
-                <div className="p-4 rounded-lg" style={{ background: 'var(--color-danger)', border: '2px solid var(--color-bg)' }}>
-                  <p className="text-white text-center font-semibold">⚠️ {error}</p>
-                </div>
+                <motion.div
+                  className="error-banner p-4 rounded-lg flex items-center gap-3 justify-center"
+                  style={{ background: 'var(--color-danger)', border: '2px solid var(--color-bg)' }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <span className="text-2xl">
+                    {error.includes('not found') ? '🔍' :
+                     error.includes('full') ? '🚫' :
+                     error.includes('timeout') ? '⏱️' : '⚠️'}
+                  </span>
+                  <p className="text-white font-semibold">{error}</p>
+                </motion.div>
               )}
 
               <div>
                 <button
                   onClick={handleJoin}
                   disabled={!isFormValid() || isJoining}
-                  className="btn btn-primary btn-large w-full"
+                  className={`btn btn-primary btn-large w-full ${shakeInvalid ? 'shake' : ''}`}
                 >
                   {isJoining ? (
                     <>

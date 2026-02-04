@@ -133,19 +133,27 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-gray-900 rounded-2xl w-full max-w-md p-6 text-center"
+            className="rounded-2xl w-full max-w-md p-6 text-center"
+            style={{ background: 'var(--color-surface)' }}
           >
             <div className="text-5xl mb-4">🔐</div>
-            <h2 className="text-xl font-bold text-white mb-2">Authentication Not Available</h2>
-            <p className="text-gray-400 mb-4">
+            <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>Authentication Not Available</h2>
+            <p className="mb-4" style={{ color: 'var(--color-text-secondary)' }}>
               Sign in is not configured for this instance. You can still play as a guest!
             </p>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm mb-6" style={{ color: 'var(--color-text-tertiary)' }}>
               Your stats will be saved locally on this device.
             </p>
             <button
               onClick={handleClose}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+              className="px-6 py-2 rounded-lg font-semibold transition-colors"
+              style={{
+                background: 'var(--color-accent)',
+                color: 'white',
+                minHeight: '44px'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-accent-hover)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-accent)'}
             >
               Continue as Guest
             </button>
@@ -168,22 +176,35 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
           initial={{ scale: 0.9, opacity: 0, y: 20 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="bg-gray-900 rounded-2xl w-full max-w-md overflow-hidden"
+          className="rounded-2xl w-full max-w-md overflow-hidden"
+          style={{ background: 'var(--color-surface)' }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="auth-modal-title"
         >
           {/* Header */}
-          <div className="p-6 border-b border-gray-800">
+          <div className="p-6" style={{ borderBottom: '1px solid var(--color-border)' }}>
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">
+              <h2 id="auth-modal-title" className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
                 {mode === 'signin' ? 'Welcome Back' : mode === 'signup' ? 'Create Account' : 'Reset Password'}
               </h2>
               <button
                 onClick={handleClose}
-                className="text-gray-400 hover:text-white text-2xl"
+                aria-label="Close"
+                className="text-2xl transition-colors flex items-center justify-center"
+                style={{
+                  color: 'var(--color-text-tertiary)',
+                  minWidth: '44px',
+                  minHeight: '44px',
+                  borderRadius: 'var(--radius-md)'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-tertiary)'}
               >
                 ×
               </button>
             </div>
-            <p className="text-gray-400 mt-1">
+            <p className="mt-1" style={{ color: 'var(--color-text-secondary)' }}>
               {mode === 'signin'
                 ? 'Sign in to track your stats across devices'
                 : mode === 'signup'
@@ -198,7 +219,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-lg mb-4 text-sm"
+                className="p-3 rounded-lg mb-4 text-sm"
+                style={{
+                  background: 'var(--color-danger-light)',
+                  border: '1px solid var(--color-danger)',
+                  color: 'var(--color-danger)'
+                }}
+                role="alert"
               >
                 {error}
                 {/* Show Google sign-in button when account exists with different credential */}
@@ -234,7 +261,14 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 </p>
                 <button
                   onClick={() => { setMode('signin'); setResetSent(false); setError(null) }}
-                  className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+                  className="w-full p-3 rounded-lg font-semibold transition-colors"
+                  style={{
+                    background: 'var(--color-accent)',
+                    color: 'white',
+                    minHeight: '44px'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-accent-hover)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-accent)'}
                 >
                   Back to Sign In
                 </button>
@@ -247,7 +281,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
               >
                 <form onSubmit={handlePasswordReset} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-1">
+                    <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
                       Email
                     </label>
                     <input
@@ -255,7 +289,21 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                      className="w-full p-3 rounded-lg outline-none transition-all"
+                      style={{
+                        background: 'var(--color-surface-alt)',
+                        color: 'var(--color-text-primary)',
+                        border: '1px solid var(--color-border)',
+                        minHeight: '44px'
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--color-accent)'
+                        e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-highlight)'
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--color-border)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }}
                       required
                     />
                   </div>
@@ -263,17 +311,27 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+                    className="w-full p-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
+                    style={{
+                      background: 'var(--color-accent)',
+                      color: 'white',
+                      minHeight: '44px'
+                    }}
+                    onMouseEnter={(e) => !loading && (e.currentTarget.style.background = 'var(--color-accent-hover)')}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-accent)'}
                   >
                     {loading ? 'Please wait...' : 'Send Reset Link'}
                   </button>
                 </form>
 
-                <p className="text-center text-gray-400 mt-4 text-sm">
+                <p className="text-center mt-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   Remember your password?{' '}
                   <button
                     onClick={() => { setMode('signin'); setError(null) }}
-                    className="text-purple-400 hover:text-purple-300 font-medium"
+                    className="font-medium transition-colors"
+                    style={{ color: 'var(--color-accent)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-accent-hover)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-accent)'}
                   >
                     Sign in
                   </button>
@@ -286,7 +344,14 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 <button
                   onClick={handleGoogleSignIn}
                   disabled={loading}
-                  className="w-full p-3 bg-white hover:bg-gray-100 text-gray-900 rounded-lg font-semibold flex items-center justify-center gap-3 transition-colors disabled:opacity-50 mb-4"
+                  className="w-full p-3 rounded-lg font-semibold flex items-center justify-center gap-3 transition-colors disabled:opacity-50 mb-4"
+                  style={{
+                    background: 'white',
+                    color: 'var(--color-text-primary)',
+                    minHeight: '44px'
+                  }}
+                  onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#f5f5f5')}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
@@ -311,10 +376,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
 
                 <div className="relative mb-4">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-700"></div>
+                    <div className="w-full" style={{ borderTop: '1px solid var(--color-border)' }}></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-gray-900 text-gray-400">or</span>
+                    <span className="px-2" style={{ background: 'var(--color-surface)', color: 'var(--color-text-tertiary)' }}>or</span>
                   </div>
                 </div>
 
@@ -322,21 +387,27 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 <div className="flex gap-2 mb-4">
                   <button
                     onClick={() => { setAuthMethod('email'); setError(null) }}
-                    className={`flex-1 p-2 rounded-lg font-medium text-sm transition-colors ${
-                      authMethod === 'email'
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                    }`}
+                    className="flex-1 p-2 rounded-lg font-medium text-sm transition-colors"
+                    style={{
+                      background: authMethod === 'email' ? 'var(--color-accent)' : 'var(--color-surface-alt)',
+                      color: authMethod === 'email' ? 'white' : 'var(--color-text-secondary)',
+                      minHeight: '44px'
+                    }}
+                    onMouseEnter={(e) => authMethod !== 'email' && (e.currentTarget.style.background = 'var(--color-surface-elevated)')}
+                    onMouseLeave={(e) => authMethod !== 'email' && (e.currentTarget.style.background = 'var(--color-surface-alt)')}
                   >
                     Email
                   </button>
                   <button
                     onClick={() => { setAuthMethod('phone'); setError(null) }}
-                    className={`flex-1 p-2 rounded-lg font-medium text-sm transition-colors ${
-                      authMethod === 'phone'
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
-                    }`}
+                    className="flex-1 p-2 rounded-lg font-medium text-sm transition-colors"
+                    style={{
+                      background: authMethod === 'phone' ? 'var(--color-accent)' : 'var(--color-surface-alt)',
+                      color: authMethod === 'phone' ? 'white' : 'var(--color-text-secondary)',
+                      minHeight: '44px'
+                    }}
+                    onMouseEnter={(e) => authMethod !== 'phone' && (e.currentTarget.style.background = 'var(--color-surface-elevated)')}
+                    onMouseLeave={(e) => authMethod !== 'phone' && (e.currentTarget.style.background = 'var(--color-surface-alt)')}
                   >
                     Phone
                   </button>
@@ -354,7 +425,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                       <form onSubmit={handleSubmit} className="space-y-4">
                         {mode === 'signup' && (
                           <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1">
+                            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
                               Display Name
                             </label>
                             <input
@@ -362,14 +433,28 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                               value={displayName}
                               onChange={(e) => setDisplayName(e.target.value)}
                               placeholder="Your stage name"
-                              className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                              className="w-full p-3 rounded-lg outline-none transition-all"
+                              style={{
+                                background: 'var(--color-surface-alt)',
+                                color: 'var(--color-text-primary)',
+                                border: '1px solid var(--color-border)',
+                                minHeight: '44px'
+                              }}
+                              onFocus={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--color-accent)'
+                                e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-highlight)'
+                              }}
+                              onBlur={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--color-border)'
+                                e.currentTarget.style.boxShadow = 'none'
+                              }}
                               required
                             />
                           </div>
                         )}
 
                         <div>
-                          <label className="block text-sm font-medium text-gray-300 mb-1">
+                          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-text-secondary)' }}>
                             Email
                           </label>
                           <input
@@ -377,21 +462,38 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="you@example.com"
-                            className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                            className="w-full p-3 rounded-lg outline-none transition-all"
+                            style={{
+                              background: 'var(--color-surface-alt)',
+                              color: 'var(--color-text-primary)',
+                              border: '1px solid var(--color-border)',
+                              minHeight: '44px'
+                            }}
+                            onFocus={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--color-accent)'
+                              e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-highlight)'
+                            }}
+                            onBlur={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--color-border)'
+                              e.currentTarget.style.boxShadow = 'none'
+                            }}
                             required
                           />
                         </div>
 
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <label className="block text-sm font-medium text-gray-300">
+                            <label className="block text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
                               Password
                             </label>
                             {mode === 'signin' && (
                               <button
                                 type="button"
                                 onClick={() => { setMode('reset'); setError(null) }}
-                                className="text-sm text-purple-400 hover:text-purple-300"
+                                className="text-sm transition-colors"
+                                style={{ color: 'var(--color-accent)' }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-accent-hover)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-accent)'}
                               >
                                 Forgot password?
                               </button>
@@ -403,7 +505,21 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
                             minLength={6}
-                            className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                            className="w-full p-3 rounded-lg outline-none transition-all"
+                            style={{
+                              background: 'var(--color-surface-alt)',
+                              color: 'var(--color-text-primary)',
+                              border: '1px solid var(--color-border)',
+                              minHeight: '44px'
+                            }}
+                            onFocus={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--color-accent)'
+                              e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-highlight)'
+                            }}
+                            onBlur={(e) => {
+                              e.currentTarget.style.borderColor = 'var(--color-border)'
+                              e.currentTarget.style.boxShadow = 'none'
+                            }}
                             required
                           />
                         </div>
@@ -411,7 +527,14 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                         <button
                           type="submit"
                           disabled={loading}
-                          className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+                          className="w-full p-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
+                          style={{
+                            background: 'var(--color-accent)',
+                            color: 'white',
+                            minHeight: '44px'
+                          }}
+                          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = 'var(--color-accent-hover)')}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-accent)'}
                         >
                           {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
                         </button>
@@ -430,11 +553,14 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 </AnimatePresence>
 
                 {/* Toggle Mode */}
-                <p className="text-center text-gray-400 mt-4 text-sm">
+                <p className="text-center mt-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   {mode === 'signin' ? "Don't have an account? " : 'Already have an account? '}
                   <button
                     onClick={toggleMode}
-                    className="text-purple-400 hover:text-purple-300 font-medium"
+                    className="font-medium transition-colors"
+                    style={{ color: 'var(--color-accent)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-accent-hover)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-accent)'}
                   >
                     {mode === 'signin' ? 'Sign up' : 'Sign in'}
                   </button>

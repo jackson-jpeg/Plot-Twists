@@ -176,18 +176,23 @@ export function CardPackSelector({
       }}
       currentPackId={selectedPackId}
     />
-    <div className="bg-gray-900/50 rounded-xl overflow-hidden">
+    <div className="rounded-xl overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         disabled={disabled}
-        className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-800/50 transition-colors disabled:opacity-50"
+        className="w-full p-4 flex items-center justify-between text-left transition-colors disabled:opacity-50"
+        style={{ minHeight: '44px' }}
+        onMouseEnter={(e) => !disabled && (e.currentTarget.style.background = 'var(--color-surface-alt)')}
+        onMouseLeave={(e) => !disabled && (e.currentTarget.style.background = 'transparent')}
+        aria-expanded={isExpanded}
+        aria-controls="pack-selector-content"
       >
         <div className="flex items-center gap-3">
-          <span className="text-2xl">📦</span>
+          <span className="text-2xl" aria-hidden="true">📦</span>
           <div>
-            <h3 className="font-semibold text-white">Card Pack</h3>
-            <p className="text-sm text-gray-400">
+            <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Card Pack</h3>
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
               {selectedPack.name}
               {selectedPack.isBuiltIn && ' (Default)'}
             </p>
@@ -195,7 +200,8 @@ export function CardPackSelector({
         </div>
         <motion.span
           animate={{ rotate: isExpanded ? 180 : 0 }}
-          className="text-gray-400"
+          style={{ color: 'var(--color-text-tertiary)' }}
+          aria-hidden="true"
         >
           ▼
         </motion.span>
@@ -205,6 +211,7 @@ export function CardPackSelector({
       <AnimatePresence>
         {isExpanded && (
           <motion.div
+            id="pack-selector-content"
             initial={{ height: 0 }}
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
@@ -212,11 +219,11 @@ export function CardPackSelector({
           >
             <div className="p-4 pt-0 space-y-3">
               {loading ? (
-                <div className="text-center py-4 text-gray-400">
+                <div className="text-center py-4" style={{ color: 'var(--color-text-tertiary)' }}>
                   Loading packs...
                 </div>
               ) : error ? (
-                <div className="text-center py-4 text-red-400">
+                <div className="text-center py-4" style={{ color: 'var(--color-danger)' }}>
                   {error}
                 </div>
               ) : (
@@ -225,33 +232,36 @@ export function CardPackSelector({
                     <motion.div
                       key={pack.id}
                       whileHover={{ scale: disabled ? 1 : 1.02 }}
-                      className={`w-full p-4 rounded-xl text-left transition-all ${
-                        selectedPackId === pack.id
-                          ? 'bg-purple-600 ring-2 ring-purple-400'
-                          : 'bg-gray-800 hover:bg-gray-700'
-                      } ${disabled ? 'opacity-50' : ''}`}
+                      className="pack-card w-full p-4 rounded-xl text-left transition-all"
+                      style={{
+                        background: selectedPackId === pack.id ? 'var(--color-highlight)' : 'var(--color-surface-alt)',
+                        border: selectedPackId === pack.id ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
+                        opacity: disabled ? 0.5 : 1
+                      }}
                     >
                       <button
                         onClick={() => selectPack(pack.id)}
                         disabled={disabled}
                         className="w-full text-left"
+                        style={{ minHeight: '44px' }}
+                        aria-pressed={selectedPackId === pack.id}
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h4 className="font-semibold text-white flex items-center gap-2">
+                            <h4 className="font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
                               {pack.name}
                               {pack.isBuiltIn && (
-                                <span className="text-xs bg-blue-500/30 text-blue-300 px-2 py-0.5 rounded">
+                                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--color-accent-2-light)', color: 'var(--color-accent-2)' }}>
                                   Default
                                 </span>
                               )}
                               {pack.isMature && (
-                                <span className="text-xs bg-red-500/30 text-red-300 px-2 py-0.5 rounded">
+                                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
                                   18+
                                 </span>
                               )}
                             </h4>
-                            <p className="text-sm text-gray-400">{pack.description}</p>
+                            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{pack.description}</p>
                           </div>
                           <div onClick={(e) => e.stopPropagation()}>
                             <StarRating
@@ -264,7 +274,7 @@ export function CardPackSelector({
                           </div>
                         </div>
 
-                        <div className="flex justify-between text-xs text-gray-500">
+                        <div className="flex justify-between text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                           <span>By {pack.author}</span>
                           <span>
                             {pack.cardCounts.characters}C / {pack.cardCounts.settings}S / {pack.cardCounts.circumstances}X
@@ -274,15 +284,28 @@ export function CardPackSelector({
 
                       {/* Edit/Delete buttons for non-built-in packs */}
                       {!pack.isBuiltIn && !disabled && (
-                        <div className="flex gap-2 mt-3 pt-3 border-t border-gray-700">
+                        <div className="flex gap-2 mt-3 pt-3" style={{ borderTop: '1px solid var(--color-border)' }}>
                           <button
                             onClick={(e) => {
                               e.stopPropagation()
                               setEditingPackId(pack.id)
                             }}
-                            className="flex-1 px-3 py-2 text-sm bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors flex items-center justify-center gap-1"
+                            className="flex-1 px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-center gap-1"
+                            style={{
+                              background: 'var(--color-surface-alt)',
+                              color: 'var(--color-text-secondary)',
+                              minHeight: '44px'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = 'var(--color-surface-elevated)'
+                              e.currentTarget.style.color = 'var(--color-text-primary)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'var(--color-surface-alt)'
+                              e.currentTarget.style.color = 'var(--color-text-secondary)'
+                            }}
                           >
-                            <span>✏️</span>
+                            <span aria-hidden="true">✏️</span>
                             <span>Edit</span>
                           </button>
                           <button
@@ -290,9 +313,16 @@ export function CardPackSelector({
                               e.stopPropagation()
                               setDeletingPack(pack)
                             }}
-                            className="flex-1 px-3 py-2 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded-lg transition-colors flex items-center justify-center gap-1"
+                            className="flex-1 px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-center gap-1"
+                            style={{
+                              background: 'var(--color-danger-light)',
+                              color: 'var(--color-danger)',
+                              minHeight: '44px'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+                            onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
                           >
-                            <span>🗑️</span>
+                            <span aria-hidden="true">🗑️</span>
                             <span>Delete</span>
                           </button>
                         </div>
@@ -304,9 +334,16 @@ export function CardPackSelector({
                   <div className="flex gap-2 pt-2">
                     <button
                       onClick={() => setShowBrowser(true)}
-                      className="flex-1 p-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 p-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                      style={{
+                        background: 'var(--color-accent)',
+                        color: 'white',
+                        minHeight: '44px'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-accent-hover)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-accent)'}
                     >
-                      <span>🌐</span>
+                      <span aria-hidden="true">🌐</span>
                       <span>Browse Community Packs</span>
                     </button>
                   </div>
@@ -314,7 +351,20 @@ export function CardPackSelector({
                   {showCreateButton && (
                     <button
                       onClick={() => setShowCreator(true)}
-                      className="w-full p-4 rounded-xl border-2 border-dashed border-gray-700 text-gray-400 hover:border-purple-500 hover:text-purple-400 transition-colors"
+                      className="w-full p-4 rounded-xl border-2 border-dashed transition-colors"
+                      style={{
+                        borderColor: 'var(--color-border)',
+                        color: 'var(--color-text-tertiary)',
+                        minHeight: '44px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--color-accent)'
+                        e.currentTarget.style.color = 'var(--color-accent)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--color-border)'
+                        e.currentTarget.style.color = 'var(--color-text-tertiary)'
+                      }}
                     >
                       + Create Custom Pack
                     </button>

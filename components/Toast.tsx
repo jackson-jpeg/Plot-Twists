@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform } from 'framer-motion'
+import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform, useReducedMotion } from 'framer-motion'
 import { useEffect, useState, useCallback } from 'react'
 
 interface ToastAction {
@@ -26,30 +26,31 @@ const icons = {
   info: 'ℹ'
 }
 
-const typeStyles = {
+// Use design tokens for warm palette
+const typeColors = {
   success: {
-    border: 'border-green-500',
-    bg: 'bg-green-500/10',
-    icon: 'text-green-500',
-    progress: 'bg-green-500'
+    border: 'var(--color-success)',
+    bg: 'var(--color-success-light)',
+    icon: 'var(--color-success)',
+    progress: 'var(--color-success)'
   },
   error: {
-    border: 'border-red-500',
-    bg: 'bg-red-500/10',
-    icon: 'text-red-500',
-    progress: 'bg-red-500'
+    border: 'var(--color-danger)',
+    bg: 'var(--color-danger-light)',
+    icon: 'var(--color-danger)',
+    progress: 'var(--color-danger)'
   },
   warning: {
-    border: 'border-yellow-500',
-    bg: 'bg-yellow-500/10',
-    icon: 'text-yellow-500',
-    progress: 'bg-yellow-500'
+    border: 'var(--color-warning)',
+    bg: 'var(--color-warning-light)',
+    icon: 'var(--color-warning)',
+    progress: 'var(--color-warning)'
   },
   info: {
-    border: 'border-blue-500',
-    bg: 'bg-blue-500/10',
-    icon: 'text-blue-500',
-    progress: 'bg-blue-500'
+    border: 'var(--color-accent-2)',
+    bg: 'var(--color-accent-2-light)',
+    icon: 'var(--color-accent-2)',
+    progress: 'var(--color-accent-2)'
   }
 }
 
@@ -67,6 +68,18 @@ export function Toast({
   const [isPaused, setIsPaused] = useState(false)
   const x = useMotionValue(0)
   const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0])
+  const shouldReduceMotion = useReducedMotion()
+
+  // Handle Escape key to dismiss
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
 
   useEffect(() => {
     if (duration <= 0 || isPaused) return
@@ -97,38 +110,38 @@ export function Toast({
     }
   }
 
-  const styles = typeStyles[type]
+  const colors = typeColors[type]
 
   return (
     <motion.div
       key={id}
       layout
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 50, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+      exit={{ opacity: 0, scale: 0.9, transition: { duration: shouldReduceMotion ? 0 : 0.2 } }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.9}
       onDragEnd={handleDragEnd}
-      style={{ x, opacity }}
+      style={{
+        x,
+        opacity,
+        border: `1px solid var(--glass-border)`,
+        borderLeft: `4px solid ${colors.border}`
+      }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={() => setIsPaused(true)}
       onTouchEnd={() => setIsPaused(false)}
-      className={`
-        relative overflow-hidden
-        w-full sm:w-auto sm:min-w-[320px] sm:max-w-[420px]
-        bg-[var(--color-surface)] backdrop-blur-lg border border-[var(--glass-border)]
-        border-l-4 ${styles.border}
-        rounded-lg shadow-2xl
-        cursor-grab active:cursor-grabbing
-        touch-pan-y
-      `}
+      role={type === 'error' ? 'alert' : 'status'}
+      aria-live={type === 'error' ? 'assertive' : 'polite'}
+      className="relative overflow-hidden w-full sm:w-auto sm:min-w-[320px] sm:max-w-[420px] bg-[var(--color-surface)] backdrop-blur-lg rounded-lg shadow-2xl cursor-grab active:cursor-grabbing touch-pan-y"
     >
       {/* Progress bar */}
       {showProgress && duration > 0 && (
         <motion.div
-          className={`absolute top-0 left-0 h-1 ${styles.progress}`}
+          className="absolute top-0 left-0 h-1"
+          style={{ background: colors.progress }}
           initial={{ width: '100%' }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.1 }}
@@ -137,16 +150,20 @@ export function Toast({
 
       <div className="flex items-start gap-3 p-4">
         {/* Icon */}
-        <div className={`text-xl font-bold ${styles.icon} flex-shrink-0 mt-0.5`}>
+        <div
+          className="text-xl font-bold flex-shrink-0 mt-0.5"
+          style={{ color: colors.icon }}
+          aria-hidden="true"
+        >
           {icons[type]}
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           {title && (
-            <p className="font-semibold text-white text-sm mb-0.5">{title}</p>
+            <p className="font-semibold text-sm mb-0.5" style={{ color: 'var(--color-text-primary)' }}>{title}</p>
           )}
-          <p className="text-[var(--color-text-secondary)] text-sm leading-relaxed break-words">
+          <p className="text-sm leading-relaxed break-words" style={{ color: 'var(--color-text-secondary)' }}>
             {message}
           </p>
 
@@ -157,26 +174,37 @@ export function Toast({
                 action.onClick()
                 onClose()
               }}
-              className={`mt-2 text-sm font-medium ${styles.icon} hover:underline`}
+              className="mt-2 text-sm font-medium hover:underline"
+              style={{ color: colors.icon }}
             >
               {action.label}
             </button>
           )}
         </div>
 
-        {/* Close button */}
+        {/* Close button - 44px touch target */}
         <button
           onClick={onClose}
-          className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] text-xl leading-none p-1 -mr-1 -mt-1 flex-shrink-0 transition-colors"
-          aria-label="Dismiss"
+          className="flex-shrink-0 transition-colors flex items-center justify-center"
+          style={{
+            color: 'var(--color-text-tertiary)',
+            minWidth: '44px',
+            minHeight: '44px',
+            marginRight: '-8px',
+            marginTop: '-8px',
+            borderRadius: 'var(--radius-md)'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-tertiary)'}
+          aria-label="Dismiss notification"
         >
-          ×
+          <span className="text-xl leading-none">×</span>
         </button>
       </div>
 
       {/* Swipe hint on mobile */}
       <div className="absolute bottom-1 left-1/2 -translate-x-1/2 sm:hidden">
-        <div className="w-8 h-1 bg-[var(--color-border)] rounded-full" />
+        <div className="w-8 h-1 rounded-full" style={{ background: 'var(--color-border)' }} />
       </div>
     </motion.div>
   )
@@ -271,25 +299,36 @@ interface InlineToastProps {
 }
 
 export function InlineToast({ message, type = 'info', onClose, className = '' }: InlineToastProps) {
-  const styles = typeStyles[type]
+  const colors = typeColors[type]
 
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className={`
-        flex items-center gap-2 p-3 rounded-lg
-        ${styles.bg} ${styles.border} border
-        ${className}
-      `}
+      role={type === 'error' ? 'alert' : 'status'}
+      aria-live={type === 'error' ? 'assertive' : 'polite'}
+      className={`flex items-center gap-2 p-3 rounded-lg ${className}`}
+      style={{
+        background: colors.bg,
+        border: `1px solid ${colors.border}`
+      }}
     >
-      <span className={`${styles.icon} font-bold`}>{icons[type]}</span>
-      <span className="text-sm text-white flex-1">{message}</span>
+      <span className="font-bold" style={{ color: colors.icon }} aria-hidden="true">{icons[type]}</span>
+      <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)' }}>{message}</span>
       {onClose && (
         <button
           onClick={onClose}
-          className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
+          aria-label="Dismiss"
+          className="transition-colors flex items-center justify-center"
+          style={{
+            color: 'var(--color-text-tertiary)',
+            minWidth: '44px',
+            minHeight: '44px',
+            marginRight: '-8px'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-tertiary)'}
         >
           ×
         </button>

@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useCallback, useEffect, useRef, useId } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 
 interface CardCarouselProps {
   label: string
@@ -15,25 +15,28 @@ interface CardCarouselProps {
 export function CardCarousel({ label, icon, options, value, onChange, color }: CardCarouselProps) {
   const [direction, setDirection] = useState(0)
   const [isShaking, setIsShaking] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const labelId = useId()
+  const shouldReduceMotion = useReducedMotion()
 
   const currentIndex = options.findIndex(opt => opt === value)
   const hasSelection = value !== ''
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (options.length === 0) return
     setDirection(-1)
     const newIndex = currentIndex <= 0 ? options.length - 1 : currentIndex - 1
     onChange(options[newIndex])
-  }
+  }, [options, currentIndex, onChange])
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (options.length === 0) return
     setDirection(1)
     const newIndex = currentIndex >= options.length - 1 ? 0 : currentIndex + 1
     onChange(options[newIndex])
-  }
+  }, [options, currentIndex, onChange])
 
-  const handleShuffle = () => {
+  const handleShuffle = useCallback(() => {
     if (options.length === 0) return
     setIsShaking(true)
 
@@ -49,7 +52,29 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
     onChange(options[randomIndex])
 
     setTimeout(() => setIsShaking(false), 500)
-  }
+  }, [options, currentIndex, onChange])
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle if this carousel has focus
+      if (!containerRef.current?.contains(document.activeElement)) return
+
+      switch (event.key) {
+        case 'ArrowLeft':
+          event.preventDefault()
+          handlePrevious()
+          break
+        case 'ArrowRight':
+          event.preventDefault()
+          handleNext()
+          break
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handlePrevious, handleNext])
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -77,42 +102,50 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
   }
 
   return (
-    <div className="relative">
+    <div
+      ref={containerRef}
+      className="relative"
+      role="group"
+      aria-labelledby={labelId}
+      aria-label={`${label} carousel. Use left and right arrow keys to navigate.`}
+    >
       {/* Label */}
       <div className="flex items-center justify-between mb-3">
-        <label className="label flex items-center gap-2">
-          <span className="text-2xl">{icon}</span>
+        <label id={labelId} className="label flex items-center gap-2">
+          <span className="text-2xl" aria-hidden="true">{icon}</span>
           <span className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>{label}</span>
         </label>
         <motion.button
           onClick={handleShuffle}
-          className="btn btn-ghost"
-          style={{ padding: '8px 12px', fontSize: '20px' }}
-          whileHover={{ scale: 1.1, rotate: 180 }}
-          whileTap={{ scale: 0.9 }}
-          title="Shuffle"
+          className="btn btn-ghost shuffle-btn"
+          style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '20px', minWidth: '44px', minHeight: '44px' }}
+          whileHover={shouldReduceMotion ? {} : { scale: 1.1, rotate: 180 }}
+          whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
+          aria-label={`Shuffle ${label}`}
         >
           🎲
         </motion.button>
       </div>
 
       {/* Card Display */}
-      <div className="relative" style={{ height: '180px', perspective: '1000px' }}>
+      <div className="relative" style={{ height: '180px', perspective: '1000px' }} tabIndex={0}>
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={value || 'empty'}
             custom={direction}
-            variants={slideVariants}
-            initial="enter"
+            variants={shouldReduceMotion ? undefined : slideVariants}
+            initial={shouldReduceMotion ? false : "enter"}
             animate={isShaking ? "shake" : "center"}
-            exit="exit"
-            transition={{
+            exit={shouldReduceMotion ? { opacity: 0 } : "exit"}
+            transition={shouldReduceMotion ? { duration: 0 } : {
               x: { type: "spring", stiffness: 300, damping: 30 },
               opacity: { duration: 0.2 },
               rotateY: { type: "spring", stiffness: 200, damping: 20 }
             }}
             className="absolute inset-0"
             style={{ transformStyle: 'preserve-3d' }}
+            aria-current={hasSelection ? "true" : undefined}
+            aria-label={hasSelection ? `Selected: ${value}` : 'No selection'}
           >
             <motion.div
               className="card h-full flex items-center justify-center p-6"
@@ -121,7 +154,7 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
                 background: hasSelection ? 'var(--color-surface)' : 'var(--color-surface-alt)',
                 transform: hasSelection ? 'translateY(-2px)' : 'none'
               }}
-              animate={hasSelection ? {
+              animate={hasSelection && !shouldReduceMotion ? {
                 boxShadow: [
                   `0 8px 16px rgba(0,0,0,0.1), 0 0 15px ${color}40`,
                   `0 8px 16px rgba(0,0,0,0.1), 0 0 30px ${color}60`,
@@ -130,7 +163,7 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
               } : {
                 boxShadow: 'none'
               }}
-              transition={hasSelection ? {
+              transition={hasSelection && !shouldReduceMotion ? {
                 boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" }
               } : {}}
             >
@@ -166,9 +199,10 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
               fontSize: '24px',
               marginLeft: '-60px'
             }}
-            whileHover={{ scale: 1.1, x: 4 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={shouldReduceMotion ? {} : { scale: 1.1, x: 4 }}
+            whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
             disabled={options.length === 0}
+            aria-label={`Previous ${label}`}
           >
             ‹
           </motion.button>
@@ -184,9 +218,10 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
               fontSize: '24px',
               marginRight: '-60px'
             }}
-            whileHover={{ scale: 1.1, x: -4 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={shouldReduceMotion ? {} : { scale: 1.1, x: -4 }}
+            whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
             disabled={options.length === 0}
+            aria-label={`Next ${label}`}
           >
             ›
           </motion.button>

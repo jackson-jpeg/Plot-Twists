@@ -17,13 +17,14 @@ import { AudienceReactionBar } from '@/components/AudienceReactionBar'
 import { PlotTwistVoting } from '@/components/PlotTwistVoting'
 
 // Helper function to get mood emoji and color
+// Uses CSS custom properties for consistent theming
 function getMoodIndicator(mood: string) {
   const moodMap: Record<string, { emoji: string; color: string; label: string }> = {
-    angry: { emoji: '😠', color: '#D77A7A', label: 'Angry' },
-    happy: { emoji: '😊', color: '#82B682', label: 'Happy' },
-    confused: { emoji: '😕', color: '#E8A75D', label: 'Confused' },
-    whispering: { emoji: '🤫', color: '#7C9FD9', label: 'Whispering' },
-    neutral: { emoji: '😐', color: '#9B9590', label: 'Neutral' }
+    angry: { emoji: '😠', color: 'var(--color-danger)', label: 'Angry' },
+    happy: { emoji: '😊', color: 'var(--color-success)', label: 'Happy' },
+    confused: { emoji: '😕', color: 'var(--color-warning)', label: 'Confused' },
+    whispering: { emoji: '🤫', color: 'var(--color-accent-2)', label: 'Whispering' },
+    neutral: { emoji: '😐', color: 'var(--color-text-tertiary)', label: 'Neutral' }
   }
   return moodMap[mood] || moodMap.neutral
 }

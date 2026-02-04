@@ -341,7 +341,6 @@ export async function verifyIdToken(idToken: string): Promise<{ uid: string } | 
   try {
     // This would use firebase-admin to verify the token
     // Dynamic import to avoid issues if firebase-admin is not installed
-    // @ts-expect-error - firebase-admin may not be installed
     const adminModule = await import('firebase-admin').catch(() => null)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const admin: any = adminModule

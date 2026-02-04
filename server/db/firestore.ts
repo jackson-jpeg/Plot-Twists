@@ -26,7 +26,6 @@ async function initializeFirebaseAdmin(): Promise<Firestore | null> {
 
   try {
     // Dynamic import to avoid issues if firebase-admin is not installed
-    // @ts-expect-error - firebase-admin may not be installed
     const adminModule = await import('firebase-admin').catch(() => null)
 
     if (!adminModule) {

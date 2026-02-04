@@ -15,6 +15,7 @@ type FirebaseAdmin = any
 
 let db: Firestore | null = null
 let isInitialized = false
+let adminInstance: FirebaseAdmin | null = null
 
 /**
  * Initialize Firebase Admin SDK for server-side use
@@ -55,6 +56,7 @@ async function initializeFirebaseAdmin(): Promise<Firestore | null> {
     }
 
     db = admin.firestore()
+    adminInstance = admin
     isInitialized = true
     console.log('Firebase Admin initialized successfully')
     return db
@@ -205,3 +207,16 @@ export class FirestoreAdapter implements DatabaseAdapter {
 
 // Export singleton instance
 export const firestoreAdapter = new FirestoreAdapter()
+
+/**
+ * Get Firebase Storage bucket for file uploads
+ * Returns null if Firebase is not configured
+ */
+export async function getStorage(): Promise<any | null> {
+  if (!adminInstance) {
+    await initializeFirebaseAdmin()
+  }
+  if (!adminInstance) return null
+  const bucket = process.env.FIREBASE_STORAGE_BUCKET
+  return bucket ? adminInstance.storage().bucket(bucket) : null
+}

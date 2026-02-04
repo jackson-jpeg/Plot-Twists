@@ -110,6 +110,7 @@ export default function HostPage() {
   const [loadingProgress, setLoadingProgress] = useState(0)
   const loadingIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
   const scriptContainerRef = React.useRef<HTMLDivElement | null>(null)
+  const [scriptImageUrl, setScriptImageUrl] = useState<string | null>(null)
 
   // Teleprompter settings hook
   const {
@@ -279,7 +280,12 @@ export default function HostPage() {
       }
     })
     socket.on('green_room_prompt', setGreenRoomQuestion)
-    socket.on('script_ready', (newScript) => { setScript(newScript); setCurrentLineIndex(0) })
+    socket.on('script_ready', (newScript) => {
+      setScript(newScript)
+      setCurrentLineIndex(0)
+      setScriptImageUrl(newScript.imageUrl || null)
+    })
+    socket.on('script_image_update', (imageUrl) => setScriptImageUrl(imageUrl))
     socket.on('available_cards', setAvailableCards)
     // Handle both legacy (number) and new (object) sync formats
     socket.on('sync_teleprompter', (data: TeleprompterSyncData | number) => {
@@ -315,6 +321,7 @@ export default function HostPage() {
       socket.off('game_state_change')
       socket.off('green_room_prompt')
       socket.off('script_ready')
+      socket.off('script_image_update')
       socket.off('sync_teleprompter')
       socket.off('game_over')
       socket.off('available_cards')
@@ -1630,6 +1637,21 @@ export default function HostPage() {
             {/* Audience Interaction Components */}
             <AudienceReactionBar roomCode={roomCode} isPerforming={true} isHost={true} />
             <PlotTwistVoting roomCode={roomCode} isHost={true} />
+
+            {/* Generated Poster */}
+            <AnimatePresence>
+              {scriptImageUrl && (
+                <motion.img
+                  src={scriptImageUrl}
+                  alt={`${script.title} Poster`}
+                  className="mx-auto mb-6 max-h-64 rounded-lg shadow-2xl object-contain"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                />
+              )}
+            </AnimatePresence>
+
             {/* Meta Info */}
             <motion.div
               className="mb-6"

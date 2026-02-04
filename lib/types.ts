@@ -231,6 +231,7 @@ export interface Script {
   title: string
   synopsis: string
   lines: ScriptLine[]
+  imageUrl?: string
 }
 
 export interface Room {
@@ -290,6 +291,7 @@ export interface ServerToClientEvents {
   players_update: (players: Player[]) => void
   green_room_prompt: (question: string) => void
   script_ready: (script: Script | ScriptWithAudio) => void
+  script_image_update: (imageUrl: string) => void
   sync_teleprompter: (data: TeleprompterSyncData | number) => void // Backward compatible
   game_over: (results: GameResults) => void
   error: (message: string) => void

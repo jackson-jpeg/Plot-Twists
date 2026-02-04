@@ -155,6 +155,7 @@ function JoinPageContent() {
   const [networkLatency, setNetworkLatency] = useState<number | null>(null)
   const [hostDisconnected, setHostDisconnected] = useState(false)
   const [roomIsMature, setRoomIsMature] = useState(false)
+  const [scriptImageUrl, setScriptImageUrl] = useState<string | null>(null)
   const previousSpeaker = React.useRef<string>('')
 
   // Enhanced page transition variants with blur/scale effects
@@ -269,11 +270,13 @@ function JoinPageContent() {
     socket.on('script_ready', (newScript) => {
       setScript(newScript)
       setCurrentLineIndex(0)
+      setScriptImageUrl(newScript.imageUrl || null)
       // Only set character if not a spectator
       if (myRole !== 'SPECTATOR') {
         setMyCharacter(selection.character)
       }
     })
+    socket.on('script_image_update', (imageUrl) => setScriptImageUrl(imageUrl))
     // Handle both legacy (number) and new (object) sync formats
     socket.on('sync_teleprompter', (data: TeleprompterSyncData | number) => {
       if (typeof data === 'number') {
@@ -330,6 +333,7 @@ function JoinPageContent() {
       socket.off('available_cards')
       socket.off('green_room_prompt')
       socket.off('script_ready')
+      socket.off('script_image_update')
       socket.off('sync_teleprompter')
       socket.off('game_over')
       socket.off('error')
@@ -1265,6 +1269,21 @@ function JoinPageContent() {
             {/* Audience Interaction - show for spectators and players not currently speaking */}
             <AudienceReactionBar roomCode={roomCode.toUpperCase()} isPerforming={true} isHost={false} />
             <PlotTwistVoting roomCode={roomCode.toUpperCase()} isHost={false} />
+
+            {/* Generated Poster (smaller for mobile) */}
+            <AnimatePresence>
+              {scriptImageUrl && (
+                <motion.img
+                  src={scriptImageUrl}
+                  alt={`${script.title} Poster`}
+                  className="mx-auto my-4 max-h-40 rounded-lg shadow-lg object-contain"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5 }}
+                />
+              )}
+            </AnimatePresence>
+
             {/* Progress Bar */}
             <div className="p-4" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
               <div className="flex items-center justify-between text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>

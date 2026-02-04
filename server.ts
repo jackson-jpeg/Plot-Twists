@@ -83,6 +83,7 @@ import {
   getLeaderboard,
   unlockAchievement
 } from './server/services/playerStats.service'
+import { generateTitleCard } from './server/services/image.service'
 
 // Validate environment on startup
 validateEnvironment()
@@ -2051,6 +2052,16 @@ app.prepare().then(() => {
 
       io.to(room.code).emit('script_ready', finalScript)
       io.to(room.code).emit('game_state_change', 'PERFORMING')
+
+      // Generate poster in background (non-blocking)
+      generateTitleCard(finalScript.title, finalScript.synopsis, chosenSetting)
+        .then((imageUrl) => {
+          if (imageUrl && imageUrl !== '/images/default-poster.png') {
+            if (room.script) room.script.imageUrl = imageUrl
+            io.to(room.code).emit('script_image_update', imageUrl)
+          }
+        })
+        .catch((err) => console.error('[Image Service] Background generation error:', err))
 
       // Start ambience if enabled
       if (room.audioSettings?.ambienceEnabled) {

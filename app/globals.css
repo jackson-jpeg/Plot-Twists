@@ -1233,6 +1233,56 @@ p {
 .stagger-item:nth-child(8) { animation-delay: 350ms; }
 
 /* ==========================================================================
+   Ticket Booth Auth Modal
+   ========================================================================== */
+
+/* Perforated ticket edge between header and content */
+.ticket-perforation {
+  height: 8px;
+  background: #FFFBF0;
+  position: relative;
+  overflow: hidden;
+}
+
+.ticket-perforation::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background-image: radial-gradient(circle at 8px -1px, transparent 6px, #FFFBF0 6px);
+  background-size: 16px 8px;
+  background-position: 0 0;
+}
+
+.ticket-perforation::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 1px;
+  border-top: 1px dashed #D1D5DB;
+  top: 50%;
+}
+
+/* Dark mode adjustments for ticket booth */
+@media (prefers-color-scheme: dark) {
+  .ticket-perforation {
+    background: #2E2B27;
+  }
+
+  .ticket-perforation::before {
+    background-image: radial-gradient(circle at 8px -1px, transparent 6px, #2E2B27 6px);
+  }
+
+  .ticket-perforation::after {
+    border-top-color: #52504A;
+  }
+}
+
+/* ==========================================================================
    Accessibility
    ========================================================================== */
 

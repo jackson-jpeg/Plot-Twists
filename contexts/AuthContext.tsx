@@ -31,6 +31,7 @@ interface AuthContextType {
   user: AuthUser | null
   loading: boolean
   isConfigured: boolean
+  isOnline: boolean
   signIn: (email: string, password: string) => Promise<AuthResult>
   signUp: (email: string, password: string, displayName: string) => Promise<AuthResult>
   signInWithGoogle: () => Promise<AuthResult>
@@ -52,6 +53,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   isConfigured: false,
+  isOnline: true,
   signIn: async () => ({ success: false, error: 'Not configured' }),
   signUp: async () => ({ success: false, error: 'Not configured' }),
   signInWithGoogle: async () => ({ success: false, error: 'Not configured' }),
@@ -100,6 +102,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [firebaseReady, setFirebaseReady] = useState(false)
+  const [isOnline, setIsOnline] = useState(true)
+
+  // Track network status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    setIsOnline(navigator.onLine)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
 
   // Debug: Log Firebase config status on mount
   useEffect(() => {
@@ -143,7 +161,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let unsubscribe: (() => void) | null = null
 
     async function init() {
-      const success = await initializeFirebase()
+      let success = false
+      try {
+        success = await initializeFirebase()
+      } catch (error) {
+        console.warn('[AuthContext] Firebase initialization failed, falling back to guest mode:', error)
+        success = false
+      }
       setFirebaseReady(success)
 
       if (!success) {
@@ -191,7 +215,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false)
         }
       } catch (error) {
-        console.log('Firebase auth not available')
+        console.warn('[AuthContext] Firebase auth not available, continuing in guest mode')
+        setFirebaseReady(false)
         setLoading(false)
       }
     }
@@ -463,6 +488,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     loading,
     isConfigured: isFirebaseConfigured && firebaseReady,
+    isOnline,
     signIn,
     signUp,
     signInWithGoogle,

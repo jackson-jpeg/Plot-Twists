@@ -285,7 +285,12 @@ export default function HostPage() {
       setCurrentLineIndex(0)
       setScriptImageUrl(newScript.imageUrl || null)
     })
-    socket.on('script_image_update', (imageUrl) => setScriptImageUrl(imageUrl))
+    socket.on('script_image_update', (imageUrl) => {
+      // Only display real generated images, not fallback placeholder
+      if (imageUrl && !imageUrl.includes('default-poster')) {
+        setScriptImageUrl(imageUrl)
+      }
+    })
     socket.on('available_cards', setAvailableCards)
     // Handle both legacy (number) and new (object) sync formats
     socket.on('sync_teleprompter', (data: TeleprompterSyncData | number) => {
@@ -300,6 +305,7 @@ export default function HostPage() {
     socket.on('new_game_started', () => {
       setGameState('LOBBY')
       setScript(null)
+      setScriptImageUrl(null)  // Clear previous poster
       setCurrentLineIndex(0)
       setGameResults(null)
       setIsPlaying(true)
@@ -1649,6 +1655,22 @@ export default function HostPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5 }}
                 />
+              )}
+            </AnimatePresence>
+
+            {/* Subtle loading indicator when poster is generating */}
+            <AnimatePresence>
+              {!scriptImageUrl && script && (
+                <motion.div
+                  className="text-center mb-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.5 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <span className="text-sm animate-pulse" style={{ color: 'var(--color-text-tertiary)' }}>
+                    🎬 Generating movie poster...
+                  </span>
+                </motion.div>
               )}
             </AnimatePresence>
 

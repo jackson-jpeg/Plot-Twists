@@ -276,7 +276,12 @@ function JoinPageContent() {
         setMyCharacter(selection.character)
       }
     })
-    socket.on('script_image_update', (imageUrl) => setScriptImageUrl(imageUrl))
+    socket.on('script_image_update', (imageUrl) => {
+      // Only display real generated images, not fallback placeholder
+      if (imageUrl && !imageUrl.includes('default-poster')) {
+        setScriptImageUrl(imageUrl)
+      }
+    })
     // Handle both legacy (number) and new (object) sync formats
     socket.on('sync_teleprompter', (data: TeleprompterSyncData | number) => {
       if (typeof data === 'number') {
@@ -312,6 +317,7 @@ function JoinPageContent() {
     socket.on('new_game_started', () => {
       setGameState('LOBBY')
       setScript(null)
+      setScriptImageUrl(null)  // Clear previous poster
       setCurrentLineIndex(0)
       setGameResults(null)
       setHasSubmitted(false)

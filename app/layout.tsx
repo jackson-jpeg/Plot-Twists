@@ -4,6 +4,7 @@ import { SocketProvider } from '@/contexts/SocketContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Analytics } from '@vercel/analytics/react'
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
+import { SystemStatus } from '@/components/SystemStatus'
 
 export const metadata: Metadata = {
   title: 'Plot Twists - AI Improv Party Game',
@@ -51,6 +52,7 @@ export default function RootLayout({
             {children}
           </SocketProvider>
         </AuthProvider>
+        <SystemStatus />
         <Analytics />
       </body>
     </html>

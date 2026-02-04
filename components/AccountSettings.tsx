@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
-import type { UserPreferences, GameMode } from '@/lib/types'
+import type { UserPreferences, GameMode, TeleprompterVisibilityMode } from '@/lib/types'
+import { DEFAULT_TELEPROMPTER_SETTINGS, TELEPROMPTER_PRESETS } from '@/lib/types'
+import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
 
 interface AccountSettingsProps {
   onClose?: () => void
@@ -79,6 +81,14 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleteLoading, setDeleteLoading] = useState(false)
+
+  // Teleprompter settings
+  const {
+    settings: teleprompterSettings,
+    setPreset: setTeleprompterPreset,
+    setCustom: setTeleprompterCustom,
+    toggleAutoScroll: toggleTeleprompterAutoScroll
+  } = useTeleprompterSettings()
 
   // Linked accounts detection
   const hasGoogleLinked = user?.email?.includes('@gmail.com') || false // Simplified detection
@@ -613,6 +623,92 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                             animate={{ x: preferences.notificationsEnabled ? 26 : 2 }}
                           />
                         </button>
+                      </div>
+
+                      {/* Teleprompter Settings */}
+                      <div className="pt-4 border-t border-[var(--color-border)]">
+                        <h4 className="font-semibold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
+                          <span>👁️</span> Teleprompter View
+                        </h4>
+
+                        <div className="space-y-3">
+                          <div>
+                            <label className="label">View Mode</label>
+                            <select
+                              value={teleprompterSettings.visibilityMode}
+                              onChange={(e) => {
+                                const mode = e.target.value as TeleprompterVisibilityMode
+                                if (mode === 'custom') {
+                                  setTeleprompterCustom(
+                                    typeof teleprompterSettings.pastLinesVisible === 'number' ? teleprompterSettings.pastLinesVisible : 2,
+                                    typeof teleprompterSettings.upcomingLinesVisible === 'number' ? teleprompterSettings.upcomingLinesVisible : 3
+                                  )
+                                } else {
+                                  setTeleprompterPreset(mode)
+                                }
+                              }}
+                              className="input"
+                            >
+                              <option value="focused">Focused (1 past, 1 upcoming)</option>
+                              <option value="balanced">Balanced (2 past, 3 upcoming)</option>
+                              <option value="full">Full (all lines visible)</option>
+                              <option value="custom">Custom</option>
+                            </select>
+                          </div>
+
+                          {teleprompterSettings.visibilityMode === 'custom' && (
+                            <div className="grid grid-cols-2 gap-3 pl-4 border-l-2 border-[var(--color-border)]">
+                              <div>
+                                <label className="label">Past Lines</label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="5"
+                                  value={teleprompterSettings.pastLinesVisible === 'all' ? 5 : teleprompterSettings.pastLinesVisible}
+                                  onChange={(e) => setTeleprompterCustom(
+                                    parseInt(e.target.value) || 0,
+                                    teleprompterSettings.upcomingLinesVisible
+                                  )}
+                                  className="input"
+                                />
+                              </div>
+                              <div>
+                                <label className="label">Upcoming Lines</label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  max="10"
+                                  value={teleprompterSettings.upcomingLinesVisible === 'all' ? 10 : teleprompterSettings.upcomingLinesVisible}
+                                  onChange={(e) => setTeleprompterCustom(
+                                    teleprompterSettings.pastLinesVisible,
+                                    parseInt(e.target.value) || 1
+                                  )}
+                                  className="input"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="flex items-center justify-between py-2">
+                            <div>
+                              <p className="font-medium text-[var(--color-text-primary)]">Auto-scroll</p>
+                              <p className="text-sm text-[var(--color-text-tertiary)]">Keep current line centered</p>
+                            </div>
+                            <button
+                              onClick={toggleTeleprompterAutoScroll}
+                              className={`w-12 h-6 rounded-full transition-colors ${
+                                teleprompterSettings.autoScroll
+                                  ? 'bg-[var(--color-accent)]'
+                                  : 'bg-[var(--color-border)]'
+                              }`}
+                            >
+                              <motion.div
+                                className="w-5 h-5 bg-white rounded-full shadow"
+                                animate={{ x: teleprompterSettings.autoScroll ? 26 : 2 }}
+                              />
+                            </button>
+                          </div>
+                        </div>
                       </div>
 
                       <button

@@ -523,11 +523,38 @@ export interface UserProfile {
   preferences?: UserPreferences
 }
 
+// ============================================================
+// Teleprompter Settings
+// ============================================================
+
+export type TeleprompterVisibilityMode = 'focused' | 'balanced' | 'full' | 'custom'
+
+export interface TeleprompterSettings {
+  visibilityMode: TeleprompterVisibilityMode
+  pastLinesVisible: number | 'all'    // 0-5 or 'all'
+  upcomingLinesVisible: number | 'all' // 1-10 or 'all'
+  autoScroll: boolean
+}
+
+export const DEFAULT_TELEPROMPTER_SETTINGS: TeleprompterSettings = {
+  visibilityMode: 'balanced',
+  pastLinesVisible: 2,
+  upcomingLinesVisible: 3,
+  autoScroll: true
+}
+
+export const TELEPROMPTER_PRESETS: Record<Exclude<TeleprompterVisibilityMode, 'custom'>, Pick<TeleprompterSettings, 'pastLinesVisible' | 'upcomingLinesVisible'>> = {
+  focused: { pastLinesVisible: 1, upcomingLinesVisible: 1 },
+  balanced: { pastLinesVisible: 2, upcomingLinesVisible: 3 },
+  full: { pastLinesVisible: 'all', upcomingLinesVisible: 'all' }
+}
+
 export interface UserPreferences {
   defaultNickname?: string
   preferredGameMode?: GameMode
   soundEffectsEnabled?: boolean
   notificationsEnabled?: boolean
+  teleprompter?: TeleprompterSettings
 }
 
 export interface UserMigrationData {

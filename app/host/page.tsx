@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings, TeleprompterSyncData, CardSelection } from '@/lib/types'
+import type { Player, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings, TeleprompterSyncData, CardSelection, ScriptLine, TeleprompterSettings } from '@/lib/types'
 import type { GameState } from '@/lib/types'
+import { DEFAULT_TELEPROMPTER_SETTINGS } from '@/lib/types'
 import { QRCodeSVG } from 'qrcode.react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useConfetti } from '@/hooks/useConfetti'
@@ -19,6 +20,8 @@ import { PlotTwistVoting } from '@/components/PlotTwistVoting'
 import { CardCarousel } from '@/components/CardCarousel'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
+import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
+import { TeleprompterSettings as TeleprompterSettingsPanel } from '@/components/TeleprompterSettings'
 
 // Helper function to get mood emoji and color
 function getMoodIndicator(mood: string) {
@@ -30,6 +33,37 @@ function getMoodIndicator(mood: string) {
     neutral: { emoji: '😐', color: '#9B9590', label: 'Neutral' }
   }
   return moodMap[mood] || moodMap.neutral
+}
+
+// Helper function to get visible lines based on teleprompter settings
+function getVisibleLines(
+  lines: ScriptLine[],
+  currentIndex: number,
+  settings: TeleprompterSettings
+): { line: ScriptLine; originalIndex: number }[] {
+  const result: { line: ScriptLine; originalIndex: number }[] = []
+
+  // Calculate start index (past lines)
+  let startIndex: number
+  if (settings.pastLinesVisible === 'all') {
+    startIndex = 0
+  } else {
+    startIndex = Math.max(0, currentIndex - settings.pastLinesVisible)
+  }
+
+  // Calculate end index (upcoming lines)
+  let endIndex: number
+  if (settings.upcomingLinesVisible === 'all') {
+    endIndex = lines.length - 1
+  } else {
+    endIndex = Math.min(lines.length - 1, currentIndex + settings.upcomingLinesVisible)
+  }
+
+  for (let i = startIndex; i <= endIndex; i++) {
+    result.push({ line: lines[i], originalIndex: i })
+  }
+
+  return result
 }
 
 export default function HostPage() {
@@ -75,6 +109,16 @@ export default function HostPage() {
   const scriptGenerationTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const loadingIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
+  const scriptContainerRef = React.useRef<HTMLDivElement | null>(null)
+
+  // Teleprompter settings hook
+  const {
+    settings: teleprompterSettings,
+    setPreset: setTeleprompterPreset,
+    setCustom: setTeleprompterCustom,
+    toggleAutoScroll: toggleTeleprompterAutoScroll,
+    isLoading: teleprompterSettingsLoading
+  } = useTeleprompterSettings()
 
   // Loading stage messages based on progress
   const loadingStages = [
@@ -178,6 +222,16 @@ export default function HostPage() {
       setHasTriggeredSelectionConfetti(false)
     }
   }, [selection])
+
+  // Auto-scroll to current line when teleprompter settings enable it
+  useEffect(() => {
+    if (gameState !== 'PERFORMING' || !teleprompterSettings.autoScroll || !scriptContainerRef.current) return
+
+    const currentLineElement = scriptContainerRef.current.querySelector(`[data-line-index="${currentLineIndex}"]`)
+    if (currentLineElement) {
+      currentLineElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [currentLineIndex, gameState, teleprompterSettings.autoScroll])
 
   useEffect(() => {
     if (!socket || !isConnected) return
@@ -1602,8 +1656,25 @@ export default function HostPage() {
               </div>
             </motion.div>
 
+            {/* Teleprompter Settings */}
+            <motion.div
+              className="mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.15 }}
+            >
+              <TeleprompterSettingsPanel
+                settings={teleprompterSettings}
+                onPresetChange={setTeleprompterPreset}
+                onCustomChange={setTeleprompterCustom}
+                onAutoScrollToggle={toggleTeleprompterAutoScroll}
+                disabled={teleprompterSettingsLoading}
+              />
+            </motion.div>
+
             {/* Script */}
             <motion.div
+              ref={scriptContainerRef}
               className="script-container mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1611,23 +1682,25 @@ export default function HostPage() {
             >
               <div className="script-title">{script.title}</div>
               <AnimatePresence mode="sync">
-                {script.lines.map((line, index) => {
+                {getVisibleLines(script.lines, currentLineIndex, teleprompterSettings).map(({ line, originalIndex }) => {
                   const moodIndicator = getMoodIndicator(line.mood)
                   return (
                     <motion.div
-                      key={index}
+                      key={originalIndex}
                       className={`script-line ${
-                        index === currentLineIndex ? 'script-line-active' :
-                        index < currentLineIndex ? 'script-line-past' :
+                        originalIndex === currentLineIndex ? 'script-line-active' :
+                        originalIndex < currentLineIndex ? 'script-line-past' :
                         'script-line-upcoming'
                       }`}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: index * 0.02 }}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      data-line-index={originalIndex}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="script-character">{line.speaker}</div>
-                        {index === currentLineIndex && (
+                        {originalIndex === currentLineIndex && (
                           <motion.div
                             className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold"
                             style={{

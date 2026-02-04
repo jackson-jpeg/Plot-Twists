@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
-import type { SavedGame } from '@/lib/types'
-import Head from 'next/head'
+import type { SavedGame, ScriptLine, TeleprompterSettings } from '@/lib/types'
+import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
+import { TeleprompterSettings as TeleprompterSettingsPanel } from '@/components/TeleprompterSettings'
+import React from 'react'
 
 // Share button configuration
 const SHARE_PLATFORMS = [
@@ -42,8 +44,47 @@ export default function ReplayPage() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [copied, setCopied] = useState(false)
   const [showShareMenu, setShowShareMenu] = useState(false)
+  const scriptViewerRef = React.useRef<HTMLDivElement | null>(null)
+
+  // Teleprompter settings hook
+  const {
+    settings: teleprompterSettings,
+    setPreset: setTeleprompterPreset,
+    setCustom: setTeleprompterCustom,
+    toggleAutoScroll: toggleTeleprompterAutoScroll,
+    isLoading: teleprompterSettingsLoading
+  } = useTeleprompterSettings()
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
+
+  // Helper function to get visible lines based on teleprompter settings
+  const getVisibleLines = (
+    lines: ScriptLine[],
+    currentIndex: number,
+    settings: TeleprompterSettings
+  ): { line: ScriptLine; originalIndex: number }[] => {
+    const result: { line: ScriptLine; originalIndex: number }[] = []
+
+    let startIndex: number
+    if (settings.pastLinesVisible === 'all') {
+      startIndex = 0
+    } else {
+      startIndex = Math.max(0, currentIndex - settings.pastLinesVisible)
+    }
+
+    let endIndex: number
+    if (settings.upcomingLinesVisible === 'all') {
+      endIndex = lines.length - 1
+    } else {
+      endIndex = Math.min(lines.length - 1, currentIndex + settings.upcomingLinesVisible)
+    }
+
+    for (let i = startIndex; i <= endIndex; i++) {
+      result.push({ line: lines[i], originalIndex: i })
+    }
+
+    return result
+  }
 
   const fetchGame = useCallback(() => {
     if (!socket || !shareCode) return
@@ -79,6 +120,16 @@ export default function ReplayPage() {
 
     return () => clearTimeout(timer)
   }, [isPlaying, currentLineIndex, game])
+
+  // Auto-scroll to current line in full script view
+  useEffect(() => {
+    if (!teleprompterSettings.autoScroll || !scriptViewerRef.current) return
+
+    const currentLineElement = scriptViewerRef.current.querySelector(`[data-line-index="${currentLineIndex}"]`)
+    if (currentLineElement) {
+      currentLineElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [currentLineIndex, teleprompterSettings.autoScroll])
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl)
@@ -326,34 +377,51 @@ export default function ReplayPage() {
           </div>
         </motion.div>
 
-        {/* Full Script (collapsible) */}
+        {/* Teleprompter Settings & Full Script (collapsible) */}
         <motion.details
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="bg-gray-800/50 rounded-xl overflow-hidden"
         >
-          <summary className="p-4 cursor-pointer text-white font-semibold hover:bg-gray-700/30 transition-colors">
-            📜 View Full Script
+          <summary className="p-4 cursor-pointer text-white font-semibold hover:bg-gray-700/30 transition-colors flex items-center justify-between">
+            <span>📜 View Full Script</span>
+            <div onClick={(e) => e.stopPropagation()}>
+              <TeleprompterSettingsPanel
+                settings={teleprompterSettings}
+                onPresetChange={setTeleprompterPreset}
+                onCustomChange={setTeleprompterCustom}
+                onAutoScrollToggle={toggleTeleprompterAutoScroll}
+                disabled={teleprompterSettingsLoading}
+                compact
+              />
+            </div>
           </summary>
-          <div className="p-4 pt-0 max-h-96 overflow-y-auto">
-            {game.script.lines.map((line, index) => (
-              <div
-                key={index}
-                onClick={() => {
-                  setCurrentLineIndex(index)
-                  setIsPlaying(false)
-                }}
-                className={`p-3 rounded-lg mb-2 cursor-pointer transition-colors ${
-                  index === currentLineIndex
-                    ? 'bg-purple-600/30 border border-purple-500'
-                    : 'hover:bg-gray-700/50'
-                }`}
-              >
-                <span className="font-semibold text-white">{line.speaker}:</span>
-                <span className="text-gray-300 ml-2">"{line.text}"</span>
-              </div>
-            ))}
+          <div ref={scriptViewerRef} className="p-4 pt-0 max-h-96 overflow-y-auto">
+            <AnimatePresence mode="sync">
+              {getVisibleLines(game.script.lines, currentLineIndex, teleprompterSettings).map(({ line, originalIndex }) => (
+                <motion.div
+                  key={originalIndex}
+                  data-line-index={originalIndex}
+                  onClick={() => {
+                    setCurrentLineIndex(originalIndex)
+                    setIsPlaying(false)
+                  }}
+                  className={`p-3 rounded-lg mb-2 cursor-pointer transition-colors ${
+                    originalIndex === currentLineIndex
+                      ? 'bg-purple-600/30 border border-purple-500'
+                      : 'hover:bg-gray-700/50'
+                  }`}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <span className="font-semibold text-white">{line.speaker}:</span>
+                  <span className="text-gray-300 ml-2">"{line.text}"</span>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </motion.details>
 

@@ -246,6 +246,7 @@ export interface Room {
   currentLineIndex: number
   isPaused: boolean
   votes: Map<string, string> // playerId -> targetPlayerId
+  setting?: string
   createdAt: number
   lastActivity: number
   // Feature 1: Audience Interaction
@@ -322,6 +323,9 @@ export interface ServerToClientEvents {
 
   // Feature 6: Player Stats Events
   achievement_unlocked: (achievement: Achievement) => void
+
+  // AI Script Generation Progress
+  script_generation_progress: (data: { phase: string; percent: number; title?: string }) => void
 
   // Teleprompter Sync & Play Again Events
   new_game_started: (options: NewGameOptions) => void

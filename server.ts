@@ -30,6 +30,9 @@ import { configureSecurityMiddleware, validateEnvironment } from './server/middl
 import { SocketRateLimiter } from './server/middleware/rateLimiter'
 import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname } from './server/utils/validation'
 
+// Room Service (write-through Firestore cache)
+import * as roomService from './server/services/room.service'
+
 // Feature Services
 import {
   initializeAudienceState,
@@ -94,29 +97,13 @@ const port = parseInt(process.env.PORT || '3000', 10)
 const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
 
-// In-memory room storage
-const rooms = new Map<string, Room>()
-
-// Track teleprompter timeouts per room
-const roomTimeouts = new Map<string, NodeJS.Timeout>()
+// Timeouts are now managed by roomService
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 })
 
-// Generate a unique 4-letter room code
-function generateRoomCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Exclude confusing characters
-  let code = ''
-  do {
-    code = ''
-    for (let i = 0; i < 4; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-  } while (rooms.has(code))
-  return code
-}
 
 // Socket.io rate limiters
 const roomCreationLimiter = new SocketRateLimiter(10, 5 * 60 * 1000) // 10 rooms per 5 minutes
@@ -125,8 +112,6 @@ const joinRoomLimiter = new SocketRateLimiter(30, 60 * 1000) // 30 joins per min
 const reactionLimiter = new SocketRateLimiter(60, 60 * 1000) // 60 reactions per minute
 const cardPackLimiter = new SocketRateLimiter(5, 60 * 1000) // 5 pack operations per minute
 
-// Track plot twist timeouts per room
-const plotTwistTimeouts = new Map<string, NodeJS.Timeout>()
 
 // Sanitize user input (use enhanced version from utils)
 function sanitizeInput(input: string): string {
@@ -139,7 +124,7 @@ function validateRoom(roomCode: string, socket: { emit: (event: 'error', message
     socket.emit('error', 'Invalid room code')
     return null
   }
-  const room = rooms.get(roomCode.toUpperCase())
+  const room = roomService.getRoomFromCache(roomCode.toUpperCase())
   if (!room) {
     socket.emit('error', 'Room not found')
     return null
@@ -147,30 +132,58 @@ function validateRoom(roomCode: string, socket: { emit: (event: 'error', message
   return room
 }
 
-// Clean up inactive rooms (runs every 5 minutes)
-setInterval(() => {
-  const now = Date.now()
-  const oneHour = 60 * 60 * 1000
-  for (const [code, room] of rooms.entries()) {
-    if (now - room.lastActivity > oneHour) {
-      console.log(`Cleaning up inactive room: ${code}`)
-      // Clean up associated timeouts before deleting room
-      const roomTimeout = roomTimeouts.get(code)
-      if (roomTimeout) {
-        clearTimeout(roomTimeout)
-        roomTimeouts.delete(code)
+// Room cleanup is now handled by roomService.startRoomCleanup()
+
+/** Extract JSON object from text using bracket-matching (handles preamble, fences, trailing text) */
+function extractJSON(text: string): string {
+  // Strip markdown fences
+  let cleaned = text.trim()
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
+  }
+
+  // Find first { or [
+  const startBrace = cleaned.indexOf('{')
+  const startBracket = cleaned.indexOf('[')
+  let start = -1
+  let openChar = '{'
+  let closeChar = '}'
+
+  if (startBrace === -1 && startBracket === -1) {
+    return cleaned // fallback
+  } else if (startBrace === -1) {
+    start = startBracket; openChar = '['; closeChar = ']'
+  } else if (startBracket === -1) {
+    start = startBrace
+  } else {
+    start = Math.min(startBrace, startBracket)
+    if (start === startBracket) { openChar = '['; closeChar = ']' }
+  }
+
+  // Track depth to find matching close
+  let depth = 0
+  let inString = false
+  let escape = false
+  for (let i = start; i < cleaned.length; i++) {
+    const ch = cleaned[i]
+    if (escape) { escape = false; continue }
+    if (ch === '\\' && inString) { escape = true; continue }
+    if (ch === '"' && !escape) { inString = !inString; continue }
+    if (inString) continue
+    if (ch === openChar) depth++
+    if (ch === closeChar) {
+      depth--
+      if (depth === 0) {
+        return cleaned.slice(start, i + 1)
       }
-      const plotTwistTimeout = plotTwistTimeouts.get(code)
-      if (plotTwistTimeout) {
-        clearTimeout(plotTwistTimeout)
-        plotTwistTimeouts.delete(code)
-      }
-      rooms.delete(code)
     }
   }
-}, 5 * 60 * 1000)
 
-// Generate script using Claude
+  // Fallback: return from start to end
+  return cleaned.slice(start)
+}
+
+// Generate script using Claude (with streaming progress)
 async function generateScript(
   characters: string[],
   setting: string,
@@ -178,7 +191,8 @@ async function generateScript(
   isMature: boolean,
   gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE',
   previousScript?: Script,
-  customization?: ScriptCustomization
+  customization?: ScriptCustomization,
+  onProgress?: (data: { phase: string; percent: number; title?: string }) => void
 ) {
   const isSoloMode = gameMode === 'SOLO'
   const numPlayers = characters.length
@@ -642,7 +656,10 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
     }
     console.log(`════════════════════════════════════════\n`)
 
-    const message = await anthropic.messages.create({
+    onProgress?.({ phase: 'Connecting to AI...', percent: 5 })
+
+    // Use streaming for real-time progress
+    const stream = anthropic.messages.stream({
       model: 'claude-sonnet-4-5-20250929',
       max_tokens: maxTokens,
       temperature: 1, // Max creativity for comedy writing
@@ -655,21 +672,56 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
       ]
     })
 
+    let fullText = ''
+    let titleEmitted = false
+    let linesStarted = false
+    let lineCount = 0
+    const expectedLines = gameMode === 'ENSEMBLE' ? 45 : 35
+
+    onProgress?.({ phase: 'Writing script...', percent: 10 })
+
+    stream.on('text', (text) => {
+      fullText += text
+
+      // Detect milestones for progress
+      if (!titleEmitted && fullText.includes('"title"')) {
+        // Try to extract title value
+        const titleMatch = fullText.match(/"title"\s*:\s*"([^"]+)"/)
+        if (titleMatch) {
+          titleEmitted = true
+          onProgress?.({ phase: 'Writing dialogue...', percent: 20, title: titleMatch[1] })
+        }
+      }
+
+      if (!linesStarted && fullText.includes('"lines"')) {
+        linesStarted = true
+        onProgress?.({ phase: 'Writing dialogue...', percent: 40 })
+      }
+
+      if (linesStarted) {
+        // Count line objects by counting "speaker" occurrences
+        const newCount = (fullText.match(/"speaker"/g) || []).length
+        if (newCount > lineCount) {
+          lineCount = newCount
+          const lineProgress = Math.min(40 + (lineCount / expectedLines) * 50, 90)
+          onProgress?.({ phase: `Writing line ${lineCount}...`, percent: Math.round(lineProgress) })
+        }
+      }
+    })
+
+    const finalMessage = await stream.finalMessage()
+
     console.log(`✅ Script generated successfully!\n`)
 
-    const content = message.content[0]
+    const content = finalMessage.content[0]
     if (content.type !== 'text') {
       throw new Error('Unexpected response type from Claude')
     }
 
-    // Strip markdown code blocks if present
-    let jsonText = content.text.trim()
-    if (jsonText.startsWith('```')) {
-      // Remove opening ```json or ```
-      jsonText = jsonText.replace(/^```(?:json)?\n?/, '')
-      // Remove closing ```
-      jsonText = jsonText.replace(/\n?```$/, '')
-    }
+    onProgress?.({ phase: 'Validating script...', percent: 95 })
+
+    // Use robust bracket-matching JSON extraction
+    const jsonText = extractJSON(content.text)
 
     // Parse and validate with Zod
     const rawScript = JSON.parse(jsonText.trim())
@@ -680,6 +732,7 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
       throw new Error(`Invalid script format: ${validationResult.error.message}`)
     }
 
+    onProgress?.({ phase: 'Script ready!', percent: 100 })
     const script = validationResult.data
     return script
   } catch (error) {
@@ -719,6 +772,8 @@ function isAllowedOrigin(origin: string): boolean {
 app.prepare().then(async () => {
   // Initialize database and services
   await initializeDatabase()
+  await roomService.loadRoomsFromFirestore()
+  roomService.startRoomCleanup()
   await initializeCardPackService()
 
   const expressApp = express()
@@ -753,18 +808,17 @@ app.prepare().then(async () => {
       credentials: true,
       allowedHeaders: ['Content-Type', 'Authorization']
     },
-    // Force polling in production (Railway has WebSocket upgrade issues)
-    transports: dev ? ['polling', 'websocket'] : ['polling'],
+    transports: ['polling', 'websocket'],
     allowEIO3: true,
     pingTimeout: 60000,
     pingInterval: 25000,
     upgradeTimeout: 30000,
     maxHttpBufferSize: 1e6,
-    allowUpgrades: dev // Only allow upgrades in development
+    allowUpgrades: true
   })
 
   console.log(`Socket.IO configured for ${dev ? 'development' : 'production'} mode`)
-  console.log(`Transports: ${dev ? 'polling + websocket' : 'polling-only'}`)
+  console.log(`Transports: polling + websocket`)
 
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id)
@@ -779,7 +833,7 @@ app.prepare().then(async () => {
       }
 
       try {
-        const code = generateRoomCode()
+        const code = roomService.generateRoomCode()
         const isSoloMode = settings.gameMode === 'SOLO'
         const hostPlayer: Player = {
           id: uuidv4(),
@@ -812,7 +866,7 @@ app.prepare().then(async () => {
           audioSettings: settings.audioSettings || createDefaultAudioSettings()
         }
 
-        rooms.set(code, room)
+        roomService.createRoom(room)
         socket.join(code)
 
         console.log(`Room created: ${code}`)
@@ -850,9 +904,9 @@ app.prepare().then(async () => {
 
         const upperRoomCode = roomCode.toUpperCase()
         console.log(`Join attempt - Room: ${upperRoomCode}, Nickname: ${nickname}`)
-        console.log(`Available rooms:`, Array.from(rooms.keys()))
+        console.log(`Available rooms: ${roomService.getActiveRoomCount()} active`)
 
-        const room = rooms.get(upperRoomCode)
+        const room = roomService.getRoomFromCache(upperRoomCode)
         if (!room) {
           console.log(`Room ${upperRoomCode} not found!`)
           callback({ success: false, error: 'Room not found' })
@@ -896,8 +950,7 @@ app.prepare().then(async () => {
           score: 0
         }
 
-        room.players.set(player.id, player)
-        room.lastActivity = Date.now()
+        roomService.addPlayer(room, player)
         socket.join(upperRoomCode)
 
         const playersList = Array.from(room.players.values())
@@ -927,7 +980,7 @@ app.prepare().then(async () => {
     // Submit card selections
     socket.on('submit_cards', (roomCode, selections, callback) => {
       try {
-        const room = rooms.get(roomCode)
+        const room = roomService.getRoomFromCache(roomCode)
         if (!room) {
           callback({ success: false, error: 'Room not found' })
           return
@@ -953,6 +1006,7 @@ app.prepare().then(async () => {
           player.hasSubmittedSelection = true
         }
         room.lastActivity = Date.now()
+        roomService.updateRoom(room)
 
         io.to(roomCode).emit('players_update', Array.from(room.players.values()))
 
@@ -985,11 +1039,12 @@ app.prepare().then(async () => {
 
     // Start game
     socket.on('start_game', (roomCode) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room) return
 
       room.gameState = 'SELECTION'
       room.lastActivity = Date.now()
+      roomService.updateRoom(room)
       io.to(roomCode).emit('game_state_change', 'SELECTION')
 
       // Send available cards to all players
@@ -999,7 +1054,7 @@ app.prepare().then(async () => {
 
     // Submit vote
     socket.on('submit_vote', (roomCode, targetPlayerId) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room) return
 
       // Find voter by socket ID
@@ -1019,6 +1074,7 @@ app.prepare().then(async () => {
         voter.hasSubmittedVote = true
       }
       room.lastActivity = Date.now()
+      roomService.updateRoom(room)
 
       io.to(roomCode).emit('players_update', Array.from(room.players.values()))
 
@@ -1034,27 +1090,28 @@ app.prepare().then(async () => {
 
     // Advance script line
     socket.on('advance_script_line', (roomCode) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
 
       room.currentLineIndex++
       room.lastActivity = Date.now()
+      roomService.updateRoom(room, true) // debounced - high frequency
       io.to(roomCode).emit('sync_teleprompter', room.currentLineIndex)
     })
 
     // Pause script
     socket.on('pause_script', (roomCode) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
 
       room.isPaused = true
       room.lastActivity = Date.now()
 
       // Clear the current timeout
-      const timeout = roomTimeouts.get(roomCode)
+      const timeout = roomService.getRoomTimeout(roomCode)
       if (timeout) {
         clearTimeout(timeout)
-        roomTimeouts.delete(roomCode)
+        roomService.clearRoomTimeout(roomCode)
       }
 
       console.log(`Script paused for room ${roomCode}`)
@@ -1062,7 +1119,7 @@ app.prepare().then(async () => {
 
     // Resume script
     socket.on('resume_script', (roomCode) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
 
       room.isPaused = false
@@ -1075,7 +1132,7 @@ app.prepare().then(async () => {
         if (room.isPaused) return
 
         if (!room.script || lineIndex >= room.script.lines.length - 1) {
-          roomTimeouts.delete(room.code)
+          roomService.clearRoomTimeout(room.code)
           if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
             room.gameState = 'VOTING'
             io.to(room.code).emit('game_state_change', 'VOTING')
@@ -1102,7 +1159,7 @@ app.prepare().then(async () => {
           advanceLine(room.currentLineIndex)
         }, readingTimeMs)
 
-        roomTimeouts.set(room.code, timeout)
+        roomService.setRoomTimeout(room.code, timeout)
       }
 
       advanceLine(room.currentLineIndex)
@@ -1110,17 +1167,17 @@ app.prepare().then(async () => {
 
     // Jump to specific line (host control)
     socket.on('jump_to_line', (roomCode, lineIndex) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
 
       // Validate line index
       if (lineIndex < 0 || lineIndex >= room.script.lines.length) return
 
       // Clear existing timeout
-      const timeout = roomTimeouts.get(roomCode)
+      const timeout = roomService.getRoomTimeout(roomCode)
       if (timeout) {
         clearTimeout(timeout)
-        roomTimeouts.delete(roomCode)
+        roomService.clearRoomTimeout(roomCode)
       }
 
       // Update line index
@@ -1142,7 +1199,7 @@ app.prepare().then(async () => {
           if (room.isPaused) return
 
           if (!room.script || currentLineIndex >= room.script.lines.length - 1) {
-            roomTimeouts.delete(room.code)
+            roomService.clearRoomTimeout(room.code)
             if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
               room.gameState = 'VOTING'
               io.to(room.code).emit('game_state_change', 'VOTING')
@@ -1169,7 +1226,7 @@ app.prepare().then(async () => {
             advanceLine(room.currentLineIndex)
           }, readingTimeMs)
 
-          roomTimeouts.set(room.code, newTimeout)
+          roomService.setRoomTimeout(room.code, newTimeout)
         }
 
         advanceLine(lineIndex)
@@ -1185,10 +1242,10 @@ app.prepare().then(async () => {
       if (lineIndex < 0 || lineIndex >= room.script.lines.length) return
 
       // Clear existing timeout, pause auto-advance briefly
-      const timeout = roomTimeouts.get(roomCode)
+      const timeout = roomService.getRoomTimeout(roomCode)
       if (timeout) {
         clearTimeout(timeout)
-        roomTimeouts.delete(roomCode)
+        roomService.clearRoomTimeout(roomCode)
       }
 
       room.currentLineIndex = lineIndex
@@ -1213,7 +1270,7 @@ app.prepare().then(async () => {
 
     // Request sequel
     socket.on('request_sequel', async (roomCode) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) {
         console.log(`Cannot generate sequel: room or script not found for ${roomCode}`)
         return
@@ -1256,7 +1313,7 @@ app.prepare().then(async () => {
 
         console.log(`Generating sequel with ${characters.length} character(s)`)
 
-        // Generate sequel script with customization
+        // Generate sequel script with customization and streaming progress
         const sequelScript = await generateScript(
           characters,
           chosenSetting,
@@ -1264,7 +1321,8 @@ app.prepare().then(async () => {
           room.isMature,
           room.gameMode,
           previousScript as Script, // Pass the previous script
-          room.scriptCustomization
+          room.scriptCustomization,
+          (progress) => io.to(roomCode).emit('script_generation_progress', progress)
         )
 
         // Enhance with audio metadata if audio is enabled
@@ -1293,7 +1351,8 @@ app.prepare().then(async () => {
         )
 
         // Store setting for later twist generation
-        ;(room as Room & { _setting?: string })._setting = chosenSetting
+        room.setting = chosenSetting
+        roomService.updateRoom(room)
 
         // Broadcast new script to all clients
         io.to(roomCode).emit('script_ready', finalScript)
@@ -1315,13 +1374,14 @@ app.prepare().then(async () => {
 
         // Reset to results state
         room.gameState = 'RESULTS'
+        roomService.updateRoom(room)
         io.to(roomCode).emit('game_state_change', 'RESULTS')
       }
     })
 
     // Request new game (keeps players in room, no page reload)
     socket.on('request_new_game', (roomCode, options?: NewGameOptions) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room) {
         console.log(`Cannot start new game: room not found for ${roomCode}`)
         return
@@ -1336,10 +1396,10 @@ app.prepare().then(async () => {
       console.log(`🎮 New game requested for room ${roomCode}`)
 
       // Clear teleprompter timeout
-      const timeout = roomTimeouts.get(roomCode)
+      const timeout = roomService.getRoomTimeout(roomCode)
       if (timeout) {
         clearTimeout(timeout)
-        roomTimeouts.delete(roomCode)
+        roomService.clearRoomTimeout(roomCode)
       }
 
       // Reset room state
@@ -1369,6 +1429,8 @@ app.prepare().then(async () => {
         room.audienceInteraction.plotTwistHistory = []
       }
 
+      roomService.updateRoom(room)
+
       // Notify all clients
       io.to(roomCode).emit('new_game_started', { keepSelections: options?.keepSelections || false })
       io.to(roomCode).emit('game_state_change', 'LOBBY')
@@ -1385,7 +1447,7 @@ app.prepare().then(async () => {
           return
         }
 
-        const room = rooms.get(roomCode.toUpperCase())
+        const room = roomService.getRoomFromCache(roomCode.toUpperCase())
         if (!room) {
           callback({ success: false, error: 'Room not found' })
           return
@@ -1415,7 +1477,7 @@ app.prepare().then(async () => {
 
     // Update room settings
     socket.on('update_room_settings', (roomCode, settings) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room) return
 
       if (settings.isMature !== undefined) {
@@ -1457,6 +1519,7 @@ app.prepare().then(async () => {
         }
       }
       room.lastActivity = Date.now()
+      roomService.updateRoom(room)
 
       const roomSettings: RoomSettings = {
         isMature: room.isMature,
@@ -1513,7 +1576,7 @@ app.prepare().then(async () => {
 
     // Start a plot twist vote
     socket.on('start_plot_twist', (roomCode) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.audienceInteraction) return
       if (room.gameState !== 'PERFORMING') return
 
@@ -1544,7 +1607,7 @@ app.prepare().then(async () => {
 
           // Get context for AI injection
           const speakers = room.script?.lines.map(l => l.speaker).filter((v, i, a) => a.indexOf(v) === i) || []
-          const setting = (room as Room & { _setting?: string })._setting || ''
+          const setting = room.setting || ''
           const recentDialogue = room.script?.lines.slice(
             Math.max(0, room.currentLineIndex - 5),
             room.currentLineIndex + 1
@@ -1585,10 +1648,10 @@ app.prepare().then(async () => {
           }
         }
 
-        plotTwistTimeouts.delete(roomCode)
+        roomService.clearPlotTwistTimeout(roomCode)
       }, 15000)
 
-      plotTwistTimeouts.set(roomCode, timeout)
+      roomService.setPlotTwistTimeout(roomCode, timeout)
     })
 
     // Vote on a plot twist option
@@ -1630,7 +1693,7 @@ app.prepare().then(async () => {
 
     // Select a card pack for the room
     socket.on('select_card_pack', async (roomCode, packId, callback) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room) {
         callback({ success: false, error: 'Room not found' })
         return
@@ -1802,7 +1865,7 @@ app.prepare().then(async () => {
 
     // Request line audio (for TTS)
     socket.on('request_line_audio', (roomCode, lineIndex, callback) => {
-      const room = rooms.get(roomCode)
+      const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) {
         callback({ success: false, error: 'Room or script not found' })
         return
@@ -1928,11 +1991,11 @@ app.prepare().then(async () => {
         }
 
         // Find and remove player from rooms
-        for (const [code, room] of rooms.entries()) {
+        for (const [code, room] of roomService.getRoomEntries()) {
           for (const [playerId, player] of room.players.entries()) {
             if (player.socketId === socket.id) {
               console.log(`Removing player ${player.nickname} from room ${code}`)
-              room.players.delete(playerId)
+              roomService.removePlayer(room, playerId)
               io.to(code).emit('player_left', playerId)
               io.to(code).emit('players_update', Array.from(room.players.values()))
 
@@ -1940,31 +2003,12 @@ app.prepare().then(async () => {
               // Only delete room if it's empty or has been too long
               if (player.isHost && room.gameState === 'LOBBY' && room.players.size === 0) {
                 console.log(`Deleting empty room ${code}`)
-                // Clean up timeouts before deleting room
-                const roomTimeout = roomTimeouts.get(code)
-                if (roomTimeout) {
-                  clearTimeout(roomTimeout)
-                  roomTimeouts.delete(code)
-                }
-                const plotTwistTimeout = plotTwistTimeouts.get(code)
-                if (plotTwistTimeout) {
-                  clearTimeout(plotTwistTimeout)
-                  plotTwistTimeouts.delete(code)
-                }
-                rooms.delete(code)
+                roomService.clearAllRoomTimeouts(code)
+                roomService.deleteRoom(code)
               } else if (player.isHost) {
                 // Host left during game - notify players with specific event and cleanup timeouts
                 console.log(`Host disconnected from room ${code}`)
-                const roomTimeout = roomTimeouts.get(code)
-                if (roomTimeout) {
-                  clearTimeout(roomTimeout)
-                  roomTimeouts.delete(code)
-                }
-                const plotTwistTimeout = plotTwistTimeouts.get(code)
-                if (plotTwistTimeout) {
-                  clearTimeout(plotTwistTimeout)
-                  plotTwistTimeouts.delete(code)
-                }
+                roomService.clearAllRoomTimeouts(code)
                 io.to(code).emit('host_disconnected', { message: 'The host has left the game. You can wait for them to reconnect or return to the home page.' })
               }
               break
@@ -2030,7 +2074,7 @@ app.prepare().then(async () => {
         console.log(`   Note: AI will invent a hilarious Co-Star character to play opposite the human player`)
       }
 
-      // Generate script with customization
+      // Generate script with customization and streaming progress
       const script = await generateScript(
         characters,
         chosenSetting,
@@ -2038,7 +2082,8 @@ app.prepare().then(async () => {
         room.isMature,
         room.gameMode,
         undefined, // No previous script
-        room.scriptCustomization
+        room.scriptCustomization,
+        (progress) => io.to(room.code).emit('script_generation_progress', progress)
       )
 
       // Enhance with audio metadata if audio is enabled
@@ -2065,7 +2110,8 @@ app.prepare().then(async () => {
       )
 
       // Store setting for later twist generation
-      ;(room as Room & { _setting?: string })._setting = chosenSetting
+      room.setting = chosenSetting
+      roomService.updateRoom(room)
 
       io.to(room.code).emit('script_ready', finalScript)
       io.to(room.code).emit('game_state_change', 'PERFORMING')
@@ -2095,6 +2141,7 @@ app.prepare().then(async () => {
       // Reset game state to SELECTION so players can try again
       room.gameState = 'SELECTION'
       room.selections.clear()
+      roomService.updateRoom(room)
 
       // Reset all player submission flags
       for (const player of room.players.values()) {
@@ -2124,7 +2171,7 @@ app.prepare().then(async () => {
 
       if (!room.script || lineIndex >= room.script.lines.length - 1) {
         // Clear timeout reference
-        roomTimeouts.delete(room.code)
+        roomService.clearRoomTimeout(room.code)
 
         // Move to voting or results
         if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
@@ -2157,7 +2204,7 @@ app.prepare().then(async () => {
       }, readingTimeMs)
 
       // Store timeout reference for this room
-      roomTimeouts.set(room.code, timeout)
+      roomService.setRoomTimeout(room.code, timeout)
     }
 
     // Start with the first line (index 0)
@@ -2183,6 +2230,7 @@ app.prepare().then(async () => {
     const winner = results[0]
 
     room.gameState = 'RESULTS'
+    roomService.updateRoom(room)
     io.to(room.code).emit('game_over', {
       winner,
       allResults: results

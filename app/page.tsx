@@ -7,9 +7,22 @@ import { useAuth } from '@/contexts/AuthContext'
 import { AuthModal } from '@/components/AuthModal'
 import { UserMenu } from '@/components/UserMenu'
 
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false)
+  useEffect(() => {
+    const mql = window.matchMedia(query)
+    setMatches(mql.matches)
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [query])
+  return matches
+}
+
 export default function Home() {
   const router = useRouter()
   const { user, isConfigured } = useAuth()
+  const canHover = useMediaQuery('(hover: hover) and (pointer: fine)')
   const [mounted, setMounted] = useState(false)
   const [showHowItWorks, setShowHowItWorks] = useState(true)
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -92,16 +105,12 @@ export default function Home() {
               stiffness: 100,
               damping: 15
             }}
-            whileHover={{
-              y: -8,
-              rotate: 0,
-              scale: 1.03
-            }}
+            whileHover={canHover ? { y: -8, rotate: 0, scale: 1.03 } : undefined}
             whileTap={{ scale: 0.98, y: -4 }}
           >
             <motion.div
               className="ticket-stub"
-              whileHover={{ rotate: [-5, 5, -5, 0] }}
+              whileHover={canHover ? { rotate: [-5, 5, -5, 0] } : undefined}
               transition={{ duration: 0.5 }}
             >
               <span className="text-5xl">🎬</span>
@@ -124,16 +133,12 @@ export default function Home() {
               stiffness: 100,
               damping: 15
             }}
-            whileHover={{
-              y: -8,
-              rotate: 0,
-              scale: 1.03
-            }}
+            whileHover={canHover ? { y: -8, rotate: 0, scale: 1.03 } : undefined}
             whileTap={{ scale: 0.98, y: -4 }}
           >
             <motion.div
               className="ticket-stub"
-              whileHover={{ rotate: [5, -5, 5, 0] }}
+              whileHover={canHover ? { rotate: [5, -5, 5, 0] } : undefined}
               transition={{ duration: 0.5 }}
             >
               <span className="text-5xl">🎮</span>

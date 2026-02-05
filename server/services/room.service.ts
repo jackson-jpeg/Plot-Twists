@@ -1,15 +1,93 @@
-import type { Room } from '../../lib/types'
+/**
+ * Room Service — write-through cache backed by Firestore
+ *
+ * The in-memory Map is the authoritative hot cache for all reads.
+ * Every mutation writes to cache immediately, then asynchronously
+ * persists to Firestore. Firestore write failures are logged but
+ * do not block gameplay. On server restart, rooms are recovered
+ * from Firestore.
+ */
+
+import type { Room, Player, CardSelection, GameState, RoomSettings } from '../../lib/types'
 import { ROOM_CODE_LENGTH, ROOM_CODE_CHARS, ROOM_CLEANUP_INTERVAL, ROOM_INACTIVITY_TIMEOUT } from '../utils/constants'
+import { roomToFirestore, firestoreToRoom, type FirestoreRoom } from '../utils/roomSerializer'
+import { getDatabase, Collections } from '../db'
 
-/**
- * In-memory room storage
- * TODO: Replace with Redis for persistence in production
- */
-export const rooms = new Map<string, Room>()
+// ── Hot cache ──────────────────────────────────────────────
 
-/**
- * Generate a unique 4-letter room code
- */
+const rooms = new Map<string, Room>()
+
+// Track teleprompter timeouts per room (timers can't be persisted)
+const roomTimeouts = new Map<string, NodeJS.Timeout>()
+const plotTwistTimeouts = new Map<string, NodeJS.Timeout>()
+
+// Debounced writes for high-frequency fields
+const debouncedWrites = new Map<string, NodeJS.Timeout>()
+const DEBOUNCE_MS = 5000
+
+// Simple retry queue for failed Firestore writes
+const retryQueue: Array<{ code: string; data: FirestoreRoom }> = []
+let retryInterval: NodeJS.Timeout | null = null
+
+// ── Helpers ────────────────────────────────────────────────
+
+function startRetryQueue(): void {
+  if (retryInterval) return
+  retryInterval = setInterval(async () => {
+    if (retryQueue.length === 0) return
+    const batch = retryQueue.splice(0, retryQueue.length)
+    for (const item of batch) {
+      try {
+        const db = getDatabase()
+        if (db.isConnected()) {
+          await db.set(Collections.ROOMS, item.code, item.data)
+        }
+      } catch (err) {
+        console.error(`[RoomService] Retry failed for room ${item.code}:`, err)
+        // Re-queue for next cycle
+        retryQueue.push(item)
+      }
+    }
+  }, 10000)
+}
+
+/** Persist room to Firestore (fire-and-forget with retry) */
+async function persistToFirestore(room: Room): Promise<void> {
+  try {
+    const db = getDatabase()
+    if (!db.isConnected()) return
+    const data = roomToFirestore(room)
+    await db.set(Collections.ROOMS, room.code, data)
+  } catch (err) {
+    console.error(`[RoomService] Firestore write failed for room ${room.code}:`, err)
+    retryQueue.push({ code: room.code, data: roomToFirestore(room) })
+  }
+}
+
+/** Debounced persist — for high-frequency updates like currentLineIndex */
+function persistDebounced(room: Room): void {
+  const existing = debouncedWrites.get(room.code)
+  if (existing) clearTimeout(existing)
+  debouncedWrites.set(room.code, setTimeout(() => {
+    debouncedWrites.delete(room.code)
+    persistToFirestore(room)
+  }, DEBOUNCE_MS))
+}
+
+/** Delete room from Firestore */
+async function deleteFromFirestore(code: string): Promise<void> {
+  try {
+    const db = getDatabase()
+    if (!db.isConnected()) return
+    await db.delete(Collections.ROOMS, code)
+  } catch (err) {
+    console.error(`[RoomService] Firestore delete failed for room ${code}:`, err)
+  }
+}
+
+// ── Public API ─────────────────────────────────────────────
+
+/** Generate a unique room code */
 export function generateRoomCode(): string {
   let code = ''
   do {
@@ -21,65 +99,250 @@ export function generateRoomCode(): string {
   return code
 }
 
-/**
- * Get room by code
- */
-export function getRoom(code: string): Room | undefined {
+/** Create a new room and persist */
+export function createRoom(room: Room): Room {
+  rooms.set(room.code, room)
+  persistToFirestore(room)
+  return room
+}
+
+/** Get room from hot cache only (sync, for hot-path reads) */
+export function getRoomFromCache(code: string): Room | undefined {
   return rooms.get(code.toUpperCase())
 }
 
-/**
- * Update room last activity timestamp
- */
-export function updateRoomActivity(room: Room): void {
+/** Get room — cache first, Firestore fallback */
+export async function getRoom(code: string): Promise<Room | null> {
+  const upperCode = code.toUpperCase()
+  const cached = rooms.get(upperCode)
+  if (cached) return cached
+
+  try {
+    const db = getDatabase()
+    if (!db.isConnected()) return null
+    const doc = await db.get<FirestoreRoom>(Collections.ROOMS, upperCode)
+    if (!doc) return null
+    const room = firestoreToRoom(doc)
+    rooms.set(upperCode, room)
+    return room
+  } catch (err) {
+    console.error(`[RoomService] Firestore read failed for room ${upperCode}:`, err)
+    return null
+  }
+}
+
+/** Update room in cache and persist (immediate or debounced) */
+export function updateRoom(room: Room, debounce = false): void {
+  rooms.set(room.code, room)
+  if (debounce) {
+    persistDebounced(room)
+  } else {
+    persistToFirestore(room)
+  }
+}
+
+/** Full Firestore write for a room */
+export async function persistRoom(room: Room): Promise<void> {
+  rooms.set(room.code, room)
+  await persistToFirestore(room)
+}
+
+/** Delete room from both stores */
+export async function deleteRoom(code: string): Promise<void> {
+  rooms.delete(code)
+  // Clean up debounced writes
+  const deb = debouncedWrites.get(code)
+  if (deb) {
+    clearTimeout(deb)
+    debouncedWrites.delete(code)
+  }
+  await deleteFromFirestore(code)
+}
+
+/** Add a player to a room */
+export function addPlayer(room: Room, player: Player): void {
+  room.players.set(player.id, player)
   room.lastActivity = Date.now()
+  rooms.set(room.code, room)
+  persistToFirestore(room)
 }
 
-/**
- * Delete room
- */
-export function deleteRoom(code: string): boolean {
-  return rooms.delete(code)
+/** Remove a player from a room */
+export function removePlayer(room: Room, playerId: string): void {
+  room.players.delete(playerId)
+  rooms.set(room.code, room)
+  persistToFirestore(room)
 }
 
-/**
- * Start cleanup interval for inactive rooms
- */
+/** Set game state */
+export function setGameState(room: Room, state: GameState): void {
+  room.gameState = state
+  room.lastActivity = Date.now()
+  rooms.set(room.code, room)
+  persistToFirestore(room)
+}
+
+/** Check if a room code exists in cache */
+export function hasRoom(code: string): boolean {
+  return rooms.has(code.toUpperCase())
+}
+
+/** Get all active rooms from cache */
+export function getActiveRooms(): Room[] {
+  return Array.from(rooms.values())
+}
+
+/** Get active room count */
+export function getActiveRoomCount(): number {
+  return rooms.size
+}
+
+/** Get all room entries (for iteration) */
+export function getRoomEntries(): IterableIterator<[string, Room]> {
+  return rooms.entries()
+}
+
+// ── Timeout Management ─────────────────────────────────────
+
+export function setRoomTimeout(code: string, timeout: NodeJS.Timeout): void {
+  roomTimeouts.set(code, timeout)
+}
+
+export function getRoomTimeout(code: string): NodeJS.Timeout | undefined {
+  return roomTimeouts.get(code)
+}
+
+export function clearRoomTimeout(code: string): void {
+  const timeout = roomTimeouts.get(code)
+  if (timeout) {
+    clearTimeout(timeout)
+    roomTimeouts.delete(code)
+  }
+}
+
+export function setPlotTwistTimeout(code: string, timeout: NodeJS.Timeout): void {
+  plotTwistTimeouts.set(code, timeout)
+}
+
+export function getPlotTwistTimeout(code: string): NodeJS.Timeout | undefined {
+  return plotTwistTimeouts.get(code)
+}
+
+export function clearPlotTwistTimeout(code: string): void {
+  const timeout = plotTwistTimeouts.get(code)
+  if (timeout) {
+    clearTimeout(timeout)
+    plotTwistTimeouts.delete(code)
+  }
+}
+
+/** Clean up all timeouts for a room */
+export function clearAllRoomTimeouts(code: string): void {
+  clearRoomTimeout(code)
+  clearPlotTwistTimeout(code)
+}
+
+// ── Startup Recovery ───────────────────────────────────────
+
+/** Load rooms from Firestore on startup */
+export async function loadRoomsFromFirestore(): Promise<void> {
+  try {
+    const db = getDatabase()
+    if (!db.isConnected()) {
+      console.log('[RoomService] Database not connected, skipping room recovery')
+      return
+    }
+
+    const docs = await db.getAll<FirestoreRoom>(Collections.ROOMS)
+    const now = Date.now()
+    const twoHours = 2 * 60 * 60 * 1000
+    let recovered = 0
+    let cleaned = 0
+
+    for (const doc of docs) {
+      // Clean up rooms older than 2 hours
+      if (now - doc.lastActivity > twoHours) {
+        await db.delete(Collections.ROOMS, doc.code).catch(() => {})
+        cleaned++
+        continue
+      }
+
+      const room = firestoreToRoom(doc)
+
+      // Stale PERFORMING rooms (>2min since activity) → transition to RESULTS
+      if (room.gameState === 'PERFORMING' && now - room.lastActivity > 2 * 60 * 1000) {
+        room.gameState = 'RESULTS'
+      }
+
+      // LOADING rooms that are stale → back to SELECTION
+      if (room.gameState === 'LOADING' && now - room.lastActivity > 2 * 60 * 1000) {
+        room.gameState = 'SELECTION'
+      }
+
+      rooms.set(room.code, room)
+      recovered++
+    }
+
+    if (recovered > 0 || cleaned > 0) {
+      console.log(`[RoomService] Recovered ${recovered} room(s), cleaned ${cleaned} stale room(s) from Firestore`)
+    }
+  } catch (err) {
+    console.error('[RoomService] Failed to load rooms from Firestore:', err)
+  }
+}
+
+// ── Cleanup ────────────────────────────────────────────────
+
+let cleanupInterval: NodeJS.Timeout | null = null
+
+/** Start periodic cleanup of inactive rooms (both cache and Firestore) */
 export function startRoomCleanup(): void {
-  setInterval(() => {
+  startRetryQueue()
+
+  cleanupInterval = setInterval(() => {
     const now = Date.now()
     let cleanedCount = 0
 
     for (const [code, room] of rooms.entries()) {
       if (now - room.lastActivity > ROOM_INACTIVITY_TIMEOUT) {
-        console.log(`🧹 Cleaning up inactive room: ${code}`)
+        console.log(`Cleaning up inactive room: ${code}`)
+        clearAllRoomTimeouts(code)
         rooms.delete(code)
+        deleteFromFirestore(code)
         cleanedCount++
       }
     }
 
     if (cleanedCount > 0) {
-      console.log(`🧹 Cleaned up ${cleanedCount} inactive room(s)`)
+      console.log(`Cleaned up ${cleanedCount} inactive room(s)`)
     }
   }, ROOM_CLEANUP_INTERVAL)
 
-  console.log('✓ Room cleanup service started')
+  console.log('Room cleanup service started')
 }
 
-/**
- * Get active room count
- */
-export function getActiveRoomCount(): number {
-  return rooms.size
-}
-
-/**
- * Get total player count across all rooms
- */
-export function getTotalPlayerCount(): number {
-  let count = 0
-  for (const room of rooms.values()) {
-    count += room.players.size
+/** Stop cleanup (for graceful shutdown) */
+export function stopRoomCleanup(): void {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval)
+    cleanupInterval = null
   }
-  return count
+  if (retryInterval) {
+    clearInterval(retryInterval)
+    retryInterval = null
+  }
+  // Clear all debounced writes
+  for (const timeout of debouncedWrites.values()) {
+    clearTimeout(timeout)
+  }
+  debouncedWrites.clear()
+  // Clear all room timeouts
+  for (const timeout of roomTimeouts.values()) {
+    clearTimeout(timeout)
+  }
+  roomTimeouts.clear()
+  for (const timeout of plotTwistTimeouts.values()) {
+    clearTimeout(timeout)
+  }
+  plotTwistTimeouts.clear()
 }

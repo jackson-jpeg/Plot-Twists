@@ -109,6 +109,8 @@ export default function HostPage() {
   const [scriptGenerationTimedOut, setScriptGenerationTimedOut] = useState(false)
   const scriptGenerationTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
   const [loadingProgress, setLoadingProgress] = useState(0)
+  const [loadingPhase, setLoadingPhase] = useState('')
+  const [scriptTitlePreview, setScriptTitlePreview] = useState<string | null>(null)
   const loadingIntervalRef = React.useRef<NodeJS.Timeout | null>(null)
   const scriptContainerRef = React.useRef<HTMLDivElement | null>(null)
   const [scriptImageUrl, setScriptImageUrl] = useState<string | null>(null)
@@ -123,9 +125,10 @@ export default function HostPage() {
     isLoading: teleprompterSettingsLoading
   } = useTeleprompterSettings()
 
-  // Loading stage messages based on progress
+  // Loading stage messages — driven by real server progress when available
   const loadingStages = [
     { percent: 0, message: "Gathering inspiration...", icon: "🎬" },
+    { percent: 10, message: "Connecting to AI...", icon: "🔌" },
     { percent: 20, message: "Assembling characters...", icon: "🎭" },
     { percent: 40, message: "Writing dialogue...", icon: "✍️" },
     { percent: 60, message: "Adding comedic timing...", icon: "😂" },
@@ -134,6 +137,14 @@ export default function HostPage() {
   ]
 
   const getCurrentLoadingStage = () => {
+    // If we have a real phase from the server, use it
+    if (loadingPhase) {
+      const icon = loadingProgress < 20 ? "🔌" :
+                   loadingProgress < 40 ? "🎭" :
+                   loadingProgress < 80 ? "✍️" :
+                   loadingProgress < 95 ? "✨" : "🎪"
+      return { percent: loadingProgress, message: loadingPhase, icon }
+    }
     for (let i = loadingStages.length - 1; i >= 0; i--) {
       if (loadingProgress >= loadingStages[i].percent) {
         return loadingStages[i]
@@ -258,27 +269,36 @@ export default function HostPage() {
         }
         setScriptGenerationTimedOut(false)
         setLoadingProgress(0)
+        setLoadingPhase('')
+        setScriptTitlePreview(null)
       }
-      // Start timeout and progress animation when entering LOADING state
+      // Start timeout when entering LOADING state (real progress comes from server)
       if (newState === 'LOADING') {
         setScriptGenerationTimedOut(false)
         setLoadingProgress(0)
-        // Animate progress in stages - slower to match 45s timeout
+        setLoadingPhase('')
+        setScriptTitlePreview(null)
+        // Fallback: slow fake progress only if server progress doesn't arrive
         loadingIntervalRef.current = setInterval(() => {
           setLoadingProgress(prev => {
-            if (prev >= 95) return 95
-            // Slow down as we get higher to avoid reaching 95% too quickly
-            const increment = prev < 50
-              ? Math.random() * 6 + 2  // 2-8% early on
-              : prev < 80
-                ? Math.random() * 4 + 1  // 1-5% mid-way
-                : Math.random() * 2 + 0.5  // 0.5-2.5% near the end
-            return prev + increment
+            if (prev >= 15) return prev // Stop fake progress once server should be sending real updates
+            return prev + Math.random() * 3 + 1
           })
-        }, 2000) // Update every 2 seconds instead of 1.5s
+        }, 2000)
         scriptGenerationTimeoutRef.current = setTimeout(() => {
           setScriptGenerationTimedOut(true)
-        }, 45000) // 45 second timeout (scripts can take up to 60s)
+        }, 90000) // 90 second timeout with abort+retry
+      }
+    })
+    // Real-time script generation progress from server streaming
+    socket.on('script_generation_progress', (data: { phase: string; percent: number; title?: string }) => {
+      setLoadingProgress(data.percent)
+      setLoadingPhase(data.phase)
+      if (data.title) setScriptTitlePreview(data.title)
+      // Clear fake progress interval once we get real progress
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current)
+        loadingIntervalRef.current = null
       }
     })
     socket.on('green_room_prompt', setGreenRoomQuestion)
@@ -337,6 +357,7 @@ export default function HostPage() {
       socket.off('game_over')
       socket.off('available_cards')
       socket.off('new_game_started')
+      socket.off('script_generation_progress')
       socket.off('latency_ping')
       socket.off('latency_pong_response')
     }
@@ -1546,6 +1567,18 @@ export default function HostPage() {
                   {getCurrentLoadingStage().message}
                 </motion.p>
               </AnimatePresence>
+
+              {/* Show script title preview when available from streaming */}
+              {scriptTitlePreview && (
+                <motion.p
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-lg mb-4 font-bold"
+                  style={{ color: 'var(--color-accent-1)' }}
+                >
+                  &ldquo;{scriptTitlePreview}&rdquo;
+                </motion.p>
+              )}
 
               {settings.gameMode === 'SOLO' && (
                 <motion.div

@@ -4,37 +4,22 @@
  */
 
 import type { DatabaseAdapter, WhereClause, QueryOptions } from './adapter'
+import type { Firestore as FirestoreType } from 'firebase-admin/firestore'
 
-// Firebase Admin SDK types (using any for flexibility since firebase-admin may not be installed)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Firestore = any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type DocumentData = any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type FirebaseAdmin = any
-
-let db: Firestore | null = null
+let adminInstance: any = null
+let db: FirestoreType | null = null
 let isInitialized = false
-let adminInstance: FirebaseAdmin | null = null
 
 /**
  * Initialize Firebase Admin SDK for server-side use
  * Requires FIREBASE_SERVICE_ACCOUNT_KEY environment variable
  */
-async function initializeFirebaseAdmin(): Promise<Firestore | null> {
+async function initializeFirebaseAdmin(): Promise<FirestoreType | null> {
   if (isInitialized) return db
 
   try {
-    // Dynamic import to avoid issues if firebase-admin is not installed
-    const adminModule = await import('firebase-admin').catch(() => null)
-
-    if (!adminModule) {
-      console.log('Firebase Admin SDK not installed')
-      isInitialized = true
-      return null
-    }
-
-    const admin: FirebaseAdmin = adminModule
+    const admin = (await import('firebase-admin')).default
 
     const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
@@ -70,7 +55,7 @@ async function initializeFirebaseAdmin(): Promise<Firestore | null> {
  * Firestore implementation of DatabaseAdapter
  */
 export class FirestoreAdapter implements DatabaseAdapter {
-  private db: Firestore | null = null
+  private db: FirestoreType | null = null
   private connected = false
 
   async connect(): Promise<void> {
@@ -90,7 +75,7 @@ export class FirestoreAdapter implements DatabaseAdapter {
     return this.connected && this.db !== null
   }
 
-  private ensureConnected(): Firestore {
+  private ensureConnected(): FirestoreType {
     if (!this.db) {
       throw new Error('Database not connected. Call connect() first.')
     }
@@ -106,12 +91,14 @@ export class FirestoreAdapter implements DatabaseAdapter {
 
   async set<T>(collection: string, id: string, data: T): Promise<void> {
     const db = this.ensureConnected()
-    await db.collection(collection).doc(id).set(data as DocumentData)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await db.collection(collection).doc(id).set(data as any)
   }
 
   async update<T>(collection: string, id: string, data: Partial<T>): Promise<void> {
     const db = this.ensureConnected()
-    await db.collection(collection).doc(id).update(data as DocumentData)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await db.collection(collection).doc(id).update(data as any)
   }
 
   async delete(collection: string, id: string): Promise<void> {
@@ -149,7 +136,8 @@ export class FirestoreAdapter implements DatabaseAdapter {
     }
 
     const snapshot = await query.get()
-    return snapshot.docs.map((doc: DocumentData) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data()
     })) as T[]
@@ -161,7 +149,8 @@ export class FirestoreAdapter implements DatabaseAdapter {
 
     for (const item of items) {
       const ref = db.collection(collection).doc(item.id)
-      batch.set(ref, item.data as DocumentData)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      batch.set(ref, item.data as any)
     }
 
     await batch.commit()
@@ -182,7 +171,8 @@ export class FirestoreAdapter implements DatabaseAdapter {
   async getAll<T>(collection: string): Promise<T[]> {
     const db = this.ensureConnected()
     const snapshot = await db.collection(collection).get()
-    return snapshot.docs.map((doc: DocumentData) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data()
     })) as T[]
@@ -211,6 +201,7 @@ export const firestoreAdapter = new FirestoreAdapter()
  * Get Firebase Storage bucket for file uploads
  * Returns null if Firebase is not configured
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function getStorage(): Promise<any | null> {
   if (!adminInstance) {
     await initializeFirebaseAdmin()

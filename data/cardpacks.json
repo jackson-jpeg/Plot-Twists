@@ -1,1 +1,195 @@
-[]
+{
+  "items": [
+    {
+      "id": "standard",
+      "name": "Standard Pack",
+      "description": "The original Plot Twists card collection with 200+ characters, settings, and circumstances",
+      "author": "Plot Twists",
+      "theme": "mixed",
+      "isMature": false,
+      "isBuiltIn": true,
+      "isPublic": true,
+      "characters": [],
+      "settings": [],
+      "circumstances": [],
+      "downloads": 0,
+      "rating": 5,
+      "ratingCount": 0,
+      "createdAt": 1770236887306,
+      "updatedAt": 1770236887306
+    },
+    {
+      "id": "example-office-comedy",
+      "name": "Office Comedy",
+      "description": "Characters and scenarios from your favorite workplace sitcoms",
+      "author": "Plot Twists",
+      "theme": "office",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        {
+          "id": "office-char-1",
+          "name": "The Overbearing Boss",
+          "description": "Thinks they're everyone's best friend"
+        },
+        {
+          "id": "office-char-2",
+          "name": "The IT Guy",
+          "description": "Has seen things in the server logs"
+        },
+        {
+          "id": "office-char-3",
+          "name": "HR Representative",
+          "description": "Has to deal with everyone's nonsense"
+        },
+        {
+          "id": "office-char-4",
+          "name": "The Intern",
+          "description": "Way too eager to please"
+        },
+        {
+          "id": "office-char-5",
+          "name": "The Slacker",
+          "description": "Master of looking busy"
+        },
+        {
+          "id": "office-char-6",
+          "name": "The Office Gossip",
+          "description": "Knows everyone's secrets"
+        }
+      ],
+      "settings": [
+        {
+          "id": "office-set-1",
+          "name": "The Break Room",
+          "description": "Where passive-aggressive notes live"
+        },
+        {
+          "id": "office-set-2",
+          "name": "Conference Room B",
+          "description": "The one with the broken projector"
+        },
+        {
+          "id": "office-set-3",
+          "name": "The Parking Lot",
+          "description": "After-hours drama central"
+        },
+        {
+          "id": "office-set-4",
+          "name": "The Supply Closet",
+          "description": "Someone's hiding in here"
+        }
+      ],
+      "circumstances": [
+        {
+          "id": "office-circ-1",
+          "name": "Planning the office party",
+          "description": "Budget: $50"
+        },
+        {
+          "id": "office-circ-2",
+          "name": "Someone stole lunch from the fridge",
+          "description": "Again."
+        },
+        {
+          "id": "office-circ-3",
+          "name": "The printer is jammed",
+          "description": "Deadline in 10 minutes"
+        },
+        {
+          "id": "office-circ-4",
+          "name": "Mandatory team building exercise",
+          "description": "Trust falls incoming"
+        }
+      ],
+      "downloads": 0,
+      "rating": 4.5,
+      "ratingCount": 10,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "example-scifi-adventures",
+      "name": "Sci-Fi Adventures",
+      "description": "Explore strange new worlds with familiar tropes",
+      "author": "Plot Twists",
+      "theme": "scifi",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        {
+          "id": "scifi-char-1",
+          "name": "The Grizzled Captain",
+          "description": "Has seen too many red shirts die"
+        },
+        {
+          "id": "scifi-char-2",
+          "name": "The Anxious Robot",
+          "description": "Calculates the odds of doom constantly"
+        },
+        {
+          "id": "scifi-char-3",
+          "name": "The Alien Ambassador",
+          "description": "Confused by human customs"
+        },
+        {
+          "id": "scifi-char-4",
+          "name": "The Mad Scientist",
+          "description": "It's not a death ray, it's a research device"
+        },
+        {
+          "id": "scifi-char-5",
+          "name": "The Space Pirate",
+          "description": "Yo ho ho and a bottle of... space rum?"
+        }
+      ],
+      "settings": [
+        {
+          "id": "scifi-set-1",
+          "name": "The Bridge",
+          "description": "Everyone stands instead of sitting"
+        },
+        {
+          "id": "scifi-set-2",
+          "name": "Alien Cantina",
+          "description": "No droids allowed"
+        },
+        {
+          "id": "scifi-set-3",
+          "name": "Space Station Customs",
+          "description": "Please declare all contraband"
+        },
+        {
+          "id": "scifi-set-4",
+          "name": "Escape Pod",
+          "description": "Fits two uncomfortably"
+        }
+      ],
+      "circumstances": [
+        {
+          "id": "scifi-circ-1",
+          "name": "First contact with new species",
+          "description": "They communicate through interpretive dance"
+        },
+        {
+          "id": "scifi-circ-2",
+          "name": "Ship's AI has gone rogue",
+          "description": "It just wants to play chess"
+        },
+        {
+          "id": "scifi-circ-3",
+          "name": "Translating an ancient alien text",
+          "description": "It might be a recipe"
+        }
+      ],
+      "downloads": 0,
+      "rating": 4.3,
+      "ratingCount": 8,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    }
+  ],
+  "savedAt": 1770236887307
+}

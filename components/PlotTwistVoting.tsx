@@ -231,47 +231,6 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
 
   return (
     <>
-      {/* Host: CHAOS Button with pulsing glow */}
-      {isHost && !isActive && !winningTwist && (
-        <motion.button
-          onClick={startPlotTwist}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="fixed bottom-20 right-4 px-5 py-3 rounded-full font-black text-lg shadow-lg overflow-hidden"
-          style={{
-            background: 'linear-gradient(135deg, #a855f7, #ec4899)',
-          }}
-        >
-          {/* Pulsing glow effect */}
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{
-              background: 'linear-gradient(135deg, #a855f7, #ec4899)',
-              filter: 'blur(10px)',
-            }}
-            animate={{
-              opacity: [0.5, 0.8, 0.5],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: 'easeInOut'
-            }}
-          />
-          {/* Button content */}
-          <span className="relative z-10 flex items-center gap-2 text-white">
-            <motion.span
-              animate={{ rotate: 360 }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-            >
-              🌀
-            </motion.span>
-            CHAOS!
-          </span>
-        </motion.button>
-      )}
-
       {/* Voting UI */}
       <AnimatePresence>
         {isActive && (
@@ -279,7 +238,8 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            style={{ zIndex: 'var(--z-modal)' }}
           >
             <motion.div
               className="bg-gray-900 rounded-2xl p-6 max-w-md w-full"
@@ -361,7 +321,8 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            style={{ zIndex: 'var(--z-modal)' }}
           >
             {/* Explosion particles */}
             <ExplosionParticles show={showParticles} />

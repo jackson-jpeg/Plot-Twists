@@ -1406,7 +1406,7 @@ function JoinPageContent() {
             </div>
 
             {/* Player Navigation Controls */}
-            <div className="p-4" style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}>
+            <div className="p-4 pb-safe" style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}>
               <div className="flex items-center justify-between max-w-md mx-auto">
                 <motion.button
                   onClick={goToPreviousLine}

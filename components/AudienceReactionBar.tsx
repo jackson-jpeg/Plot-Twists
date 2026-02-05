@@ -87,7 +87,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
     <div className="relative">
       {/* Floating reactions overlay (for host view) */}
       {isHost && (
-        <div className="fixed bottom-24 right-4 w-48 sm:w-64 h-48 pointer-events-none overflow-hidden">
+        <div className="fixed top-16 right-4 w-48 sm:w-64 h-48 pointer-events-none overflow-hidden" style={{ zIndex: 'var(--z-sticky)' }}>
           <AnimatePresence>
             {floatingReactions.map(reaction => (
               <motion.div
@@ -107,7 +107,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
 
       {/* Reaction counts (for host view) */}
       {isHost && (
-        <div className="fixed bottom-4 right-4 bg-black/80 backdrop-blur-sm rounded-xl p-2 sm:p-3 flex gap-1.5 sm:gap-3">
+        <div className="fixed top-4 right-4 bg-black/80 backdrop-blur-sm rounded-xl p-2 sm:p-3 flex gap-1.5 sm:gap-3" style={{ zIndex: 'var(--z-sticky)' }}>
           {(Object.keys(REACTION_EMOJIS) as AudienceReactionType[]).map(type => (
             <div key={type} className="flex flex-col items-center">
               <span className="text-xl sm:text-2xl">{REACTION_EMOJIS[type]}</span>
@@ -119,7 +119,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
 
       {/* Reaction buttons (for audience) */}
       {!isHost && (
-        <div className="fixed bottom-4 left-0 right-0 flex justify-center">
+        <div className="fixed left-0 right-0 flex justify-center" style={{ bottom: 'calc(72px + env(safe-area-inset-bottom, 0px))', zIndex: 'var(--z-sticky)' }}>
           <div className={`bg-black/80 backdrop-blur-sm rounded-full px-2 sm:px-4 py-2 flex gap-1 sm:gap-2 transition-opacity ${cooldown ? 'opacity-50' : ''}`}>
             {(Object.keys(REACTION_EMOJIS) as AudienceReactionType[]).map(type => (
               <motion.button

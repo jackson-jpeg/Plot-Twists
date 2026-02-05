@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { Player, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings, TeleprompterSyncData, CardSelection, ScriptLine, TeleprompterSettings } from '@/lib/types'
@@ -115,6 +115,9 @@ export default function HostPage() {
   const scriptContainerRef = React.useRef<HTMLDivElement | null>(null)
   const [scriptImageUrl, setScriptImageUrl] = useState<string | null>(null)
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
+  const [chaosCooldown, setChaosCooldown] = useState(false)
+  const [chaosCooldownRemaining, setChaosCooldownRemaining] = useState(0)
+  const [chaosShaking, setChaosShaking] = useState(false)
 
   // Teleprompter settings hook
   const {
@@ -346,6 +349,10 @@ export default function HostPage() {
     socket.on('latency_pong_response', (data: { latency: number }) => {
       setNetworkLatency(data.latency)
     })
+    // Auto-set cooldown when a plot twist starts (resilience for reconnection)
+    socket.on('plot_twist_started', () => {
+      setChaosCooldown(true)
+    })
     return () => {
       socket.off('players_update')
       socket.off('player_joined')
@@ -360,6 +367,7 @@ export default function HostPage() {
       socket.off('script_generation_progress')
       socket.off('latency_ping')
       socket.off('latency_pong_response')
+      socket.off('plot_twist_started')
     }
   }, [socket, isConnected, gameState, toast])
 
@@ -423,6 +431,33 @@ export default function HostPage() {
       socket?.emit('pause_script', roomCode)
     }
   }
+
+  // CHAOS cooldown timer
+  useEffect(() => {
+    if (!chaosCooldown) return
+    setChaosCooldownRemaining(30)
+    const interval = setInterval(() => {
+      setChaosCooldownRemaining(prev => {
+        if (prev <= 0.1) {
+          setChaosCooldown(false)
+          clearInterval(interval)
+          return 0
+        }
+        return Math.max(0, prev - 0.1)
+      })
+    }, 100)
+    return () => clearInterval(interval)
+  }, [chaosCooldown])
+
+  const triggerChaos = useCallback(() => {
+    if (!socket || chaosCooldown) return
+    socket.emit('start_plot_twist', roomCode)
+    setChaosCooldown(true)
+    setChaosShaking(true)
+    setTimeout(() => setChaosShaking(false), 500)
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200])
+    toast.info('CHAOS unleashed! Audience is voting on a plot twist...')
+  }, [socket, roomCode, chaosCooldown, toast])
 
   const handleCopyScript = async () => {
     if (script) {
@@ -1854,6 +1889,55 @@ export default function HostPage() {
                   whileTap={{ scale: 0.95 }}
                 >
                   {isPlaying ? '⏸ Pause' : '▶ Play'}
+                </motion.button>
+                <motion.button
+                  onClick={triggerChaos}
+                  disabled={chaosCooldown}
+                  className={`btn relative overflow-hidden ${chaosShaking ? 'animate-chaos-shake' : ''}`}
+                  style={{
+                    background: chaosCooldown
+                      ? 'linear-gradient(135deg, #6b21a8, #9d174d)'
+                      : 'linear-gradient(135deg, #a855f7, #ec4899)',
+                    color: 'white',
+                    opacity: chaosCooldown ? 0.7 : 1,
+                    boxShadow: chaosCooldown ? 'none' : '0 0 15px rgba(168, 85, 247, 0.4)',
+                  }}
+                  whileHover={!chaosCooldown ? { scale: 1.05 } : {}}
+                  whileTap={!chaosCooldown ? { scale: 0.95 } : {}}
+                  animate={!chaosCooldown ? {
+                    boxShadow: [
+                      '0 0 10px rgba(168, 85, 247, 0.3)',
+                      '0 0 25px rgba(168, 85, 247, 0.5)',
+                      '0 0 10px rgba(168, 85, 247, 0.3)',
+                    ],
+                  } : {}}
+                  transition={!chaosCooldown ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
+                >
+                  {chaosCooldown ? (
+                    <span className="flex items-center gap-2">
+                      🌀 {Math.ceil(chaosCooldownRemaining)}s
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <motion.span
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                      >
+                        🌀
+                      </motion.span>
+                      CHAOS
+                    </span>
+                  )}
+                  {chaosCooldown && (
+                    <div
+                      className="absolute bottom-0 left-0 h-1 rounded-full"
+                      style={{
+                        width: `${(chaosCooldownRemaining / 30) * 100}%`,
+                        background: 'linear-gradient(90deg, #a855f7, #ec4899)',
+                        transition: 'width 0.1s linear',
+                      }}
+                    />
+                  )}
                 </motion.button>
                 <motion.button
                   onClick={nextLine}

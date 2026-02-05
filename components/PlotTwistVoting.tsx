@@ -367,7 +367,7 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
             <ExplosionParticles show={showParticles} />
 
             <motion.div
-              className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 max-w-md w-full text-center relative overflow-hidden"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-5 sm:p-8 max-w-md w-full text-center relative overflow-hidden"
               initial={{ scale: 0, rotate: -10 }}
               animate={{
                 scale: 1,

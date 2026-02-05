@@ -53,7 +53,7 @@ export function TeleprompterSettings({
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           disabled={disabled}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors"
           style={{
             background: 'var(--color-surface-alt)',
             color: 'var(--color-text-secondary)',
@@ -76,7 +76,7 @@ export function TeleprompterSettings({
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute top-full right-0 mt-2 z-20 min-w-64 rounded-xl shadow-xl overflow-hidden"
+              className="absolute top-full right-0 mt-2 z-20 min-w-64 max-w-[calc(100vw-2rem)] rounded-xl shadow-xl overflow-hidden"
               style={{
                 background: 'var(--color-surface)',
                 border: '1px solid var(--color-border)'

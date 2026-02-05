@@ -87,7 +87,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
     <div className="relative">
       {/* Floating reactions overlay (for host view) */}
       {isHost && (
-        <div className="fixed bottom-24 right-4 w-64 h-48 pointer-events-none overflow-hidden">
+        <div className="fixed bottom-24 right-4 w-48 sm:w-64 h-48 pointer-events-none overflow-hidden">
           <AnimatePresence>
             {floatingReactions.map(reaction => (
               <motion.div
@@ -107,10 +107,10 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
 
       {/* Reaction counts (for host view) */}
       {isHost && (
-        <div className="fixed bottom-4 right-4 bg-black/80 backdrop-blur-sm rounded-xl p-3 flex gap-3">
+        <div className="fixed bottom-4 right-4 bg-black/80 backdrop-blur-sm rounded-xl p-2 sm:p-3 flex gap-1.5 sm:gap-3">
           {(Object.keys(REACTION_EMOJIS) as AudienceReactionType[]).map(type => (
             <div key={type} className="flex flex-col items-center">
-              <span className="text-2xl">{REACTION_EMOJIS[type]}</span>
+              <span className="text-xl sm:text-2xl">{REACTION_EMOJIS[type]}</span>
               <span className="text-xs text-white/70">{reactionCounts[type]}</span>
             </div>
           ))}
@@ -120,14 +120,14 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
       {/* Reaction buttons (for audience) */}
       {!isHost && (
         <div className="fixed bottom-4 left-0 right-0 flex justify-center">
-          <div className={`bg-black/80 backdrop-blur-sm rounded-full px-4 py-2 flex gap-2 transition-opacity ${cooldown ? 'opacity-50' : ''}`}>
+          <div className={`bg-black/80 backdrop-blur-sm rounded-full px-2 sm:px-4 py-2 flex gap-1 sm:gap-2 transition-opacity ${cooldown ? 'opacity-50' : ''}`}>
             {(Object.keys(REACTION_EMOJIS) as AudienceReactionType[]).map(type => (
               <motion.button
                 key={type}
                 onClick={() => sendReaction(type)}
                 disabled={cooldown}
                 whileTap={{ scale: 0.9 }}
-                className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-2xl transition-colors disabled:opacity-50"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 flex items-center justify-center text-xl sm:text-2xl transition-colors disabled:opacity-50"
                 title={REACTION_LABELS[type]}
                 aria-label={`Send ${REACTION_LABELS[type]} reaction`}
               >

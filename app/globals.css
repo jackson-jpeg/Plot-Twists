@@ -2413,6 +2413,13 @@ textarea:focus-visible {
 
 /* Touch target optimization */
 @media (hover: none) and (pointer: coarse) {
+  button, a, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button, a, [role="button"], input, select, textarea {
+    touch-action: manipulation;
+  }
+
   /* Increase touch targets on touch devices */
   .btn {
     min-height: 44px;
@@ -2422,11 +2429,6 @@ textarea:focus-visible {
   .btn-small {
     min-height: 36px;
     min-width: 36px;
-  }
-
-  button, a {
-    min-height: 44px;
-    min-width: 44px;
   }
 
   .input {
@@ -2746,6 +2748,11 @@ textarea:focus-visible {
   transform: translateY(-1px);
 }
 
+.user-menu-btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 4px var(--color-purple-glow);
+}
+
 .user-menu-btn-secondary {
   background: var(--glass-bg);
   color: var(--color-text-primary);
@@ -2757,6 +2764,12 @@ textarea:focus-visible {
   background: var(--glass-bg-hover);
   border-color: var(--color-purple-border);
   color: white;
+}
+
+.user-menu-btn-secondary:active {
+  background: var(--glass-bg-hover);
+  border-color: var(--color-purple-border);
+  transform: translateY(1px);
 }
 
 .user-menu-trigger {
@@ -2907,5 +2920,12 @@ textarea:focus-visible {
   .user-menu-btn {
     padding: 6px 12px;
     font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .user-menu-btn {
+    padding: 5px 10px;
+    font-size: 12px;
   }
 }

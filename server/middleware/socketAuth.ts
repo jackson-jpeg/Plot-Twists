@@ -24,15 +24,18 @@ async function getAdminAuth() {
 /**
  * Socket.io middleware that verifies Firebase ID tokens.
  * Sets socket.data.uid on success.
- * Rejects connections without a valid token.
+ * Allows unauthenticated connections (uid will be null) so the app
+ * works for guests; credit operations check uid themselves.
  */
 export function createSocketAuthMiddleware() {
   return async (socket: Socket, next: (err?: Error) => void) => {
     const token = socket.handshake.auth?.token
 
     if (!token) {
-      console.warn(`[SocketAuth] Connection rejected: no token provided (${socket.id})`)
-      return next(new Error('Authentication required'))
+      // Allow connection without auth — guests can still play,
+      // but credit/purchase features will require sign-in.
+      socket.data.uid = null
+      return next()
     }
 
     try {
@@ -50,7 +53,9 @@ export function createSocketAuthMiddleware() {
       next()
     } catch (error) {
       console.warn(`[SocketAuth] Token verification failed for ${socket.id}:`, error)
-      return next(new Error('Invalid authentication token'))
+      // Still allow connection but without uid — don't block the whole app
+      socket.data.uid = null
+      next()
     }
   }
 }

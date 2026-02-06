@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useAuth, getMissingFirebaseConfig } from '@/contexts/AuthContext'
 import { AuthModal } from './AuthModal'
+import { CreditBadge, CreditHeaderBadge } from './CreditBadge'
+import { PurchaseCreditsModal } from './PurchaseCreditsModal'
 
 export function UserMenu() {
   const { user, loading, signOut, isConfigured } = useAuth()
@@ -11,6 +13,7 @@ export function UserMenu() {
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin')
   const [showDebugInfo, setShowDebugInfo] = useState(false)
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
@@ -166,7 +169,8 @@ export function UserMenu() {
   // Authenticated user - show avatar dropdown
   return (
     <>
-      <div className="user-menu" ref={dropdownRef}>
+      <div className="user-menu" ref={dropdownRef} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <CreditHeaderBadge onClick={() => setShowPurchaseModal(true)} />
         <button
           className="user-menu-trigger"
           onClick={() => setIsOpen(!isOpen)}
@@ -195,6 +199,7 @@ export function UserMenu() {
                 <div className="user-menu-dropdown-email">{user.email}</div>
               </div>
             )}
+            <CreditBadge onClick={() => { setIsOpen(false); setShowPurchaseModal(true) }} />
             <Link
               href="/profile"
               className="user-menu-item"
@@ -218,6 +223,11 @@ export function UserMenu() {
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         initialMode={authModalMode}
+      />
+
+      <PurchaseCreditsModal
+        isOpen={showPurchaseModal}
+        onClose={() => setShowPurchaseModal(false)}
       />
     </>
   )

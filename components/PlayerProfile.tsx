@@ -608,22 +608,32 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
     { key: 'streak', label: 'Streak', icon: '🔥' }
   ]
 
+  const medals = ['🥇', '🥈', '🥉']
+  const podiumSlotClasses = [
+    'leaderboard-podium-slot-1',
+    'leaderboard-podium-slot-2',
+    'leaderboard-podium-slot-3',
+  ]
+
+  // Split entries into podium (top 3) and remaining rows
+  const hasPodium = entries.length >= 3
+  const podiumEntries = hasPodium ? entries.slice(0, 3) : []
+  const rowEntries = hasPodium ? entries.slice(3) : entries
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-[var(--color-text-primary)] font-display flex items-center gap-2">
         <span>🏅</span> Leaderboard
       </h2>
 
-      {/* Category Tabs */}
-      <div className="flex gap-2">
+      {/* Paper tabs */}
+      <div className="leaderboard-tabs">
         {categories.map(cat => (
           <button
             key={cat.key}
             onClick={() => setActiveCategory(cat.key)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              activeCategory === cat.key
-                ? 'bg-[var(--color-purple)] text-white'
-                : 'bg-[var(--color-surface-elevated)] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
+            className={`leaderboard-tab ${
+              activeCategory === cat.key ? 'leaderboard-tab-active' : ''
             }`}
           >
             {cat.icon} {cat.label}
@@ -641,29 +651,67 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
           <p className="text-[var(--color-text-secondary)]">Play more games to compete on the leaderboard!</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {entries.map((entry, index) => (
+        <>
+          {/* Top 3 podium — only when >= 3 entries */}
+          {hasPodium && (
             <motion.div
-              key={entry.playerId}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className={`flex items-center gap-4 p-3 rounded-xl ${
-                index < 3 ? 'bg-gradient-to-r from-[var(--color-surface-elevated)] to-[var(--color-surface)]' : 'bg-[var(--color-surface-elevated)]/50'
-              }`}
+              className="leaderboard-podium"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <div className={`w-8 text-center ${index < 3 ? 'text-xl' : 'text-sm font-medium text-[var(--color-text-tertiary)]'}`}>
-                {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${entry.rank}`}
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-[var(--color-text-primary)]">{entry.nickname}</p>
-              </div>
-              <div className="text-lg font-bold text-[var(--color-purple)]">
-                {entry.value}{activeCategory === 'winRate' ? '%' : ''}
-              </div>
+              {podiumEntries.map((entry, index) => (
+                <div
+                  key={entry.playerId}
+                  className={`leaderboard-podium-slot ${podiumSlotClasses[index]}`}
+                >
+                  <motion.div
+                    className="leaderboard-podium-card"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <div className="tape-piece tape-top-center" style={{ width: '36px', height: '12px', top: '-6px' }} />
+                    <div className="leaderboard-podium-medal">{medals[index]}</div>
+                    <div className="leaderboard-podium-name">{entry.nickname}</div>
+                    <div className="leaderboard-podium-value">
+                      {entry.value}{activeCategory === 'winRate' ? '%' : ''}
+                    </div>
+                  </motion.div>
+                </div>
+              ))}
             </motion.div>
-          ))}
-        </div>
+          )}
+
+          {/* Remaining rows (4-10, or all if < 3 entries) */}
+          {rowEntries.length > 0 && (
+            <div className="leaderboard-rows">
+              {rowEntries.map((entry, i) => {
+                const actualIndex = hasPodium ? i + 3 : i
+                return (
+                  <motion.div
+                    key={entry.playerId}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: actualIndex * 0.04 }}
+                    className="leaderboard-row"
+                  >
+                    <div className="leaderboard-row-rank">
+                      {!hasPodium && actualIndex < 3
+                        ? medals[actualIndex]
+                        : `#${entry.rank}`
+                      }
+                    </div>
+                    <div className="leaderboard-row-name">{entry.nickname}</div>
+                    <div className="leaderboard-row-value">
+                      {entry.value}{activeCategory === 'winRate' ? '%' : ''}
+                    </div>
+                  </motion.div>
+                )
+              })}
+            </div>
+          )}
+        </>
       )}
     </div>
   )

@@ -44,70 +44,30 @@ export function CreditHeaderBadge({ onClick }: { onClick?: () => void }) {
 
   if (!balance) {
     return (
-      <button
-        onClick={onClick}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '0.35rem',
-          padding: '0.3rem 0.65rem',
-          borderRadius: '999px',
-          border: '1px solid rgba(255,255,255,0.15)',
-          background: 'rgba(0,0,0,0.35)',
-          backdropFilter: 'blur(8px)',
-          color: 'rgba(255,255,255,0.5)',
-          fontSize: '0.75rem',
-          cursor: 'pointer',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        <span style={{ fontSize: '0.85rem' }}>🎬</span>
+      <button onClick={onClick} className="credit-header-badge">
+        <span className="credit-header-badge-icon">🎬</span>
         <span>...</span>
       </button>
     )
   }
 
-  let pillColor: string
-  let pillBg: string
-  let label: string
-
+  let variant: string
   if (balance.total === 0) {
-    pillColor = '#f87171'
-    pillBg = 'rgba(248,113,113,0.15)'
-    label = '0'
+    variant = 'credit-header-badge-empty'
   } else if (balance.free > 0) {
-    pillColor = '#4ade80'
-    pillBg = 'rgba(74,222,128,0.15)'
-    label = String(balance.total)
+    variant = 'credit-header-badge-ok'
   } else {
-    pillColor = '#facc15'
-    pillBg = 'rgba(250,204,21,0.15)'
-    label = String(balance.total)
+    variant = 'credit-header-badge-low'
   }
 
   return (
     <button
       onClick={onClick}
       title={`${balance.free} free + ${balance.banked} banked scripts`}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.35rem',
-        padding: '0.3rem 0.65rem',
-        borderRadius: '999px',
-        border: `1px solid ${pillColor}40`,
-        background: pillBg,
-        backdropFilter: 'blur(8px)',
-        color: pillColor,
-        fontSize: '0.75rem',
-        fontWeight: 700,
-        cursor: 'pointer',
-        whiteSpace: 'nowrap',
-        transition: 'all 0.2s ease',
-      }}
+      className={`credit-header-badge ${variant}`}
     >
-      <span style={{ fontSize: '0.85rem' }}>🎬</span>
-      <span>{label}</span>
+      <span className="credit-header-badge-icon">🎬</span>
+      <span>{balance.total}</span>
     </button>
   )
 }
@@ -118,55 +78,33 @@ export function CreditBadge({ onClick }: { onClick?: () => void }) {
 
   if (!balance) {
     return (
-      <div style={{
-        padding: '0.5rem 0.75rem',
-        fontSize: '0.8rem',
-        color: 'var(--color-text-secondary)',
-        opacity: 0.5
-      }}>
+      <div className="credit-dropdown-row credit-dropdown-row-loading">
         Loading credits...
       </div>
     )
   }
 
-  let dotColor: string
+  let dotClass: string
   let label: string
 
   if (balance.free > 0) {
-    dotColor = 'var(--color-success, #4ade80)'
+    dotClass = 'credit-dot-ok'
     label = `${balance.free} free script${balance.free !== 1 ? 's' : ''} left`
   } else if (balance.banked > 0) {
-    dotColor = '#facc15'
+    dotClass = 'credit-dot-low'
     label = `${balance.banked} banked script${balance.banked !== 1 ? 's' : ''}`
   } else {
-    dotColor = 'var(--color-danger, #f87171)'
+    dotClass = 'credit-dot-empty'
     label = '0 scripts — buy more'
   }
 
   return (
     <button
       onClick={onClick}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        padding: '0.5rem 0.75rem',
-        background: 'none',
-        border: 'none',
-        cursor: onClick ? 'pointer' : 'default',
-        color: 'var(--color-text-secondary)',
-        fontSize: '0.8rem',
-        width: '100%',
-        textAlign: 'left'
-      }}
+      className="credit-dropdown-row"
+      data-clickable={onClick ? 'true' : 'false'}
     >
-      <span style={{
-        width: '8px',
-        height: '8px',
-        borderRadius: '50%',
-        backgroundColor: dotColor,
-        flexShrink: 0
-      }} />
+      <span className={`credit-dot ${dotClass}`} />
       <span>{label}</span>
     </button>
   )

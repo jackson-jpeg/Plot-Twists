@@ -10,6 +10,8 @@ import { AuthModal } from '@/components/AuthModal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 import { AccountSettings } from '@/components/AccountSettings'
+import { useCreditBalance } from '@/components/CreditBadge'
+import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -17,6 +19,8 @@ export default function ProfilePage() {
   const { user, loading: authLoading, signOut, getPlayerId, isConfigured } = useAuth()
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false)
+  const creditBalance = useCreditBalance()
 
   const playerId = getPlayerId()
 
@@ -38,6 +42,12 @@ export default function ProfilePage() {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
+      />
+
+      {/* Purchase Credits Modal */}
+      <PurchaseCreditsModal
+        isOpen={showPurchaseModal}
+        onClose={() => setShowPurchaseModal(false)}
       />
 
       {/* Back Button - styled as a ticket stub */}
@@ -164,6 +174,50 @@ export default function ProfilePage() {
             </div>
           )}
         </motion.div>
+
+        {/* Credit Wallet Card — authenticated users, not on leaderboard */}
+        {user && !user.isAnonymous && !showLeaderboard && creditBalance && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, rotate: -0.5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="note-card mb-6"
+          >
+            <div className="tape-piece tape-top-center"></div>
+            <div className="credit-wallet">
+              <div className="credit-wallet-left">
+                <span className="credit-wallet-icon">🎬</span>
+                <div className="credit-wallet-info">
+                  <div className="credit-wallet-total">
+                    {creditBalance.total} Script{creditBalance.total !== 1 ? 's' : ''}
+                  </div>
+                  <div className="credit-wallet-breakdown">
+                    {creditBalance.free} free + {creditBalance.banked} banked
+                  </div>
+                  <div className="credit-wallet-progress">
+                    <div className="credit-wallet-progress-label">
+                      <span>Free weekly</span>
+                      <span>{creditBalance.free}/5</span>
+                    </div>
+                    <div className="credit-wallet-progress-bar">
+                      <div
+                        className="credit-wallet-progress-fill"
+                        style={{ width: `${Math.min((creditBalance.free / 5) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <motion.button
+                onClick={() => setShowPurchaseModal(true)}
+                className="credit-wallet-buy-btn"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Buy More
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
 
         {/* Account Upgrade Card for Anonymous Users */}
         {user?.isAnonymous && (

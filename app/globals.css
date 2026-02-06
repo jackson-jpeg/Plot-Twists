@@ -2945,3 +2945,727 @@ textarea:focus-visible {
     font-size: 12px;
   }
 }
+
+/* ==========================================================================
+   Credit Badge System
+   ========================================================================== */
+
+/* Header pill badge — always visible next to avatar */
+.credit-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.credit-header-badge:hover {
+  transform: scale(1.05);
+  filter: brightness(1.15);
+}
+
+/* Color variants */
+.credit-header-badge-ok {
+  border-color: rgba(74, 222, 128, 0.25);
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+}
+
+.credit-header-badge-low {
+  border-color: rgba(250, 204, 21, 0.25);
+  background: rgba(250, 204, 21, 0.15);
+  color: #facc15;
+}
+
+.credit-header-badge-empty {
+  border-color: rgba(248, 113, 113, 0.25);
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+.credit-header-badge-icon {
+  font-size: 0.85rem;
+}
+
+/* Dropdown row badge — detailed credit info inside user menu */
+.credit-dropdown-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.credit-dropdown-row:hover {
+  background: var(--color-surface-alt);
+}
+
+.credit-dropdown-row[data-clickable="true"] {
+  cursor: pointer;
+}
+
+.credit-dropdown-row-loading {
+  opacity: 0.5;
+}
+
+/* Status dot */
+.credit-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.credit-dot-ok {
+  background-color: var(--color-success, #4ade80);
+}
+
+.credit-dot-low {
+  background-color: #facc15;
+}
+
+.credit-dot-empty {
+  background-color: var(--color-danger, #f87171);
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .credit-header-badge-ok {
+    border-color: rgba(74, 222, 128, 0.3);
+    background: rgba(74, 222, 128, 0.12);
+  }
+
+  .credit-header-badge-low {
+    border-color: rgba(250, 204, 21, 0.3);
+    background: rgba(250, 204, 21, 0.12);
+  }
+
+  .credit-header-badge-empty {
+    border-color: rgba(248, 113, 113, 0.3);
+    background: rgba(248, 113, 113, 0.12);
+  }
+}
+
+/* ==========================================================================
+   Purchase Credits Modal — Ticket Booth Theme
+   ========================================================================== */
+
+.purchase-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.purchase-modal-container {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 1rem;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Purple gradient header — matches AuthModal pattern */
+.purchase-modal-header {
+  background: linear-gradient(135deg, #581C87, #7C3AED);
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  position: relative;
+  border-radius: 0.875rem 0.875rem 0 0;
+}
+
+.purchase-modal-presents {
+  font-family: var(--font-ui);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.25rem;
+}
+
+.purchase-modal-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #FACC15;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.purchase-modal-subtitle {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0.25rem;
+}
+
+/* Perforation between header and body */
+.purchase-modal-perforation {
+  height: 8px;
+  background: var(--color-surface);
+  position: relative;
+  overflow: hidden;
+}
+
+.purchase-modal-perforation::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background-image: radial-gradient(circle at 8px -1px, transparent 6px, var(--color-surface) 6px);
+  background-size: 16px 8px;
+  background-position: 0 0;
+}
+
+.purchase-modal-perforation::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 50%;
+  height: 1px;
+  border-top: 1px dashed var(--color-border);
+}
+
+/* Body area */
+.purchase-modal-body {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+/* Error banner */
+.purchase-modal-error {
+  padding: 0.75rem;
+  background: var(--color-danger-light);
+  border-radius: 0.5rem;
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Package grid */
+.purchase-package-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+
+@media (max-width: 480px) {
+  .purchase-package-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Individual package card — ticket stub style */
+.purchase-package-card {
+  position: relative;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  background: var(--color-background, var(--color-surface));
+}
+
+.purchase-package-card:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-3);
+}
+
+.purchase-package-card:disabled {
+  cursor: wait;
+}
+
+.purchase-package-card-dimmed {
+  opacity: 0.5;
+}
+
+/* Best value highlight */
+.purchase-package-card-best {
+  border: 2px solid var(--color-purple);
+  box-shadow: 0 0 12px var(--color-purple-glow);
+}
+
+/* Colored stub top section */
+.purchase-package-stub {
+  padding: 0.75rem 0.75rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  position: relative;
+}
+
+.purchase-package-stub-starter {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+}
+
+.purchase-package-stub-party {
+  background: linear-gradient(135deg, #a855f7, #c084fc);
+}
+
+.purchase-package-stub-pro {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+}
+
+.purchase-package-stub-studio {
+  background: linear-gradient(135deg, #ef4444, #f87171);
+}
+
+.purchase-package-stub-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.purchase-package-stub-label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Dashed perforation between stub and body */
+.purchase-package-perf {
+  position: relative;
+  height: 12px;
+  background: var(--color-surface);
+}
+
+.purchase-package-perf::before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  top: 50%;
+  height: 0;
+  border-top: 1px dashed var(--color-border-strong);
+}
+
+/* Semi-circle notch cutouts */
+.purchase-package-perf::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -6px;
+  width: 12px;
+  height: 12px;
+  background: var(--color-bg);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  box-shadow: calc(100% + 600px - 12px) 0 0 0 var(--color-bg);
+}
+
+/* Main body of the package card */
+.purchase-package-main {
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.purchase-package-price {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-purple);
+  margin-bottom: 0.15rem;
+}
+
+.purchase-package-scripts {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.purchase-package-per-script {
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+  margin-top: 0.15rem;
+}
+
+.purchase-package-loading {
+  margin-top: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--color-purple);
+}
+
+/* Best Value tape-strip badge */
+.purchase-best-value-badge {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.6rem;
+  background: #FACC15;
+  color: #1C1917;
+  font-family: var(--font-handwritten);
+  font-size: 0.6rem;
+  padding: 0.2rem 0.6rem;
+  transform: rotate(8deg);
+  z-index: 5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+/* Close / maybe later button */
+.purchase-modal-close {
+  display: block;
+  margin: 1.25rem auto 0;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  transition: color 0.15s;
+}
+
+.purchase-modal-close:hover {
+  color: var(--color-text-primary);
+}
+
+/* Dark mode for purchase modal */
+@media (prefers-color-scheme: dark) {
+  .purchase-package-perf::after {
+    background: var(--color-bg);
+    box-shadow: calc(100% + 600px - 12px) 0 0 0 var(--color-bg);
+  }
+}
+
+/* ==========================================================================
+   Credit Wallet Card (Profile Page)
+   ========================================================================== */
+
+.credit-wallet {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.credit-wallet-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.credit-wallet-icon {
+  font-size: 1.75rem;
+  flex-shrink: 0;
+}
+
+.credit-wallet-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.credit-wallet-total {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.credit-wallet-breakdown {
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  margin-top: 0.1rem;
+}
+
+/* Free credits progress bar */
+.credit-wallet-progress {
+  margin-top: 0.5rem;
+}
+
+.credit-wallet-progress-label {
+  font-size: 0.7rem;
+  color: var(--color-text-tertiary);
+  margin-bottom: 0.25rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.credit-wallet-progress-bar {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.credit-wallet-progress-fill {
+  height: 100%;
+  background: var(--color-success, #4ade80);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.credit-wallet-buy-btn {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, var(--color-purple), var(--color-purple-dark));
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px var(--color-purple-glow);
+  white-space: nowrap;
+}
+
+.credit-wallet-buy-btn:hover {
+  background: linear-gradient(135deg, var(--color-purple-hover), var(--color-purple));
+  box-shadow: 0 4px 12px var(--color-purple-glow);
+  transform: translateY(-1px);
+}
+
+.credit-wallet-buy-btn:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Leaderboard — Nostalgic Theme
+   ========================================================================== */
+
+/* Paper tabs for leaderboard categories */
+.leaderboard-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0;
+  position: relative;
+}
+
+.leaderboard-tab {
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.5rem 0.5rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-bottom: none;
+  position: relative;
+  margin-bottom: -1px;
+  transition: all 0.2s ease;
+  background: var(--color-surface-alt);
+  color: var(--color-text-tertiary);
+}
+
+.leaderboard-tab:hover:not(.leaderboard-tab-active) {
+  color: var(--color-text-primary);
+  transform: translateY(-2px) rotate(0deg);
+}
+
+.leaderboard-tab-active {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+  z-index: 10;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-2);
+}
+
+/* Subtle rotation for non-active tabs */
+.leaderboard-tab:nth-child(1) { transform: rotate(-0.8deg); }
+.leaderboard-tab:nth-child(2) { transform: rotate(0.5deg); }
+.leaderboard-tab:nth-child(3) { transform: rotate(-0.5deg); }
+.leaderboard-tab:nth-child(4) { transform: rotate(0.8deg); }
+
+.leaderboard-tab-active,
+.leaderboard-tab:hover:not(.leaderboard-tab-active) {
+  transform: translateY(-2px) rotate(0deg);
+}
+
+/* Podium layout for top 3 */
+.leaderboard-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0.5rem 0.5rem;
+}
+
+.leaderboard-podium-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 160px;
+}
+
+/* Podium card — polaroid style */
+.leaderboard-podium-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 2px;
+  box-shadow:
+    0 2px 4px rgba(42, 39, 34, 0.1),
+    0 8px 16px rgba(42, 39, 34, 0.12);
+  padding: 0.75rem;
+  text-align: center;
+  position: relative;
+  overflow: visible;
+  width: 100%;
+  transition: transform 0.2s ease;
+}
+
+.leaderboard-podium-card:hover {
+  transform: rotate(0deg) !important;
+}
+
+/* Rotation per slot */
+.leaderboard-podium-slot:nth-child(1) .leaderboard-podium-card {
+  transform: rotate(-1.5deg);
+}
+.leaderboard-podium-slot:nth-child(2) .leaderboard-podium-card {
+  transform: rotate(1deg);
+}
+.leaderboard-podium-slot:nth-child(3) .leaderboard-podium-card {
+  transform: rotate(-0.8deg);
+}
+
+.leaderboard-podium-medal {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.leaderboard-podium-name {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-podium-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--color-purple);
+  margin-top: 0.15rem;
+}
+
+/* Height offsets for podium effect */
+.leaderboard-podium-slot-1 {
+  order: 2;
+  padding-bottom: 2rem;
+}
+
+.leaderboard-podium-slot-2 {
+  order: 1;
+  padding-bottom: 0.75rem;
+}
+
+.leaderboard-podium-slot-3 {
+  order: 3;
+  padding-bottom: 0;
+}
+
+/* Rows 4-10 */
+.leaderboard-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--color-surface-elevated);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.leaderboard-row:hover {
+  transform: translateX(4px);
+  background: var(--color-surface-alt);
+}
+
+.leaderboard-row-rank {
+  width: 2rem;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+}
+
+.leaderboard-row-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-row-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-purple);
+}
+
+/* Mobile responsive for leaderboard */
+@media (max-width: 480px) {
+  .leaderboard-podium {
+    gap: 0.5rem;
+    padding: 1rem 0.25rem 0.25rem;
+  }
+
+  .leaderboard-podium-card {
+    padding: 0.5rem;
+  }
+
+  .leaderboard-podium-medal {
+    font-size: 1.3rem;
+  }
+
+  .leaderboard-podium-name {
+    font-size: 0.75rem;
+  }
+
+  .leaderboard-podium-value {
+    font-size: 0.9rem;
+  }
+
+  .leaderboard-podium-slot-1 {
+    padding-bottom: 1.25rem;
+  }
+
+  .leaderboard-podium-slot-2 {
+    padding-bottom: 0.5rem;
+  }
+
+  .leaderboard-tab {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.7rem;
+  }
+}

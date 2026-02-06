@@ -10,6 +10,20 @@ interface PurchaseCreditsModalProps {
   onClose: () => void
 }
 
+const PACKAGE_ICONS: Record<string, string> = {
+  starter: '🎟️',
+  party: '🎉',
+  pro: '🎬',
+  studio: '🏛️',
+}
+
+const STUB_CLASSES: Record<string, string> = {
+  starter: 'purchase-package-stub-starter',
+  party: 'purchase-package-stub-party',
+  pro: 'purchase-package-stub-pro',
+  studio: 'purchase-package-stub-studio',
+}
+
 export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalProps) {
   const { user } = useAuth()
   const [loading, setLoading] = useState<string | null>(null)
@@ -50,179 +64,81 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 100,
-            padding: '1rem'
-          }}
+          className="purchase-modal-overlay"
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             onClick={e => e.stopPropagation()}
-            style={{
-              background: 'var(--color-surface)',
-              border: '2px solid var(--color-border)',
-              borderRadius: '1rem',
-              padding: '1.5rem',
-              maxWidth: '520px',
-              width: '100%',
-              maxHeight: '90vh',
-              overflowY: 'auto'
-            }}
+            className="purchase-modal-container"
           >
-            <div style={{
-              textAlign: 'center',
-              marginBottom: '1.25rem'
-            }}>
-              <h2 style={{
-                fontSize: '1.4rem',
-                fontWeight: 700,
-                color: 'var(--color-text)',
-                marginBottom: '0.25rem'
-              }}>
-                Get More Scripts
-              </h2>
-              <p style={{
-                fontSize: '0.85rem',
-                color: 'var(--color-text-secondary)'
-              }}>
-                Credits never expire. Use them whenever you want.
-              </p>
+            {/* Purple gradient header */}
+            <div className="purchase-modal-header">
+              <div className="purchase-modal-presents">Plot Twists Presents</div>
+              <h2 className="purchase-modal-title">GET SCRIPTS</h2>
+              <p className="purchase-modal-subtitle">Credits never expire. Use them whenever you want.</p>
             </div>
 
-            {error && (
-              <div style={{
-                padding: '0.75rem',
-                background: 'var(--color-danger, #f87171)20',
-                borderRadius: '0.5rem',
-                color: 'var(--color-danger, #f87171)',
-                fontSize: '0.85rem',
-                marginBottom: '1rem',
-                textAlign: 'center'
-              }}>
-                {error}
+            {/* Ticket perforation */}
+            <div className="purchase-modal-perforation" />
+
+            {/* Body */}
+            <div className="purchase-modal-body">
+              {error && (
+                <div className="purchase-modal-error">{error}</div>
+              )}
+
+              <div className="purchase-package-grid">
+                {CREDIT_PACKAGES.map(pkg => (
+                  <button
+                    key={pkg.id}
+                    onClick={() => handlePurchase(pkg.id)}
+                    disabled={loading !== null}
+                    className={`purchase-package-card ${
+                      pkg.id === bestValueId ? 'purchase-package-card-best' : ''
+                    } ${loading && loading !== pkg.id ? 'purchase-package-card-dimmed' : ''}`}
+                  >
+                    {/* Best Value badge */}
+                    {pkg.id === bestValueId && (
+                      <div className="purchase-best-value-badge">Best Value!</div>
+                    )}
+
+                    {/* Colored stub top */}
+                    <div className={`purchase-package-stub ${STUB_CLASSES[pkg.id] || ''}`}>
+                      <span className="purchase-package-stub-icon">
+                        {PACKAGE_ICONS[pkg.id] || '🎟️'}
+                      </span>
+                      <span className="purchase-package-stub-label">{pkg.label}</span>
+                    </div>
+
+                    {/* Dashed perforation with notch cutouts */}
+                    <div className="purchase-package-perf" />
+
+                    {/* Main body: price, scripts, per-script */}
+                    <div className="purchase-package-main">
+                      <div className="purchase-package-price">
+                        ${(pkg.price / 100).toFixed(0)}
+                      </div>
+                      <div className="purchase-package-scripts">
+                        {pkg.scripts} scripts
+                      </div>
+                      <div className="purchase-package-per-script">
+                        ${(pkg.price / pkg.scripts / 100).toFixed(2)}/script
+                      </div>
+
+                      {loading === pkg.id && (
+                        <div className="purchase-package-loading">Redirecting...</div>
+                      )}
+                    </div>
+                  </button>
+                ))}
               </div>
-            )}
 
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '0.75rem'
-            }}>
-              {CREDIT_PACKAGES.map(pkg => (
-                <button
-                  key={pkg.id}
-                  onClick={() => handlePurchase(pkg.id)}
-                  disabled={loading !== null}
-                  style={{
-                    position: 'relative',
-                    background: 'var(--color-background)',
-                    border: pkg.id === bestValueId
-                      ? '2px solid var(--color-primary)'
-                      : '1px solid var(--color-border)',
-                    borderRadius: '0.75rem',
-                    padding: '1.25rem 0.75rem',
-                    cursor: loading ? 'wait' : 'pointer',
-                    opacity: loading && loading !== pkg.id ? 0.5 : 1,
-                    textAlign: 'center',
-                    transition: 'transform 0.15s, box-shadow 0.15s',
-                  }}
-                  onMouseEnter={e => {
-                    if (!loading) {
-                      (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
-                  }}
-                >
-                  {pkg.id === bestValueId && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '-0.5rem',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      background: 'var(--color-primary)',
-                      color: '#fff',
-                      fontSize: '0.65rem',
-                      fontWeight: 700,
-                      padding: '0.15rem 0.5rem',
-                      borderRadius: '1rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em'
-                    }}>
-                      Best Value
-                    </div>
-                  )}
-
-                  <div style={{
-                    fontSize: '1.1rem',
-                    fontWeight: 700,
-                    color: 'var(--color-text)',
-                    marginBottom: '0.25rem'
-                  }}>
-                    {pkg.label}
-                  </div>
-
-                  <div style={{
-                    fontSize: '1.75rem',
-                    fontWeight: 800,
-                    color: 'var(--color-primary)',
-                    marginBottom: '0.25rem'
-                  }}>
-                    ${(pkg.price / 100).toFixed(0)}
-                  </div>
-
-                  <div style={{
-                    fontSize: '0.8rem',
-                    color: 'var(--color-text-secondary)'
-                  }}>
-                    {pkg.scripts} scripts
-                  </div>
-
-                  <div style={{
-                    fontSize: '0.7rem',
-                    color: 'var(--color-text-secondary)',
-                    marginTop: '0.25rem'
-                  }}>
-                    ${(pkg.price / pkg.scripts / 100).toFixed(2)}/script
-                  </div>
-
-                  {loading === pkg.id && (
-                    <div style={{
-                      marginTop: '0.5rem',
-                      fontSize: '0.75rem',
-                      color: 'var(--color-primary)'
-                    }}>
-                      Redirecting...
-                    </div>
-                  )}
-                </button>
-              ))}
+              <button onClick={onClose} className="purchase-modal-close">
+                Maybe later
+              </button>
             </div>
-
-            <button
-              onClick={onClose}
-              style={{
-                display: 'block',
-                margin: '1rem auto 0',
-                background: 'none',
-                border: 'none',
-                color: 'var(--color-text-secondary)',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                textDecoration: 'underline'
-              }}
-            >
-              Maybe later
-            </button>
           </motion.div>
         </motion.div>
       )}

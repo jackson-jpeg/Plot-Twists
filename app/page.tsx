@@ -4,8 +4,9 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { AuthModal } from '@/components/AuthModal'
 import { UserMenu } from '@/components/UserMenu'
+import { LandingPage } from '@/components/LandingPage'
+import { UpgradeModal } from '@/components/UpgradeModal'
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false)
@@ -21,21 +22,29 @@ function useMediaQuery(query: string): boolean {
 
 export default function Home() {
   const router = useRouter()
-  const { user, isConfigured } = useAuth()
+  const { user, loading } = useAuth()
   const canHover = useMediaQuery('(hover: hover) and (pointer: fine)')
   const [mounted, setMounted] = useState(false)
   const [showHowItWorks, setShowHowItWorks] = useState(true)
-  const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signup')
-
-  // Determine if user is a guest (not authenticated or anonymous)
-  const isGuest = !user || user.isAnonymous
+  const [creditsPurchased, setCreditsPurchased] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted) {
+  // Handle Stripe return: show banner and clean up URL
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('credits') === 'purchased') {
+      setCreditsPurchased(true)
+      window.history.replaceState({}, '', '/')
+      const timer = setTimeout(() => setCreditsPurchased(false), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [])
+
+  if (!mounted || loading) {
     return (
       <main className="page-container items-center justify-center">
         <div className="skeleton skeleton-heading"></div>
@@ -44,14 +53,36 @@ export default function Home() {
     )
   }
 
+  // Unauthenticated users see the landing page
+  if (!user) {
+    return <LandingPage />
+  }
+
+  // Anonymous users see the upgrade modal
+  if (user.isAnonymous) {
+    return <UpgradeModal />
+  }
+
   return (
     <main className="page-container items-center justify-center home-nostalgic">
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        initialMode={authModalMode}
-      />
+      {/* Credits purchased banner */}
+      <AnimatePresence>
+        {creditsPurchased && (
+          <motion.div
+            initial={{ opacity: 0, y: -40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -40 }}
+            style={{
+              position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)',
+              background: 'var(--color-success, #4ade80)', color: '#000', padding: '0.75rem 1.5rem',
+              borderRadius: '0.75rem', fontWeight: 600, fontSize: '0.95rem', zIndex: 60,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+            }}
+          >
+            Credits added to your account!
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Header with UserMenu */}
       <motion.div
@@ -191,7 +222,7 @@ export default function Home() {
                     <div className="how-it-works-step">
                       <div className="step-number">1</div>
                       <div className="step-text font-bold text-lg">Pick cards</div>
-                      <div className="step-example">"Darth Vader at a job interview"</div>
+                      <div className="step-example">&quot;Darth Vader at a job interview&quot;</div>
                     </div>
                     <div className="how-it-works-step">
                       <div className="step-number">2</div>
@@ -210,7 +241,7 @@ export default function Home() {
                     </div>
                     <div className="how-it-works-step">
                       <div className="step-number">5</div>
-                      <div className="step-text font-bold text-lg">Laugh & repeat</div>
+                      <div className="step-text font-bold text-lg">Laugh &amp; repeat</div>
                       <div className="step-example">Generate a sequel or new scene</div>
                     </div>
                   </div>

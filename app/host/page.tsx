@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { Player, Script, RoomSettings, GameResults, ScriptCustomization, AudioSettings, TeleprompterSyncData, CardSelection, ScriptLine, TeleprompterSettings } from '@/lib/types'
 import type { GameState } from '@/lib/types'
-import { DEFAULT_TELEPROMPTER_SETTINGS } from '@/lib/types'
 import { QRCodeSVG } from 'qrcode.react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useConfetti } from '@/hooks/useConfetti'
@@ -22,6 +21,8 @@ import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
 import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
 import { TeleprompterSettings as TeleprompterSettingsPanel } from '@/components/TeleprompterSettings'
+import { useAuth } from '@/contexts/AuthContext'
+import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
 
 // Helper function to get mood emoji and color
 // Uses hex values because colors are used with alpha suffixes (e.g., ${color}20)
@@ -69,6 +70,7 @@ function getVisibleLines(
 
 export default function HostPage() {
   const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
   const { socket, isConnected } = useSocket()
   const confetti = useConfetti()
   useWakeLock() // Prevent screen sleep during gameplay
@@ -118,6 +120,11 @@ export default function HostPage() {
   const [chaosCooldown, setChaosCooldown] = useState(false)
   const [chaosCooldownRemaining, setChaosCooldownRemaining] = useState(0)
   const [chaosShaking, setChaosShaking] = useState(false)
+
+  // Credit system state
+  const [creditBalance, setCreditBalance] = useState<{ free: number; banked: number; total: number } | null>(null)
+  const [showInsufficientCredits, setShowInsufficientCredits] = useState(false)
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false)
 
   // Teleprompter settings hook
   const {
@@ -190,13 +197,28 @@ export default function HostPage() {
   const [isSubmittingCards, setIsSubmittingCards] = useState(false)
   const [hasTriggeredSelectionConfetti, setHasTriggeredSelectionConfetti] = useState(false)
 
+  // Auth guard: redirect unauthenticated users
   useEffect(() => {
+    if (!authLoading && (!user || user.isAnonymous)) {
+      router.push('/')
+    }
+  }, [user, authLoading, router])
+
+  useEffect(() => {
+    // Don't create room until auth resolves and user is authenticated
+    if (authLoading || !user || user.isAnonymous) return
     if (!socket || !isConnected || roomCreatedRef.current) return
     roomCreatedRef.current = true
     socket.emit('create_room', settings, (response) => {
       if (response.success && response.code) setRoomCode(response.code)
     })
-  }, [socket, isConnected, settings])
+    // Fetch initial credit balance
+    socket.emit('get_credit_balance', (response) => {
+      if (response.success && response.balance) {
+        setCreditBalance(response.balance)
+      }
+    })
+  }, [socket, isConnected, settings, authLoading, user])
 
   useEffect(() => {
     if (gameState !== 'PERFORMING') return
@@ -353,6 +375,13 @@ export default function HostPage() {
     socket.on('plot_twist_started', () => {
       setChaosCooldown(true)
     })
+    // Credit system events
+    socket.on('credit_balance', (balance) => {
+      setCreditBalance(balance)
+    })
+    socket.on('insufficient_credits', () => {
+      setShowInsufficientCredits(true)
+    })
     return () => {
       socket.off('players_update')
       socket.off('player_joined')
@@ -368,6 +397,8 @@ export default function HostPage() {
       socket.off('latency_ping')
       socket.off('latency_pong_response')
       socket.off('plot_twist_started')
+      socket.off('credit_balance')
+      socket.off('insufficient_credits')
     }
   }, [socket, isConnected, gameState, toast])
 
@@ -514,6 +545,18 @@ export default function HostPage() {
   const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join?code=${roomCode}` : ''
   const nonHostPlayers = players.filter(p => !p.isHost)
 
+  // Show loading while auth resolves or redirecting unauthenticated users
+  if (authLoading || !user || user.isAnonymous) {
+    return (
+      <div className="page-container items-center justify-center">
+        <div className="text-center">
+          <div className="skeleton skeleton-heading" style={{ margin: '0 auto' }}></div>
+          <div className="skeleton skeleton-text" style={{ width: '60%', margin: '1rem auto' }}></div>
+        </div>
+      </div>
+    )
+  }
+
   if (!isConnected) {
     return (
       <div className="page-container items-center justify-center">
@@ -538,6 +581,56 @@ export default function HostPage() {
   return (
     <div className="page-container">
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="host" />
+      <PurchaseCreditsModal isOpen={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} />
+
+      {/* Insufficient Credits Modal */}
+      <AnimatePresence>
+        {showInsufficientCredits && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowInsufficientCredits(false)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 100, padding: '1rem'
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: 'var(--color-surface)', border: '2px solid var(--color-border)',
+                borderRadius: '1rem', padding: '2rem', maxWidth: '380px', width: '100%', textAlign: 'center'
+              }}
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🎬</div>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '0.5rem' }}>
+                Out of scripts!
+              </h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginBottom: '1.25rem' }}>
+                Buy more to keep the show going.
+              </p>
+              <button
+                onClick={() => { setShowInsufficientCredits(false); setShowPurchaseModal(true) }}
+                className="user-menu-btn user-menu-btn-primary"
+                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', fontSize: '1rem', marginBottom: '0.5rem' }}
+              >
+                Buy Credits
+              </button>
+              <button
+                onClick={() => setShowInsufficientCredits(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '0.85rem' }}
+              >
+                Dismiss
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Back Button */}
       {gameState === 'LOBBY' && (
@@ -629,6 +722,21 @@ export default function HostPage() {
                         <span className="text-xl">📋</span>
                       </motion.button>
                     </div>
+                    {/* Credit display */}
+                    {creditBalance && (
+                      <div style={{
+                        marginTop: '0.5rem',
+                        fontSize: '0.85rem',
+                        color: creditBalance.total === 0
+                          ? 'var(--color-danger, #f87171)'
+                          : creditBalance.free > 0
+                            ? 'var(--color-success, #4ade80)'
+                            : '#facc15',
+                        fontWeight: 600
+                      }}>
+                        {creditBalance.total} script{creditBalance.total !== 1 ? 's' : ''} remaining
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="skeleton" style={{ width: '280px', height: '88px', display: 'inline-block' }}></div>

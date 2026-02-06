@@ -86,6 +86,9 @@ import {
   getLeaderboard
 } from './server/services/playerStats.service'
 import { generateTitleCard } from './server/services/image.service'
+import { checkAndDeductCredit, getCredits, addBankedCredits } from './server/services/credit.service'
+import { createSocketAuthMiddleware } from './server/middleware/socketAuth'
+import { CREDIT_PACKAGES } from './lib/credits'
 
 // Validate environment on startup
 validateEnvironment()
@@ -820,6 +823,9 @@ app.prepare().then(async () => {
   console.log(`Socket.IO configured for ${dev ? 'development' : 'production'} mode`)
   console.log(`Transports: polling + websocket`)
 
+  // Apply Firebase auth middleware to socket connections
+  io.use(createSocketAuthMiddleware())
+
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id)
 
@@ -866,10 +872,13 @@ app.prepare().then(async () => {
           audioSettings: settings.audioSettings || createDefaultAudioSettings()
         }
 
+        // Store Firebase UID of host for credit deduction
+        room.hostUid = socket.data.uid || undefined
+
         roomService.createRoom(room)
         socket.join(code)
 
-        console.log(`Room created: ${code}`)
+        console.log(`Room created: ${code} (host: ${room.hostUid || 'unknown'})`)
         callback({ success: true, code })
         socket.emit('room_created', code)
       } catch (error) {
@@ -1277,6 +1286,26 @@ app.prepare().then(async () => {
       }
 
       console.log(`🎬 Sequel requested for room ${roomCode}`)
+
+      // Credit gate: deduct 1 credit from host before generating sequel
+      if (room.hostUid) {
+        const creditResult = await checkAndDeductCredit(room.hostUid)
+        if (!creditResult.success) {
+          console.log(`Insufficient credits for sequel: host ${room.hostUid} in room ${roomCode}`)
+          io.to(roomCode).emit('insufficient_credits', { needed: 1, available: 0 })
+          return
+        }
+        // Emit updated balance to host
+        const balance = await getCredits(room.hostUid)
+        const hostSocket = io.sockets.sockets.get(room.host.socketId)
+        if (hostSocket) {
+          hostSocket.emit('credit_balance', balance)
+        }
+      } else if (!dev) {
+        console.warn(`Sequel blocked: no hostUid for room ${roomCode}`)
+        io.to(roomCode).emit('error', 'Authentication required to generate scripts.')
+        return
+      }
 
       // Save the current script as previous
       const previousScript = room.script
@@ -1964,6 +1993,25 @@ app.prepare().then(async () => {
     })
 
     // ============================================================
+    // Credit System
+    // ============================================================
+
+    socket.on('get_credit_balance', async (callback) => {
+      try {
+        const uid = socket.data.uid
+        if (!uid) {
+          callback({ success: false, error: 'Not authenticated' })
+          return
+        }
+        const balance = await getCredits(uid)
+        callback({ success: true, balance })
+      } catch (error) {
+        console.error('Error fetching credit balance:', error)
+        callback({ success: false, error: 'Failed to load credits' })
+      }
+    })
+
+    // ============================================================
     // Latency Measurement
     // ============================================================
 
@@ -2026,6 +2074,31 @@ app.prepare().then(async () => {
     if (!scriptGenerationLimiter.check(hostSocketId)) {
       console.warn(`Script generation rate limit exceeded for room ${room.code}`)
       io.to(room.code).emit('error', 'Too many script generation requests. Please wait a moment.')
+      room.gameState = 'SELECTION'
+      io.to(room.code).emit('game_state_change', 'SELECTION')
+      return
+    }
+
+    // Credit gate: deduct 1 credit from host before generating
+    if (room.hostUid) {
+      const creditResult = await checkAndDeductCredit(room.hostUid)
+      if (!creditResult.success) {
+        console.log(`Insufficient credits for host ${room.hostUid} in room ${room.code}`)
+        io.to(room.code).emit('insufficient_credits', { needed: 1, available: 0 })
+        room.gameState = 'SELECTION'
+        io.to(room.code).emit('game_state_change', 'SELECTION')
+        return
+      }
+      // Emit updated balance to host
+      const balance = await getCredits(room.hostUid)
+      const hostSocket = io.sockets.sockets.get(room.host.socketId)
+      if (hostSocket) {
+        hostSocket.emit('credit_balance', balance)
+      }
+    } else if (!dev) {
+      // In production, require authenticated host
+      console.warn(`Script generation blocked: no hostUid for room ${room.code}`)
+      io.to(room.code).emit('error', 'Authentication required to generate scripts.')
       room.gameState = 'SELECTION'
       io.to(room.code).emit('game_state_change', 'SELECTION')
       return
@@ -2305,6 +2378,124 @@ app.prepare().then(async () => {
       console.error('Error saving game to history:', error)
     }
   }
+
+  // ============================================================
+  // Stripe Routes (must be before Next.js catch-all)
+  // ============================================================
+
+  // Track processed Stripe events to prevent duplicate fulfillment on retries
+  const processedStripeEvents = new Set<string>()
+
+  // Stripe webhook needs raw body — must be registered before express.json()
+  expressApp.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'] as string
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+
+    if (!webhookSecret) {
+      console.error('[Stripe] STRIPE_WEBHOOK_SECRET not configured')
+      res.status(500).json({ error: 'Webhook not configured' })
+      return
+    }
+
+    try {
+      const Stripe = (await import('stripe')).default
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
+      const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret)
+
+      // Idempotency: skip already-processed events (Stripe retries on timeout)
+      if (processedStripeEvents.has(event.id)) {
+        console.log(`[Stripe] Skipping duplicate event ${event.id}`)
+        res.json({ received: true })
+        return
+      }
+
+      if (event.type === 'checkout.session.completed') {
+        const session = event.data.object as { metadata?: Record<string, string>; amount_total?: number | null }
+        const userId = session.metadata?.userId
+        const scripts = parseInt(session.metadata?.scripts || '0', 10)
+        const amountTotal = session.amount_total || 0
+
+        if (userId && scripts > 0) {
+          processedStripeEvents.add(event.id)
+          await addBankedCredits(userId, scripts, amountTotal)
+
+          // Emit updated balance to user's connected socket (if online)
+          const balance = await getCredits(userId)
+          for (const [, s] of io.sockets.sockets) {
+            if (s.data.uid === userId) {
+              s.emit('credit_balance', balance)
+              break
+            }
+          }
+
+          console.log(`[Stripe] Fulfilled ${scripts} credits for user ${userId}`)
+        }
+      }
+
+      res.json({ received: true })
+    } catch (error) {
+      console.error('[Stripe] Webhook error:', error)
+      res.status(400).json({ error: 'Webhook signature verification failed' })
+    }
+  })
+
+  // JSON body parser for other Stripe routes
+  expressApp.use('/api/stripe', express.json())
+
+  expressApp.post('/api/stripe/create-checkout-session', async (req, res) => {
+    const { packageId, userId } = req.body
+
+    if (!packageId || !userId) {
+      res.status(400).json({ error: 'Missing packageId or userId' })
+      return
+    }
+
+    const pkg = CREDIT_PACKAGES.find(p => p.id === packageId)
+    if (!pkg) {
+      res.status(400).json({ error: 'Invalid package' })
+      return
+    }
+
+    if (!process.env.STRIPE_SECRET_KEY) {
+      res.status(500).json({ error: 'Stripe not configured' })
+      return
+    }
+
+    try {
+      const Stripe = (await import('stripe')).default
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+
+      // Determine base URL for redirects
+      const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || `http://localhost:${port}`
+
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `${pkg.label} — ${pkg.scripts} Scripts`,
+              description: `${pkg.scripts} AI script credits for Plot Twists`
+            },
+            unit_amount: pkg.price
+          },
+          quantity: 1
+        }],
+        metadata: {
+          userId,
+          packageId: pkg.id,
+          scripts: String(pkg.scripts)
+        },
+        success_url: `${origin}/?credits=purchased`,
+        cancel_url: `${origin}/?credits=cancelled`
+      })
+
+      res.json({ sessionId: session.id, url: session.url })
+    } catch (error) {
+      console.error('[Stripe] Create checkout session error:', error)
+      res.status(500).json({ error: 'Failed to create checkout session' })
+    }
+  })
 
   // Handle Next.js requests
   expressApp.use((req, res) => {

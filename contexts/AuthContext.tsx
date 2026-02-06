@@ -194,21 +194,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               })
               setLoading(false)
             } else {
-              // No user - sign in anonymously
-              try {
-                // Migrate localStorage player ID if exists
-                const localPlayerId = localStorage.getItem('plottwists_player_id')
-                if (localPlayerId) {
-                  localStorage.setItem('plottwists_migrated_player_id', localPlayerId)
-                }
-
-                await firebaseSignInAnonymously(auth as any)
-                // The onAuthStateChanged will fire again with the anonymous user
-              } catch {
-                // If anonymous sign-in fails, allow guest play
-                setUser(null)
-                setLoading(false)
-              }
+              // No user — do NOT auto sign in anonymously.
+              // Users must explicitly sign up or log in.
+              setUser(null)
+              setLoading(false)
             }
           })
         } else {

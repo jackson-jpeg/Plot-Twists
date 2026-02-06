@@ -5,6 +5,7 @@
 
 import type { UserProfile, UserMigrationData, UserPreferences } from '../../lib/types'
 import { getDatabase, Collections } from '../db'
+import { getDefaultCredits } from '../../lib/credits'
 
 // ============================================================
 // Core Functions
@@ -66,7 +67,9 @@ export async function upsertUser(
     phoneNumber: data.phoneNumber,
     linkedAccounts: [],
     createdAt: now,
-    lastSeenAt: now
+    lastSeenAt: now,
+    credits: getDefaultCredits(),
+    lifetimeSpend: 0
   }
 
   // Determine linked accounts
@@ -81,6 +84,20 @@ export async function upsertUser(
 
   console.log(`Created new user: ${uid} (${newUser.displayName})`)
   return newUser
+}
+
+/**
+ * Ensure a user has the credits field (backward compat for existing users).
+ */
+export async function ensureCreditsExist(uid: string): Promise<void> {
+  const db = getDatabase()
+  const user = await db.get<UserProfile>(Collections.USERS, uid)
+  if (user && !user.credits) {
+    await db.update(Collections.USERS, uid, {
+      credits: getDefaultCredits(),
+      lifetimeSpend: 0
+    })
+  }
 }
 
 /**

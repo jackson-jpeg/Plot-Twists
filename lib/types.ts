@@ -257,6 +257,8 @@ export interface Room {
   cardPackId?: string
   // Feature 4: Audio Settings
   audioSettings?: AudioSettings
+  // Credit System: Firebase UID of host for credit deduction
+  hostUid?: string
 }
 
 export interface RoomSettings {
@@ -324,6 +326,10 @@ export interface ServerToClientEvents {
   // Feature 6: Player Stats Events
   achievement_unlocked: (achievement: Achievement) => void
 
+  // Credit System Events
+  credit_balance: (balance: { free: number, banked: number, total: number }) => void
+  insufficient_credits: (data: { needed: number, available: number }) => void
+
   // AI Script Generation Progress
   script_generation_progress: (data: { phase: string; percent: number; title?: string }) => void
 
@@ -382,6 +388,9 @@ export interface ClientToServerEvents {
   // Feature 6: Player Stats Events
   get_player_stats: (playerId: string, callback: (response: { success: boolean, stats?: PlayerStats, error?: string }) => void) => void
   get_leaderboard: (category: LeaderboardCategory, limit: number, callback: (response: { success: boolean, entries?: LeaderboardEntry[], error?: string }) => void) => void
+
+  // Credit System Events
+  get_credit_balance: (callback: (response: { success: boolean, balance?: { free: number, banked: number, total: number }, error?: string }) => void) => void
 }
 
 // ============================================================
@@ -514,6 +523,19 @@ export interface NewGameOptions {
 }
 
 // ============================================================
+// Credit System
+// ============================================================
+
+export interface CreditBalance {
+  free: {
+    used: number         // resets to 0 on lazy reset
+    limit: number        // default 5
+    lastResetDate: string // ISO timestamp
+  }
+  banked: number          // paid credits, never expire
+}
+
+// ============================================================
 // User Profile (for persistent user data)
 // ============================================================
 
@@ -527,6 +549,8 @@ export interface UserProfile {
   createdAt: number
   lastSeenAt: number
   preferences?: UserPreferences
+  credits: CreditBalance
+  lifetimeSpend: number   // total $ spent (cents)
 }
 
 // ============================================================

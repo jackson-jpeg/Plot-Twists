@@ -2950,19 +2950,18 @@ textarea:focus-visible {
    Credit Badge System
    ========================================================================== */
 
-/* Header pill badge — always visible next to avatar */
 .credit-header-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   padding: 0.3rem 0.65rem;
-  border-radius: 999px;
+  border-radius: 9999px;
   backdrop-filter: blur(8px);
   font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, filter 0.2s ease;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(0, 0, 0, 0.35);
   color: rgba(255, 255, 255, 0.5);
@@ -2973,7 +2972,6 @@ textarea:focus-visible {
   filter: brightness(1.15);
 }
 
-/* Color variants */
 .credit-header-badge-ok {
   border-color: rgba(74, 222, 128, 0.25);
   background: rgba(74, 222, 128, 0.15);
@@ -2996,7 +2994,6 @@ textarea:focus-visible {
   font-size: 0.85rem;
 }
 
-/* Dropdown row badge — detailed credit info inside user menu */
 .credit-dropdown-row {
   display: flex;
   align-items: center;
@@ -3023,7 +3020,6 @@ textarea:focus-visible {
   opacity: 0.5;
 }
 
-/* Status dot */
 .credit-dot {
   width: 8px;
   height: 8px;
@@ -3043,18 +3039,15 @@ textarea:focus-visible {
   background-color: var(--color-danger, #f87171);
 }
 
-/* Dark mode adjustments */
 @media (prefers-color-scheme: dark) {
   .credit-header-badge-ok {
     border-color: rgba(74, 222, 128, 0.3);
     background: rgba(74, 222, 128, 0.12);
   }
-
   .credit-header-badge-low {
     border-color: rgba(250, 204, 21, 0.3);
     background: rgba(250, 204, 21, 0.12);
   }
-
   .credit-header-badge-empty {
     border-color: rgba(248, 113, 113, 0.3);
     background: rgba(248, 113, 113, 0.12);
@@ -3087,13 +3080,12 @@ textarea:focus-visible {
   overflow-x: hidden;
 }
 
-/* Purple gradient header — matches AuthModal pattern */
 .purchase-modal-header {
   background: linear-gradient(135deg, #581C87, #7C3AED);
   padding: 1.25rem 1.5rem;
   text-align: center;
   position: relative;
-  border-radius: 0.875rem 0.875rem 0 0;
+  border-radius: calc(1rem - 2px) calc(1rem - 2px) 0 0;
 }
 
 .purchase-modal-presents {
@@ -3121,7 +3113,6 @@ textarea:focus-visible {
   margin-top: 0.25rem;
 }
 
-/* Perforation between header and body */
 .purchase-modal-perforation {
   height: 8px;
   background: var(--color-surface);
@@ -3151,12 +3142,10 @@ textarea:focus-visible {
   border-top: 1px dashed var(--color-border);
 }
 
-/* Body area */
 .purchase-modal-body {
   padding: 1.25rem 1.5rem 1.5rem;
 }
 
-/* Error banner */
 .purchase-modal-error {
   padding: 0.75rem;
   background: var(--color-danger-light);
@@ -3167,7 +3156,6 @@ textarea:focus-visible {
   text-align: center;
 }
 
-/* Package grid */
 .purchase-package-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -3180,7 +3168,6 @@ textarea:focus-visible {
   }
 }
 
-/* Individual package card — ticket stub style */
 .purchase-package-card {
   position: relative;
   border: 1px solid var(--color-border);
@@ -3204,13 +3191,11 @@ textarea:focus-visible {
   opacity: 0.5;
 }
 
-/* Best value highlight */
 .purchase-package-card-best {
   border: 2px solid var(--color-purple);
   box-shadow: 0 0 12px var(--color-purple-glow);
 }
 
-/* Colored stub top section */
 .purchase-package-stub {
   padding: 0.75rem 0.75rem 0.5rem;
   display: flex;
@@ -3249,7 +3234,6 @@ textarea:focus-visible {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Dashed perforation between stub and body */
 .purchase-package-perf {
   position: relative;
   height: 12px;
@@ -3266,7 +3250,6 @@ textarea:focus-visible {
   border-top: 1px dashed var(--color-border-strong);
 }
 
-/* Semi-circle notch cutouts */
 .purchase-package-perf::after {
   content: '';
   position: absolute;
@@ -3280,7 +3263,6 @@ textarea:focus-visible {
   box-shadow: calc(100% + 600px - 12px) 0 0 0 var(--color-bg);
 }
 
-/* Main body of the package card */
 .purchase-package-main {
   padding: 0.75rem;
   text-align: center;
@@ -3310,7 +3292,6 @@ textarea:focus-visible {
   color: var(--color-purple);
 }
 
-/* Best Value tape-strip badge */
 .purchase-best-value-badge {
   position: absolute;
   top: -0.5rem;
@@ -3326,7 +3307,6 @@ textarea:focus-visible {
   white-space: nowrap;
 }
 
-/* Close / maybe later button */
 .purchase-modal-close {
   display: block;
   margin: 1.25rem auto 0;
@@ -3343,7 +3323,6 @@ textarea:focus-visible {
   color: var(--color-text-primary);
 }
 
-/* Dark mode for purchase modal */
 @media (prefers-color-scheme: dark) {
   .purchase-package-perf::after {
     background: var(--color-bg);
@@ -3394,7 +3373,6 @@ textarea:focus-visible {
   margin-top: 0.1rem;
 }
 
-/* Free credits progress bar */
 .credit-wallet-progress {
   margin-top: 0.5rem;
 }
@@ -3410,14 +3388,14 @@ textarea:focus-visible {
 .credit-wallet-progress-bar {
   height: 6px;
   background: var(--color-border);
-  border-radius: 999px;
+  border-radius: 9999px;
   overflow: hidden;
 }
 
 .credit-wallet-progress-fill {
   height: 100%;
   background: var(--color-success, #4ade80);
-  border-radius: 999px;
+  border-radius: 9999px;
   transition: width 0.3s ease;
 }
 
@@ -3451,7 +3429,6 @@ textarea:focus-visible {
    Leaderboard — Nostalgic Theme
    ========================================================================== */
 
-/* Paper tabs for leaderboard categories */
 .leaderboard-tabs {
   display: flex;
   gap: 2px;
@@ -3475,6 +3452,11 @@ textarea:focus-visible {
   color: var(--color-text-tertiary);
 }
 
+.leaderboard-tab:nth-child(1) { transform: rotate(-0.8deg); }
+.leaderboard-tab:nth-child(2) { transform: rotate(0.5deg); }
+.leaderboard-tab:nth-child(3) { transform: rotate(-0.5deg); }
+.leaderboard-tab:nth-child(4) { transform: rotate(0.8deg); }
+
 .leaderboard-tab:hover:not(.leaderboard-tab-active) {
   color: var(--color-text-primary);
   transform: translateY(-2px) rotate(0deg);
@@ -3485,22 +3467,10 @@ textarea:focus-visible {
   border-color: var(--color-border);
   color: var(--color-text-primary);
   z-index: 10;
-  transform: translateY(-2px);
+  transform: translateY(-2px) rotate(0deg);
   box-shadow: var(--shadow-2);
 }
 
-/* Subtle rotation for non-active tabs */
-.leaderboard-tab:nth-child(1) { transform: rotate(-0.8deg); }
-.leaderboard-tab:nth-child(2) { transform: rotate(0.5deg); }
-.leaderboard-tab:nth-child(3) { transform: rotate(-0.5deg); }
-.leaderboard-tab:nth-child(4) { transform: rotate(0.8deg); }
-
-.leaderboard-tab-active,
-.leaderboard-tab:hover:not(.leaderboard-tab-active) {
-  transform: translateY(-2px) rotate(0deg);
-}
-
-/* Podium layout for top 3 */
 .leaderboard-podium {
   display: flex;
   align-items: flex-end;
@@ -3517,7 +3487,6 @@ textarea:focus-visible {
   max-width: 160px;
 }
 
-/* Podium card — polaroid style */
 .leaderboard-podium-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -3537,13 +3506,14 @@ textarea:focus-visible {
   transform: rotate(0deg) !important;
 }
 
-/* Rotation per slot */
 .leaderboard-podium-slot:nth-child(1) .leaderboard-podium-card {
   transform: rotate(-1.5deg);
 }
+
 .leaderboard-podium-slot:nth-child(2) .leaderboard-podium-card {
   transform: rotate(1deg);
 }
+
 .leaderboard-podium-slot:nth-child(3) .leaderboard-podium-card {
   transform: rotate(-0.8deg);
 }
@@ -3570,7 +3540,6 @@ textarea:focus-visible {
   margin-top: 0.15rem;
 }
 
-/* Height offsets for podium effect */
 .leaderboard-podium-slot-1 {
   order: 2;
   padding-bottom: 2rem;
@@ -3586,7 +3555,6 @@ textarea:focus-visible {
   padding-bottom: 0;
 }
 
-/* Rows 4-10 */
 .leaderboard-rows {
   display: flex;
   flex-direction: column;
@@ -3633,7 +3601,6 @@ textarea:focus-visible {
   color: var(--color-purple);
 }
 
-/* Mobile responsive for leaderboard */
 @media (max-width: 480px) {
   .leaderboard-podium {
     gap: 0.5rem;

@@ -99,6 +99,7 @@ export async function saveGame(
     duration: metadata.duration,
     roomCode,
     gameMode,
+    playerIds: savedPlayers.map(p => p.id),
     players: savedPlayers,
     script,
     setting: metadata.setting,
@@ -155,16 +156,17 @@ export async function getPlayerGames(
 ): Promise<SavedGame[]> {
   const db = getDatabase()
 
-  // Get all games and filter by player
-  // Note: For better performance with large datasets, consider adding a player-to-games index collection
-  const allGames = await db.getAll<SavedGame>(Collections.GAME_HISTORY)
+  // Use playerIds top-level field for Firestore querying when available,
+  // fall back to full scan + JS filter for legacy records
+  const games = await db.query<SavedGame>(Collections.GAME_HISTORY, [
+    { field: 'playerIds', operator: 'array-contains', value: playerId }
+  ], {
+    orderBy: 'playedAt',
+    orderDirection: 'desc',
+    limit: limit + offset // Fetch enough to cover offset
+  })
 
-  const playerGames = allGames
-    .filter(game => game.players.some(p => p.id === playerId))
-    .sort((a, b) => b.playedAt - a.playedAt)
-    .slice(offset, offset + limit)
-
-  return playerGames
+  return games.slice(offset, offset + limit)
 }
 
 /**
@@ -176,34 +178,37 @@ export async function searchGames(
   offset: number = 0
 ): Promise<SavedGame[]> {
   const db = getDatabase()
-  let games = await db.getAll<SavedGame>(Collections.GAME_HISTORY)
+  const whereClauses: import('../db').WhereClause[] = []
 
-  // Apply filters
   if (filters.playerId) {
-    games = games.filter(g => g.players.some(p => p.id === filters.playerId))
+    whereClauses.push({ field: 'playerIds', operator: 'array-contains', value: filters.playerId })
   }
 
   if (filters.gameMode) {
-    games = games.filter(g => g.gameMode === filters.gameMode)
+    whereClauses.push({ field: 'gameMode', operator: '==', value: filters.gameMode })
   }
 
   if (filters.startDate) {
-    games = games.filter(g => g.playedAt >= filters.startDate!)
+    whereClauses.push({ field: 'playedAt', operator: '>=', value: filters.startDate })
   }
 
   if (filters.endDate) {
-    games = games.filter(g => g.playedAt <= filters.endDate!)
+    whereClauses.push({ field: 'playedAt', operator: '<=', value: filters.endDate })
   }
 
+  let games = await db.query<SavedGame>(Collections.GAME_HISTORY, whereClauses, {
+    orderBy: 'playedAt',
+    orderDirection: 'desc',
+    limit: limit + offset
+  })
+
+  // Client-side filter for won status (requires nested player lookup)
   if (filters.won !== undefined && filters.playerId) {
     games = games.filter(g => {
       const player = g.players.find(p => p.id === filters.playerId)
       return player?.isWinner === filters.won
     })
   }
-
-  // Sort by date (newest first)
-  games.sort((a, b) => b.playedAt - a.playedAt)
 
   return games.slice(offset, offset + limit)
 }
@@ -213,12 +218,16 @@ export async function searchGames(
  */
 export async function getPublicGames(limit: number = 20): Promise<SavedGame[]> {
   const db = getDatabase()
-  const allGames = await db.getAll<SavedGame>(Collections.GAME_HISTORY)
 
-  return allGames
-    .filter(g => g.isPublic)
-    .sort((a, b) => b.likes - a.likes || b.playedAt - a.playedAt)
-    .slice(0, limit)
+  const games = await db.query<SavedGame>(Collections.GAME_HISTORY, [
+    { field: 'isPublic', operator: '==', value: true }
+  ], {
+    orderBy: 'likes',
+    orderDirection: 'desc',
+    limit
+  })
+
+  return games
 }
 
 /**
@@ -322,9 +331,10 @@ export async function deleteGame(gameId: string, requesterId: string): Promise<{
  */
 export async function getPlayerGameCount(playerId: string): Promise<number> {
   const db = getDatabase()
-  const allGames = await db.getAll<SavedGame>(Collections.GAME_HISTORY)
 
-  return allGames.filter(game => game.players.some(p => p.id === playerId)).length
+  return await db.count(Collections.GAME_HISTORY, [
+    { field: 'playerIds', operator: 'array-contains', value: playerId }
+  ])
 }
 
 /**

@@ -24,11 +24,14 @@ import type {
 import { calculateLineDisplayTime } from './server/utils/timing'
 import { getFilteredContent, getGreenRoomQuestion } from './lib/content'
 import { v4 as uuidv4 } from 'uuid'
-import Anthropic from '@anthropic-ai/sdk'
-import { ScriptSchema } from './lib/schema'
 import { configureSecurityMiddleware, validateEnvironment } from './server/middleware/security'
+import { generateScript } from './server/services/scriptGeneration.service'
+import { startTeleprompterSync } from './server/services/teleprompter.service'
+import { calculateResults } from './server/services/voting.service'
+import { extractJSON } from './server/utils/jsonExtractor'
 import { SocketRateLimiter } from './server/middleware/rateLimiter'
 import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname } from './server/utils/validation'
+import { withErrorHandler } from './server/middleware/socketErrorHandler'
 
 // Room Service (write-through Firestore cache)
 import * as roomService from './server/services/room.service'
@@ -102,11 +105,6 @@ const handle = app.getRequestHandler()
 
 // Timeouts are now managed by roomService
 
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
-})
-
 
 // Socket.io rate limiters
 const roomCreationLimiter = new SocketRateLimiter(10, 5 * 60 * 1000) // 10 rooms per 5 minutes
@@ -137,619 +135,8 @@ function validateRoom(roomCode: string, socket: { emit: (event: 'error', message
 
 // Room cleanup is now handled by roomService.startRoomCleanup()
 
-/** Extract JSON object from text using bracket-matching (handles preamble, fences, trailing text) */
-function extractJSON(text: string): string {
-  // Strip markdown fences
-  let cleaned = text.trim()
-  if (cleaned.startsWith('```')) {
-    cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
-  }
-
-  // Find first { or [
-  const startBrace = cleaned.indexOf('{')
-  const startBracket = cleaned.indexOf('[')
-  let start = -1
-  let openChar = '{'
-  let closeChar = '}'
-
-  if (startBrace === -1 && startBracket === -1) {
-    return cleaned // fallback
-  } else if (startBrace === -1) {
-    start = startBracket; openChar = '['; closeChar = ']'
-  } else if (startBracket === -1) {
-    start = startBrace
-  } else {
-    start = Math.min(startBrace, startBracket)
-    if (start === startBracket) { openChar = '['; closeChar = ']' }
-  }
-
-  // Track depth to find matching close
-  let depth = 0
-  let inString = false
-  let escape = false
-  for (let i = start; i < cleaned.length; i++) {
-    const ch = cleaned[i]
-    if (escape) { escape = false; continue }
-    if (ch === '\\' && inString) { escape = true; continue }
-    if (ch === '"' && !escape) { inString = !inString; continue }
-    if (inString) continue
-    if (ch === openChar) depth++
-    if (ch === closeChar) {
-      depth--
-      if (depth === 0) {
-        return cleaned.slice(start, i + 1)
-      }
-    }
-  }
-
-  // Fallback: return from start to end
-  return cleaned.slice(start)
-}
-
-// Generate script using Claude (with streaming progress)
-async function generateScript(
-  characters: string[],
-  setting: string,
-  circumstance: string,
-  isMature: boolean,
-  gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE',
-  previousScript?: Script,
-  customization?: ScriptCustomization,
-  onProgress?: (data: { phase: string; percent: number; title?: string }) => void
-) {
-  const isSoloMode = gameMode === 'SOLO'
-  const numPlayers = characters.length
-  const characterList = characters.join(', ')
-
-  // Get customization prompt if provided
-  const customizationPrompt = customization
-    ? buildCustomizationPrompt(customization, gameMode)
-    : ''
-
-  // Get script length requirements
-  const lineRange = customization
-    ? getLineCountRange(customization.scriptLength)
-    : { min: 30, max: 40 }
-
-  // Get max tokens based on customization
-  const maxTokens = customization
-    ? getMaxTokens(customization.scriptLength, gameMode)
-    : (gameMode === 'ENSEMBLE' ? 10000 : 8192)
-
-  // Build comedy writing guidelines based on rating
-  const comedyGuidelines = isMature ? `
-═══════════════════════════════════════════════════════
-18+ MODE: WRITE LIKE SNL AT 1AM (NO CENSORS)
-═══════════════════════════════════════════════════════
-
-THE GAME OF THE SCENE:
-Every scene needs a GAME - the central comic idea you're exploring. Examples:
-- "What if a kindergarten teacher had to explain Bitcoin to actual wolves?"
-- "Gordon Ramsay critiques a funeral he's catering"
-- "A couple's therapist realizes both clients are serial killers"
-Find the game IMMEDIATELY (line 1-3) and PLAY IT HARD.
-
-CHARACTER DYNAMICS = COMEDY:
-- CONFLICT over agreement (people arguing is funnier than people agreeing)
-- STATUS GAMES (who has power? who's losing it? flip it unexpectedly)
-- EMOTIONAL STAKES (even absurd characters must WANT something badly)
-- FLAWS ARE FUNNY (cowards, narcissists, idiots, perverts - embrace it)
-- Let characters be CONFIDENTLY WRONG about everything
-
-THE PROFANITY PRINCIPLE:
-Swearing is a SPICE, not the meal. Use it when:
-- Frustration boils over ("Are you f*cking kidding me right now?")
-- Shock value at the perfect moment (quiet conversation → sudden "SHIT!")
-- Character voice demands it (drill sergeant, sailor, bitter ex)
-DON'T just pepper it randomly. Earn each f-bomb.
-
-TABOO TOPICS = COMEDY GOLD:
-You can explore: sex, death, drugs, politics, religion, bodily functions, trauma
-But be SPECIFIC and SURPRISING, not just edgy for edge's sake:
-- BAD: "Haha, sex!"
-- GOOD: "I'm not saying I'd sleep with my therapist, I'm saying I already did and now he won't validate my parking."
-
-SURPRISE & MISDIRECTION:
-Set up an expectation, then violate it:
-- Character A: "I have something important to tell you."
-- Character B: "You're dying."
-- Character A: "No, I'm pregnant."
-- Character B: "With what?"
-
-THE RHYTHM OF FUNNY:
-Long setup → SHORT punchline.
-Or: Short, short, short → LONG ridiculous rant.
-Vary it. Comedy lives in the unexpected beat.
-
-CALLBACKS & RUNNING GAGS:
-If something lands early (weird detail, strange accusation, dumb logic), BRING IT BACK.
-Example: "Still not sorry about the ferrets!" mentioned casually in line 8 becomes the reveal in line 35.
-
-AVOID LIKE POISON:
-- Characters going "This is insane!" (we KNOW it's insane, that's not a joke)
-- Explaining the joke ("Get it? Because he's a vampire!")
-- Being too polite or reasonable in chaos
-- Therapy-speak or emotional growth arcs
-- Anyone learning a lesson
-` : `
-═══════════════════════════════════════════════════════
-FAMILY FRIENDLY: WRITE LIKE PEAK NICKELODEON
-═══════════════════════════════════════════════════════
-
-THE GAME OF THE SCENE:
-Find the absurd premise and COMMIT. Examples:
-- "A pirate is terrified of water but won't admit it"
-- "A ghost is trying to haunt a house that's already condemned"
-- "SpongeBob logic: The worse things get, the more cheerful they are"
-Find the game in lines 1-3. Never let go.
-
-ABSURDISM IS YOUR WEAPON:
-Kids' comedy isn't dumb - it's WEIRD. Embrace:
-- Nonsense that feels somehow logical ("I can't come to work, my goldfish has jury duty")
-- Characters being confidently incorrect ("The moon is obviously made of government lies")
-- Overreacting to tiny things / underreacting to chaos
-- Items/locations doing impossible things described casually
-- Non-sequiturs that land because of COMMITMENT
-
-ENERGY & MOMENTUM:
-Fast pace. No dead air. If a line isn't moving the scene forward, cut it.
-Think: rapid-fire Looney Tunes energy, not slow explanatory dialogue.
-SHORT LINES for maximum impact:
-- "Why?"
-- "Because."
-- "But—"
-- "BECAUSE."
-
-WORDPLAY & LINGUISTIC CHAOS:
-Puns that make you groan. Malapropisms. Misheard phrases. Weird idioms.
-- "It's not rocket surgery!"
-- "Does a bear shop in the woods?"
-- Character names that are puns (Dr. Payne the dentist)
-
-PHYSICAL COMEDY IN DIALOGUE:
-You can't write stage directions, so DESCRIBE physical comedy in what characters say:
-- "Why are you hopping on one foot?"
-- "Are you... are you juggling eggs right now?"
-- "Did you just backflip over a couch for no reason?"
-
-ESCALATION TO ABSURDITY:
-Start weird. Get WEIRDER. Peak Nickelodeon shows never pumped the brakes:
-- Line 5: "There's a penguin in the kitchen"
-- Line 15: "There are seventeen penguins and they've formed a union"
-- Line 30: "The penguin union has elected a pope"
-
-RUNNING GAGS WITHIN THE SCENE:
-Establish a pattern, repeat with variation:
-- Every time Character A mentions tacos, something explodes
-- Character B keeps trying to interject but gets interrupted
-- Character C ends every sentence with "probably" even when it makes no sense
-
-AVOID LIKE POISON:
-- Jokes that require cultural knowledge kids don't have
-- Sarcasm without a clear "tell" (kids miss subtle sarcasm)
-- Emotional sincerity or "the moral of the story"
-- Adults explaining things condescendingly
-- Trying to sneak in educational content (this is COMEDY, not edutainment)
-`
-
-  const systemPrompt = `You are a professional comedy writer. Not someone who TRIES to be funny - someone who IS funny.
-
-These scripts will be performed OUT LOUD by amateur players. That means:
-- Every line must sound NATURAL when spoken
-- Comedy must land even with mediocre delivery
-- The words themselves must be funny, not just the performance
-- Avoid jokes that need perfect timing - focus on jokes that need perfect WORDS
-
-${comedyGuidelines}
-
-═══════════════════════════════════════════════════════
-THE IMPROV PRINCIPLE: YES-AND
-═══════════════════════════════════════════════════════
-Each character should BUILD on what came before, not deny it:
-- BAD: "No, I'm not a vampire." "Yes you are." "No I'm not."
-- GOOD: "I'm not a vampire." "Then explain the coffin." "It's for naps!"
-
-Never have characters say "That doesn't make sense" - EVERYTHING makes sense in its own weird logic.
-
-═══════════════════════════════════════════════════════
-CHARACTER VOICE IS NON-NEGOTIABLE
-═══════════════════════════════════════════════════════
-If Gordon Ramsay is in the scene, EVERY line should sound exactly like Gordon Ramsay.
-If Shakespeare is there, he speaks in iambic pentameter with flowery language.
-If Yoda is present, backwards his sentences must be.
-If a pirate appears, "yarr" and nautical metaphors, matey.
-
-Mixing a pirate and Shakespeare? The pirate doesn't suddenly talk like Shakespeare - the CONTRAST is the comedy.
-
-═══════════════════════════════════════════════════════
-SPECIFICITY BEATS GENERIC EVERY TIME
-═══════════════════════════════════════════════════════
-"I dropped something in the fryer" ← Boring
-"I dropped my 1987 Casio calculator watch in the fryer and it's beeping the Jeopardy theme underwater" ← Funny
-
-Specific details = real. Generic = forgettable.
-
-═══════════════════════════════════════════════════════
-THE RULE OF THREE
-═══════════════════════════════════════════════════════
-Pattern, pattern, BREAK:
-- "I need a weapon, a shield, and a really good therapist."
-- "We've tried negotiating, we've tried bribing, and we've tried a flash mob."
-
-Establish rhythm, then violate it.
-
-═══════════════════════════════════════════════════════
-EMOTIONAL STAKES IN ABSURDITY
-═══════════════════════════════════════════════════════
-Even in the most ridiculous scenarios, characters must CARE about something:
-- A vampire at a beach might desperately want to fit in with surfers
-- Gordon Ramsay at a funeral might be personally offended by bad catering
-- Shakespeare in space might be homesick for Earth
-
-If nobody wants anything, there's no scene. Stakes = investment = comedy.
-
-═══════════════════════════════════════════════════════
-PACING & STRUCTURE
-═══════════════════════════════════════════════════════
-Lines 1-5: HOOK (establish the game instantly)
-Lines 6-15: EXPLORE (play with the premise, build patterns)
-Lines 16-25: ESCALATE (things get worse/weirder/more)
-Lines 26-35: PEAK CHAOS (the scene reaches maximum absurdity)
-Lines 36-40: BUTTON (callback, twist, or perfect punchline to end on)
-
-Every scene needs a BEGINNING (what's the situation?), MIDDLE (how does it escalate?), and END (what's the button?).
-
-═══════════════════════════════════════════════════════
-WHAT KILLS COMEDY (NEVER DO THESE)
-═══════════════════════════════════════════════════════
-❌ Characters being aware they're in a comedy ("This is like a sitcom!")
-❌ Explaining the joke ("Because he's a doctor, get it?")
-❌ Generic shock reactions ("Oh my god!" "What?!" "This is crazy!")
-❌ Everyone agreeing with each other
-❌ Characters being boringly competent
-❌ Filler dialogue that doesn't advance anything
-❌ Referencing memes or internet culture (dates instantly)
-
-═══════════════════════════════════════════════════════
-OUTPUT FORMAT
-═══════════════════════════════════════════════════════
-Return ONLY valid JSON. No markdown. No commentary. Just:
-
-{
-  "title": "A punny/clever title that hints at the premise",
-  "synopsis": "One tight sentence: [CHARACTER] must [DO THING] while [OBSTACLE/CIRCUMSTANCE]",
-  "lines": [
-    {
-      "speaker": "Character Name",
-      "text": "Funny dialogue here",
-      "mood": "angry | happy | confused | whispering | neutral"
-    }
-  ]
-}
-
-Title examples:
-- GOOD: "The Codfather" (mafia don at aquarium)
-- GOOD: "Fangs for the Memories" (vampire at reunion)
-- BAD: "A Funny Scene" (lazy)
-
-Synopsis examples:
-- GOOD: "A pirate captain must navigate IKEA while his crew mutinies over the meatballs"
-- GOOD: "Gordon Ramsay reviews a funeral he's catering and offends the widow"
-- BAD: "Some characters are in a place and things happen"
-
-Now write comedy that makes people ACTUALLY LAUGH.${previousScript ? `
-
-═══════════════════════════════════════════════════════
-🎬 SEQUEL MODE ACTIVATED
-═══════════════════════════════════════════════════════
-This is a DIRECT SEQUEL to a previous scene. Here's what happened in Episode 1:
-
-PREVIOUS TITLE: "${previousScript.title}"
-PREVIOUS SYNOPSIS: ${previousScript.synopsis}
-
-PREVIOUS SCRIPT:
-${previousScript.lines.map((line: ScriptLine, i: number) => `${i + 1}. ${line.speaker}: "${line.text}"`).join('\n')}
-
-YOUR SEQUEL MISSION:
-1. The characters are THE SAME
-2. The setting is THE SAME
-3. The situation must ESCALATE from where Episode 1 ended
-4. CALL BACK to specific jokes, phrases, or moments from the previous script
-5. Reference what "just happened" - treat this as Episode 2, not a reboot
-6. The conflict should be a natural consequence of how Episode 1 ended
-7. Make this feel like a continuation that rewards the audience for watching Episode 1
-
-SEQUEL WRITING RULES:
-- If a character had a catchphrase or running gag, BRING IT BACK
-- If something absurd happened in Episode 1, the consequences should appear here
-- Reference specific dialogue from Episode 1 ("Remember when you said..." or callbacks)
-- Escalate the stakes: if they argued before, they should argue HARDER now
-- Episode 2 should feel like "oh no, things got WORSE" or "wait, it's happening AGAIN?"
-
-Think: If Episode 1 was "The Empire Strikes Back," this is "Return of the Jedi."
-If Episode 1 was chaos, Episode 2 is controlled chaos with callbacks.
-Make the audience laugh because they remember what happened in Episode 1.` : ''}`
-
-  // Mode-specific scene dynamics
-  const modeInstructions = gameMode === 'HEAD_TO_HEAD' ? `
-═══════════════════════════════════════
-SCENE DYNAMICS (HEAD-TO-HEAD MODE)
-═══════════════════════════════════════
-This is a COMPETITIVE scene. The two characters must have OPPOSING GOALS.
-
-STRUCTURE:
-- Character A (${characters[0]}) wants to achieve the Circumstance
-- Character B (${characters[1]}) wants to STOP them or do it their own way
-- Every line should escalate the conflict
-
-WRITING STYLE:
-- Rapid-fire banter with high energy
-- Characters should interrupt each other
-- Use short, punchy exchanges (think tennis rally)
-- Each character believes they're 100% right
-- The disagreement should feel personal and specific
-
-PACING:
-- Lines should alternate frequently (don't let one character monologue)
-- Build to a comedic climax where both characters are at maximum frustration
-- End with an unexpected twist or compromise (but make it funny)
-
-AVOID:
-- Friendly cooperation or easy agreement
-- Long speeches (keep it snappy)
-- Characters being reasonable or backing down early
-`
-  : gameMode === 'ENSEMBLE' ? `
-═══════════════════════════════════════
-SCENE DYNAMICS (ENSEMBLE MODE)
-═══════════════════════════════════════
-This is a CHAOTIC GROUP scene. Structure it like "The Office" or "Community."
-
-ROLE ASSIGNMENTS:
-- ${characters[0]} is the STRAIGHT MAN (the reasonable one trying to manage the situation)
-- ${characters.slice(1).join(', ')} are AGENTS OF CHAOS (derailing the plan with their antics)
-
-CRITICAL: You have ${characters.length} characters. You MUST give every single one of them dialogue and a personality. Do not leave anyone out.
-
-STRUCTURE:
-- Straight Man tries to execute the Circumstance logically
-- Each Chaos Agent has their own agenda/misunderstanding that conflicts with the plan
-- The scene spirals as multiple characters talk over each other
-
-SPOTLIGHT MOMENTS:
-Each character MUST get at least one memorable moment to shine:
-- A ridiculous suggestion that somehow makes sense
-- A running gag or catchphrase
-- A reveal that changes the dynamic
-- A physical comedy beat (described through dialogue)
-
-PACING:
-- Start with Straight Man outlining the plan
-- Chaos Agents derail it one by one
-- Escalate to maximum chaos where everyone is talking at once
-- End with either spectacular failure or accidental success
-
-AVOID:
-- Everyone agreeing too quickly
-- Characters standing around watching others perform
-- Letting any character disappear for too long (max 5-6 lines without speaking)
-`
-  : `
-═══════════════════════════════════════
-SCENE DYNAMICS (SOLO MODE - SETTING-BASED ENSEMBLE)
-═══════════════════════════════════════
-This is a SOLO performance. The human player will perform as ${characters[0]}.
-
-YOUR MISSION: ${characters[0]} has wandered into the world of "${setting}".
-You must populate the scene with 2-3 characters who NATIVELY BELONG to that setting.
-
-STEP 1: IDENTIFY THE SETTING'S UNIVERSE
-Look at "${setting}" and determine:
-- What fictional universe, show, location, or world does this represent?
-- Who are the iconic/recognizable characters from that universe?
-- What's the "local culture" or vibe of this place?
-
-Examples:
-- "The Simpsons Living Room" → This is Springfield. Natives: Homer Simpson, Marge Simpson, Bart Simpson
-- "Central Perk (Friends)" → This is the Friends universe. Natives: Ross, Rachel, Chandler, Monica, Joey, Phoebe
-- "The Office Conference Room" → This is Dunder Mifflin. Natives: Michael Scott, Dwight Schrute, Jim Halpert, Pam Beesly
-- "The Death Star" → This is Star Wars. Natives: Darth Vader, Stormtroopers, Imperial Officers
-- "A Haunted House" → Generic spooky setting. Natives: A Creepy Ghost, A Skeptical Homeowner, A Paranormal Investigator
-- "A Pirate Ship" → Generic pirate setting. Natives: The Ship's Captain, A Drunken First Mate, A Parrot (who talks)
-
-STEP 2: GENERATE 2-3 SETTING-NATIVE CHARACTERS
-Create an AI ensemble cast that fits the setting:
-- Use RECOGNIZABLE characters if the setting is from a known show/universe
-- Create ARCHETYPAL characters if the setting is generic (e.g., "A Hospital" → Dr. House-type, Nervous Nurse, Grumpy Receptionist)
-- Give each AI character a distinct personality, voice, and comedic function
-- These characters should feel like they "own" the space - ${characters[0]} is the OUTSIDER
-
-STEP 3: THE COMEDY CONTRAST
-The humor comes from the FISH-OUT-OF-WATER dynamic:
-- ${characters[0]} doesn't belong here and the locals KNOW IT
-- The setting-native characters react to this interloper with confusion, suspicion, or annoyance
-- ${characters[0]} must navigate the social rules and quirks of this unfamiliar world
-- The Circumstance ("${circumstance}") becomes harder because ${characters[0]} doesn't understand how things work here
-
-CHARACTER DYNAMICS:
-- ${characters[0]} is trying to accomplish the Circumstance
-- The 2-3 AI characters represent the "local establishment" reacting to this outsider
-- Create conflict through misunderstanding, cultural clash, or the locals being unhelpful
-- Each AI character should have their own agenda or quirk that complicates things
-
-LINE DISTRIBUTION:
-- Human player (${characters[0]}): 40-50% of lines
-- AI Ensemble (2-3 characters): 50-60% of lines TOTAL (split among them)
-- Mix rapid-fire exchanges with moments where multiple AI characters pile on
-
-CRITICAL REQUIREMENTS:
-- You MUST generate 2-3 AI characters (not 1, not 4+)
-- The AI characters MUST fit the setting logically (don't put Batman in "The Simpsons Living Room")
-- If the setting is from a known show/universe, USE THOSE CHARACTERS
-- If the setting is generic, CREATE archetypal characters that fit the vibe
-- ${characters[0]} should feel like an outsider trying to navigate this strange world
-- Build to a comedic climax where the culture clash reaches peak absurdity
-
-EXAMPLES OF GOOD CASTING:
-✅ Setting: "The Simpsons Living Room" → AI Cast: Homer Simpson, Marge Simpson, Bart Simpson
-✅ Setting: "A Therapist's Office" → AI Cast: Dr. Melfi (therapist), An Overly Honest Patient
-✅ Setting: "A Medieval Tavern" → AI Cast: A Gruff Bartender, A Mysterious Hooded Stranger, A Singing Bard
-✅ Setting: "Hogwarts Classroom" → AI Cast: Professor Snape, Hermione Granger, A Nervous First-Year
-
-EXAMPLES OF BAD CASTING:
-❌ Setting: "The Simpsons Living Room" → AI Cast: Darth Vader (doesn't fit)
-❌ Setting: "A Hospital" → AI Cast: Just one doctor (need 2-3 characters)
-❌ Setting: "The Death Star" → AI Cast: SpongeBob, Batman, Yoda (random characters, not Death Star natives)
-
-Write the scene where ${characters[0]} has stumbled into "${setting}" and must deal with the locals while trying to "${circumstance}".
-Make the culture clash HILARIOUS.
-`
-
-  const userMessage = `Write a scene using these ingredients:
-
-═══════════════════════════════════════
-THE SETUP
-═══════════════════════════════════════
-CHARACTERS: ${characterList}
-SETTING: ${setting}
-CIRCUMSTANCE: ${circumstance}
-RATING: ${isMature ? '18+ (Adult comedy - profanity allowed, taboo topics fair game, SNL-level sharp writing)' : 'Family Friendly (Smart absurdist comedy for all ages - think peak Nickelodeon)'}
-
-${modeInstructions}
-
-═══════════════════════════════════════
-SCRIPT REQUIREMENTS
-═══════════════════════════════════════
-SCRIPT LENGTH: ${lineRange.min}-${lineRange.max} lines
-PERFORMERS: ${numPlayers} player${numPlayers > 1 ? 's' : ''}
-${customizationPrompt}
-
-═══════════════════════════════════════
-YOUR MISSION
-═══════════════════════════════════════
-1. Find the GAME of this scene immediately (what's the core comic premise?)
-2. Write in the distinct voice of each character (Yoda talks like Yoda, pirates talk like pirates)
-3. Escalate from funny to FUNNIER to absolutely ridiculous
-4. Use specific details, not generic reactions
-5. Build patterns and break them (rule of three)
-6. Include callbacks to jokes from earlier in the scene
-7. Give every character emotional stakes (even if absurd)
-8. End with a strong button - callback, twist, or perfect punchline
-
-The premise is already absurd. Your job is to EXPLOIT that absurdity through sharp dialogue.
-
-Write the scene now. Make it genuinely funny - the kind of funny where people will want to perform it again.`
-
-  try {
-    console.log(`\n🎬 AI SCRIPT GENERATION ${previousScript ? '(SEQUEL MODE)' : ''}`)
-    console.log(`════════════════════════════════════════`)
-    console.log(`Mode: ${gameMode}`)
-    console.log(`Rating: ${isMature ? '18+ (Adult Comedy)' : 'Family Friendly'}`)
-    console.log(`Characters: ${characterList}`)
-    console.log(`Setting: ${setting}`)
-    console.log(`Circumstance: ${circumstance}`)
-    if (customization) {
-      console.log(`Style: ${customization.comedyStyle}, Length: ${customization.scriptLength}, Difficulty: ${customization.difficulty}`)
-    }
-    if (previousScript) {
-      console.log(`Sequel to: "${previousScript.title}"`)
-    }
-    if (isSoloMode) {
-      console.log(`Note: AI will invent a hilarious Co-Star character to play opposite the human player`)
-    }
-    console.log(`════════════════════════════════════════\n`)
-
-    onProgress?.({ phase: 'Connecting to AI...', percent: 5 })
-
-    // Use streaming for real-time progress
-    const stream = anthropic.messages.stream({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: maxTokens,
-      temperature: 1, // Max creativity for comedy writing
-      system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: userMessage
-        }
-      ]
-    })
-
-    let fullText = ''
-    let titleEmitted = false
-    let linesStarted = false
-    let lineCount = 0
-    const expectedLines = gameMode === 'ENSEMBLE' ? 45 : 35
-
-    onProgress?.({ phase: 'Writing script...', percent: 10 })
-
-    stream.on('text', (text) => {
-      fullText += text
-
-      // Detect milestones for progress
-      if (!titleEmitted && fullText.includes('"title"')) {
-        // Try to extract title value
-        const titleMatch = fullText.match(/"title"\s*:\s*"([^"]+)"/)
-        if (titleMatch) {
-          titleEmitted = true
-          onProgress?.({ phase: 'Writing dialogue...', percent: 20, title: titleMatch[1] })
-        }
-      }
-
-      if (!linesStarted && fullText.includes('"lines"')) {
-        linesStarted = true
-        onProgress?.({ phase: 'Writing dialogue...', percent: 40 })
-      }
-
-      if (linesStarted) {
-        // Count line objects by counting "speaker" occurrences
-        const newCount = (fullText.match(/"speaker"/g) || []).length
-        if (newCount > lineCount) {
-          lineCount = newCount
-          const lineProgress = Math.min(40 + (lineCount / expectedLines) * 50, 90)
-          onProgress?.({ phase: `Writing line ${lineCount}...`, percent: Math.round(lineProgress) })
-        }
-      }
-    })
-
-    const finalMessage = await stream.finalMessage()
-
-    console.log(`✅ Script generated successfully!\n`)
-
-    const content = finalMessage.content[0]
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type from Claude')
-    }
-
-    onProgress?.({ phase: 'Validating script...', percent: 95 })
-
-    // Use robust bracket-matching JSON extraction
-    const jsonText = extractJSON(content.text)
-
-    // Parse and validate with Zod
-    const rawScript = JSON.parse(jsonText.trim())
-    const validationResult = ScriptSchema.safeParse(rawScript)
-
-    if (!validationResult.success) {
-      console.error('❌ Script validation failed:', validationResult.error.format())
-      throw new Error(`Invalid script format: ${validationResult.error.message}`)
-    }
-
-    onProgress?.({ phase: 'Script ready!', percent: 100 })
-    const script = validationResult.data
-    return script
-  } catch (error) {
-    console.error('Error generating script:', error)
-    throw error
-  }
-}
-
-// Get trivia question based on setting (uses content.ts GREEN_ROOM_QUESTIONS)
-function getGreenRoomTrivia(setting: string): string {
-  return getGreenRoomQuestion(setting)
-}
-
-// Shared CORS origin logic
+// generateScript, startTeleprompterSync, calculateResults, and extractJSON
+// are now imported from their respective service modules.
 function getAllowedOrigins(): string[] {
   if (dev) return ['http://localhost:3000', 'http://localhost:3001']
   const origins = [
@@ -1047,7 +434,7 @@ app.prepare().then(async () => {
     })
 
     // Start game
-    socket.on('start_game', (roomCode) => {
+    socket.on('start_game', withErrorHandler(socket, 'start_game', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room) return
 
@@ -1059,10 +446,10 @@ app.prepare().then(async () => {
       // Send available cards to all players
       const content = getFilteredContent(room.isMature)
       io.to(roomCode).emit('available_cards', content)
-    })
+    }))
 
     // Submit vote
-    socket.on('submit_vote', (roomCode, targetPlayerId) => {
+    socket.on('submit_vote', withErrorHandler(socket, 'submit_vote', (roomCode, targetPlayerId) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room) return
 
@@ -1095,10 +482,10 @@ app.prepare().then(async () => {
       if (allVoted) {
         calculateResults(room, io)
       }
-    })
+    }))
 
     // Advance script line
-    socket.on('advance_script_line', (roomCode) => {
+    socket.on('advance_script_line', withErrorHandler(socket, 'advance_script_line', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
 
@@ -1106,10 +493,10 @@ app.prepare().then(async () => {
       room.lastActivity = Date.now()
       roomService.updateRoom(room, true) // debounced - high frequency
       io.to(roomCode).emit('sync_teleprompter', room.currentLineIndex)
-    })
+    }))
 
     // Pause script
-    socket.on('pause_script', (roomCode) => {
+    socket.on('pause_script', withErrorHandler(socket, 'pause_script', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
 
@@ -1124,10 +511,10 @@ app.prepare().then(async () => {
       }
 
       console.log(`Script paused for room ${roomCode}`)
-    })
+    }))
 
     // Resume script
-    socket.on('resume_script', (roomCode) => {
+    socket.on('resume_script', withErrorHandler(socket, 'resume_script', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
 
@@ -1172,10 +559,10 @@ app.prepare().then(async () => {
       }
 
       advanceLine(room.currentLineIndex)
-    })
+    }))
 
     // Jump to specific line (host control)
-    socket.on('jump_to_line', (roomCode, lineIndex) => {
+    socket.on('jump_to_line', withErrorHandler(socket, 'jump_to_line', (roomCode, lineIndex) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
 
@@ -1240,10 +627,10 @@ app.prepare().then(async () => {
 
         advanceLine(lineIndex)
       }
-    })
+    }))
 
     // Player jump to line (synced navigation - all clients move together)
-    socket.on('player_jump_to_line', (roomCode, lineIndex) => {
+    socket.on('player_jump_to_line', withErrorHandler(socket, 'player_jump_to_line', (roomCode, lineIndex) => {
       const room = validateRoom(roomCode, socket)
       if (!room || room.gameState !== 'PERFORMING' || !room.script) return
 
@@ -1275,7 +662,7 @@ app.prepare().then(async () => {
           startTeleprompterSync(room, io)
         }
       }, 500)
-    })
+    }))
 
     // Request sequel
     socket.on('request_sequel', async (roomCode) => {
@@ -1409,7 +796,7 @@ app.prepare().then(async () => {
     })
 
     // Request new game (keeps players in room, no page reload)
-    socket.on('request_new_game', (roomCode, options?: NewGameOptions) => {
+    socket.on('request_new_game', withErrorHandler(socket, 'request_new_game', (roomCode, options?: NewGameOptions) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room) {
         console.log(`Cannot start new game: room not found for ${roomCode}`)
@@ -1466,7 +853,7 @@ app.prepare().then(async () => {
       io.to(roomCode).emit('players_update', Array.from(room.players.values()))
 
       console.log(`✅ New game started in room ${roomCode}`)
-    })
+    }))
 
     // Get room preview (for join page)
     socket.on('get_room_preview', (roomCode, callback) => {
@@ -1505,7 +892,7 @@ app.prepare().then(async () => {
     })
 
     // Update room settings
-    socket.on('update_room_settings', (roomCode, settings) => {
+    socket.on('update_room_settings', withErrorHandler(socket, 'update_room_settings', (roomCode, settings) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room) return
 
@@ -1559,14 +946,14 @@ app.prepare().then(async () => {
         audienceInteractionEnabled: !!room.audienceInteraction
       }
       io.to(roomCode).emit('room_settings_update', roomSettings)
-    })
+    }))
 
     // ============================================================
     // FEATURE 1: Audience Interaction Events
     // ============================================================
 
     // Send audience reaction
-    socket.on('send_audience_reaction', (roomCode, reactionType) => {
+    socket.on('send_audience_reaction', withErrorHandler(socket, 'send_audience_reaction', (roomCode, reactionType) => {
       // Rate limiting
       if (!reactionLimiter.check(socket.id)) {
         return
@@ -1601,10 +988,10 @@ app.prepare().then(async () => {
         io.to(roomCode).emit('audience_reaction_received', reaction)
         io.to(roomCode).emit('audience_reaction_counts', room.audienceInteraction.reactionCounts)
       }
-    })
+    }))
 
     // Start a plot twist vote
-    socket.on('start_plot_twist', (roomCode) => {
+    socket.on('start_plot_twist', withErrorHandler(socket, 'start_plot_twist', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.audienceInteraction) return
       if (room.gameState !== 'PERFORMING') return
@@ -1681,10 +1068,10 @@ app.prepare().then(async () => {
       }, 15000)
 
       roomService.setPlotTwistTimeout(roomCode, timeout)
-    })
+    }))
 
     // Vote on a plot twist option
-    socket.on('vote_plot_twist', (roomCode, optionId) => {
+    socket.on('vote_plot_twist', withErrorHandler(socket, 'vote_plot_twist', (roomCode, optionId) => {
       const room = validateRoom(roomCode, socket)
       if (!room || !room.audienceInteraction) return
 
@@ -1703,7 +1090,7 @@ app.prepare().then(async () => {
         room.lastActivity = Date.now()
         io.to(roomCode).emit('plot_twist_vote_update', optionId, result.newCount)
       }
-    })
+    }))
 
     // ============================================================
     // FEATURE 3: Card Pack Events
@@ -1862,7 +1249,7 @@ app.prepare().then(async () => {
     // ============================================================
 
     // Update audio settings
-    socket.on('update_audio_settings', (roomCode, settings) => {
+    socket.on('update_audio_settings', withErrorHandler(socket, 'update_audio_settings', (roomCode, settings) => {
       const room = validateRoom(roomCode, socket)
       if (!room) return
 
@@ -1876,10 +1263,10 @@ app.prepare().then(async () => {
       room.lastActivity = Date.now()
 
       io.to(roomCode).emit('audio_settings_update', room.audioSettings)
-    })
+    }))
 
     // Trigger sound effect (host only)
-    socket.on('trigger_sound_effect', (roomCode, effect) => {
+    socket.on('trigger_sound_effect', withErrorHandler(socket, 'trigger_sound_effect', (roomCode, effect) => {
       const room = validateRoom(roomCode, socket)
       if (!room) return
 
@@ -1890,10 +1277,10 @@ app.prepare().then(async () => {
 
       room.lastActivity = Date.now()
       io.to(roomCode).emit('play_sound_effect', effect)
-    })
+    }))
 
     // Request line audio (for TTS)
-    socket.on('request_line_audio', (roomCode, lineIndex, callback) => {
+    socket.on('request_line_audio', withErrorHandler(socket, 'request_line_audio', (roomCode, lineIndex, callback) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) {
         callback({ success: false, error: 'Room or script not found' })
@@ -1915,7 +1302,7 @@ app.prepare().then(async () => {
 
       // Return success - client will use browser TTS
       callback({ success: true, audioUrl: undefined })
-    })
+    }))
 
     // ============================================================
     // FEATURE 5: Game History Events
@@ -2016,17 +1403,17 @@ app.prepare().then(async () => {
     // ============================================================
 
     // Respond to latency pong from client
-    socket.on('latency_pong', (serverTimestamp: number, clientTimestamp: number) => {
+    socket.on('latency_pong', withErrorHandler(socket, 'latency_pong', (serverTimestamp: number, clientTimestamp: number) => {
       const now = Date.now()
       const roundTripTime = now - serverTimestamp
       const latency = Math.round(roundTripTime / 2)
 
       // Send latency result back to client
       socket.emit('latency_pong_response', { latency })
-    })
+    }))
 
     // Handle disconnect
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', withErrorHandler(socket, 'disconnect', (reason) => {
       console.log('Client disconnected:', socket.id, 'Reason:', reason)
 
       // Give a grace period before removing players (helps with reconnections)
@@ -2064,7 +1451,7 @@ app.prepare().then(async () => {
           }
         }
       }, 3000) // 3 second grace period
-    })
+    }))
   })
 
   // Helper function to start script generation
@@ -2123,7 +1510,7 @@ app.prepare().then(async () => {
     console.log(`🎲 Randomly selected circumstance: "${chosenCircumstance}" (from player ${randomCircumstanceIndex + 1})`)
 
     // Send green room trivia based on chosen setting
-    const triviaQuestion = getGreenRoomTrivia(chosenSetting)
+    const triviaQuestion = getGreenRoomQuestion(chosenSetting)
     io.to(room.code).emit('green_room_prompt', triviaQuestion)
 
     try {
@@ -2230,154 +1617,6 @@ app.prepare().then(async () => {
     }
   }
 
-  // Helper function for teleprompter sync
-  function startTeleprompterSync(room: Room, io: SocketIOServer) {
-    if (!room.script) return
-
-    // Calculate reading time for each line individually using smart timing
-    const advanceLine = (lineIndex: number) => {
-      // Check if paused
-      if (room.isPaused) {
-        console.log(`Teleprompter paused for room ${room.code}`)
-        return
-      }
-
-      if (!room.script || lineIndex >= room.script.lines.length - 1) {
-        // Clear timeout reference
-        roomService.clearRoomTimeout(room.code)
-
-        // Move to voting or results
-        if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
-          room.gameState = 'VOTING'
-          io.to(room.code).emit('game_state_change', 'VOTING')
-        } else {
-          room.gameState = 'RESULTS'
-          io.to(room.code).emit('game_state_change', 'RESULTS')
-        }
-        return
-      }
-
-      // Calculate time using smart timing (punctuation, mood, etc.)
-      const currentLine = room.script.lines[lineIndex]
-      const readingTimeMs = calculateLineDisplayTime(currentLine)
-
-      // Schedule next line advance based on current line's reading time
-      const timeout = setTimeout(() => {
-        if (!room.script) return
-        room.currentLineIndex++
-        // Emit with timestamp for client sync
-        io.to(room.code).emit('sync_teleprompter', {
-          lineIndex: room.currentLineIndex,
-          serverTimestamp: Date.now(),
-          expectedDuration: room.script.lines[room.currentLineIndex]
-            ? calculateLineDisplayTime(room.script.lines[room.currentLineIndex])
-            : undefined
-        })
-        advanceLine(room.currentLineIndex)
-      }, readingTimeMs)
-
-      // Store timeout reference for this room
-      roomService.setRoomTimeout(room.code, timeout)
-    }
-
-    // Start with the first line (index 0)
-    advanceLine(0)
-  }
-
-  // Calculate voting results
-  async function calculateResults(room: Room, io: SocketIOServer) {
-    const voteCounts = new Map<string, number>()
-
-    for (const targetId of room.votes.values()) {
-      voteCounts.set(targetId, (voteCounts.get(targetId) || 0) + 1)
-    }
-
-    const results = Array.from(voteCounts.entries())
-      .map(([playerId, votes]) => ({
-        playerId,
-        playerName: room.players.get(playerId)?.nickname || 'Unknown',
-        votes
-      }))
-      .sort((a, b) => b.votes - a.votes)
-
-    const winner = results[0]
-
-    room.gameState = 'RESULTS'
-    roomService.updateRoom(room)
-    io.to(room.code).emit('game_over', {
-      winner,
-      allResults: results
-    })
-    io.to(room.code).emit('game_state_change', 'RESULTS')
-
-    // Save game to history and update player stats
-    try {
-      if (room.script) {
-        // Get setting and circumstance from selections
-        const allSelections = Array.from(room.selections.values())
-        const setting = allSelections[0]?.setting || 'Unknown'
-        const circumstance = allSelections[0]?.circumstance || 'Unknown'
-
-        // Calculate game duration (approximate)
-        const duration = Math.floor((Date.now() - room.createdAt) / 1000)
-
-        // Get reaction count
-        const reactionCount = room.audienceInteraction
-          ? Object.values(room.audienceInteraction.reactionCounts).reduce((a, b) => a + b, 0)
-          : 0
-
-        // Save the game
-        const savedGame = await saveGame(
-          room.code,
-          room.script,
-          Array.from(room.players.values()),
-          room.gameMode,
-          { winner, allResults: results },
-          {
-            setting,
-            circumstance,
-            cardPackId: room.cardPackId || 'standard',
-            comedyStyle: room.scriptCustomization?.comedyStyle || 'witty',
-            duration,
-            audienceReactionCount: reactionCount,
-            plotTwistsUsed: room.audienceInteraction?.plotTwistHistory || []
-          }
-        )
-
-        console.log(`Saved game to history: ${savedGame.id}`)
-
-        // Update player stats
-        const players = Array.from(room.players.values()).filter(p => p.role === 'PLAYER')
-        for (const player of players) {
-          const voteResult = results.find(r => r.playerId === player.id)
-          const newAchievements = await recordGameResult(
-            player.id,
-            player.nickname,
-            savedGame,
-            {
-              character: player.assignedCharacter || '',
-              votesReceived: voteResult?.votes || 0,
-              isWinner: winner?.playerId === player.id,
-              reactionsReceived: Math.floor(reactionCount / players.length) // Approximate per-player
-            }
-          )
-
-          // Notify player of new achievements
-          if (newAchievements.length > 0) {
-            const playerSocket = io.sockets.sockets.get(player.socketId)
-            if (playerSocket) {
-              // Emit achievement unlocked events (client can show toast)
-              newAchievements.forEach(achievement => {
-                playerSocket.emit('achievement_unlocked' as never, achievement)
-              })
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error saving game to history:', error)
-    }
-  }
 
   // ============================================================
   // Stripe Routes (must be before Next.js catch-all)

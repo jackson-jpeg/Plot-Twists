@@ -11,7 +11,7 @@ export function configureSecurityMiddleware(app: Express): void {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", ...(process.env.NODE_ENV !== 'production' ? ["'unsafe-eval'"] : [])],
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: ["'self'", 'wss:', 'https:'],

@@ -414,6 +414,7 @@ export interface SavedGame {
   duration: number // in seconds
   roomCode: string
   gameMode: GameMode
+  playerIds?: string[] // Top-level array for Firestore querying
   players: SavedGamePlayer[]
   script: Script
   setting: string

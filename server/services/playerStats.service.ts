@@ -388,31 +388,29 @@ export async function unlockAchievement(playerId: string, achievementId: Achieve
  */
 export async function getLeaderboard(category: LeaderboardCategory, limit: number = 10): Promise<LeaderboardEntry[]> {
   const db = getDatabase()
-  const allStats = await db.getAll<PlayerStats>(Collections.PLAYER_STATS)
 
-  // Sort by category
-  let sorted: PlayerStats[]
-  switch (category) {
-    case 'wins':
-      sorted = allStats.sort((a, b) => b.gamesWon - a.gamesWon)
-      break
-    case 'games':
-      sorted = allStats.sort((a, b) => b.gamesPlayed - a.gamesPlayed)
-      break
-    case 'winRate':
-      sorted = allStats
-        .filter(s => s.gamesPlayed >= 5) // Minimum games for winRate
-        .sort((a, b) => b.winRate - a.winRate)
-      break
-    case 'reactions':
-      sorted = allStats.sort((a, b) => b.totalReactionsReceived - a.totalReactionsReceived)
-      break
-    case 'streak':
-      sorted = allStats.sort((a, b) => b.bestWinStreak - a.bestWinStreak)
-      break
-    default:
-      sorted = allStats.sort((a, b) => b.gamesWon - a.gamesWon)
+  // Map category to the field we should sort by
+  const sortFieldMap: Record<string, string> = {
+    wins: 'gamesWon',
+    games: 'gamesPlayed',
+    winRate: 'winRate',
+    reactions: 'totalReactionsReceived',
+    streak: 'bestWinStreak'
   }
+
+  const sortField = sortFieldMap[category] || 'gamesWon'
+
+  // For winRate, we need a minimum games filter
+  const whereClauses: import('../db').WhereClause[] = []
+  if (category === 'winRate') {
+    whereClauses.push({ field: 'gamesPlayed', operator: '>=', value: 5 })
+  }
+
+  const sorted = await db.query<PlayerStats>(Collections.PLAYER_STATS, whereClauses, {
+    orderBy: sortField,
+    orderDirection: 'desc',
+    limit
+  })
 
   // Map to entries
   return sorted.slice(0, limit).map((stats, index) => {

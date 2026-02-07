@@ -64,29 +64,32 @@ export async function initializeCardPackService(): Promise<void> {
  */
 export async function listCardPacks(includePrivate: boolean = false): Promise<CardPackMetadata[]> {
   const db = getDatabase()
-  const allPacks = await db.getAll<CardPack>(Collections.CARD_PACKS)
-  const packs: CardPackMetadata[] = []
 
-  for (const pack of allPacks) {
-    if (!pack.isPublic && !includePrivate) continue
-
-    packs.push({
-      id: pack.id,
-      name: pack.name,
-      description: pack.description,
-      author: pack.author,
-      theme: pack.theme,
-      isMature: pack.isMature,
-      isBuiltIn: pack.isBuiltIn,
-      cardCounts: {
-        characters: pack.characters.length,
-        settings: pack.settings.length,
-        circumstances: pack.circumstances.length
-      },
-      downloads: pack.downloads,
-      rating: pack.rating
-    })
+  const whereClauses: import('../db').WhereClause[] = []
+  if (!includePrivate) {
+    whereClauses.push({ field: 'isPublic', operator: '==', value: true })
   }
+
+  const allPacks = await db.query<CardPack>(Collections.CARD_PACKS, whereClauses, {
+    limit: 100 // Safety cap
+  })
+
+  const packs: CardPackMetadata[] = allPacks.map(pack => ({
+    id: pack.id,
+    name: pack.name,
+    description: pack.description,
+    author: pack.author,
+    theme: pack.theme,
+    isMature: pack.isMature,
+    isBuiltIn: pack.isBuiltIn,
+    cardCounts: {
+      characters: pack.characters.length,
+      settings: pack.settings.length,
+      circumstances: pack.circumstances.length
+    },
+    downloads: pack.downloads,
+    rating: pack.rating
+  }))
 
   // Sort by built-in first, then by rating
   return packs.sort((a, b) => {
@@ -298,16 +301,20 @@ export async function rateCardPack(
 
 /**
  * Search card packs by name or theme
+ * Note: Full-text search requires client-side filtering since Firestore doesn't support LIKE queries.
+ * We limit the query to public packs with a safety cap.
  */
 export async function searchCardPacks(query: string): Promise<CardPackMetadata[]> {
   const db = getDatabase()
-  const allPacks = await db.getAll<CardPack>(Collections.CARD_PACKS)
+
+  const allPacks = await db.query<CardPack>(Collections.CARD_PACKS, [
+    { field: 'isPublic', operator: '==', value: true }
+  ], { limit: 100 })
+
   const lowerQuery = query.toLowerCase()
   const results: CardPackMetadata[] = []
 
   for (const pack of allPacks) {
-    if (!pack.isPublic) continue
-
     const matchesName = pack.name.toLowerCase().includes(lowerQuery)
     const matchesTheme = pack.theme.toLowerCase().includes(lowerQuery)
     const matchesAuthor = pack.author.toLowerCase().includes(lowerQuery)

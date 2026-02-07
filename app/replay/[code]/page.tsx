@@ -7,6 +7,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import type { SavedGame, ScriptLine, TeleprompterSettings } from '@/lib/types'
 import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
 import { TeleprompterSettings as TeleprompterSettingsPanel } from '@/components/TeleprompterSettings'
+import { getVisibleLines } from '@/lib/teleprompterUtils'
 import React from 'react'
 
 // Share button configuration
@@ -56,35 +57,6 @@ export default function ReplayPage() {
   } = useTeleprompterSettings()
 
   const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
-
-  // Helper function to get visible lines based on teleprompter settings
-  const getVisibleLines = (
-    lines: ScriptLine[],
-    currentIndex: number,
-    settings: TeleprompterSettings
-  ): { line: ScriptLine; originalIndex: number }[] => {
-    const result: { line: ScriptLine; originalIndex: number }[] = []
-
-    let startIndex: number
-    if (settings.pastLinesVisible === 'all') {
-      startIndex = 0
-    } else {
-      startIndex = Math.max(0, currentIndex - settings.pastLinesVisible)
-    }
-
-    let endIndex: number
-    if (settings.upcomingLinesVisible === 'all') {
-      endIndex = lines.length - 1
-    } else {
-      endIndex = Math.min(lines.length - 1, currentIndex + settings.upcomingLinesVisible)
-    }
-
-    for (let i = startIndex; i <= endIndex; i++) {
-      result.push({ line: lines[i], originalIndex: i })
-    }
-
-    return result
-  }
 
   const fetchGame = useCallback(() => {
     if (!socket || !shareCode) return

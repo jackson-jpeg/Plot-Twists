@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -23,21 +23,22 @@ export function LoadingSpinner({
   className = ''
 }: LoadingSpinnerProps) {
   const sizeClasses = sizes[size]
+  const prefersReducedMotion = useReducedMotion()
 
   if (variant === 'spinner') {
     return (
       <div className={`flex flex-col items-center gap-3 ${className}`}>
         <div className={`${sizeClasses.container} relative`}>
           <motion.div
-            className="absolute inset-0 rounded-full border-4 border-gray-200 dark:border-gray-700"
+            className="absolute inset-0 rounded-full border-4 border-[var(--color-border)]"
           />
           <motion.div
             className="absolute inset-0 rounded-full border-4 border-transparent border-t-[var(--color-accent)]"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            animate={prefersReducedMotion ? {} : { rotate: 360 }}
+            transition={prefersReducedMotion ? {} : { duration: 1, repeat: Infinity, ease: 'linear' }}
           />
         </div>
-        {text && <p className={`${sizeClasses.text} text-gray-500 dark:text-gray-400`}>{text}</p>}
+        {text && <p className={`${sizeClasses.text} text-[var(--color-text-secondary)]`}>{text}</p>}
       </div>
     )
   }
@@ -50,8 +51,8 @@ export function LoadingSpinner({
             <motion.div
               key={i}
               className="w-3 h-3 rounded-full bg-[var(--color-accent)]"
-              animate={{ y: [0, -12, 0] }}
-              transition={{
+              animate={prefersReducedMotion ? {} : { y: [0, -12, 0] }}
+              transition={prefersReducedMotion ? {} : {
                 duration: 0.6,
                 repeat: Infinity,
                 delay: i * 0.15,
@@ -60,7 +61,7 @@ export function LoadingSpinner({
             />
           ))}
         </div>
-        {text && <p className={`${sizeClasses.text} text-gray-500 dark:text-gray-400`}>{text}</p>}
+        {text && <p className={`${sizeClasses.text} text-[var(--color-text-secondary)]`}>{text}</p>}
       </div>
     )
   }
@@ -76,16 +77,16 @@ export function LoadingSpinner({
             <span className="text-4xl">📝</span>
             <motion.div
               className="w-0.5 h-8 bg-[var(--color-accent)]"
-              animate={{ opacity: [1, 0, 1] }}
-              transition={{ duration: 0.8, repeat: Infinity }}
+              animate={prefersReducedMotion ? {} : { opacity: [1, 0, 1] }}
+              transition={prefersReducedMotion ? {} : { duration: 0.8, repeat: Infinity }}
             />
           </motion.div>
         </div>
         {text && (
           <motion.p
-            className={`${sizeClasses.text} text-gray-600 dark:text-gray-300 font-medium`}
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            className={`${sizeClasses.text} text-[var(--color-text-secondary)] font-medium`}
+            animate={prefersReducedMotion ? {} : { opacity: [0.5, 1, 0.5] }}
+            transition={prefersReducedMotion ? {} : { duration: 2, repeat: Infinity }}
           >
             {text}
           </motion.p>
@@ -100,14 +101,14 @@ export function LoadingSpinner({
       <div className="relative flex items-center">
         <motion.span
           className="text-4xl"
-          animate={{ rotate: [-5, 5, -5], y: [0, -3, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          animate={prefersReducedMotion ? {} : { rotate: [-5, 5, -5], y: [0, -3, 0] }}
+          transition={prefersReducedMotion ? {} : { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
         >
           🎭
         </motion.span>
       </div>
       {text && (
-        <p className={`${sizeClasses.text} text-gray-600 dark:text-gray-300`}>
+        <p className={`${sizeClasses.text} text-[var(--color-text-secondary)]`}>
           {text}
         </p>
       )}
@@ -133,7 +134,7 @@ export function LoadingOverlay({
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-2xl"
+        className="bg-[var(--color-surface)] rounded-2xl p-8 shadow-2xl"
       >
         <LoadingSpinner size="lg" variant={variant} text={text} />
       </motion.div>
@@ -156,6 +157,8 @@ export function LoadingButton({
   className?: string
   disabled?: boolean
 } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const prefersReducedMotion = useReducedMotion()
+
   return (
     <button
       className={`relative ${className}`}
@@ -169,8 +172,8 @@ export function LoadingButton({
         <span className="absolute inset-0 flex items-center justify-center gap-2">
           <motion.div
             className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+            animate={prefersReducedMotion ? {} : { rotate: 360 }}
+            transition={prefersReducedMotion ? {} : { duration: 0.8, repeat: Infinity, ease: 'linear' }}
           />
           <span>{loadingText}</span>
         </span>

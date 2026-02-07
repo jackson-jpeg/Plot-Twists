@@ -1,4 +1,14 @@
 import 'dotenv/config'
+
+// Process-level error handlers — must be registered before anything else
+process.on('uncaughtException', (error) => {
+  console.error('[FATAL] Uncaught Exception:', error)
+  process.exit(1)
+})
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason)
+})
+
 import { createServer } from 'http'
 import { parse } from 'url'
 import next from 'next'
@@ -69,7 +79,7 @@ import {
   initializeCardPackService,
   STANDARD_PACK_ID
 } from './server/services/cardpack.service'
-import { initializeDatabase } from './server/db'
+import { initializeDatabase, getDatabase } from './server/db'
 import {
   enhanceScriptWithAudio,
   validateAudioSettings,
@@ -161,10 +171,16 @@ function isAllowedOrigin(origin: string): boolean {
 
 app.prepare().then(async () => {
   // Initialize database and services
-  await initializeDatabase()
-  await roomService.loadRoomsFromFirestore()
-  roomService.startRoomCleanup()
-  await initializeCardPackService()
+  try {
+    await initializeDatabase()
+    await roomService.loadRoomsFromFirestore()
+    roomService.startRoomCleanup()
+    await initializeCardPackService()
+    console.log('✓ All services initialized successfully')
+  } catch (initError) {
+    console.error('[FATAL] Service initialization failed:', initError)
+    process.exit(1)
+  }
 
   const expressApp = express()
 
@@ -676,10 +692,17 @@ app.prepare().then(async () => {
 
       // Credit gate: deduct 1 credit from host before generating sequel
       if (room.hostUid) {
-        const creditResult = await checkAndDeductCredit(room.hostUid)
-        if (!creditResult.success) {
-          console.log(`Insufficient credits for sequel: host ${room.hostUid} in room ${roomCode}`)
-          io.to(roomCode).emit('insufficient_credits', { needed: 1, available: 0 })
+        try {
+          const creditResult = await checkAndDeductCredit(room.hostUid)
+          if (!creditResult.success) {
+            console.log(`[ScriptGen] Sequel BLOCKED by credits — host ${room.hostUid} in room ${roomCode}`)
+            io.to(roomCode).emit('insufficient_credits', { needed: 1, available: 0 })
+            return
+          }
+          console.log(`[ScriptGen] Sequel credit deducted (${creditResult.source}) for host ${room.hostUid}`)
+        } catch (creditError) {
+          console.error(`[ScriptGen] Sequel credit check THREW for host ${room.hostUid}:`, creditError)
+          io.to(roomCode).emit('error', 'Failed to verify credits. Please try again.')
           return
         }
         // Emit updated balance to host
@@ -689,7 +712,7 @@ app.prepare().then(async () => {
           hostSocket.emit('credit_balance', balance)
         }
       } else if (!dev) {
-        console.warn(`Sequel blocked: no hostUid for room ${roomCode}`)
+        console.warn(`[ScriptGen] Sequel BLOCKED — no hostUid for room ${roomCode} (Firebase auth may not be configured)`)
         io.to(roomCode).emit('error', 'Authentication required to generate scripts.')
         return
       }
@@ -1456,10 +1479,12 @@ app.prepare().then(async () => {
 
   // Helper function to start script generation
   async function startScriptGeneration(room: Room, io: SocketIOServer) {
+    console.log(`[ScriptGen] Starting for room ${room.code} | hostUid=${room.hostUid || 'NONE'} | mode=${room.gameMode} | dev=${dev}`)
+
     // Rate limiting for script generation (use host socket ID)
     const hostSocketId = room.host.socketId
     if (!scriptGenerationLimiter.check(hostSocketId)) {
-      console.warn(`Script generation rate limit exceeded for room ${room.code}`)
+      console.warn(`[ScriptGen] BLOCKED by rate limiter for room ${room.code}`)
       io.to(room.code).emit('error', 'Too many script generation requests. Please wait a moment.')
       room.gameState = 'SELECTION'
       io.to(room.code).emit('game_state_change', 'SELECTION')
@@ -1468,10 +1493,19 @@ app.prepare().then(async () => {
 
     // Credit gate: deduct 1 credit from host before generating
     if (room.hostUid) {
-      const creditResult = await checkAndDeductCredit(room.hostUid)
-      if (!creditResult.success) {
-        console.log(`Insufficient credits for host ${room.hostUid} in room ${room.code}`)
-        io.to(room.code).emit('insufficient_credits', { needed: 1, available: 0 })
+      try {
+        const creditResult = await checkAndDeductCredit(room.hostUid)
+        if (!creditResult.success) {
+          console.log(`[ScriptGen] BLOCKED by credits — host ${room.hostUid} in room ${room.code} has 0 credits`)
+          io.to(room.code).emit('insufficient_credits', { needed: 1, available: 0 })
+          room.gameState = 'SELECTION'
+          io.to(room.code).emit('game_state_change', 'SELECTION')
+          return
+        }
+        console.log(`[ScriptGen] Credit deducted (${creditResult.source}) for host ${room.hostUid} — ${creditResult.remaining} remaining`)
+      } catch (creditError) {
+        console.error(`[ScriptGen] Credit check THREW for host ${room.hostUid}:`, creditError)
+        io.to(room.code).emit('error', 'Failed to verify credits. Please try again.')
         room.gameState = 'SELECTION'
         io.to(room.code).emit('game_state_change', 'SELECTION')
         return
@@ -1484,7 +1518,7 @@ app.prepare().then(async () => {
       }
     } else if (!dev) {
       // In production, require authenticated host
-      console.warn(`Script generation blocked: no hostUid for room ${room.code}`)
+      console.warn(`[ScriptGen] BLOCKED — no hostUid for room ${room.code} (Firebase auth may not be configured)`)
       io.to(room.code).emit('error', 'Authentication required to generate scripts.')
       room.gameState = 'SELECTION'
       io.to(room.code).emit('game_state_change', 'SELECTION')
@@ -1595,7 +1629,10 @@ app.prepare().then(async () => {
       // Start teleprompter sync
       startTeleprompterSync(room, io)
     } catch (error) {
-      console.error('Script generation failed:', error)
+      const errMsg = error instanceof Error ? error.message : String(error)
+      const errStack = error instanceof Error ? error.stack : undefined
+      console.error(`[ScriptGen] FAILED for room ${room.code}:`, errMsg)
+      if (errStack) console.error(`[ScriptGen] Stack:`, errStack)
       io.to(room.code).emit('error', 'Failed to generate script. Please try again.')
 
       // Reset game state to SELECTION so players can try again
@@ -1623,7 +1660,9 @@ app.prepare().then(async () => {
   // ============================================================
 
   // Track processed Stripe events to prevent duplicate fulfillment on retries
+  // Capped at 1000 entries to prevent unbounded memory growth
   const processedStripeEvents = new Set<string>()
+  const MAX_STRIPE_EVENTS = 1000
 
   // Stripe webhook needs raw body — must be registered before express.json()
   expressApp.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -1656,6 +1695,11 @@ app.prepare().then(async () => {
 
         if (userId && scripts > 0) {
           processedStripeEvents.add(event.id)
+          // Evict oldest entries if set grows too large
+          if (processedStripeEvents.size > MAX_STRIPE_EVENTS) {
+            const first = processedStripeEvents.values().next().value
+            if (first) processedStripeEvents.delete(first)
+          }
           await addBankedCredits(userId, scripts, amountTotal)
 
           // Emit updated balance to user's connected socket (if online)
@@ -1736,6 +1780,22 @@ app.prepare().then(async () => {
     }
   })
 
+  // Health check endpoint (must be before Next.js catch-all)
+  expressApp.get('/health', (_req, res) => {
+    const dbAdapter = getDatabase()
+    res.status(200).json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      activeRooms: roomService.getActiveRoomCount(),
+      database: dbAdapter.isConnected() ? 'connected' : 'disconnected',
+      memory: {
+        heapUsedMB: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        rssMB: Math.round(process.memoryUsage().rss / 1024 / 1024)
+      }
+    })
+  })
+
   // Handle Next.js requests
   expressApp.use((req, res) => {
     const parsedUrl = parse(req.url!, true)
@@ -1745,4 +1805,24 @@ app.prepare().then(async () => {
   server.listen(port, () => {
     console.log(`> Ready on http://${hostname}:${port}`)
   })
+
+  // Graceful shutdown
+  const shutdown = (signal: string) => {
+    console.log(`${signal} received, shutting down gracefully...`)
+    roomService.stopRoomCleanup()
+    server.close(() => {
+      console.log('Server closed')
+      process.exit(0)
+    })
+    // Force exit after 10s if graceful shutdown hangs
+    setTimeout(() => {
+      console.error('Forced shutdown after timeout')
+      process.exit(1)
+    }, 10000)
+  }
+  process.on('SIGTERM', () => shutdown('SIGTERM'))
+  process.on('SIGINT', () => shutdown('SIGINT'))
+}).catch((err) => {
+  console.error('[FATAL] Failed to prepare Next.js app:', err)
+  process.exit(1)
 })

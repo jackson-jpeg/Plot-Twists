@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { PhoneAuthForm } from './PhoneAuthForm'
@@ -24,6 +24,13 @@ function generateFunName(): string {
 export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) {
   const { signIn, signUp, signInWithGoogle, sendPasswordResetEmail, isConfigured } = useAuth()
   const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>(initialMode)
+
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode)
+    }
+  }, [isOpen, initialMode])
+
   const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

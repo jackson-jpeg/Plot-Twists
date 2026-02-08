@@ -4,6 +4,7 @@
  */
 
 import type { Socket } from 'socket.io'
+import { upsertUser } from '../services/user.service'
 
 /**
  * Get the Firebase Admin auth instance.
@@ -49,6 +50,17 @@ export function createSocketAuthMiddleware() {
 
       const decodedToken = await auth.verifyIdToken(token)
       socket.data.uid = decodedToken.uid
+
+      try {
+        await upsertUser(decodedToken.uid, {
+          displayName: decodedToken.name || decodedToken.email?.split('@')[0],
+          email: decodedToken.email,
+          phoneNumber: decodedToken.phone_number,
+        })
+      } catch (profileError) {
+        console.warn(`[SocketAuth] Failed to upsert user profile for ${decodedToken.uid}:`, profileError)
+      }
+
       console.log(`[SocketAuth] Authenticated socket ${socket.id} as user ${decodedToken.uid}`)
       next()
     } catch (error) {

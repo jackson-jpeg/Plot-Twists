@@ -220,7 +220,12 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-lg text-sm"
+          className="p-3 rounded-lg text-sm"
+          style={{
+            background: '#FFEAEA',
+            border: '1px solid #D77A7A',
+            color: '#B91C1C',
+          }}
         >
           {error}
         </motion.div>
@@ -236,14 +241,31 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
             className="space-y-4"
           >
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label
+                className="block text-sm font-medium mb-2"
+                style={{ color: '#6B6560', fontFamily: 'var(--font-ui)' }}
+              >
                 Phone Number
               </label>
               <div className="flex gap-2">
                 <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="w-24 p-3 bg-gray-800 rounded-lg text-white focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer"
+                  className="w-24 p-3 rounded-lg outline-none cursor-pointer"
+                  style={{
+                    background: 'white',
+                    color: '#2A2722',
+                    border: '2px solid #D1D5DB',
+                    minHeight: '44px',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#581C87'
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(88, 28, 135, 0.15)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#D1D5DB'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
                   disabled={loading}
                 >
                   {COUNTRY_CODES.map((c) => (
@@ -257,7 +279,22 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
                   value={phoneNumber}
                   onChange={(e) => handlePhoneChange(e.target.value)}
                   placeholder="(555) 123-4567"
-                  className="flex-1 p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="flex-1 p-3 rounded-lg outline-none"
+                  style={{
+                    background: 'white',
+                    color: '#2A2722',
+                    border: '2px solid #D1D5DB',
+                    minHeight: '44px',
+                    fontFamily: 'var(--font-ui)',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#581C87'
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(88, 28, 135, 0.15)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#D1D5DB'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
                   disabled={loading}
                 />
               </div>
@@ -266,7 +303,18 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
             <motion.button
               onClick={handleSendCode}
               disabled={loading || !phoneNumber}
-              className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full p-3 rounded-lg font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              style={{
+                background: '#581C87',
+                color: '#FACC15',
+                minHeight: '44px',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-display)',
+                fontSize: '15px',
+              }}
+              onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#6B21A8')}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#581C87'}
               whileHover={{ scale: loading ? 1 : 1.02 }}
               whileTap={{ scale: loading ? 1 : 0.98 }}
             >
@@ -285,7 +333,7 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
               )}
             </motion.button>
 
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-center" style={{ color: '#9B9590' }}>
               We'll send a 6-digit code to verify your phone number
             </p>
           </motion.div>
@@ -299,15 +347,23 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
           >
             <button
               onClick={handleBack}
-              className="text-gray-400 hover:text-white text-sm flex items-center gap-1"
+              className="text-sm flex items-center gap-1"
+              style={{
+                color: '#581C87',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#6B21A8'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#581C87'}
               disabled={loading}
             >
               <span>←</span> Change phone number
             </button>
 
             <div className="text-center">
-              <p className="text-gray-300 mb-1">Enter the code sent to</p>
-              <p className="text-white font-semibold">{getFullPhoneNumber()}</p>
+              <p className="mb-1" style={{ color: '#6B6560' }}>Enter the code sent to</p>
+              <p className="font-semibold" style={{ color: '#2A2722' }}>{getFullPhoneNumber()}</p>
             </div>
 
             <OTPInput
@@ -321,7 +377,18 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
             <motion.button
               onClick={() => handleVerifyCode()}
               disabled={loading || verificationCode.length !== 6}
-              className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full p-3 rounded-lg font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              style={{
+                background: '#581C87',
+                color: '#FACC15',
+                minHeight: '44px',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-display)',
+                fontSize: '15px',
+              }}
+              onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#6B21A8')}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#581C87'}
               whileHover={{ scale: loading ? 1 : 1.02 }}
               whileTap={{ scale: loading ? 1 : 0.98 }}
             >
@@ -342,14 +409,22 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
 
             <div className="text-center">
               {resendCountdown > 0 ? (
-                <p className="text-gray-500 text-sm">
+                <p className="text-sm" style={{ color: '#9B9590' }}>
                   Resend code in {resendCountdown}s
                 </p>
               ) : (
                 <button
                   onClick={handleResendCode}
                   disabled={loading}
-                  className="text-purple-400 hover:text-purple-300 text-sm font-medium disabled:opacity-50"
+                  className="text-sm font-medium disabled:opacity-50"
+                  style={{
+                    color: '#581C87',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = '#6B21A8'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = '#581C87'}
                 >
                   Resend Code
                 </button>

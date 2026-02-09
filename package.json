@@ -11,7 +11,7 @@
     "test:unit": "jest --testPathPattern=__tests__/unit"
   },
   "engines": {
-    "node": "20.x",
+    "node": "22.x",
     "npm": ">=10.0.0"
   },
   "keywords": [],

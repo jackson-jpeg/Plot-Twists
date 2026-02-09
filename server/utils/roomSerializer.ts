@@ -65,7 +65,7 @@ export function roomToFirestore(room: Room): FirestoreRoom {
     votes[id] = targetId
   }
 
-  return {
+  const doc: Record<string, unknown> = {
     code: room.code,
     host: stripSocketId(room.host),
     players,
@@ -85,6 +85,15 @@ export function roomToFirestore(room: Room): FirestoreRoom {
     cardPackId: room.cardPackId,
     audioSettings: room.audioSettings
   }
+
+  // Strip undefined values — Firestore rejects them
+  for (const key of Object.keys(doc)) {
+    if (doc[key] === undefined) {
+      delete doc[key]
+    }
+  }
+
+  return doc as unknown as FirestoreRoom
 }
 
 /** Convert a Firestore document back to a Room (with Maps, socketId = '') */

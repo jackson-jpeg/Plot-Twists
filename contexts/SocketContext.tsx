@@ -45,6 +45,23 @@ async function getIdToken(): Promise<string | null> {
   return null
 }
 
+/**
+ * Wait for Firebase auth to fully restore its session from IndexedDB.
+ * This prevents the race condition where socket connects before auth is ready.
+ */
+async function waitForAuthReady(): Promise<void> {
+  try {
+    const ready = await initializeFirebase()
+    if (!ready) return
+    const auth = getFirebaseAuth()
+    if (auth?.authStateReady) {
+      await auth.authStateReady()
+    }
+  } catch (error) {
+    console.warn('[SocketContext] Failed to wait for auth ready:', error)
+  }
+}
+
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<SocketType | null>(null)
   const [isConnected, setIsConnected] = useState(false)
@@ -59,8 +76,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     async function initSocket() {
       // Reuse existing socket or create new one
       if (!globalSocket) {
-        // Get auth token before connecting
+        // Wait for Firebase auth to restore session before getting token
+        await waitForAuthReady()
         const token = await getIdToken()
+        console.log(`[SocketContext] initSocket: token ${token ? 'present' : 'absent'}`)
 
         // Determine socket URL based on environment
         let socketUrl: string
@@ -171,8 +190,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   // Reconnect socket with fresh token when auth state changes (sign in / sign out)
   useEffect(() => {
     let unsubscribe: (() => void) | null = null
-    const UNSET = '__unset__'
-    let prevUid: string | null | typeof UNSET = UNSET
+    let prevUid: string | null = null
 
     async function watchAuth() {
       const ready = await initializeFirebase()
@@ -186,16 +204,15 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         unsubscribe = firebaseAuth.onAuthStateChanged(auth as any, async (user: any) => {
           const newUid: string | null = user?.uid ?? null
-          // Skip the initial fire — socket was already connected with whatever token was available
-          if (prevUid === UNSET) {
-            prevUid = newUid
-            return
-          }
           if (newUid === prevUid) return
           prevUid = newUid
 
           if (globalSocket) {
             const freshToken = user ? await user.getIdToken() : null
+            // Check if the socket already has the correct token (e.g. from initSocket)
+            const currentToken = (globalSocket.auth as { token?: string })?.token ?? null
+            if (freshToken && currentToken === freshToken) return
+
             globalSocket.auth = freshToken ? { token: freshToken } : {}
             globalSocket.disconnect().connect()
             console.log(`[SocketContext] Auth changed (uid: ${newUid ?? 'null'}), reconnecting socket`)

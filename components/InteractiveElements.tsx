@@ -349,7 +349,7 @@ export function SuccessCheck({ show, size = 'md', className = '' }: SuccessCheck
           cy="25"
           r="22"
           fill="none"
-          stroke="#10B981"
+          stroke="var(--color-emerald)"
           strokeWidth="3"
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
@@ -358,7 +358,7 @@ export function SuccessCheck({ show, size = 'md', className = '' }: SuccessCheck
         <motion.path
           d="M14 26 L22 34 L36 18"
           fill="none"
-          stroke="#10B981"
+          stroke="var(--color-emerald)"
           strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -385,7 +385,7 @@ export function Confetti({ trigger, count = 50 }: ConfettiProps) {
     x: (Math.random() - 0.5) * 400,
     y: -Math.random() * 300 - 100,
     rotation: Math.random() * 720,
-    color: ['#F59E42', '#A855F7', '#EC4899', '#10B981', '#3B82F6'][Math.floor(Math.random() * 5)]
+    color: ['var(--color-accent)', 'var(--color-purple)', 'var(--color-pink)', 'var(--color-emerald)', 'var(--color-blue)'][Math.floor(Math.random() * 5)]
   }))
 
   return (

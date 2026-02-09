@@ -48,6 +48,7 @@ function applyLazyReset(credits: CreditBalance): boolean {
 /**
  * Check and deduct one credit from the user.
  * Free credits are consumed first, then banked.
+ * Uses a database transaction to prevent double-spend under concurrency.
  */
 export async function checkAndDeductCredit(userId: string): Promise<{
   success: boolean
@@ -55,37 +56,46 @@ export async function checkAndDeductCredit(userId: string): Promise<{
   remaining?: number
 }> {
   const db = getDatabase()
-  const user = await ensureCreditsExist(userId)
-  const credits = user.credits
+  // Ensure credits field exists before entering the transaction
+  await ensureCreditsExist(userId)
 
-  // Apply lazy reset
-  applyLazyReset(credits)
-
-  // Try free credits first
-  const freeRemaining = getFreeRemaining(credits)
-  if (freeRemaining > 0) {
-    credits.free.used += 1
-    await db.update(Collections.USERS, userId, { credits })
-    return {
-      success: true,
-      source: 'free',
-      remaining: getAvailableCredits(credits)
+  return db.runTransaction(async (txn) => {
+    const user = await txn.get<UserProfile>(Collections.USERS, userId)
+    if (!user || !user.credits) {
+      return { success: false }
     }
-  }
 
-  // Try banked credits
-  if (credits.banked > 0) {
-    credits.banked -= 1
-    await db.update(Collections.USERS, userId, { credits })
-    return {
-      success: true,
-      source: 'banked',
-      remaining: getAvailableCredits(credits)
+    const credits = user.credits
+
+    // Apply lazy reset
+    applyLazyReset(credits)
+
+    // Try free credits first
+    const freeRemaining = getFreeRemaining(credits)
+    if (freeRemaining > 0) {
+      credits.free.used += 1
+      await txn.update(Collections.USERS, userId, { credits })
+      return {
+        success: true,
+        source: 'free' as const,
+        remaining: getAvailableCredits(credits)
+      }
     }
-  }
 
-  // No credits available
-  return { success: false }
+    // Try banked credits
+    if (credits.banked > 0) {
+      credits.banked -= 1
+      await txn.update(Collections.USERS, userId, { credits })
+      return {
+        success: true,
+        source: 'banked' as const,
+        remaining: getAvailableCredits(credits)
+      }
+    }
+
+    // No credits available
+    return { success: false }
+  })
 }
 
 /**
@@ -106,17 +116,26 @@ export async function getCredits(userId: string): Promise<{ free: number; banked
 
 /**
  * Add banked credits to a user (after Stripe purchase).
+ * Uses a database transaction to prevent lost updates under concurrency.
  */
 export async function addBankedCredits(userId: string, amount: number, spendCents: number): Promise<void> {
   const db = getDatabase()
-  const user = await ensureCreditsExist(userId)
+  // Ensure credits field exists before entering the transaction
+  await ensureCreditsExist(userId)
 
-  user.credits.banked += amount
-  user.lifetimeSpend = (user.lifetimeSpend ?? 0) + spendCents
+  await db.runTransaction(async (txn) => {
+    const user = await txn.get<UserProfile>(Collections.USERS, userId)
+    if (!user || !user.credits) {
+      throw new Error(`User not found or missing credits: ${userId}`)
+    }
 
-  await db.update(Collections.USERS, userId, {
-    credits: user.credits,
-    lifetimeSpend: user.lifetimeSpend
+    user.credits.banked += amount
+    const newLifetimeSpend = (user.lifetimeSpend ?? 0) + spendCents
+
+    await txn.update(Collections.USERS, userId, {
+      credits: user.credits,
+      lifetimeSpend: newLifetimeSpend
+    })
   })
 
   console.log(`Added ${amount} banked credits to user ${userId} ($${(spendCents / 100).toFixed(2)})`)

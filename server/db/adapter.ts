@@ -18,6 +18,14 @@ export interface WhereClause {
 }
 
 /**
+ * Transaction context for atomic read-modify-write operations
+ */
+export interface TransactionContext {
+  get<T>(collection: string, id: string): Promise<T | null>
+  update<T>(collection: string, id: string, data: Partial<T>): Promise<void>
+}
+
+/**
  * Generic database adapter interface
  * All storage implementations should implement this interface
  */
@@ -47,6 +55,9 @@ export interface DatabaseAdapter {
   // Collection operations
   getAll<T>(collection: string): Promise<T[]>
   count(collection: string, where?: WhereClause[]): Promise<number>
+
+  // Transaction operations
+  runTransaction<T>(fn: (txn: TransactionContext) => Promise<T>): Promise<T>
 }
 
 /**

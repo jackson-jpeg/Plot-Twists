@@ -133,6 +133,20 @@ function validateRoom(roomCode: string, socket: { emit: (event: 'error', message
   return room
 }
 
+/** Verify socket is a member of the room (player or host) */
+function requireRoomMember(room: Room, socket: { id: string }): boolean {
+  if (room.host.socketId === socket.id) return true
+  for (const player of room.players.values()) {
+    if (player.socketId === socket.id) return true
+  }
+  return false
+}
+
+/** Verify socket is the host */
+function requireHost(room: Room, socket: { id: string }): boolean {
+  return room.host.socketId === socket.id
+}
+
 // Room cleanup is now handled by roomService.startRoomCleanup()
 
 // generateScript, startTeleprompterSync, calculateResults, and extractJSON
@@ -437,6 +451,7 @@ app.prepare().then(async () => {
     socket.on('start_game', withErrorHandler(socket, 'start_game', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room) return
+      if (!requireHost(room, socket)) return
 
       room.gameState = 'SELECTION'
       room.lastActivity = Date.now()
@@ -488,6 +503,7 @@ app.prepare().then(async () => {
     socket.on('advance_script_line', withErrorHandler(socket, 'advance_script_line', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
+      if (!requireHost(room, socket)) return
 
       room.currentLineIndex++
       room.lastActivity = Date.now()
@@ -499,6 +515,7 @@ app.prepare().then(async () => {
     socket.on('pause_script', withErrorHandler(socket, 'pause_script', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
+      if (!requireHost(room, socket)) return
 
       room.isPaused = true
       room.lastActivity = Date.now()
@@ -517,6 +534,7 @@ app.prepare().then(async () => {
     socket.on('resume_script', withErrorHandler(socket, 'resume_script', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
+      if (!requireHost(room, socket)) return
 
       room.isPaused = false
       room.lastActivity = Date.now()
@@ -565,6 +583,7 @@ app.prepare().then(async () => {
     socket.on('jump_to_line', withErrorHandler(socket, 'jump_to_line', (roomCode, lineIndex) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
+      if (!requireHost(room, socket)) return
 
       // Validate line index
       if (lineIndex < 0 || lineIndex >= room.script.lines.length) return
@@ -671,6 +690,7 @@ app.prepare().then(async () => {
         console.log(`Cannot generate sequel: room or script not found for ${roomCode}`)
         return
       }
+      if (!requireHost(room, socket)) return
 
       console.log(`🎬 Sequel requested for room ${roomCode}`)
 
@@ -895,6 +915,7 @@ app.prepare().then(async () => {
     socket.on('update_room_settings', withErrorHandler(socket, 'update_room_settings', (roomCode, settings) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room) return
+      if (!requireHost(room, socket)) return
 
       if (settings.isMature !== undefined) {
         room.isMature = settings.isMature
@@ -961,6 +982,7 @@ app.prepare().then(async () => {
 
       const room = validateRoom(roomCode, socket)
       if (!room || !room.audienceInteraction) return
+      if (!requireRoomMember(room, socket)) return
 
       // Find sender
       let sender: Player | undefined
@@ -1074,6 +1096,7 @@ app.prepare().then(async () => {
     socket.on('vote_plot_twist', withErrorHandler(socket, 'vote_plot_twist', (roomCode, optionId) => {
       const room = validateRoom(roomCode, socket)
       if (!room || !room.audienceInteraction) return
+      if (!requireRoomMember(room, socket)) return
 
       // Find voter
       let voterId: string | undefined

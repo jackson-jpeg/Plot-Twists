@@ -19,10 +19,10 @@ function CircularTimer({ timeRemaining, totalTime }: { timeRemaining: number, to
 
   // Color shifts from purple to red as time runs out
   const getTimerColor = () => {
-    if (timeRemaining <= 3) return '#ef4444' // red-500
-    if (timeRemaining <= 5) return '#f97316' // orange-500
-    if (timeRemaining <= 8) return '#eab308' // yellow-500
-    return '#a855f7' // purple-500
+    if (timeRemaining <= 3) return 'var(--color-danger)'
+    if (timeRemaining <= 5) return 'var(--color-warning)'
+    if (timeRemaining <= 8) return 'var(--color-gold)'
+    return 'var(--color-purple)'
   }
 
   return (
@@ -95,7 +95,7 @@ function ExplosionParticles({ show }: { show: boolean }) {
           style={{
             width: particle.size,
             height: particle.size,
-            background: `linear-gradient(135deg, #a855f7, #ec4899)`,
+            background: `linear-gradient(135deg, var(--color-purple), var(--color-pink))`,
           }}
           initial={{ x: -particle.size / 2, y: -particle.size / 2, opacity: 1, scale: 1 }}
           animate={{

@@ -146,15 +146,15 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
             className="w-full max-w-md overflow-hidden"
             style={{
-              background: '#FFFBF0',
-              border: '2px dashed #D1D5DB',
+              background: 'var(--color-bg)',
+              border: '2px dashed var(--color-border)',
               borderRadius: '16px',
             }}
           >
             {/* Ticket Header */}
             <div
               style={{
-                background: '#581C87',
+                background: 'var(--color-purple-deeper)',
                 padding: '16px 24px',
                 textAlign: 'center',
                 position: 'relative',
@@ -177,7 +177,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                   fontFamily: 'var(--font-display)',
                   fontSize: '24px',
                   fontWeight: 700,
-                  color: '#FACC15',
+                  color: 'var(--color-gold)',
                   letterSpacing: '0.05em',
                 }}
               >
@@ -196,7 +196,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                   fontFamily: 'var(--font-display)',
                   fontSize: '20px',
                   fontWeight: 700,
-                  color: '#2A2722',
+                  color: 'var(--color-text-primary)',
                   marginBottom: '8px',
                 }}
               >
@@ -206,7 +206,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 style={{
                   fontFamily: 'var(--font-ui)',
                   fontSize: '14px',
-                  color: '#6B6560',
+                  color: 'var(--color-text-secondary)',
                   marginBottom: '8px',
                   lineHeight: 1.5,
                 }}
@@ -217,7 +217,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 style={{
                   fontFamily: 'var(--font-ui)',
                   fontSize: '12px',
-                  color: '#9B9590',
+                  color: 'var(--color-text-tertiary)',
                   marginBottom: '24px',
                   lineHeight: 1.5,
                 }}
@@ -228,8 +228,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 onClick={handleClose}
                 className="w-full font-semibold transition-colors"
                 style={{
-                  background: '#581C87',
-                  color: '#FACC15',
+                  background: 'var(--color-purple-deeper)',
+                  color: 'var(--color-gold)',
                   padding: '12px 24px',
                   borderRadius: '8px',
                   border: 'none',
@@ -239,8 +239,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                   fontWeight: 600,
                   minHeight: '44px',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#6B21A8'}
-                onMouseLeave={(e) => e.currentTarget.style.background = '#581C87'}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-purple-hover)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-purple-deeper)'}
               >
                 Enter the Show
               </button>
@@ -267,10 +267,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
           transition={{ type: "spring", damping: 20, stiffness: 300 }}
           className="w-full max-w-md overflow-hidden"
           style={{
-            background: '#FFFBF0',
-            border: '2px dashed #D1D5DB',
+            background: 'var(--color-bg)',
+            border: '2px dashed var(--color-border)',
             borderRadius: '16px',
-            backgroundImage: 'radial-gradient(circle, #E8E4DD 1px, transparent 1px)',
+            backgroundImage: 'radial-gradient(circle, var(--color-border) 1px, transparent 1px)',
             backgroundSize: '16px 16px',
           }}
           role="dialog"
@@ -280,7 +280,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
           {/* Ticket Header */}
           <div
             style={{
-              background: 'linear-gradient(135deg, #581C87, #7C3AED)',
+              background: 'linear-gradient(135deg, var(--color-purple-deeper), var(--color-purple-dark))',
               padding: '16px 24px',
               position: 'relative',
             }}
@@ -305,7 +305,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                     fontFamily: 'var(--font-display)',
                     fontSize: '22px',
                     fontWeight: 700,
-                    color: '#FACC15',
+                    color: 'var(--color-gold)',
                     letterSpacing: '0.05em',
                     margin: 0,
                   }}
@@ -327,7 +327,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                   cursor: 'pointer',
                   fontSize: '24px',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#FACC15'}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-gold)'}
                 onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(250, 204, 21, 0.7)'}
               >
                 ×
@@ -340,13 +340,13 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
 
           {/* Tab Bar */}
           {mode !== 'reset' && (
-            <div className="flex" style={{ borderBottom: '1px dashed #D1D5DB', margin: '0 24px' }}>
+            <div className="flex" style={{ borderBottom: '1px dashed var(--color-border)', margin: '0 24px' }}>
               <button
                 onClick={() => { setMode('signup'); setError(null) }}
                 className="flex-1 py-3 font-semibold transition-colors"
                 style={{
-                  color: mode === 'signup' ? '#581C87' : '#9B9590',
-                  borderBottom: mode === 'signup' ? '2px solid #581C87' : '2px solid transparent',
+                  color: mode === 'signup' ? 'var(--color-purple-deeper)' : 'var(--color-text-tertiary)',
+                  borderBottom: mode === 'signup' ? '2px solid var(--color-purple-deeper)' : '2px solid transparent',
                   marginBottom: '-1px',
                   fontFamily: 'var(--font-display)',
                   fontSize: '15px',
@@ -354,7 +354,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                   border: 'none',
                   borderBottomStyle: 'solid',
                   borderBottomWidth: '2px',
-                  borderBottomColor: mode === 'signup' ? '#581C87' : 'transparent',
+                  borderBottomColor: mode === 'signup' ? 'var(--color-purple-deeper)' : 'transparent',
                   cursor: 'pointer',
                 }}
               >
@@ -364,8 +364,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 onClick={() => { setMode('signin'); setError(null) }}
                 className="flex-1 py-3 font-semibold transition-colors"
                 style={{
-                  color: mode === 'signin' ? '#581C87' : '#9B9590',
-                  borderBottom: mode === 'signin' ? '2px solid #581C87' : '2px solid transparent',
+                  color: mode === 'signin' ? 'var(--color-purple-deeper)' : 'var(--color-text-tertiary)',
+                  borderBottom: mode === 'signin' ? '2px solid var(--color-purple-deeper)' : '2px solid transparent',
                   marginBottom: '-1px',
                   fontFamily: 'var(--font-display)',
                   fontSize: '15px',
@@ -373,7 +373,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                   border: 'none',
                   borderBottomStyle: 'solid',
                   borderBottomWidth: '2px',
-                  borderBottomColor: mode === 'signin' ? '#581C87' : 'transparent',
+                  borderBottomColor: mode === 'signin' ? 'var(--color-purple-deeper)' : 'transparent',
                   cursor: 'pointer',
                 }}
               >
@@ -386,8 +386,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
             <p
               className="pb-4"
               style={{
-                color: '#6B6560',
-                borderBottom: '1px dashed #D1D5DB',
+                color: 'var(--color-text-secondary)',
+                borderBottom: '1px dashed var(--color-border)',
                 margin: '0 24px',
                 paddingTop: '16px',
                 fontFamily: 'var(--font-ui)',
@@ -406,8 +406,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                 animate={{ opacity: 1, y: 0 }}
                 className="p-3 rounded-lg mb-4 text-sm"
                 style={{
-                  background: '#FFEAEA',
-                  border: '1px solid #D77A7A',
+                  background: 'var(--color-danger-light)',
+                  border: '1px solid var(--color-danger)',
                   color: '#B91C1C',
                 }}
                 role="alert"
@@ -420,8 +420,8 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                     className="w-full mt-3 p-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 text-sm"
                     style={{
                       background: 'white',
-                      color: '#2A2722',
-                      border: '1px solid #D1D5DB',
+                      color: 'var(--color-text-primary)',
+                      border: '1px solid var(--color-border)',
                       cursor: 'pointer',
                     }}
                   >
@@ -450,29 +450,29 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                     fontFamily: 'var(--font-display)',
                     fontSize: '20px',
                     fontWeight: 600,
-                    color: '#2A2722',
+                    color: 'var(--color-text-primary)',
                     marginBottom: '8px',
                   }}
                 >
                   Check your email
                 </h3>
-                <p style={{ color: '#6B6560', marginBottom: '24px', fontSize: '14px' }}>
-                  We&apos;ve sent a password reset link to <span style={{ color: '#581C87', fontWeight: 600 }}>{email}</span>
+                <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px', fontSize: '14px' }}>
+                  We&apos;ve sent a password reset link to <span style={{ color: 'var(--color-purple-deeper)', fontWeight: 600 }}>{email}</span>
                 </p>
                 <button
                   onClick={() => { setMode('signin'); setResetSent(false); setError(null) }}
                   className="w-full p-3 rounded-lg font-semibold transition-colors"
                   style={{
-                    background: '#581C87',
-                    color: '#FACC15',
+                    background: 'var(--color-purple-deeper)',
+                    color: 'var(--color-gold)',
                     minHeight: '44px',
                     border: 'none',
                     cursor: 'pointer',
                     fontFamily: 'var(--font-display)',
                     fontSize: '15px',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#6B21A8'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#581C87'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-purple-hover)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-purple-deeper)'}
                 >
                   Back to Sign In
                 </button>
@@ -487,7 +487,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                   <div>
                     <label
                       className="block text-sm font-medium mb-1"
-                      style={{ color: '#6B6560', fontFamily: 'var(--font-ui)' }}
+                      style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-ui)' }}
                     >
                       Email
                     </label>
@@ -499,17 +499,17 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                       className="w-full p-3 rounded-lg outline-none transition-all"
                       style={{
                         background: 'white',
-                        color: '#2A2722',
-                        border: '2px solid #D1D5DB',
+                        color: 'var(--color-text-primary)',
+                        border: '2px solid var(--color-border)',
                         minHeight: '44px',
                         fontFamily: 'var(--font-ui)',
                       }}
                       onFocus={(e) => {
-                        e.currentTarget.style.borderColor = '#581C87'
+                        e.currentTarget.style.borderColor = 'var(--color-purple-deeper)'
                         e.currentTarget.style.boxShadow = '0 0 0 3px rgba(88, 28, 135, 0.15)'
                       }}
                       onBlur={(e) => {
-                        e.currentTarget.style.borderColor = '#D1D5DB'
+                        e.currentTarget.style.borderColor = 'var(--color-border)'
                         e.currentTarget.style.boxShadow = 'none'
                       }}
                       required
@@ -521,29 +521,29 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                     disabled={loading}
                     className="w-full p-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
                     style={{
-                      background: '#581C87',
-                      color: '#FACC15',
+                      background: 'var(--color-purple-deeper)',
+                      color: 'var(--color-gold)',
                       minHeight: '44px',
                       border: 'none',
                       cursor: 'pointer',
                       fontFamily: 'var(--font-display)',
                       fontSize: '15px',
                     }}
-                    onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#6B21A8')}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#581C87'}
+                    onMouseEnter={(e) => !loading && (e.currentTarget.style.background = 'var(--color-purple-hover)')}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-purple-deeper)'}
                   >
                     {loading ? 'Please wait...' : 'Send Reset Link'}
                   </button>
                 </form>
 
-                <p className="text-center mt-4 text-sm" style={{ color: '#6B6560' }}>
+                <p className="text-center mt-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   Remember your password?{' '}
                   <button
                     onClick={() => { setMode('signin'); setError(null) }}
                     className="font-medium transition-colors"
-                    style={{ color: '#581C87', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                    onMouseEnter={(e) => e.currentTarget.style.color = '#6B21A8'}
-                    onMouseLeave={(e) => e.currentTarget.style.color = '#581C87'}
+                    style={{ color: 'var(--color-purple-deeper)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-purple-hover)'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-purple-deeper)'}
                   >
                     Sign in
                   </button>
@@ -559,9 +559,9 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                   className="w-full p-3 rounded-lg font-semibold flex items-center justify-center gap-3 transition-colors disabled:opacity-50 mb-4"
                   style={{
                     background: 'white',
-                    color: '#2A2722',
+                    color: 'var(--color-text-primary)',
                     minHeight: '44px',
-                    border: '2px solid #D1D5DB',
+                    border: '2px solid var(--color-border)',
                     cursor: 'pointer',
                     fontFamily: 'var(--font-ui)',
                   }}
@@ -591,10 +591,10 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
 
                 <div className="relative mb-4">
                   <div className="absolute inset-0 flex items-center">
-                    <div className="w-full" style={{ borderTop: '1px dashed #D1D5DB' }}></div>
+                    <div className="w-full" style={{ borderTop: '1px dashed var(--color-border)' }}></div>
                   </div>
                   <div className="relative flex justify-center text-sm">
-                    <span className="px-2" style={{ background: '#FFFBF0', color: '#9B9590', fontFamily: 'var(--font-ui)' }}>or</span>
+                    <span className="px-2" style={{ background: 'var(--color-bg)', color: 'var(--color-text-tertiary)', fontFamily: 'var(--font-ui)' }}>or</span>
                   </div>
                 </div>
 
@@ -604,15 +604,15 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                     onClick={() => { setAuthMethod('email'); setError(null) }}
                     className="flex-1 p-2 rounded-lg font-medium text-sm transition-colors"
                     style={{
-                      background: authMethod === 'email' ? '#581C87' : 'white',
-                      color: authMethod === 'email' ? '#FACC15' : '#6B6560',
+                      background: authMethod === 'email' ? 'var(--color-purple-deeper)' : 'white',
+                      color: authMethod === 'email' ? 'var(--color-gold)' : 'var(--color-text-secondary)',
                       minHeight: '44px',
-                      border: authMethod === 'email' ? '2px solid #581C87' : '2px solid #D1D5DB',
+                      border: authMethod === 'email' ? '2px solid var(--color-purple-deeper)' : '2px solid var(--color-border)',
                       cursor: 'pointer',
                       fontFamily: 'var(--font-ui)',
                     }}
-                    onMouseEnter={(e) => authMethod !== 'email' && (e.currentTarget.style.borderColor = '#581C87')}
-                    onMouseLeave={(e) => authMethod !== 'email' && (e.currentTarget.style.borderColor = '#D1D5DB')}
+                    onMouseEnter={(e) => authMethod !== 'email' && (e.currentTarget.style.borderColor = 'var(--color-purple-deeper)')}
+                    onMouseLeave={(e) => authMethod !== 'email' && (e.currentTarget.style.borderColor = 'var(--color-border)')}
                   >
                     Email
                   </button>
@@ -620,15 +620,15 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                     onClick={() => { setAuthMethod('phone'); setError(null) }}
                     className="flex-1 p-2 rounded-lg font-medium text-sm transition-colors"
                     style={{
-                      background: authMethod === 'phone' ? '#581C87' : 'white',
-                      color: authMethod === 'phone' ? '#FACC15' : '#6B6560',
+                      background: authMethod === 'phone' ? 'var(--color-purple-deeper)' : 'white',
+                      color: authMethod === 'phone' ? 'var(--color-gold)' : 'var(--color-text-secondary)',
                       minHeight: '44px',
-                      border: authMethod === 'phone' ? '2px solid #581C87' : '2px solid #D1D5DB',
+                      border: authMethod === 'phone' ? '2px solid var(--color-purple-deeper)' : '2px solid var(--color-border)',
                       cursor: 'pointer',
                       fontFamily: 'var(--font-ui)',
                     }}
-                    onMouseEnter={(e) => authMethod !== 'phone' && (e.currentTarget.style.borderColor = '#581C87')}
-                    onMouseLeave={(e) => authMethod !== 'phone' && (e.currentTarget.style.borderColor = '#D1D5DB')}
+                    onMouseEnter={(e) => authMethod !== 'phone' && (e.currentTarget.style.borderColor = 'var(--color-purple-deeper)')}
+                    onMouseLeave={(e) => authMethod !== 'phone' && (e.currentTarget.style.borderColor = 'var(--color-border)')}
                   >
                     Phone
                   </button>
@@ -647,7 +647,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                         <div>
                           <label
                             className="block text-sm font-medium mb-1"
-                            style={{ color: '#6B6560', fontFamily: 'var(--font-ui)' }}
+                            style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-ui)' }}
                           >
                             Email
                           </label>
@@ -659,17 +659,17 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                             className="w-full p-3 rounded-lg outline-none transition-all"
                             style={{
                               background: 'white',
-                              color: '#2A2722',
-                              border: '2px solid #D1D5DB',
+                              color: 'var(--color-text-primary)',
+                              border: '2px solid var(--color-border)',
                               minHeight: '44px',
                               fontFamily: 'var(--font-ui)',
                             }}
                             onFocus={(e) => {
-                              e.currentTarget.style.borderColor = '#581C87'
+                              e.currentTarget.style.borderColor = 'var(--color-purple-deeper)'
                               e.currentTarget.style.boxShadow = '0 0 0 3px rgba(88, 28, 135, 0.15)'
                             }}
                             onBlur={(e) => {
-                              e.currentTarget.style.borderColor = '#D1D5DB'
+                              e.currentTarget.style.borderColor = 'var(--color-border)'
                               e.currentTarget.style.boxShadow = 'none'
                             }}
                             required
@@ -680,7 +680,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                           <div className="flex items-center justify-between mb-1">
                             <label
                               className="block text-sm font-medium"
-                              style={{ color: '#6B6560', fontFamily: 'var(--font-ui)' }}
+                              style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-ui)' }}
                             >
                               Password
                             </label>
@@ -689,9 +689,9 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                                 type="button"
                                 onClick={() => { setMode('reset'); setError(null) }}
                                 className="text-sm transition-colors"
-                                style={{ color: '#581C87', background: 'transparent', border: 'none', cursor: 'pointer' }}
-                                onMouseEnter={(e) => e.currentTarget.style.color = '#6B21A8'}
-                                onMouseLeave={(e) => e.currentTarget.style.color = '#581C87'}
+                                style={{ color: 'var(--color-purple-deeper)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-purple-hover)'}
+                                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-purple-deeper)'}
                               >
                                 Forgot password?
                               </button>
@@ -706,17 +706,17 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                             className="w-full p-3 rounded-lg outline-none transition-all"
                             style={{
                               background: 'white',
-                              color: '#2A2722',
-                              border: '2px solid #D1D5DB',
+                              color: 'var(--color-text-primary)',
+                              border: '2px solid var(--color-border)',
                               minHeight: '44px',
                               fontFamily: 'var(--font-ui)',
                             }}
                             onFocus={(e) => {
-                              e.currentTarget.style.borderColor = '#581C87'
+                              e.currentTarget.style.borderColor = 'var(--color-purple-deeper)'
                               e.currentTarget.style.boxShadow = '0 0 0 3px rgba(88, 28, 135, 0.15)'
                             }}
                             onBlur={(e) => {
-                              e.currentTarget.style.borderColor = '#D1D5DB'
+                              e.currentTarget.style.borderColor = 'var(--color-border)'
                               e.currentTarget.style.boxShadow = 'none'
                             }}
                             required
@@ -728,16 +728,16 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
                           disabled={loading}
                           className="w-full p-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
                           style={{
-                            background: '#581C87',
-                            color: '#FACC15',
+                            background: 'var(--color-purple-deeper)',
+                            color: 'var(--color-gold)',
                             minHeight: '44px',
                             border: 'none',
                             cursor: 'pointer',
                             fontFamily: 'var(--font-display)',
                             fontSize: '15px',
                           }}
-                          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = '#6B21A8')}
-                          onMouseLeave={(e) => e.currentTarget.style.background = '#581C87'}
+                          onMouseEnter={(e) => !loading && (e.currentTarget.style.background = 'var(--color-purple-hover)')}
+                          onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-purple-deeper)'}
                         >
                           {loading ? 'Please wait...' : mode === 'signin' ? 'Take Your Seat' : 'Join the Show'}
                         </button>

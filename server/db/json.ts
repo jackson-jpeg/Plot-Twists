@@ -6,12 +6,15 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
-import { DatabaseAdapter, WhereClause, QueryOptions } from './adapter'
+import { DatabaseAdapter, WhereClause, QueryOptions, TransactionContext } from './adapter'
 
 const DATA_DIR = path.join(process.cwd(), 'data')
 
 // In-memory cache for each collection
 const cache: Map<string, Map<string, unknown>> = new Map()
+
+// Simple promise-based lock for transaction serialization (dev-only adapter)
+let txnLock: Promise<void> = Promise.resolve()
 
 /**
  * Ensure data directory exists
@@ -232,6 +235,35 @@ export class JsonAdapter implements DatabaseAdapter {
   async count(collection: string, where?: WhereClause[]): Promise<number> {
     const results = await this.query(collection, where)
     return results.length
+  }
+
+  async runTransaction<T>(fn: (txn: TransactionContext) => Promise<T>): Promise<T> {
+    let resolve: () => void
+    const prevLock = txnLock
+    txnLock = new Promise<void>((r) => { resolve = r })
+
+    await prevLock
+
+    try {
+      const txn: TransactionContext = {
+        async get<U>(collection: string, id: string): Promise<U | null> {
+          const collectionData = loadCollection(collection)
+          const doc = collectionData.get(id)
+          return (doc as U) ?? null
+        },
+        async update<U>(collection: string, id: string, data: Partial<U>): Promise<void> {
+          const collectionData = loadCollection(collection)
+          const existing = collectionData.get(id)
+          if (existing) {
+            collectionData.set(id, { ...existing as object, ...data as object, id })
+            saveCollection(collection)
+          }
+        }
+      }
+      return await fn(txn)
+    } finally {
+      resolve!()
+    }
   }
 }
 

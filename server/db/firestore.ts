@@ -3,7 +3,7 @@
  * Implements DatabaseAdapter interface using Firebase Firestore
  */
 
-import type { DatabaseAdapter, WhereClause, QueryOptions } from './adapter'
+import type { DatabaseAdapter, WhereClause, QueryOptions, TransactionContext } from './adapter'
 import type { Firestore as FirestoreType } from 'firebase-admin/firestore'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -191,6 +191,26 @@ export class FirestoreAdapter implements DatabaseAdapter {
 
     const snapshot = await query.count().get()
     return snapshot.data().count
+  }
+
+  async runTransaction<T>(fn: (txn: TransactionContext) => Promise<T>): Promise<T> {
+    const db = this.ensureConnected()
+    return db.runTransaction(async (firestoreTxn) => {
+      const txn: TransactionContext = {
+        async get<U>(collection: string, id: string): Promise<U | null> {
+          const docRef = db.collection(collection).doc(id)
+          const doc = await firestoreTxn.get(docRef)
+          if (!doc.exists) return null
+          return { id: doc.id, ...doc.data() } as U
+        },
+        async update<U>(collection: string, id: string, data: Partial<U>): Promise<void> {
+          const docRef = db.collection(collection).doc(id)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          firestoreTxn.update(docRef, data as any)
+        }
+      }
+      return fn(txn)
+    })
   }
 }
 

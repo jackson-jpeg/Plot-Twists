@@ -44,4 +44,4 @@ export async function initializeDatabase(): Promise<void> {
 
 // Export types and constants
 export { Collections } from './adapter'
-export type { DatabaseAdapter, CollectionName, WhereClause, QueryOptions } from './adapter'
+export type { DatabaseAdapter, CollectionName, WhereClause, QueryOptions, TransactionContext } from './adapter'

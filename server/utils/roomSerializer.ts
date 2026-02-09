@@ -40,6 +40,7 @@ export interface FirestoreRoom {
   scriptCustomization?: ScriptCustomization
   cardPackId?: string
   audioSettings?: AudioSettings
+  hostUid?: string
 }
 
 /** Strip socketId from a Player for Firestore storage */
@@ -65,7 +66,9 @@ export function roomToFirestore(room: Room): FirestoreRoom {
     votes[id] = targetId
   }
 
-  const doc: Record<string, unknown> = {
+  // JSON round-trip deeply strips all undefined values — Firestore rejects them
+  // (e.g. scriptCustomization.customInstructions, setting, script, etc.)
+  return JSON.parse(JSON.stringify({
     code: room.code,
     host: stripSocketId(room.host),
     players,
@@ -83,17 +86,9 @@ export function roomToFirestore(room: Room): FirestoreRoom {
     audienceInteraction: room.audienceInteraction,
     scriptCustomization: room.scriptCustomization,
     cardPackId: room.cardPackId,
-    audioSettings: room.audioSettings
-  }
-
-  // Strip undefined values — Firestore rejects them
-  for (const key of Object.keys(doc)) {
-    if (doc[key] === undefined) {
-      delete doc[key]
-    }
-  }
-
-  return doc as unknown as FirestoreRoom
+    audioSettings: room.audioSettings,
+    hostUid: room.hostUid
+  })) as FirestoreRoom
 }
 
 /** Convert a Firestore document back to a Room (with Maps, socketId = '') */
@@ -131,6 +126,7 @@ export function firestoreToRoom(doc: FirestoreRoom): Room {
     audienceInteraction: doc.audienceInteraction,
     scriptCustomization: doc.scriptCustomization,
     cardPackId: doc.cardPackId,
-    audioSettings: doc.audioSettings
+    audioSettings: doc.audioSettings,
+    hostUid: doc.hostUid
   }
 }

@@ -274,7 +274,7 @@ app.prepare().then(async () => {
         }
 
         // Store Firebase UID of host for credit deduction
-        room.hostUid = socket.data.uid || undefined
+        room.hostUid = socket.data.uid ?? undefined
 
         roomService.createRoom(room)
         socket.join(code)

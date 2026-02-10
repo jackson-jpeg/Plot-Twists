@@ -166,6 +166,17 @@ export default function HostPage() {
     }
   }, [user, authLoading, router])
 
+  // Read pack ID from localStorage (set by Explore page "Use in Next Game")
+  useEffect(() => {
+    try {
+      const savedPack = localStorage.getItem('plottwists_selected_pack')
+      if (savedPack) {
+        setSelectedPackId(savedPack)
+        localStorage.removeItem('plottwists_selected_pack')
+      }
+    } catch { /* ignore */ }
+  }, [])
+
   useEffect(() => {
     // Don't create room until auth resolves and user is authenticated
     if (authLoading || !user || user.isAnonymous) return

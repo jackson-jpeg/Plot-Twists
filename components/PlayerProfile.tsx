@@ -9,6 +9,7 @@ import { GameHistory } from './GameHistory'
 interface PlayerProfileProps {
   playerId: string
   onClose?: () => void
+  hideHeader?: boolean
 }
 
 const RARITY_BADGE_BG: Record<string, string> = {
@@ -24,7 +25,7 @@ const RARITY_FRAME_CLASS: Record<string, string> = {
   legendary: 'achievement-card-legendary',
 }
 
-export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
+export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerProfileProps) {
   const { socket } = useSocket()
   const [stats, setStats] = useState<PlayerStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -148,63 +149,67 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-purple)] to-[var(--color-pink)] flex items-center justify-center text-3xl font-bold text-white">
-            {stats.nickname[0]?.toUpperCase()}
+      {!hideHeader && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-purple)] to-[var(--color-pink)] flex items-center justify-center text-3xl font-bold text-white">
+              {stats.nickname[0]?.toUpperCase()}
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats.nickname}</h2>
+              <p className="text-[var(--color-text-secondary)]">
+                Playing since {new Date(stats.joinedAt).toLocaleDateString()}
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats.nickname}</h2>
-            <p className="text-[var(--color-text-secondary)]">
-              Playing since {new Date(stats.joinedAt).toLocaleDateString()}
-            </p>
-          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] text-2xl"
+            >
+              ×
+            </button>
+          )}
         </div>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] text-2xl"
-          >
-            ×
-          </button>
-        )}
-      </div>
+      )}
 
       {/* Quick Stats */}
-      <motion.div
-        className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4"
-        variants={staggerContainer}
-        initial="hidden"
-        animate="show"
-      >
-        <StatCard
-          icon="🎮"
-          label="Games"
-          value={stats.gamesPlayed}
-          index={0}
-        />
-        <StatCard
-          icon="🏆"
-          label="Wins"
-          value={stats.gamesWon}
-          index={1}
-        />
-        <StatCard
-          icon="📈"
-          label="Win Rate"
-          value={`${Math.round(stats.winRate)}%`}
-          index={2}
-        />
-        <StatCard
-          icon="🔥"
-          label="Best Streak"
-          value={stats.bestWinStreak}
-          index={3}
-        />
-      </motion.div>
+      {!hideHeader && (
+        <motion.div
+          className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4"
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+        >
+          <StatCard
+            icon="🎮"
+            label="Games"
+            value={stats.gamesPlayed}
+            index={0}
+          />
+          <StatCard
+            icon="🏆"
+            label="Wins"
+            value={stats.gamesWon}
+            index={1}
+          />
+          <StatCard
+            icon="📈"
+            label="Win Rate"
+            value={`${Math.round(stats.winRate)}%`}
+            index={2}
+          />
+          <StatCard
+            icon="🔥"
+            label="Best Streak"
+            value={stats.bestWinStreak}
+            index={3}
+          />
+        </motion.div>
+      )}
 
       {/* Current Streak Banner */}
-      {stats.currentWinStreak >= 2 && (
+      {!hideHeader && stats.currentWinStreak >= 2 && (
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}

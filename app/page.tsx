@@ -72,12 +72,7 @@ export default function Home() {
             initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -40 }}
-            style={{
-              position: 'fixed', top: '1rem', left: '50%', transform: 'translateX(-50%)',
-              background: 'var(--color-success, #4ade80)', color: '#000', padding: '0.75rem 1.5rem',
-              borderRadius: '0.75rem', fontWeight: 600, fontSize: '0.95rem', zIndex: 60,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
-            }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] bg-[var(--color-success,#4ade80)] text-black px-6 py-3 rounded-xl font-semibold text-[0.95rem] shadow-lg"
           >
             Credits added to your account!
           </motion.div>
@@ -181,6 +176,28 @@ export default function Home() {
             <div className="ticket-notch"></div>
           </motion.button>
         </div>
+
+        {/* Explore Packs — ticket stub */}
+        <motion.div
+          className="flex justify-center mt-2"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, type: 'spring', stiffness: 100, damping: 15 }}
+        >
+          <motion.button
+            onClick={() => router.push('/explore')}
+            className="flex items-center gap-3 px-6 py-3 bg-[var(--color-surface)] border-2 border-[var(--color-border)] rounded-xl shadow-md hover:shadow-lg transition-all font-medium"
+            style={{ transform: 'rotate(-0.5deg)' }}
+            whileHover={canHover ? { y: -4, rotate: 0, scale: 1.03 } : undefined}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span className="text-2xl">🎴</span>
+            <div className="text-left">
+              <div className="text-sm font-semibold text-[var(--color-text-primary)] font-display">Explore Packs</div>
+              <div className="text-xs text-[var(--color-text-tertiary)]">Browse community card packs</div>
+            </div>
+          </motion.button>
+        </motion.div>
 
         {/* Compact How It Works with toggle */}
         <motion.div

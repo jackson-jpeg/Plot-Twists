@@ -1905,6 +1905,7 @@ app.prepare().then(async () => {
 
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        ui_mode: 'embedded',
         customer: customerId,
         line_items: [{
           price_data: {
@@ -1929,11 +1930,10 @@ app.prepare().then(async () => {
             scripts: String(pkg.scripts)
           }
         },
-        success_url: `${origin}/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/purchase/cancelled`
+        return_url: `${origin}/purchase/success?session_id={CHECKOUT_SESSION_ID}`
       })
 
-      res.json({ sessionId: session.id, url: session.url })
+      res.json({ clientSecret: session.client_secret })
     } catch (error) {
       console.error('[Stripe] Create checkout session error:', error)
       res.status(500).json({ error: 'Failed to create checkout session' })

@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 import { useAuth } from '@/contexts/AuthContext'
 import { CREDIT_PACKAGES } from '@/lib/credits'
 import { getApiBaseUrl } from '@/lib/api'
+import { stripePromise } from '@/lib/stripe'
 
 interface PurchaseCreditsModalProps {
   isOpen: boolean
@@ -24,6 +26,8 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
   const { user } = useAuth()
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const [selectedPkgId, setSelectedPkgId] = useState<string | null>(null)
 
   const handlePurchase = async (packageId: string) => {
     if (!user) return
@@ -38,8 +42,10 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
       })
 
       const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
+      if (data.clientSecret) {
+        setSelectedPkgId(packageId)
+        setClientSecret(data.clientSecret)
+        setLoading(null)
       } else {
         setError(data.error || 'Failed to start checkout')
         setLoading(null)
@@ -50,6 +56,22 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
     }
   }
 
+  const handleBack = useCallback(() => {
+    setClientSecret(null)
+    setSelectedPkgId(null)
+  }, [])
+
+  const handleClose = useCallback(() => {
+    setClientSecret(null)
+    setSelectedPkgId(null)
+    setLoading(null)
+    setError(null)
+    onClose()
+  }, [onClose])
+
+  const selectedPkg = selectedPkgId ? CREDIT_PACKAGES.find(p => p.id === selectedPkgId) : null
+  const showCheckout = !!clientSecret
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -58,7 +80,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          onClick={onClose}
+          onClick={handleClose}
           className="purchase-overlay"
         >
           <motion.div
@@ -67,89 +89,132 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ type: 'spring', damping: 28, stiffness: 350 }}
             onClick={e => e.stopPropagation()}
-            className="purchase-container"
+            className={`purchase-container ${showCheckout ? 'purchase-container-wide' : ''}`}
           >
             {/* Close button */}
-            <button onClick={onClose} className="purchase-close-x" aria-label="Close">
+            <button onClick={handleClose} className="purchase-close-x" aria-label="Close">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
             </button>
 
-            {/* Header */}
-            <div className="purchase-header">
-              <div className="purchase-film-strip" aria-hidden="true">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="purchase-film-hole" />
-                ))}
-              </div>
-              <p className="purchase-presents">Plot Twists Presents</p>
-              <h2 className="purchase-title">Script Credits</h2>
-              <p className="purchase-subtitle">Buy once, use anytime. Credits never expire.</p>
-            </div>
+            <AnimatePresence mode="wait" initial={false}>
+              {showCheckout ? (
+                <motion.div
+                  key="checkout"
+                  initial={{ opacity: 0, x: 40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 40 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {/* Checkout header with back button */}
+                  <div className="purchase-checkout-header">
+                    <button onClick={handleBack} className="purchase-back-btn">
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      Back to packages
+                    </button>
+                    {selectedPkg && (
+                      <span className="purchase-checkout-summary">
+                        {PACKAGE_META[selectedPkg.id]?.icon} {selectedPkg.label} — {selectedPkg.scripts} scripts — ${(selectedPkg.price / 100).toFixed(0)}
+                      </span>
+                    )}
+                  </div>
 
-            {/* Error */}
-            {error && (
-              <motion.div
-                className="purchase-error"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-              >
-                {error}
-              </motion.div>
-            )}
-
-            {/* Package list */}
-            <div className="purchase-packages">
-              {CREDIT_PACKAGES.map((pkg, i) => {
-                const meta = PACKAGE_META[pkg.id] || { icon: '🎟️', tagline: '' }
-                const isBest = pkg.id === BEST_VALUE_ID
-                const perScript = (pkg.price / pkg.scripts / 100).toFixed(2)
-                const isLoading = loading === pkg.id
-                const isDimmed = loading !== null && !isLoading
-
-                return (
-                  <motion.button
-                    key={pkg.id}
-                    onClick={() => handlePurchase(pkg.id)}
-                    disabled={loading !== null}
-                    className={`purchase-pkg ${isBest ? 'purchase-pkg-best' : ''} ${isDimmed ? 'purchase-pkg-dimmed' : ''}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.06 + 0.1 }}
-                    whileHover={loading ? undefined : { x: 4 }}
-                    whileTap={loading ? undefined : { scale: 0.985 }}
-                  >
-                    {isBest && <div className="purchase-best-tag">Best Value</div>}
-
-                    <div className="purchase-pkg-icon">{meta.icon}</div>
-
-                    <div className="purchase-pkg-info">
-                      <div className="purchase-pkg-name">{pkg.label}</div>
-                      <div className="purchase-pkg-tagline">{meta.tagline}</div>
+                  {/* Embedded Stripe checkout */}
+                  <div className="purchase-checkout-body">
+                    <EmbeddedCheckoutProvider
+                      stripe={stripePromise}
+                      options={{ clientSecret }}
+                    >
+                      <EmbeddedCheckout />
+                    </EmbeddedCheckoutProvider>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="packages"
+                  initial={{ opacity: 0, x: -40 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {/* Header */}
+                  <div className="purchase-header">
+                    <div className="purchase-film-strip" aria-hidden="true">
+                      {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="purchase-film-hole" />
+                      ))}
                     </div>
+                    <p className="purchase-presents">Plot Twists Presents</p>
+                    <h2 className="purchase-title">Script Credits</h2>
+                    <p className="purchase-subtitle">Buy once, use anytime. Credits never expire.</p>
+                  </div>
 
-                    <div className="purchase-pkg-numbers">
-                      <div className="purchase-pkg-scripts">{pkg.scripts} scripts</div>
-                      <div className="purchase-pkg-per">${perScript} each</div>
-                    </div>
+                  {/* Error */}
+                  {error && (
+                    <motion.div
+                      className="purchase-error"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                    >
+                      {error}
+                    </motion.div>
+                  )}
 
-                    <div className="purchase-pkg-price-col">
-                      {isLoading ? (
-                        <div className="purchase-pkg-spinner" />
-                      ) : (
-                        <div className="purchase-pkg-price">${(pkg.price / 100).toFixed(0)}</div>
-                      )}
-                    </div>
-                  </motion.button>
-                )
-              })}
-            </div>
+                  {/* Package list */}
+                  <div className="purchase-packages">
+                    {CREDIT_PACKAGES.map((pkg, i) => {
+                      const meta = PACKAGE_META[pkg.id] || { icon: '🎟️', tagline: '' }
+                      const isBest = pkg.id === BEST_VALUE_ID
+                      const perScript = (pkg.price / pkg.scripts / 100).toFixed(2)
+                      const isLoading = loading === pkg.id
+                      const isDimmed = loading !== null && !isLoading
 
-            {/* Footer */}
-            <div className="purchase-footer">
-              <button onClick={onClose} className="purchase-dismiss">
-                Maybe later
-              </button>
-            </div>
+                      return (
+                        <motion.button
+                          key={pkg.id}
+                          onClick={() => handlePurchase(pkg.id)}
+                          disabled={loading !== null}
+                          className={`purchase-pkg ${isBest ? 'purchase-pkg-best' : ''} ${isDimmed ? 'purchase-pkg-dimmed' : ''}`}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.06 + 0.1 }}
+                          whileHover={loading ? undefined : { x: 4 }}
+                          whileTap={loading ? undefined : { scale: 0.985 }}
+                        >
+                          {isBest && <div className="purchase-best-tag">Best Value</div>}
+
+                          <div className="purchase-pkg-icon">{meta.icon}</div>
+
+                          <div className="purchase-pkg-info">
+                            <div className="purchase-pkg-name">{pkg.label}</div>
+                            <div className="purchase-pkg-tagline">{meta.tagline}</div>
+                          </div>
+
+                          <div className="purchase-pkg-numbers">
+                            <div className="purchase-pkg-scripts">{pkg.scripts} scripts</div>
+                            <div className="purchase-pkg-per">${perScript} each</div>
+                          </div>
+
+                          <div className="purchase-pkg-price-col">
+                            {isLoading ? (
+                              <div className="purchase-pkg-spinner" />
+                            ) : (
+                              <div className="purchase-pkg-price">${(pkg.price / 100).toFixed(0)}</div>
+                            )}
+                          </div>
+                        </motion.button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="purchase-footer">
+                    <button onClick={handleClose} className="purchase-dismiss">
+                      Maybe later
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </motion.div>
       )}

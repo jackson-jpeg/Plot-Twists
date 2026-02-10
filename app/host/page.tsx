@@ -239,6 +239,10 @@ export default function HostPage() {
     })
     socket.on('game_state_change', (newState: GameState) => {
       setGameState(newState)
+      // Reset submission state when kicked back to SELECTION (error recovery)
+      if (newState === 'SELECTION') {
+        setHasSubmittedSelection(false)
+      }
       // Clear timeout and progress interval when leaving LOADING state
       if (newState !== 'LOADING') {
         if (scriptGenerationTimeoutRef.current) {
@@ -339,6 +343,9 @@ export default function HostPage() {
     socket.on('insufficient_credits', () => {
       setShowInsufficientCredits(true)
     })
+    socket.on('error', (errorMsg: string) => {
+      toast.error(errorMsg)
+    })
     return () => {
       socket.off('players_update')
       socket.off('player_joined')
@@ -356,6 +363,7 @@ export default function HostPage() {
       socket.off('plot_twist_started')
       socket.off('credit_balance')
       socket.off('insufficient_credits')
+      socket.off('error')
     }
   }, [socket, isConnected, gameState, toast])
 

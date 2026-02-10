@@ -47,30 +47,31 @@ export async function upsertUser(
   const now = Date.now()
 
   if (existing) {
-    // Update existing user
+    // Update existing user (omit undefined fields to avoid Firestore errors)
     const updated: UserProfile = {
       ...existing,
       displayName: data.displayName || existing.displayName,
       email: data.email || existing.email,
-      phoneNumber: data.phoneNumber || existing.phoneNumber,
       lastSeenAt: now
     }
+    if (data.phoneNumber !== undefined) updated.phoneNumber = data.phoneNumber
+    else if (existing.phoneNumber !== undefined) updated.phoneNumber = existing.phoneNumber
     await db.set(Collections.USERS, uid, updated)
     return updated
   }
 
-  // Create new user
+  // Create new user (omit undefined fields to avoid Firestore errors)
   const newUser: UserProfile = {
     uid,
     displayName: data.displayName || 'Anonymous',
-    email: data.email,
-    phoneNumber: data.phoneNumber,
     linkedAccounts: [],
     createdAt: now,
     lastSeenAt: now,
     credits: getDefaultCredits(),
     lifetimeSpend: 0
   }
+  if (data.email !== undefined) newUser.email = data.email
+  if (data.phoneNumber !== undefined) newUser.phoneNumber = data.phoneNumber
 
   // Determine linked accounts
   if (data.email) {

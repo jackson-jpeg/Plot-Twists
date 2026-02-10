@@ -696,17 +696,23 @@ app.prepare().then(async () => {
 
       // Credit gate: deduct 1 credit from host before generating sequel
       if (room.hostUid) {
-        const creditResult = await checkAndDeductCredit(room.hostUid)
-        if (!creditResult.success) {
-          console.log(`Insufficient credits for sequel: host ${room.hostUid} in room ${roomCode}`)
-          io.to(roomCode).emit('insufficient_credits', { needed: 1, available: 0 })
+        try {
+          const creditResult = await checkAndDeductCredit(room.hostUid)
+          if (!creditResult.success) {
+            console.log(`Insufficient credits for sequel: host ${room.hostUid} in room ${roomCode}`)
+            io.to(roomCode).emit('insufficient_credits', { needed: 1, available: 0 })
+            return
+          }
+          // Emit updated balance to host
+          const balance = await getCredits(room.hostUid)
+          const hostSocket = io.sockets.sockets.get(room.host.socketId)
+          if (hostSocket) {
+            hostSocket.emit('credit_balance', balance)
+          }
+        } catch (creditError) {
+          console.error(`Credit check failed for sequel host ${room.hostUid}:`, creditError)
+          io.to(roomCode).emit('error', 'Failed to verify credits. Please try again.')
           return
-        }
-        // Emit updated balance to host
-        const balance = await getCredits(room.hostUid)
-        const hostSocket = io.sockets.sockets.get(room.host.socketId)
-        if (hostSocket) {
-          hostSocket.emit('credit_balance', balance)
         }
       } else if (!dev) {
         console.warn(`Sequel blocked: no hostUid for room ${roomCode}`)
@@ -1491,19 +1497,27 @@ app.prepare().then(async () => {
 
     // Credit gate: deduct 1 credit from host before generating
     if (room.hostUid) {
-      const creditResult = await checkAndDeductCredit(room.hostUid)
-      if (!creditResult.success) {
-        console.log(`Insufficient credits for host ${room.hostUid} in room ${room.code}`)
-        io.to(room.code).emit('insufficient_credits', { needed: 1, available: 0 })
+      try {
+        const creditResult = await checkAndDeductCredit(room.hostUid)
+        if (!creditResult.success) {
+          console.log(`Insufficient credits for host ${room.hostUid} in room ${room.code}`)
+          io.to(room.code).emit('insufficient_credits', { needed: 1, available: 0 })
+          room.gameState = 'SELECTION'
+          io.to(room.code).emit('game_state_change', 'SELECTION')
+          return
+        }
+        // Emit updated balance to host
+        const balance = await getCredits(room.hostUid)
+        const hostSocket = io.sockets.sockets.get(room.host.socketId)
+        if (hostSocket) {
+          hostSocket.emit('credit_balance', balance)
+        }
+      } catch (creditError) {
+        console.error(`Credit check failed for host ${room.hostUid}:`, creditError)
+        io.to(room.code).emit('error', 'Failed to verify credits. Please try again.')
         room.gameState = 'SELECTION'
         io.to(room.code).emit('game_state_change', 'SELECTION')
         return
-      }
-      // Emit updated balance to host
-      const balance = await getCredits(room.hostUid)
-      const hostSocket = io.sockets.sockets.get(room.host.socketId)
-      if (hostSocket) {
-        hostSocket.emit('credit_balance', balance)
       }
     } else if (!dev) {
       // In production, require authenticated host

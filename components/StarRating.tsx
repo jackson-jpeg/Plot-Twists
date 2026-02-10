@@ -59,12 +59,13 @@ export function StarRating({
               onMouseEnter={() => interactive && !disabled && setHoverRating(index + 1)}
             >
               {/* Background (empty) star */}
-              <span className="text-gray-600">★</span>
+              <span style={{ color: 'var(--color-text-tertiary)' }}>★</span>
 
               {/* Filled star overlay */}
               <span
-                className="absolute inset-0 overflow-hidden text-yellow-400"
+                className="absolute inset-0 overflow-hidden"
                 style={{
+                  color: 'var(--color-gold)',
                   width: filled ? '100%' : partial ? `${partialWidth}%` : '0%'
                 }}
               >
@@ -76,7 +77,7 @@ export function StarRating({
       </div>
 
       {showValue && (
-        <span className="ml-2 text-gray-400 text-sm">
+        <span className="ml-2 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
           {rating > 0 ? rating.toFixed(1) : 'No ratings'}
         </span>
       )}

@@ -51,10 +51,17 @@ export function RippleButton({
   }
 
   const variantStyles = {
-    primary: 'bg-purple-600 hover:bg-purple-700 text-white',
-    secondary: 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600',
-    ghost: 'bg-transparent hover:bg-gray-800 text-gray-300',
-    danger: 'bg-red-600 hover:bg-red-700 text-white'
+    primary: 'text-white',
+    secondary: 'text-white border',
+    ghost: 'bg-transparent',
+    danger: 'text-white',
+  }
+
+  const variantInlineStyles: Record<string, React.CSSProperties> = {
+    primary: { background: 'var(--color-purple)' },
+    secondary: { background: 'var(--color-surface-alt)', borderColor: 'var(--color-border)' },
+    ghost: { color: 'var(--color-text-secondary)' },
+    danger: { background: 'var(--color-danger)' },
   }
 
   const sizeStyles = {
@@ -76,6 +83,7 @@ export function RippleButton({
         ${sizeStyles[size]}
         ${className}
       `}
+      style={variantInlineStyles[variant]}
       whileTap={{ scale: disabled ? 1 : 0.97 }}
     >
       {children}
@@ -219,11 +227,11 @@ interface PulseProps {
 
 export function Pulse({ children, active = true, color = 'purple', className = '' }: PulseProps) {
   const colorMap: Record<string, string> = {
-    purple: 'bg-purple-500',
-    green: 'bg-green-500',
-    blue: 'bg-blue-500',
-    red: 'bg-red-500',
-    yellow: 'bg-yellow-500'
+    purple: 'var(--color-purple)',
+    green: 'var(--color-emerald)',
+    blue: 'var(--color-blue)',
+    red: 'var(--color-danger)',
+    yellow: 'var(--color-gold)',
   }
 
   return (
@@ -231,11 +239,13 @@ export function Pulse({ children, active = true, color = 'purple', className = '
       {active && (
         <>
           <span
-            className={`absolute inset-0 rounded-full ${colorMap[color]} opacity-75 animate-ping`}
+            className="absolute inset-0 rounded-full opacity-75 animate-ping"
+            style={{ background: colorMap[color] }}
           />
           <span
-            className={`absolute inset-0 rounded-full ${colorMap[color]} opacity-50`}
+            className="absolute inset-0 rounded-full opacity-50"
             style={{
+              background: colorMap[color],
               animation: 'pulse-ring 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite'
             }}
           />
@@ -262,21 +272,15 @@ export function GlowButton({
   glowColor = 'purple',
   disabled = false
 }: GlowButtonProps) {
-  const glowColors: Record<string, string> = {
-    purple: 'shadow-purple-500/50 hover:shadow-purple-500/70',
-    blue: 'shadow-blue-500/50 hover:shadow-blue-500/70',
-    green: 'shadow-green-500/50 hover:shadow-green-500/70',
-    pink: 'shadow-pink-500/50 hover:shadow-pink-500/70',
-    orange: 'shadow-orange-500/50 hover:shadow-orange-500/70'
+  const colorVars: Record<string, { bg: string; glow: string }> = {
+    purple: { bg: 'var(--color-purple)', glow: 'var(--color-purple-glow)' },
+    blue: { bg: 'var(--color-blue)', glow: 'rgba(59, 130, 246, 0.5)' },
+    green: { bg: 'var(--color-emerald)', glow: 'rgba(16, 185, 129, 0.5)' },
+    pink: { bg: 'var(--color-pink)', glow: 'var(--color-pink-glow)' },
+    orange: { bg: 'var(--color-accent)', glow: 'rgba(245, 158, 66, 0.5)' },
   }
 
-  const bgColors: Record<string, string> = {
-    purple: 'bg-purple-600 hover:bg-purple-700',
-    blue: 'bg-blue-600 hover:bg-blue-700',
-    green: 'bg-green-600 hover:bg-green-700',
-    pink: 'bg-pink-600 hover:bg-pink-700',
-    orange: 'bg-orange-600 hover:bg-orange-700'
-  }
+  const colors = colorVars[glowColor] || colorVars.purple
 
   return (
     <motion.button
@@ -286,11 +290,13 @@ export function GlowButton({
         px-6 py-3 rounded-xl font-semibold text-white
         shadow-lg transition-all duration-300
         disabled:opacity-50 disabled:cursor-not-allowed
-        ${bgColors[glowColor]}
-        ${disabled ? '' : glowColors[glowColor]}
         ${className}
       `}
-      whileHover={disabled ? {} : { scale: 1.05, boxShadow: '0 20px 40px -10px currentColor' }}
+      style={{
+        background: colors.bg,
+        boxShadow: disabled ? undefined : `0 10px 25px -5px ${colors.glow}`,
+      }}
+      whileHover={disabled ? {} : { scale: 1.05, boxShadow: `0 20px 40px -10px ${colors.glow}` }}
       whileTap={disabled ? {} : { scale: 0.95 }}
     >
       {children}

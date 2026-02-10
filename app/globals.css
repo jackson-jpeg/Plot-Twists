@@ -4151,3 +4151,163 @@ textarea:focus-visible {
 .transaction-type-refund { color: var(--color-danger); }
 .transaction-type-failed { color: var(--color-text-disabled); }
 .transaction-type-expired { color: var(--color-warning); }
+
+/* ==========================================================================
+   Modal / Form Utility Classes
+   ========================================================================== */
+
+.modal-panel {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.modal-divider {
+  border-color: var(--color-border);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input::placeholder {
+  color: var(--color-text-disabled);
+}
+
+.form-input:focus {
+  border-color: var(--color-purple);
+  box-shadow: 0 0 0 2px var(--color-purple-bg);
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.error-banner {
+  background: var(--color-danger-light);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+}
+
+.pill-active {
+  background: var(--color-purple);
+  color: white;
+}
+
+.pill-inactive {
+  background: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+}
+
+.pill-inactive:hover {
+  background: var(--color-surface-elevated);
+}
+
+.progress-step {
+  flex: 1;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  transition: background-color 0.2s;
+}
+
+.progress-step-active {
+  background: var(--color-purple);
+}
+
+.progress-step-inactive {
+  background: var(--color-border);
+}
+
+.add-field-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-tertiary);
+  background: transparent;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.add-field-btn:hover {
+  border-color: var(--color-purple);
+  color: var(--color-purple);
+}
+
+.add-field-btn-sm {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  border-width: 1px;
+}
+
+.remove-field-btn {
+  padding: 0 0.75rem;
+  color: var(--color-danger);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.remove-field-btn:hover {
+  opacity: 0.7;
+}
+
+.modal-close-btn {
+  color: var(--color-text-tertiary);
+  font-size: 1.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.modal-footer-btn-ghost {
+  padding: 0.5rem 1.5rem;
+  color: var(--color-text-tertiary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal-footer-btn-ghost:hover {
+  color: var(--color-text-primary);
+}
+
+.modal-footer-btn-primary {
+  padding: 0.5rem 1.5rem;
+  background: var(--color-purple);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.modal-footer-btn-primary:hover:not(:disabled) {
+  background: var(--color-purple-hover);
+}
+
+.modal-footer-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

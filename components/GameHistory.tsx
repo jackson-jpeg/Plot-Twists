@@ -189,11 +189,15 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
                         {game.players.map(player => (
                           <div
                             key={player.id}
-                            className={`px-3 py-1 rounded-full text-sm flex items-center gap-1 ${
-                              player.isWinner
-                                ? 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-300 border border-yellow-500/50'
-                                : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)]'
-                            }`}
+                            className="px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                            style={player.isWinner ? {
+                              background: 'var(--color-highlight)',
+                              color: 'var(--color-gold)',
+                              border: '1px solid color-mix(in srgb, var(--color-gold) 50%, transparent)'
+                            } : {
+                              background: 'var(--color-surface)',
+                              color: 'var(--color-text-secondary)'
+                            }}
                           >
                             {player.isWinner && <span>👑</span>}
                             <span className="font-medium">{player.character}</span>

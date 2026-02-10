@@ -127,7 +127,7 @@ export function AccountUpgradeCard({ onSuccess }: AccountUpgradeCardProps) {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-lg mb-4 text-sm"
+          className="error-banner text-sm"
         >
           {error}
         </motion.div>
@@ -229,12 +229,7 @@ export function AccountUpgradeCard({ onSuccess }: AccountUpgradeCardProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email address"
                 required
-                className="w-full p-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-purple-500"
-                style={{
-                  background: 'var(--color-surface)',
-                  color: 'var(--color-text-primary)',
-                  border: '1px solid var(--color-border)'
-                }}
+                className="form-input"
               />
               <div>
                 <input
@@ -244,12 +239,7 @@ export function AccountUpgradeCard({ onSuccess }: AccountUpgradeCardProps) {
                   placeholder="Create a password"
                   minLength={6}
                   required
-                  className="w-full p-3 rounded-lg outline-none transition-all focus:ring-2 focus:ring-purple-500"
-                  style={{
-                    background: 'var(--color-surface)',
-                    color: 'var(--color-text-primary)',
-                    border: '1px solid var(--color-border)'
-                  }}
+                  className="form-input"
                 />
                 <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
                   At least 6 characters
@@ -258,7 +248,8 @@ export function AccountUpgradeCard({ onSuccess }: AccountUpgradeCardProps) {
               <motion.button
                 type="submit"
                 disabled={loading}
-                className="w-full p-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+                className="w-full p-3 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+                style={{ background: 'var(--color-purple)' }}
                 whileHover={{ scale: loading ? 1 : 1.02 }}
                 whileTap={{ scale: loading ? 1 : 0.98 }}
               >

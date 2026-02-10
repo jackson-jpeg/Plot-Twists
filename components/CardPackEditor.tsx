@@ -205,15 +205,15 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-gray-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+          className="modal-panel rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
         >
           {/* Header */}
-          <div className="p-6 border-b border-gray-800">
+          <div className="p-6 border-b border-[var(--color-border)]">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-white">Edit Card Pack</h2>
+              <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">Edit Card Pack</h2>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-white text-2xl"
+                className="modal-close-btn"
               >
                 x
               </button>
@@ -223,13 +223,13 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
               {[1, 2, 3].map(s => (
                 <div
                   key={s}
-                  className={`flex-1 h-2 rounded-full transition-colors ${
-                    s <= step ? 'bg-purple-600' : 'bg-gray-700'
+                  className={`flex-1 h-2 rounded-full transition-colors progress-step ${
+                    s <= step ? 'progress-step-active' : 'progress-step-inactive'
                   }`}
                 />
               ))}
             </div>
-            <div className="flex justify-between mt-2 text-xs text-gray-500">
+            <div className="flex justify-between mt-2 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
               <span>Details</span>
               <span>Characters</span>
               <span>Settings & Circumstances</span>
@@ -239,7 +239,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
           {/* Content */}
           <div className="p-6 overflow-y-auto max-h-[60vh]">
             {isLoading ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8" style={{ color: 'var(--color-text-secondary)' }}>
                 Loading pack data...
               </div>
             ) : (
@@ -248,7 +248,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-lg mb-4"
+                    className="error-banner"
                   >
                     {error}
                   </motion.div>
@@ -262,7 +262,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                     className="space-y-4"
                   >
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block form-label">
                         Pack Name *
                       </label>
                       <input
@@ -271,12 +271,12 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                         onChange={(e) => setPackName(e.target.value)}
                         placeholder="e.g., Superhero Showdown"
                         maxLength={50}
-                        className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                        className="w-full form-input"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block form-label">
                         Description
                       </label>
                       <textarea
@@ -284,12 +284,12 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                         onChange={(e) => setPackDescription(e.target.value)}
                         placeholder="What makes this pack special?"
                         maxLength={200}
-                        className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 resize-none h-20 focus:ring-2 focus:ring-purple-500 outline-none"
+                        className="w-full form-input resize-none h-20"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block form-label">
                         Author Name *
                       </label>
                       <input
@@ -298,12 +298,12 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                         onChange={(e) => setAuthorName(e.target.value)}
                         placeholder="Pack Author"
                         maxLength={30}
-                        className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                        className="w-full form-input"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                      <label className="block form-label">
                         Theme
                       </label>
                       <div className="grid grid-cols-4 gap-2">
@@ -313,8 +313,8 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                             onClick={() => setPackTheme(theme.value)}
                             className={`p-2 rounded-lg text-center transition-all ${
                               packTheme === theme.value
-                                ? 'bg-purple-600 text-white'
-                                : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                                ? 'pill-active'
+                                : 'pill-inactive'
                             }`}
                           >
                             <div className="text-xl">{theme.emoji}</div>
@@ -330,9 +330,10 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                           type="checkbox"
                           checked={isMature}
                           onChange={(e) => setIsMature(e.target.checked)}
-                          className="w-4 h-4 accent-purple-600"
+                          className="w-4 h-4"
+                          style={{ accentColor: 'var(--color-purple)' }}
                         />
-                        <span className="text-sm text-gray-300">Contains mature content (18+)</span>
+                        <span className="text-sm text-[var(--color-text-secondary)]">Contains mature content (18+)</span>
                       </label>
 
                       <label className="flex items-center gap-2 cursor-pointer">
@@ -340,9 +341,10 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                           type="checkbox"
                           checked={isPublic}
                           onChange={(e) => setIsPublic(e.target.checked)}
-                          className="w-4 h-4 accent-purple-600"
+                          className="w-4 h-4"
+                          style={{ accentColor: 'var(--color-purple)' }}
                         />
-                        <span className="text-sm text-gray-300">Make public</span>
+                        <span className="text-sm text-[var(--color-text-secondary)]">Make public</span>
                       </label>
                     </div>
                   </motion.div>
@@ -355,7 +357,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                     animate={{ opacity: 1, x: 0 }}
                     className="space-y-4"
                   >
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                       Add at least 5 characters. These will be randomly assigned to players.
                     </p>
 
@@ -368,7 +370,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                             onChange={(e) => updateCard('characters', index, 'name', e.target.value)}
                             placeholder={`Character ${index + 1} name`}
                             maxLength={50}
-                            className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                            className="w-full form-input"
                           />
                         </div>
                         <input
@@ -377,12 +379,12 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                           onChange={(e) => updateCard('characters', index, 'description', e.target.value)}
                           placeholder="Description (optional)"
                           maxLength={100}
-                          className="flex-1 p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                          className="flex-1 form-input"
                         />
                         {characters.length > 5 && (
                           <button
                             onClick={() => removeCard('characters', index)}
-                            className="px-3 text-red-400 hover:text-red-300"
+                            className="remove-field-btn"
                           >
                             x
                           </button>
@@ -392,7 +394,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
 
                     <button
                       onClick={() => addCard('characters')}
-                      className="w-full p-3 border-2 border-dashed border-gray-700 rounded-lg text-gray-400 hover:border-purple-500 hover:text-purple-400 transition-colors"
+                      className="add-field-btn"
                     >
                       + Add Character
                     </button>
@@ -408,8 +410,8 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                   >
                     {/* Settings */}
                     <div>
-                      <h3 className="text-lg font-semibold text-white mb-2">Settings (min 3)</h3>
-                      <p className="text-gray-400 text-sm mb-3">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">Settings (min 3)</h3>
+                      <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
                         Where will the scenes take place?
                       </p>
 
@@ -421,12 +423,12 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                             onChange={(e) => updateCard('settings', index, 'name', e.target.value)}
                             placeholder={`Setting ${index + 1}`}
                             maxLength={50}
-                            className="flex-1 p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                            className="flex-1 form-input"
                           />
                           {settings.length > 3 && (
                             <button
                               onClick={() => removeCard('settings', index)}
-                              className="px-3 text-red-400 hover:text-red-300"
+                              className="remove-field-btn"
                             >
                               x
                             </button>
@@ -436,7 +438,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
 
                       <button
                         onClick={() => addCard('settings')}
-                        className="w-full p-2 border border-dashed border-gray-700 rounded-lg text-gray-400 hover:border-purple-500 hover:text-purple-400 transition-colors text-sm"
+                        className="add-field-btn add-field-btn-sm text-sm"
                       >
                         + Add Setting
                       </button>
@@ -444,8 +446,8 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
 
                     {/* Circumstances */}
                     <div>
-                      <h3 className="text-lg font-semibold text-white mb-2">Circumstances (min 3)</h3>
-                      <p className="text-gray-400 text-sm mb-3">
+                      <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">Circumstances (min 3)</h3>
+                      <p className="text-sm mb-3" style={{ color: 'var(--color-text-secondary)' }}>
                         What situations will the characters face?
                       </p>
 
@@ -457,12 +459,12 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                             onChange={(e) => updateCard('circumstances', index, 'name', e.target.value)}
                             placeholder={`Circumstance ${index + 1}`}
                             maxLength={80}
-                            className="flex-1 p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                            className="flex-1 form-input"
                           />
                           {circumstances.length > 3 && (
                             <button
                               onClick={() => removeCard('circumstances', index)}
-                              className="px-3 text-red-400 hover:text-red-300"
+                              className="remove-field-btn"
                             >
                               x
                             </button>
@@ -472,7 +474,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
 
                       <button
                         onClick={() => addCard('circumstances')}
-                        className="w-full p-2 border border-dashed border-gray-700 rounded-lg text-gray-400 hover:border-purple-500 hover:text-purple-400 transition-colors text-sm"
+                        className="add-field-btn add-field-btn-sm text-sm"
                       >
                         + Add Circumstance
                       </button>
@@ -484,18 +486,18 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-gray-800 flex justify-between">
+          <div className="p-6 border-t border-[var(--color-border)] flex justify-between">
             {step > 1 ? (
               <button
                 onClick={() => setStep(step - 1)}
-                className="px-6 py-2 text-gray-400 hover:text-white transition-colors"
+                className="modal-footer-btn-ghost"
               >
                 Back
               </button>
             ) : (
               <button
                 onClick={onClose}
-                className="px-6 py-2 text-gray-400 hover:text-white transition-colors"
+                className="modal-footer-btn-ghost"
               >
                 Cancel
               </button>
@@ -504,7 +506,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
             <button
               onClick={handleNext}
               disabled={isSubmitting || isLoading}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors disabled:opacity-50"
+              className="modal-footer-btn-primary"
             >
               {isSubmitting ? 'Saving...' : step === 3 ? 'Save Changes' : 'Next'}
             </button>

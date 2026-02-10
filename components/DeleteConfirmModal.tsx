@@ -40,12 +40,12 @@ export function DeleteConfirmModal({
         >
           <div className="p-6">
             {/* Warning icon */}
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--color-danger-light)' }}>
               <span className="text-3xl">⚠️</span>
             </div>
 
             {/* Title */}
-            <h2 className="text-xl font-bold text-white text-center mb-2">
+            <h2 className="text-xl font-bold text-center mb-2" style={{ color: 'var(--color-text-primary)' }}>
               {title}
             </h2>
 
@@ -80,7 +80,8 @@ export function DeleteConfirmModal({
             <button
               onClick={onConfirm}
               disabled={isDeleting}
-              className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-3 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              style={{ background: 'var(--color-danger)' }}
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
             </button>

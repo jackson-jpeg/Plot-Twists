@@ -141,15 +141,15 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-gray-900 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+          className="modal-panel w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
         >
           {/* Header */}
-          <div className="p-6 border-b border-gray-800">
+          <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-white">Browse Card Packs</h2>
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Browse Card Packs</h2>
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-white text-2xl"
+                className="modal-close-btn"
               >
                 x
               </button>
@@ -157,7 +157,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
 
             {/* Search bar */}
             <div className="relative mb-4">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--color-text-tertiary)' }}>
                 🔍
               </span>
               <input
@@ -165,7 +165,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by name, author, or theme..."
-                className="w-full pl-10 pr-4 py-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 outline-none"
+                className="form-input w-full pl-10 pr-4 py-3"
               />
             </div>
 
@@ -179,8 +179,8 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                     onClick={() => setSelectedTheme(theme.value)}
                     className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
                       selectedTheme === theme.value
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                        ? 'pill-active'
+                        : 'pill-inactive'
                     }`}
                     aria-label={`Filter by ${theme.label} theme`}
                     aria-pressed={selectedTheme === theme.value}
@@ -195,7 +195,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="px-3 py-1.5 bg-gray-800 rounded-lg text-white text-sm focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="form-input px-3 py-1.5 text-sm"
                 >
                   <option value="rating">Sort by Rating</option>
                   <option value="downloads">Sort by Downloads</option>
@@ -212,7 +212,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                 <CardSkeleton count={6} className="grid-cols-1" />
               </div>
             ) : error ? (
-              <div className="text-center py-12 text-red-400">
+              <div className="text-center py-12" style={{ color: 'var(--color-danger)' }}>
                 {error}
               </div>
             ) : (
@@ -220,7 +220,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                 {/* Featured Section */}
                 {!searchQuery && featuredPacks.length > 0 && selectedTheme === 'all' && (
                   <div className="mb-8">
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
                       <span>⭐</span> Featured Packs
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -230,18 +230,19 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                           onClick={() => handleSelect(pack.id)}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className={`p-4 rounded-xl text-left transition-all ${
+                          className="p-4 rounded-xl text-left transition-all"
+                          style={
                             currentPackId === pack.id
-                              ? 'bg-purple-600 ring-2 ring-purple-400'
-                              : 'bg-gradient-to-br from-purple-900/50 to-blue-900/50 hover:from-purple-800/50 hover:to-blue-800/50'
-                          }`}
+                              ? { background: 'var(--color-purple)', outline: '2px solid var(--color-purple)' }
+                              : { background: 'var(--color-purple-bg)' }
+                          }
                         >
                           <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-semibold text-white">{pack.name}</h4>
+                            <h4 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{pack.name}</h4>
                             <StarRating rating={pack.rating} size="sm" />
                           </div>
-                          <p className="text-sm text-gray-300 mb-2 line-clamp-2">{pack.description}</p>
-                          <div className="flex justify-between text-xs text-gray-400">
+                          <p className="text-sm mb-2 line-clamp-2" style={{ color: 'var(--color-text-secondary)' }}>{pack.description}</p>
+                          <div className="flex justify-between text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                             <span>By {pack.author}</span>
                             <span>{pack.downloads} downloads</span>
                           </div>
@@ -253,12 +254,12 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
 
                 {/* All Packs */}
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-4">
+                  <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--color-text-primary)' }}>
                     {searchQuery ? `Search Results (${filteredPacks.length})` : `All Packs (${filteredPacks.length})`}
                   </h3>
 
                   {filteredPacks.length === 0 ? (
-                    <div className="text-center py-12 text-gray-400">
+                    <div className="text-center py-12" style={{ color: 'var(--color-text-tertiary)' }}>
                       <div className="text-4xl mb-4">📦</div>
                       <p>No packs found</p>
                       {searchQuery && (
@@ -273,18 +274,19 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                           onClick={() => handleSelect(pack.id)}
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
-                          className={`p-4 rounded-xl text-left transition-all ${
+                          className="p-4 rounded-xl text-left transition-all"
+                          style={
                             currentPackId === pack.id
-                              ? 'bg-purple-600 ring-2 ring-purple-400'
-                              : 'bg-gray-800 hover:bg-gray-700'
-                          }`}
+                              ? { background: 'var(--color-purple)', outline: '2px solid var(--color-purple)' }
+                              : { background: 'var(--color-surface-alt)' }
+                          }
                         >
                           <div className="flex justify-between items-start mb-2">
                             <div>
-                              <h4 className="font-semibold text-white flex items-center gap-2">
+                              <h4 className="font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
                                 {pack.name}
                                 {pack.isMature && (
-                                  <span className="text-xs bg-red-500/30 text-red-300 px-1.5 py-0.5 rounded">
+                                  <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
                                     18+
                                   </span>
                                 )}
@@ -292,16 +294,16 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                             </div>
                           </div>
 
-                          <p className="text-sm text-gray-400 mb-3 line-clamp-2">{pack.description}</p>
+                          <p className="text-sm mb-3 line-clamp-2" style={{ color: 'var(--color-text-tertiary)' }}>{pack.description}</p>
 
                           <div className="flex items-center justify-between">
                             <StarRating rating={pack.rating} size="sm" />
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
                               {pack.cardCounts.characters}C / {pack.cardCounts.settings}S / {pack.cardCounts.circumstances}X
                             </span>
                           </div>
 
-                          <div className="flex justify-between text-xs text-gray-500 mt-2 pt-2 border-t border-gray-700">
+                          <div className="flex justify-between text-xs mt-2 pt-2 border-t" style={{ color: 'var(--color-text-tertiary)', borderColor: 'var(--color-border)' }}>
                             <span>By {pack.author}</span>
                             <span>{pack.downloads} downloads</span>
                           </div>

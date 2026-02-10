@@ -140,7 +140,7 @@ export default function ReplayPage() {
 
   if (!isConnected || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
@@ -149,7 +149,7 @@ export default function ReplayPage() {
           >
             🎬
           </motion.div>
-          <p className="text-xl text-gray-400">Loading replay...</p>
+          <p className="text-xl" style={{ color: 'var(--color-text-tertiary)' }}>Loading replay...</p>
         </div>
       </div>
     )
@@ -157,18 +157,20 @@ export default function ReplayPage() {
 
   if (error || !game) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center bg-gray-800/50 rounded-2xl p-8 max-w-md"
+          className="text-center rounded-2xl p-8 max-w-md"
+          style={{ background: 'var(--color-surface-alt)' }}
         >
           <div className="text-6xl mb-4">🎭</div>
-          <h1 className="text-2xl font-bold text-white mb-2">Script Not Found</h1>
-          <p className="text-gray-400 mb-6">{error || 'This replay may have expired or been removed.'}</p>
+          <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>Script Not Found</h1>
+          <p className="mb-6" style={{ color: 'var(--color-text-tertiary)' }}>{error || 'This replay may have expired or been removed.'}</p>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors"
+            className="px-6 py-3 text-white rounded-lg font-semibold transition-colors"
+            style={{ background: 'var(--color-purple)' }}
           >
             Go Home
           </button>
@@ -180,26 +182,27 @@ export default function ReplayPage() {
   const currentLine = game.script.lines[currentLineIndex]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-800 bg-gray-900/80 backdrop-blur-sm sticky top-0 z-10">
+      <div className="p-4 backdrop-blur-sm sticky top-0 z-10" style={{ background: 'var(--color-surface-elevated)', borderBottom: '1px solid var(--color-border)' }}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <button
             onClick={() => router.push('/')}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="transition-colors text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
           >
             ← Back
           </button>
           <div className="text-center">
-            <h1 className="font-bold text-white">{game.title}</h1>
-            <p className="text-sm text-gray-400">
+            <h1 className="font-bold text-[var(--color-text-primary)]">{game.title}</h1>
+            <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
               {new Date(game.playedAt).toLocaleDateString()}
             </p>
           </div>
           <div className="relative">
             <button
               onClick={() => setShowShareMenu(!showShareMenu)}
-              className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors"
+              className="px-3 py-1.5 text-[var(--color-text-primary)] rounded-lg text-sm transition-colors"
+              style={{ background: 'var(--color-surface-alt)' }}
               aria-label="Share options"
             >
               🔗 Share
@@ -212,20 +215,21 @@ export default function ReplayPage() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-20"
+                  className="absolute right-0 mt-2 w-48 rounded-lg shadow-xl overflow-hidden z-20"
+                  style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-border)' }}
                 >
                   <button
                     onClick={handleCopyLink}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-surface-alt)] transition-colors flex items-center gap-2"
                   >
                     {copied ? '✓' : '📋'} {copied ? 'Copied!' : 'Copy Link'}
                   </button>
-                  <div className="border-t border-gray-700" />
+                  <div className="border-t border-[var(--color-border)]" />
                   {SHARE_PLATFORMS.map(platform => (
                     <button
                       key={platform.name}
                       onClick={() => handleSocialShare(platform)}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-700 transition-colors flex items-center gap-2"
+                      className="w-full px-4 py-2 text-left text-sm text-[var(--color-text-primary)] hover:bg-[var(--color-surface-alt)] transition-colors flex items-center gap-2"
                     >
                       {platform.icon} {platform.name}
                     </button>
@@ -243,24 +247,25 @@ export default function ReplayPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gray-800/50 rounded-xl p-6"
+          className="rounded-xl p-6"
+          style={{ background: 'var(--color-surface-alt)' }}
         >
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h2 className="text-sm text-gray-400 mb-2">Synopsis</h2>
-              <p className="text-gray-300 italic">"{game.synopsis}"</p>
+              <h2 className="text-sm mb-2" style={{ color: 'var(--color-text-tertiary)' }}>Synopsis</h2>
+              <p className="italic" style={{ color: 'var(--color-text-secondary)' }}>"{game.synopsis}"</p>
             </div>
             <div>
-              <h2 className="text-sm text-gray-400 mb-2">Cast</h2>
+              <h2 className="text-sm mb-2" style={{ color: 'var(--color-text-tertiary)' }}>Cast</h2>
               <div className="flex flex-wrap gap-2">
                 {game.players.map(player => (
                   <span
                     key={player.id}
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      player.isWinner
-                        ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/50'
-                        : 'bg-gray-700 text-gray-300'
-                    }`}
+                    className="px-3 py-1 rounded-full text-sm"
+                    style={player.isWinner
+                      ? { background: 'var(--color-highlight)', color: 'var(--color-accent-dark)', border: '1px solid var(--color-accent)' }
+                      : { background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }
+                    }
                   >
                     {player.isWinner && '👑 '}
                     {player.character} ({player.nickname})
@@ -269,7 +274,7 @@ export default function ReplayPage() {
               </div>
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-gray-700 flex gap-4 text-sm text-gray-400">
+          <div className="mt-4 pt-4 border-t border-[var(--color-border)] flex gap-4 text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
             <span>🏛️ {game.setting}</span>
             <span>⚡ {game.circumstance}</span>
           </div>
@@ -280,17 +285,19 @@ export default function ReplayPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gray-800/50 rounded-xl p-6"
+          className="rounded-xl p-6"
+          style={{ background: 'var(--color-surface-alt)' }}
         >
           {/* Progress Bar */}
           <div className="mb-4">
-            <div className="flex justify-between text-sm text-gray-400 mb-2">
+            <div className="flex justify-between text-sm mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
               <span>Line {currentLineIndex + 1} of {game.script.lines.length}</span>
               <span>{Math.round((currentLineIndex / game.script.lines.length) * 100)}%</span>
             </div>
-            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
               <motion.div
-                className="h-full bg-purple-600"
+                className="h-full"
+                style={{ background: 'var(--color-purple)' }}
                 initial={{ width: 0 }}
                 animate={{ width: `${((currentLineIndex + 1) / game.script.lines.length) * 100}%` }}
                 transition={{ duration: 0.3 }}
@@ -317,8 +324,8 @@ export default function ReplayPage() {
               >
                 {currentLine.mood}
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">{currentLine.speaker}</h3>
-              <p className="text-2xl text-gray-200 max-w-2xl mx-auto leading-relaxed">
+              <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>{currentLine.speaker}</h3>
+              <p className="text-2xl max-w-2xl mx-auto leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
                 "{currentLine.text}"
               </p>
             </motion.div>
@@ -329,20 +336,23 @@ export default function ReplayPage() {
             <button
               onClick={() => setCurrentLineIndex(Math.max(0, currentLineIndex - 1))}
               disabled={currentLineIndex === 0}
-              className="p-3 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:hover:bg-gray-700 rounded-full transition-colors"
+              className="p-3 disabled:opacity-50 rounded-full transition-colors"
+              style={{ background: 'var(--color-surface-alt)' }}
             >
               ⏮️
             </button>
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-full font-semibold transition-colors"
+              className="px-6 py-3 text-white rounded-full font-semibold transition-colors"
+              style={{ background: 'var(--color-purple)' }}
             >
               {isPlaying ? '⏸️ Pause' : '▶️ Play'}
             </button>
             <button
               onClick={() => setCurrentLineIndex(Math.min(game.script.lines.length - 1, currentLineIndex + 1))}
               disabled={currentLineIndex === game.script.lines.length - 1}
-              className="p-3 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 disabled:hover:bg-gray-700 rounded-full transition-colors"
+              className="p-3 disabled:opacity-50 rounded-full transition-colors"
+              style={{ background: 'var(--color-surface-alt)' }}
             >
               ⏭️
             </button>
@@ -354,9 +364,10 @@ export default function ReplayPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gray-800/50 rounded-xl overflow-hidden"
+          className="rounded-xl overflow-hidden"
+          style={{ background: 'var(--color-surface-alt)' }}
         >
-          <summary className="p-4 cursor-pointer text-white font-semibold hover:bg-gray-700/30 transition-colors flex items-center justify-between">
+          <summary className="p-4 cursor-pointer text-[var(--color-text-primary)] font-semibold transition-colors flex items-center justify-between">
             <span>📜 View Full Script</span>
             <div onClick={(e) => e.stopPropagation()}>
               <TeleprompterSettingsPanel
@@ -379,18 +390,18 @@ export default function ReplayPage() {
                     setCurrentLineIndex(originalIndex)
                     setIsPlaying(false)
                   }}
-                  className={`p-3 rounded-lg mb-2 cursor-pointer transition-colors ${
-                    originalIndex === currentLineIndex
-                      ? 'bg-purple-600/30 border border-purple-500'
-                      : 'hover:bg-gray-700/50'
-                  }`}
+                  className="p-3 rounded-lg mb-2 cursor-pointer transition-colors"
+                  style={originalIndex === currentLineIndex
+                    ? { background: 'var(--color-purple-bg)', border: '1px solid var(--color-purple-border)' }
+                    : {}
+                  }
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <span className="font-semibold text-white">{line.speaker}:</span>
-                  <span className="text-gray-300 ml-2">"{line.text}"</span>
+                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{line.speaker}:</span>
+                  <span className="ml-2" style={{ color: 'var(--color-text-secondary)' }}>"{line.text}"</span>
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -403,11 +414,12 @@ export default function ReplayPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/50 rounded-xl p-6 text-center"
+            className="rounded-xl p-6 text-center"
+            style={{ background: 'linear-gradient(to right, var(--color-highlight), var(--color-accent-light))', border: '1px solid var(--color-accent)' }}
           >
             <div className="text-4xl mb-2">🏆</div>
-            <h3 className="text-xl font-bold text-yellow-300">MVP: {game.winner.playerName}</h3>
-            <p className="text-yellow-400/80">as {game.winner.character}</p>
+            <h3 className="text-xl font-bold" style={{ color: 'var(--color-accent-dark)' }}>MVP: {game.winner.playerName}</h3>
+            <p style={{ color: 'var(--color-accent)' }}>as {game.winner.character}</p>
           </motion.div>
         )}
 
@@ -420,13 +432,15 @@ export default function ReplayPage() {
         >
           <button
             onClick={handleRematch}
-            className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
+            className="px-8 py-4 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
+            style={{ background: 'linear-gradient(to right, var(--color-purple), var(--color-pink))' }}
           >
             🎭 Play Again with Same Settings
           </button>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-semibold transition-colors"
+            className="px-6 py-3 text-[var(--color-text-primary)] rounded-lg font-semibold transition-colors"
+            style={{ background: 'var(--color-surface-alt)' }}
           >
             🏠 Back to Home
           </button>

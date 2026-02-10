@@ -4,6 +4,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { CREDIT_PACKAGES } from '@/lib/credits'
+import { getApiBaseUrl } from '@/lib/api'
 
 interface SessionStatus {
   status: string
@@ -28,7 +29,7 @@ function PurchaseSuccessContent() {
       return
     }
 
-    fetch(`/api/stripe/session-status?session_id=${sessionId}`)
+    fetch(`${getApiBaseUrl()}/api/stripe/session-status?session_id=${sessionId}`)
       .then(res => res.json())
       .then(data => {
         if (data.error) {

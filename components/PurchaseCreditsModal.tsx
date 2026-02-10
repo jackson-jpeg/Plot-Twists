@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { CREDIT_PACKAGES } from '@/lib/credits'
+import { getApiBaseUrl } from '@/lib/api'
 
 interface PurchaseCreditsModalProps {
   isOpen: boolean
@@ -35,7 +36,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
     setError(null)
 
     try {
-      const res = await fetch('/api/stripe/create-checkout-session', {
+      const res = await fetch(`${getApiBaseUrl()}/api/stripe/create-checkout-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ packageId, userId: user.uid })

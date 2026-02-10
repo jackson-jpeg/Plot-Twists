@@ -13,6 +13,7 @@ import { AccountSettings } from '@/components/AccountSettings'
 import { useCreditBalance } from '@/components/CreditBadge'
 import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
 import type { PaymentTransaction } from '@/lib/types'
+import { getApiBaseUrl } from '@/lib/api'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -32,7 +33,7 @@ export default function ProfilePage() {
     if (!user || user.isAnonymous) return
     setLoadingTransactions(true)
     try {
-      const res = await fetch(`/api/stripe/transactions?userId=${user.uid}`)
+      const res = await fetch(`${getApiBaseUrl()}/api/stripe/transactions?userId=${user.uid}`)
       const data = await res.json()
       if (data.transactions) setTransactions(data.transactions)
     } catch { /* ignore */ }
@@ -47,7 +48,7 @@ export default function ProfilePage() {
     if (!user) return
     setPortalLoading(true)
     try {
-      const res = await fetch('/api/stripe/portal-session', {
+      const res = await fetch(`${getApiBaseUrl()}/api/stripe/portal-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: user.uid })

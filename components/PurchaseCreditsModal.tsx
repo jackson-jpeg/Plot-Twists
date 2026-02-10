@@ -11,18 +11,13 @@ interface PurchaseCreditsModalProps {
   onClose: () => void
 }
 
-const PACKAGE_ICONS: Record<string, string> = {
-  starter: '🎟️',
-  party: '🎉',
-  pro: '🎬',
-  studio: '🏛️',
-}
+const BEST_VALUE_ID = 'studio'
 
-const STUB_CLASSES: Record<string, string> = {
-  starter: 'purchase-package-stub-starter',
-  party: 'purchase-package-stub-party',
-  pro: 'purchase-package-stub-pro',
-  studio: 'purchase-package-stub-studio',
+const PACKAGE_META: Record<string, { icon: string; tagline: string }> = {
+  starter: { icon: '🎟️', tagline: 'A taste of the show' },
+  party:   { icon: '🍿', tagline: 'Grab some friends' },
+  pro:     { icon: '🎬', tagline: 'Lights, camera, action' },
+  studio:  { icon: '⭐', tagline: 'The full experience' },
 }
 
 export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalProps) {
@@ -55,8 +50,6 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
     }
   }
 
-  const bestValueId = 'party'
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -64,79 +57,96 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           onClick={onClose}
-          className="purchase-modal-overlay"
+          className="purchase-overlay"
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            initial={{ opacity: 0, y: 30, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.97 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
             onClick={e => e.stopPropagation()}
-            className="purchase-modal-container"
+            className="purchase-container"
           >
-            {/* Purple gradient header */}
-            <div className="purchase-modal-header">
-              <div className="purchase-modal-presents">Plot Twists Presents</div>
-              <h2 className="purchase-modal-title">GET SCRIPTS</h2>
-              <p className="purchase-modal-subtitle">Credits never expire. Use them whenever you want.</p>
+            {/* Close button */}
+            <button onClick={onClose} className="purchase-close-x" aria-label="Close">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            </button>
+
+            {/* Header */}
+            <div className="purchase-header">
+              <div className="purchase-film-strip" aria-hidden="true">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="purchase-film-hole" />
+                ))}
+              </div>
+              <p className="purchase-presents">Plot Twists Presents</p>
+              <h2 className="purchase-title">Script Credits</h2>
+              <p className="purchase-subtitle">Buy once, use anytime. Credits never expire.</p>
             </div>
 
-            {/* Ticket perforation */}
-            <div className="purchase-modal-perforation" />
+            {/* Error */}
+            {error && (
+              <motion.div
+                className="purchase-error"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+              >
+                {error}
+              </motion.div>
+            )}
 
-            {/* Body */}
-            <div className="purchase-modal-body">
-              {error && (
-                <div className="purchase-modal-error">{error}</div>
-              )}
+            {/* Package list */}
+            <div className="purchase-packages">
+              {CREDIT_PACKAGES.map((pkg, i) => {
+                const meta = PACKAGE_META[pkg.id] || { icon: '🎟️', tagline: '' }
+                const isBest = pkg.id === BEST_VALUE_ID
+                const perScript = (pkg.price / pkg.scripts / 100).toFixed(2)
+                const isLoading = loading === pkg.id
+                const isDimmed = loading !== null && !isLoading
 
-              <div className="purchase-package-grid">
-                {CREDIT_PACKAGES.map(pkg => (
-                  <button
+                return (
+                  <motion.button
                     key={pkg.id}
                     onClick={() => handlePurchase(pkg.id)}
                     disabled={loading !== null}
-                    className={`purchase-package-card ${
-                      pkg.id === bestValueId ? 'purchase-package-card-best' : ''
-                    } ${loading && loading !== pkg.id ? 'purchase-package-card-dimmed' : ''}`}
+                    className={`purchase-pkg ${isBest ? 'purchase-pkg-best' : ''} ${isDimmed ? 'purchase-pkg-dimmed' : ''}`}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06 + 0.1 }}
+                    whileHover={loading ? undefined : { x: 4 }}
+                    whileTap={loading ? undefined : { scale: 0.985 }}
                   >
-                    {/* Best Value badge */}
-                    {pkg.id === bestValueId && (
-                      <div className="purchase-best-value-badge">Best Value!</div>
-                    )}
+                    {isBest && <div className="purchase-best-tag">Best Value</div>}
 
-                    {/* Colored stub top */}
-                    <div className={`purchase-package-stub ${STUB_CLASSES[pkg.id] || ''}`}>
-                      <span className="purchase-package-stub-icon">
-                        {PACKAGE_ICONS[pkg.id] || '🎟️'}
-                      </span>
-                      <span className="purchase-package-stub-label">{pkg.label}</span>
+                    <div className="purchase-pkg-icon">{meta.icon}</div>
+
+                    <div className="purchase-pkg-info">
+                      <div className="purchase-pkg-name">{pkg.label}</div>
+                      <div className="purchase-pkg-tagline">{meta.tagline}</div>
                     </div>
 
-                    {/* Dashed perforation with notch cutouts */}
-                    <div className="purchase-package-perf" />
+                    <div className="purchase-pkg-numbers">
+                      <div className="purchase-pkg-scripts">{pkg.scripts} scripts</div>
+                      <div className="purchase-pkg-per">${perScript} each</div>
+                    </div>
 
-                    {/* Main body: price, scripts, per-script */}
-                    <div className="purchase-package-main">
-                      <div className="purchase-package-price">
-                        ${(pkg.price / 100).toFixed(0)}
-                      </div>
-                      <div className="purchase-package-scripts">
-                        {pkg.scripts} scripts
-                      </div>
-                      <div className="purchase-package-per-script">
-                        ${(pkg.price / pkg.scripts / 100).toFixed(2)}/script
-                      </div>
-
-                      {loading === pkg.id && (
-                        <div className="purchase-package-loading">Redirecting...</div>
+                    <div className="purchase-pkg-price-col">
+                      {isLoading ? (
+                        <div className="purchase-pkg-spinner" />
+                      ) : (
+                        <div className="purchase-pkg-price">${(pkg.price / 100).toFixed(0)}</div>
                       )}
                     </div>
-                  </button>
-                ))}
-              </div>
+                  </motion.button>
+                )
+              })}
+            </div>
 
-              <button onClick={onClose} className="purchase-modal-close">
+            {/* Footer */}
+            <div className="purchase-footer">
+              <button onClick={onClose} className="purchase-dismiss">
                 Maybe later
               </button>
             </div>

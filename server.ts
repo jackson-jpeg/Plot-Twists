@@ -1659,6 +1659,17 @@ app.prepare().then(async () => {
   // Stripe Routes (must be before Next.js catch-all)
   // ============================================================
 
+  // Lazy-initialized Stripe client (shared across webhook + checkout routes)
+  const Stripe = (await import('stripe')).default
+  let stripeClient: InstanceType<typeof Stripe> | null = null
+  function getStripe(): InstanceType<typeof Stripe> | null {
+    if (stripeClient) return stripeClient
+    const key = process.env.STRIPE_SECRET_KEY
+    if (!key) return null
+    stripeClient = new Stripe(key)
+    return stripeClient
+  }
+
   // Track processed Stripe events to prevent duplicate fulfillment on retries
   const processedStripeEvents = new Set<string>()
 
@@ -1674,8 +1685,11 @@ app.prepare().then(async () => {
     }
 
     try {
-      const Stripe = (await import('stripe')).default
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
+      const stripe = getStripe()
+      if (!stripe) {
+        res.status(500).json({ error: 'Stripe not configured' })
+        return
+      }
       const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret)
 
       // Idempotency: skip already-processed events (Stripe retries on timeout)
@@ -1732,14 +1746,12 @@ app.prepare().then(async () => {
       return
     }
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      res.status(500).json({ error: 'Stripe not configured' })
-      return
-    }
-
     try {
-      const Stripe = (await import('stripe')).default
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+      const stripe = getStripe()
+      if (!stripe) {
+        res.status(500).json({ error: 'Stripe not configured' })
+        return
+      }
 
       // Determine base URL for redirects
       const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || `http://localhost:${port}`

@@ -40,6 +40,7 @@ async function initializeFirebaseAdmin(): Promise<FirestoreType | null> {
     }
 
     db = admin.firestore()
+    db.settings({ ignoreUndefinedProperties: true })
     adminInstance = admin
     isInitialized = true
     console.log('Firebase Admin initialized successfully')

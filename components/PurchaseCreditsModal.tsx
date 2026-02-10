@@ -105,16 +105,20 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   exit={{ opacity: 0, x: 40 }}
                   transition={{ duration: 0.2 }}
                 >
-                  {/* Checkout header with back button */}
+                  {/* Branded checkout header */}
                   <div className="purchase-checkout-header">
                     <button onClick={handleBack} className="purchase-back-btn">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      Back to packages
+                      Back
                     </button>
                     {selectedPkg && (
-                      <span className="purchase-checkout-summary">
-                        {PACKAGE_META[selectedPkg.id]?.icon} {selectedPkg.label} — {selectedPkg.scripts} scripts — ${(selectedPkg.price / 100).toFixed(0)}
-                      </span>
+                      <div className="purchase-checkout-pkg">
+                        <span className="purchase-checkout-icon">{PACKAGE_META[selectedPkg.id]?.icon}</span>
+                        <div className="purchase-checkout-details">
+                          <span className="purchase-checkout-name">{selectedPkg.label}</span>
+                          <span className="purchase-checkout-meta">{selectedPkg.scripts} scripts &middot; ${(selectedPkg.price / 100).toFixed(0)}</span>
+                        </div>
+                      </div>
                     )}
                   </div>
 
@@ -126,6 +130,12 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                     >
                       <EmbeddedCheckout />
                     </EmbeddedCheckoutProvider>
+                  </div>
+
+                  {/* Trust footer */}
+                  <div className="purchase-checkout-footer">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                    Secure checkout powered by Stripe
                   </div>
                 </motion.div>
               ) : (

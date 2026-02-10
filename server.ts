@@ -1911,8 +1911,9 @@ app.prepare().then(async () => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `${pkg.label} — ${pkg.scripts} Scripts`,
-              description: `${pkg.scripts} AI script credits for Plot Twists`
+              name: `${pkg.label}`,
+              description: `${pkg.scripts} script credits — use anytime, never expire`,
+              images: ['https://plot-twists.com/icon.svg']
             },
             unit_amount: pkg.price
           },

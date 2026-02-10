@@ -1671,6 +1671,18 @@ app.prepare().then(async () => {
     return stripeClient
   }
 
+  // Log Stripe configuration status on startup
+  if (process.env.STRIPE_SECRET_KEY) {
+    console.log('[Stripe] Secret key configured ✓')
+    if (process.env.STRIPE_WEBHOOK_SECRET) {
+      console.log('[Stripe] Webhook secret configured ✓')
+    } else {
+      console.warn('[Stripe] STRIPE_WEBHOOK_SECRET not set — webhooks will fail')
+    }
+  } else {
+    console.warn('[Stripe] STRIPE_SECRET_KEY not set — payments disabled')
+  }
+
   // Persistent idempotency: check DB instead of in-memory Set
   const db = getDatabase()
   async function isStripeEventProcessed(eventId: string): Promise<boolean> {
@@ -1861,15 +1873,18 @@ app.prepare().then(async () => {
   }
 
   expressApp.post('/api/stripe/create-checkout-session', async (req, res) => {
+    console.log('[Stripe] Checkout session request received')
     const { packageId, userId } = req.body
 
     if (!packageId || !userId) {
+      console.error('[Stripe] Missing packageId or userId in checkout request', { packageId: !!packageId, userId: !!userId, bodyKeys: Object.keys(req.body || {}) })
       res.status(400).json({ error: 'Missing packageId or userId' })
       return
     }
 
     const pkg = CREDIT_PACKAGES.find(p => p.id === packageId)
     if (!pkg) {
+      console.error(`[Stripe] Invalid packageId: ${packageId}`)
       res.status(400).json({ error: 'Invalid package' })
       return
     }
@@ -1877,6 +1892,7 @@ app.prepare().then(async () => {
     try {
       const stripe = getStripe()
       if (!stripe) {
+        console.error('[Stripe] STRIPE_SECRET_KEY not set — cannot create checkout session')
         res.status(500).json({ error: 'Stripe not configured' })
         return
       }
@@ -1952,6 +1968,7 @@ app.prepare().then(async () => {
     try {
       const stripe = getStripe()
       if (!stripe) {
+        console.error('[Stripe] STRIPE_SECRET_KEY not set — cannot create portal session')
         res.status(500).json({ error: 'Stripe not configured' })
         return
       }

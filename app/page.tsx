@@ -25,7 +25,6 @@ export default function Home() {
   const { user, loading } = useAuth()
   const canHover = useMediaQuery('(hover: hover) and (pointer: fine)')
   const [mounted, setMounted] = useState(false)
-  const [showHowItWorks, setShowHowItWorks] = useState(true)
   const [creditsPurchased, setCreditsPurchased] = useState(false)
 
   useEffect(() => {
@@ -207,80 +206,40 @@ export default function Home() {
           </motion.button>
         </motion.div>
 
-        {/* Compact How It Works with toggle */}
+        {/* How it works — playbill style */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="how-it-works-compact"
-          style={{ transform: 'rotate(-0.5deg)' }}
+          className="mt-6"
         >
-          <button
-            onClick={() => setShowHowItWorks(!showHowItWorks)}
-            className="how-it-works-toggle"
-          >
-            <span className="text-2xl">✨</span>
-            <span className="how-it-works-toggle-text">How it works</span>
-            <motion.span
-              className="text-xl"
-              animate={{ rotate: showHowItWorks ? 180 : 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              ↓
-            </motion.span>
-          </button>
+          <div className="text-center mb-4">
+            <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-disabled)]">
+              How it works
+            </span>
+          </div>
 
-          <AnimatePresence>
-            {showHowItWorks && (
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { step: '1', icon: '🃏', title: 'Draw cards', desc: 'Pick a character, setting & wild card' },
+              { step: '2', icon: '✍️', title: 'AI writes', desc: 'Get a custom comedy scene in seconds' },
+              { step: '3', icon: '🎤', title: 'Perform & vote', desc: 'Act it out, then crown the MVP' },
+            ].map((item, i) => (
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                style={{ overflow: 'hidden' }}
+                key={item.step}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.55 + i * 0.1, type: 'spring', stiffness: 120, damping: 14 }}
+                className="text-center"
               >
-                <div className="how-it-works-content">
-                  <div className="tape-piece tape-top-left"></div>
-                  <div className="tape-piece tape-top-right"></div>
-
-                  <div className="how-it-works-grid">
-                    <div className="how-it-works-step">
-                      <div className="step-number">1</div>
-                      <div className="step-text font-bold text-lg">Pick cards</div>
-                      <div className="step-example">&quot;Darth Vader at a job interview&quot;</div>
-                    </div>
-                    <div className="how-it-works-step">
-                      <div className="step-number">2</div>
-                      <div className="step-text font-bold text-lg">AI writes scene</div>
-                      <div className="step-example">Claude creates a 2-min comedy script</div>
-                    </div>
-                    <div className="how-it-works-step">
-                      <div className="step-number">3</div>
-                      <div className="step-text font-bold text-lg">Act it out</div>
-                      <div className="step-example">Follow the teleprompter on your phone</div>
-                    </div>
-                    <div className="how-it-works-step">
-                      <div className="step-number">4</div>
-                      <div className="step-text font-bold text-lg">Vote MVP</div>
-                      <div className="step-example">Best performance wins the round</div>
-                    </div>
-                    <div className="how-it-works-step">
-                      <div className="step-number">5</div>
-                      <div className="step-text font-bold text-lg">Laugh &amp; repeat</div>
-                      <div className="step-example">Generate a sequel or new scene</div>
-                    </div>
-                  </div>
-
-                  {/* Footer badges inside card */}
-                  <div className="how-it-works-badges">
-                    <span className="retro-badge-inline" style={{ transform: 'rotate(-1deg)' }}>No Acting Skills</span>
-                    <span className="retro-badge-inline" style={{ transform: 'rotate(1deg)' }}>Theater Kids OK</span>
-                    <span className="retro-badge-inline" style={{ transform: 'rotate(-0.5deg)' }}>1-6 Players</span>
-                  </div>
+                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[var(--color-surface-elevated)] border border-[var(--color-border)] flex items-center justify-center text-lg">
+                  {item.icon}
                 </div>
+                <p className="text-sm font-semibold text-[var(--color-text-primary)] font-display">{item.title}</p>
+                <p className="text-xs text-[var(--color-text-tertiary)] mt-0.5 leading-snug">{item.desc}</p>
               </motion.div>
-            )}
-          </AnimatePresence>
+            ))}
+          </div>
         </motion.div>
 
       </div>

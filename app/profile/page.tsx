@@ -17,13 +17,6 @@ import { getApiBaseUrl } from '@/lib/api'
 
 type ProfileTab = 'profile' | 'leaderboard'
 
-const statRotations = [-1, 1, -0.5, 1.5]
-
-const emojiWiggle = {
-  rotate: [-3, 3, -3],
-  transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' as const }
-}
-
 export default function ProfilePage() {
   const router = useRouter()
   const { socket, isConnected } = useSocket()
@@ -179,10 +172,9 @@ export default function ProfilePage() {
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="note-card mb-4 overflow-hidden"
+                className="mb-4 rounded-xl overflow-hidden border border-[var(--color-border)]"
               >
-                <div className="tape-piece tape-top-center" style={{ width: '50px', height: '16px', top: '-8px' }} />
-                <div className="flex items-center justify-between p-3 pt-4"
+                <div className="flex items-center justify-between p-3"
                   style={{
                     background: 'linear-gradient(to right, var(--color-accent-light), var(--color-danger-light))',
                   }}
@@ -209,22 +201,18 @@ export default function ProfilePage() {
               </motion.div>
             )}
 
-            {/* Stat cards grid — with wiggling emojis */}
+            {/* Stat cards grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {heroStats.map((stat, i) => (
                 <motion.div
                   key={stat.label}
-                  className="polaroid-card p-3 text-center relative"
-                  style={{ transform: `rotate(${statRotations[i]}deg)` }}
-                  initial={{ opacity: 0, y: 20, rotate: statRotations[i] + 5 }}
-                  animate={{ opacity: 1, y: 0, rotate: statRotations[i] }}
-                  transition={{ delay: i * 0.08 }}
-                  whileHover={{ scale: 1.05, rotate: 0 }}
+                  className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-3 text-center"
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.06 }}
+                  whileHover={{ scale: 1.04, y: -2 }}
                 >
-                  <div className="tape-piece tape-top-center" style={{ width: '36px', height: '14px', top: '-7px' }} />
-                  <motion.div className="text-xl mb-0.5" animate={emojiWiggle}>
-                    {stat.icon}
-                  </motion.div>
+                  <div className="text-xl mb-0.5">{stat.icon}</div>
                   <div className="text-lg font-bold text-[var(--color-text-primary)] font-display">{stat.value}</div>
                   <div className="text-xs text-[var(--color-text-tertiary)]">{stat.label}</div>
                 </motion.div>
@@ -278,15 +266,12 @@ export default function ProfilePage() {
           {activeTab === 'profile' ? (
             <motion.div
               key="profile"
-              initial={{ opacity: 0, y: 20, rotate: -0.5 }}
-              animate={{ opacity: 1, y: 0, rotate: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="polaroid-card relative"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm"
             >
-              <div className="tape-piece tape-top-left" />
-              <div className="tape-piece tape-top-right" />
-
               <div className="p-6">
                 {playerId ? (
                   <PlayerProfile playerId={playerId} hideHeader />
@@ -300,14 +285,12 @@ export default function ProfilePage() {
           ) : (
             <motion.div
               key="leaderboard"
-              initial={{ opacity: 0, y: 20, rotate: 0.5 }}
-              animate={{ opacity: 1, y: 0, rotate: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="note-card relative"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm"
             >
-              <div className="tape-piece tape-top-center" />
-
               <div className="p-6">
                 <Leaderboard />
               </div>
@@ -335,12 +318,10 @@ export default function ProfilePage() {
             transition={{ delay: 0.15 }}
             className="mt-6"
           >
-            <div className="note-card overflow-hidden">
-              <div className="tape-piece tape-top-center" />
-
+            <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden shadow-sm">
               <button
                 onClick={() => setAccountExpanded(!accountExpanded)}
-                className="w-full flex items-center justify-between p-4 pt-5 text-left hover:bg-[var(--color-surface-alt)] transition-colors"
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--color-surface-alt)] transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <motion.div
@@ -401,16 +382,11 @@ export default function ProfilePage() {
                         </motion.button>
                       </div>
 
-                      {/* Credit wallet — mini polaroid */}
-                      <motion.div
-                        className="polaroid-card p-3 relative"
-                        style={{ transform: 'rotate(-0.3deg)' }}
-                        whileHover={{ rotate: 0 }}
-                      >
-                        <div className="tape-piece tape-top-center" style={{ width: '30px', height: '12px', top: '-6px' }} />
-                        <div className="flex items-center justify-between pt-1">
+                      {/* Credit wallet */}
+                      <div className="rounded-lg bg-[var(--color-surface-alt)] border border-[var(--color-border)] p-3">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <motion.span className="text-2xl" animate={emojiWiggle}>🎬</motion.span>
+                            <span className="text-2xl">🎬</span>
                             <div>
                               <p className="text-sm font-semibold text-[var(--color-text-primary)] font-display">
                                 {creditBalance ? `${creditBalance.total} Script${creditBalance.total !== 1 ? 's' : ''}` : 'Loading...'}
@@ -431,7 +407,7 @@ export default function ProfilePage() {
                             Buy More
                           </motion.button>
                         </div>
-                      </motion.div>
+                      </div>
 
                       {/* Payment History */}
                       <div>
@@ -504,14 +480,12 @@ export default function ProfilePage() {
         {/* Guest sign-in prompt */}
         {!user && isConfigured && (
           <motion.div
-            initial={{ opacity: 0, y: 20, rotate: 1 }}
-            animate={{ opacity: 1, y: 0, rotate: 0.5 }}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="note-card mt-6 p-6 text-center relative"
+            className="mt-6 p-6 text-center rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm"
           >
-            <div className="tape-piece tape-top-left" />
-            <div className="tape-piece tape-top-right" />
-            <h3 className="text-lg font-bold mb-2 text-[var(--color-text-primary)] font-display pt-2">
+            <h3 className="text-lg font-bold mb-2 text-[var(--color-text-primary)] font-display">
               Create an Account
             </h3>
             <p className="text-sm text-[var(--color-text-secondary)] mb-4">

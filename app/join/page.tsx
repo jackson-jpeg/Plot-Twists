@@ -12,6 +12,7 @@ import { useConfetti } from '@/hooks/useConfetti'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
 import { SmartCardSelector } from '@/components/SmartCardSelector'
+import { Modal } from '@/components/Modal'
 import { downloadScript, copyScriptToClipboard, getCharactersInScene } from '@/lib/scriptUtils'
 import { AudienceReactionBar } from '@/components/AudienceReactionBar'
 import { PlotTwistVoting } from '@/components/PlotTwistVoting'
@@ -146,6 +147,7 @@ function JoinPageContent() {
   const [hostDisconnected, setHostDisconnected] = useState(false)
   const [roomIsMature, setRoomIsMature] = useState(false)
   const [scriptImageUrl, setScriptImageUrl] = useState<string | null>(null)
+  const [showPosterLightbox, setShowPosterLightbox] = useState(false)
   const previousSpeaker = React.useRef<string>('')
 
   // Enhanced page transition variants with blur/scale effects
@@ -1278,17 +1280,39 @@ function JoinPageContent() {
             <AudienceReactionBar roomCode={roomCode.toUpperCase()} isPerforming={true} isHost={false} />
             <PlotTwistVoting roomCode={roomCode.toUpperCase()} isHost={false} />
 
-            {/* Generated Poster (smaller for mobile) */}
-            <AnimatePresence>
+            {/* Generated Poster (mobile-friendly) */}
+            <AnimatePresence mode="wait">
               {scriptImageUrl && (
-                <motion.img
-                  src={scriptImageUrl}
-                  alt={`${script.title} Poster`}
-                  className="mx-auto my-4 max-h-40 rounded-lg shadow-lg object-contain"
+                <motion.div
+                  key="poster"
+                  className="mx-auto my-4 flex flex-col items-center"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.5 }}
-                />
+                >
+                  <motion.div
+                    onClick={() => setShowPosterLightbox(true)}
+                    style={{
+                      maxWidth: 240,
+                      maxHeight: 200,
+                      borderRadius: 'var(--radius-xl, 16px)',
+                      border: '3px solid var(--color-border)',
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      boxShadow: '0 20px 40px -12px rgba(0,0,0,0.2)',
+                    }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <img
+                      src={scriptImageUrl}
+                      alt={`${script.title} Poster`}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                    />
+                  </motion.div>
+                  <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 4 }}>Tap poster to enlarge</p>
+                </motion.div>
               )}
             </AnimatePresence>
 
@@ -1501,74 +1525,280 @@ function JoinPageContent() {
             <div className="card text-center">
               {gameResults && gameResults.winner ? (
                 <>
-                  <motion.div
-                    className="text-8xl mb-6"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
-                  >
-                    🏆
-                  </motion.div>
+                  {/* Trophy with pulsing glow */}
+                  <div style={{ position: 'relative', display: 'inline-block', marginBottom: 24 }}>
+                    <motion.div
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 140,
+                        height: 140,
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                      }}
+                      animate={{ opacity: [0.15, 0.35, 0.15], scale: [0.9, 1.1, 0.9] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                    <motion.div
+                      className="text-8xl"
+                      style={{ position: 'relative' }}
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
+                    >
+                      🏆
+                    </motion.div>
+                  </div>
+
+                  {/* Poster card with flip animation */}
+                  {scriptImageUrl && (
+                    <motion.div
+                      className="mx-auto mb-4 flex flex-col items-center"
+                      initial={{ rotateY: 90, opacity: 0 }}
+                      animate={{ rotateY: 0, opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      style={{ perspective: 1000 }}
+                    >
+                      <motion.div
+                        onClick={() => setShowPosterLightbox(true)}
+                        style={{
+                          maxWidth: 200,
+                          borderRadius: 'var(--radius-xl, 16px)',
+                          border: '3px solid var(--color-accent)',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          boxShadow: '0 20px 40px -12px rgba(0,0,0,0.2)',
+                        }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <img
+                          src={scriptImageUrl}
+                          alt={`${script?.title} Poster`}
+                          style={{ width: '100%', display: 'block', objectFit: 'contain' }}
+                        />
+                      </motion.div>
+                      {script && (
+                        <motion.p
+                          className="font-display text-base mt-2"
+                          style={{ color: 'var(--color-text-secondary)' }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.5 }}
+                        >
+                          {script.title}
+                        </motion.p>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {/* Winner name with blur reveal */}
                   <motion.h1
                     className="text-4xl font-display mb-2"
                     style={{ color: 'var(--color-accent)' }}
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3 }}
+                    initial={{ y: -20, opacity: 0, filter: 'blur(8px)' }}
+                    animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
                   >
                     {gameResults.winner.playerName} Wins!
+                  </motion.h1>
+
+                  {/* MVP badge */}
+                  <motion.p
+                    className="text-xl mb-8"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                  >
+                    <span style={{ color: 'var(--color-accent)', fontWeight: 700 }}>MVP</span> with {gameResults.winner.votes} vote{gameResults.winner.votes !== 1 ? 's' : ''}
+                  </motion.p>
+
+                  {/* Standings with vote bars */}
+                  {gameResults.allResults && gameResults.allResults.length > 1 && (() => {
+                    const maxVotes = Math.max(...gameResults.allResults.map(r => r.votes), 1)
+                    const totalVotes = gameResults.allResults.reduce((sum, r) => sum + r.votes, 0)
+                    return (
+                      <motion.div
+                        className="mb-8"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.8 }}
+                      >
+                        <h3 className="font-display text-lg mb-4 text-center" style={{ color: 'var(--color-text-primary)' }}>
+                          Final Standings
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                          {gameResults.allResults.map((result, index) => {
+                            const percentage = totalVotes > 0 ? Math.round((result.votes / totalVotes) * 100) : 0
+                            const barColor = index === 0 ? 'var(--color-accent)' : index === 1 ? 'var(--color-accent-2)' : 'var(--color-border-strong)'
+                            const isWinner = index === 0
+                            return (
+                              <motion.div
+                                key={result.playerId}
+                                style={{
+                                  background: isWinner ? 'var(--color-highlight)' : 'var(--color-surface-alt)',
+                                  border: isWinner ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
+                                  borderRadius: 'var(--radius-lg, 12px)',
+                                  padding: '16px',
+                                  textAlign: 'left',
+                                }}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.9 + index * 0.15 }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <motion.span
+                                      style={{ fontSize: isWinner ? 28 : 22, display: 'inline-block' }}
+                                      initial={{ scale: 0, rotate: -180 }}
+                                      animate={{ scale: 1, rotate: 0 }}
+                                      transition={{ type: 'spring', bounce: 0.5, delay: 0.95 + index * 0.15 }}
+                                    >
+                                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🎭'}
+                                    </motion.span>
+                                    <span style={{
+                                      fontSize: isWinner ? 18 : 16,
+                                      fontWeight: isWinner ? 700 : 600,
+                                      color: 'var(--color-text-primary)',
+                                    }}>
+                                      {result.playerName}
+                                    </span>
+                                  </div>
+                                  <span style={{ fontSize: isWinner ? 18 : 16, fontWeight: 700, color: barColor }}>
+                                    {result.votes}
+                                  </span>
+                                </div>
+                                {/* Vote bar */}
+                                <div style={{
+                                  width: '100%',
+                                  height: isWinner ? 12 : 8,
+                                  borderRadius: 999,
+                                  background: 'var(--color-border)',
+                                  overflow: 'hidden',
+                                  position: 'relative',
+                                }}>
+                                  <motion.div
+                                    style={{
+                                      height: '100%',
+                                      borderRadius: 999,
+                                      background: barColor,
+                                      position: 'relative',
+                                      overflow: 'hidden',
+                                    }}
+                                    initial={{ width: '0%' }}
+                                    animate={{ width: `${maxVotes > 0 ? (result.votes / maxVotes) * 100 : 0}%` }}
+                                    transition={{ delay: 0.9 + index * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                                  >
+                                    {isWinner && (
+                                      <div className="progress-bar-shimmer" style={{
+                                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                                      }} />
+                                    )}
+                                  </motion.div>
+                                </div>
+                                <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 3 }}>
+                                  {percentage}% of votes
+                                </p>
+                              </motion.div>
+                            )
+                          })}
+                        </div>
+                      </motion.div>
+                    )
+                  })()}
+                </>
+              ) : (
+                <>
+                  <div style={{ position: 'relative', display: 'inline-block', marginBottom: 24 }}>
+                    <motion.div
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 120,
+                        height: 120,
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle, var(--color-accent-2) 0%, transparent 70%)',
+                        pointerEvents: 'none',
+                      }}
+                      animate={{ opacity: [0.1, 0.25, 0.1], scale: [0.9, 1.1, 0.9] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                    <motion.div
+                      className="text-8xl"
+                      style={{ position: 'relative' }}
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", bounce: 0.5, delay: 0.2 }}
+                    >
+                      🎉
+                    </motion.div>
+                  </div>
+
+                  {scriptImageUrl && (
+                    <motion.div
+                      className="mx-auto mb-4 flex flex-col items-center"
+                      initial={{ rotateY: 90, opacity: 0 }}
+                      animate={{ rotateY: 0, opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      style={{ perspective: 1000 }}
+                    >
+                      <motion.div
+                        onClick={() => setShowPosterLightbox(true)}
+                        style={{
+                          maxWidth: 200,
+                          borderRadius: 'var(--radius-xl, 16px)',
+                          border: '3px solid var(--color-accent-2)',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          boxShadow: '0 20px 40px -12px rgba(0,0,0,0.2)',
+                        }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <img
+                          src={scriptImageUrl}
+                          alt={`${script?.title ?? 'Movie'} Poster`}
+                          style={{ width: '100%', display: 'block', objectFit: 'contain' }}
+                        />
+                      </motion.div>
+                      {script && (
+                        <motion.p
+                          className="font-display text-base mt-2"
+                          style={{ color: 'var(--color-text-secondary)' }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.5 }}
+                        >
+                          {script.title}
+                        </motion.p>
+                      )}
+                    </motion.div>
+                  )}
+
+                  <motion.h1
+                    className="text-4xl font-display mb-6"
+                    style={{ color: 'var(--color-text-primary)' }}
+                    initial={{ y: -20, opacity: 0, filter: 'blur(8px)' }}
+                    animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }}
+                    transition={{ delay: 0.5, duration: 0.5 }}
+                  >
+                    Performance Complete!
                   </motion.h1>
                   <motion.p
                     className="text-xl mb-8"
                     style={{ color: 'var(--color-text-secondary)' }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 0.4 }}
+                    transition={{ delay: 0.7 }}
                   >
-                    MVP with {gameResults.winner.votes} vote{gameResults.winner.votes !== 1 ? 's' : ''}
+                    Thanks for playing!
                   </motion.p>
-
-                  {gameResults.allResults && gameResults.allResults.length > 1 && (
-                    <motion.div
-                      className="mb-8 text-left"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 }}
-                    >
-                      <h3 className="font-display text-lg mb-4 text-center" style={{ color: 'var(--color-text-primary)' }}>
-                        Final Standings
-                      </h3>
-                      <div className="stack-sm">
-                        {gameResults.allResults.map((result, index) => (
-                          <motion.div
-                            key={result.playerId}
-                            className="split p-4 rounded-lg"
-                            style={{
-                              background: index === 0 ? 'var(--color-highlight)' : 'var(--color-surface-alt)',
-                              border: index === 0 ? '2px solid var(--color-accent)' : '1px solid var(--color-border)'
-                            }}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.6 + index * 0.1 }}
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl">{index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🎭'}</span>
-                              <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                                {result.playerName}
-                              </span>
-                            </div>
-                            <span className="badge badge-accent">{result.votes} vote{result.votes !== 1 ? 's' : ''}</span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="text-8xl mb-8">🎉</div>
-                  <h1 className="text-4xl font-display mb-6" style={{ color: 'var(--color-text-primary)' }}>Performance Complete!</h1>
-                  <p className="text-xl mb-8" style={{ color: 'var(--color-text-secondary)' }}>Thanks for playing!</p>
                 </>
               )}
 
@@ -1577,7 +1807,7 @@ function JoinPageContent() {
                   className="mb-6"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 }}
+                  transition={{ delay: 1.0 }}
                 >
                   <div className="flex gap-3 justify-center flex-wrap">
                     <motion.button
@@ -1607,7 +1837,7 @@ function JoinPageContent() {
                 style={{ background: 'var(--color-highlight)', padding: '24px' }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 1 }}
+                transition={{ delay: 1.2 }}
               >
                 <motion.div
                   className="text-4xl mb-3"
@@ -1627,6 +1857,20 @@ function JoinPageContent() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Poster Lightbox Modal */}
+      <Modal isOpen={showPosterLightbox} onClose={() => setShowPosterLightbox(false)} title={script?.title ?? 'Movie Poster'} maxWidth="600px">
+        {scriptImageUrl && (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <img
+              src={scriptImageUrl}
+              alt={`${script?.title ?? 'Movie'} Poster`}
+              style={{ maxHeight: '75vh', maxWidth: '100%', objectFit: 'contain', borderRadius: 'var(--radius-lg, 12px)' }}
+            />
+          </div>
+        )}
+      </Modal>
+
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
     </div>
   )

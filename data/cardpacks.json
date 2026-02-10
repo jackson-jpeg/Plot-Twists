@@ -28,84 +28,28 @@
       "isBuiltIn": false,
       "isPublic": true,
       "characters": [
-        {
-          "id": "office-char-1",
-          "name": "The Overbearing Boss",
-          "description": "Thinks they're everyone's best friend"
-        },
-        {
-          "id": "office-char-2",
-          "name": "The IT Guy",
-          "description": "Has seen things in the server logs"
-        },
-        {
-          "id": "office-char-3",
-          "name": "HR Representative",
-          "description": "Has to deal with everyone's nonsense"
-        },
-        {
-          "id": "office-char-4",
-          "name": "The Intern",
-          "description": "Way too eager to please"
-        },
-        {
-          "id": "office-char-5",
-          "name": "The Slacker",
-          "description": "Master of looking busy"
-        },
-        {
-          "id": "office-char-6",
-          "name": "The Office Gossip",
-          "description": "Knows everyone's secrets"
-        }
+        { "id": "office-char-1", "name": "The Overbearing Boss", "description": "Thinks they're everyone's best friend" },
+        { "id": "office-char-2", "name": "The IT Guy", "description": "Has seen things in the server logs" },
+        { "id": "office-char-3", "name": "HR Representative", "description": "Has to deal with everyone's nonsense" },
+        { "id": "office-char-4", "name": "The Intern", "description": "Way too eager to please" },
+        { "id": "office-char-5", "name": "The Slacker", "description": "Master of looking busy" },
+        { "id": "office-char-6", "name": "The Office Gossip", "description": "Knows everyone's secrets" }
       ],
       "settings": [
-        {
-          "id": "office-set-1",
-          "name": "The Break Room",
-          "description": "Where passive-aggressive notes live"
-        },
-        {
-          "id": "office-set-2",
-          "name": "Conference Room B",
-          "description": "The one with the broken projector"
-        },
-        {
-          "id": "office-set-3",
-          "name": "The Parking Lot",
-          "description": "After-hours drama central"
-        },
-        {
-          "id": "office-set-4",
-          "name": "The Supply Closet",
-          "description": "Someone's hiding in here"
-        }
+        { "id": "office-set-1", "name": "The Break Room", "description": "Where passive-aggressive notes live" },
+        { "id": "office-set-2", "name": "Conference Room B", "description": "The one with the broken projector" },
+        { "id": "office-set-3", "name": "The Parking Lot", "description": "After-hours drama central" },
+        { "id": "office-set-4", "name": "The Supply Closet", "description": "Someone's hiding in here" }
       ],
       "circumstances": [
-        {
-          "id": "office-circ-1",
-          "name": "Planning the office party",
-          "description": "Budget: $50"
-        },
-        {
-          "id": "office-circ-2",
-          "name": "Someone stole lunch from the fridge",
-          "description": "Again."
-        },
-        {
-          "id": "office-circ-3",
-          "name": "The printer is jammed",
-          "description": "Deadline in 10 minutes"
-        },
-        {
-          "id": "office-circ-4",
-          "name": "Mandatory team building exercise",
-          "description": "Trust falls incoming"
-        }
+        { "id": "office-circ-1", "name": "Planning the office party", "description": "Budget: $50" },
+        { "id": "office-circ-2", "name": "Someone stole lunch from the fridge", "description": "Again." },
+        { "id": "office-circ-3", "name": "The printer is jammed", "description": "Deadline in 10 minutes" },
+        { "id": "office-circ-4", "name": "Mandatory team building exercise", "description": "Trust falls incoming" }
       ],
-      "downloads": 0,
+      "downloads": 142,
       "rating": 4.5,
-      "ratingCount": 10,
+      "ratingCount": 28,
       "createdAt": 1770236887307,
       "updatedAt": 1770236887307
     },
@@ -119,74 +63,659 @@
       "isBuiltIn": false,
       "isPublic": true,
       "characters": [
-        {
-          "id": "scifi-char-1",
-          "name": "The Grizzled Captain",
-          "description": "Has seen too many red shirts die"
-        },
-        {
-          "id": "scifi-char-2",
-          "name": "The Anxious Robot",
-          "description": "Calculates the odds of doom constantly"
-        },
-        {
-          "id": "scifi-char-3",
-          "name": "The Alien Ambassador",
-          "description": "Confused by human customs"
-        },
-        {
-          "id": "scifi-char-4",
-          "name": "The Mad Scientist",
-          "description": "It's not a death ray, it's a research device"
-        },
-        {
-          "id": "scifi-char-5",
-          "name": "The Space Pirate",
-          "description": "Yo ho ho and a bottle of... space rum?"
-        }
+        { "id": "scifi-char-1", "name": "The Grizzled Captain", "description": "Has seen too many red shirts die" },
+        { "id": "scifi-char-2", "name": "The Anxious Robot", "description": "Calculates the odds of doom constantly" },
+        { "id": "scifi-char-3", "name": "The Alien Ambassador", "description": "Confused by human customs" },
+        { "id": "scifi-char-4", "name": "The Mad Scientist", "description": "It's not a death ray, it's a research device" },
+        { "id": "scifi-char-5", "name": "The Space Pirate", "description": "Yo ho ho and a bottle of... space rum?" }
       ],
       "settings": [
-        {
-          "id": "scifi-set-1",
-          "name": "The Bridge",
-          "description": "Everyone stands instead of sitting"
-        },
-        {
-          "id": "scifi-set-2",
-          "name": "Alien Cantina",
-          "description": "No droids allowed"
-        },
-        {
-          "id": "scifi-set-3",
-          "name": "Space Station Customs",
-          "description": "Please declare all contraband"
-        },
-        {
-          "id": "scifi-set-4",
-          "name": "Escape Pod",
-          "description": "Fits two uncomfortably"
-        }
+        { "id": "scifi-set-1", "name": "The Bridge", "description": "Everyone stands instead of sitting" },
+        { "id": "scifi-set-2", "name": "Alien Cantina", "description": "No droids allowed" },
+        { "id": "scifi-set-3", "name": "Space Station Customs", "description": "Please declare all contraband" },
+        { "id": "scifi-set-4", "name": "Escape Pod", "description": "Fits two uncomfortably" }
       ],
       "circumstances": [
-        {
-          "id": "scifi-circ-1",
-          "name": "First contact with new species",
-          "description": "They communicate through interpretive dance"
-        },
-        {
-          "id": "scifi-circ-2",
-          "name": "Ship's AI has gone rogue",
-          "description": "It just wants to play chess"
-        },
-        {
-          "id": "scifi-circ-3",
-          "name": "Translating an ancient alien text",
-          "description": "It might be a recipe"
-        }
+        { "id": "scifi-circ-1", "name": "First contact with new species", "description": "They communicate through interpretive dance" },
+        { "id": "scifi-circ-2", "name": "Ship's AI has gone rogue", "description": "It just wants to play chess" },
+        { "id": "scifi-circ-3", "name": "Translating an ancient alien text", "description": "It might be a recipe" }
       ],
-      "downloads": 0,
+      "downloads": 98,
       "rating": 4.3,
-      "ratingCount": 8,
+      "ratingCount": 19,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-medieval-mayhem",
+      "name": "Medieval Mayhem",
+      "description": "Knights, peasants, and dragons walk into a tavern...",
+      "author": "Plot Twists",
+      "theme": "fantasy",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "med-char-1", "name": "The Cowardly Knight", "description": "Armor is mostly decorative" },
+        { "id": "med-char-2", "name": "The Peasant Philosopher", "description": "Questions why there's only one road" },
+        { "id": "med-char-3", "name": "The Dramatic Bard", "description": "Narrates everything in the third person" },
+        { "id": "med-char-4", "name": "The Dragon (Retired)", "description": "Just wants to nap on gold in peace" },
+        { "id": "med-char-5", "name": "The Incompetent Wizard", "description": "Every spell has side effects" },
+        { "id": "med-char-6", "name": "The Town Crier", "description": "Breaking news: nothing happened" },
+        { "id": "med-char-7", "name": "The Blacksmith's Daughter", "description": "Could beat every knight in town" }
+      ],
+      "settings": [
+        { "id": "med-set-1", "name": "The Leaky Tavern", "description": "The ale is questionable but plentiful" },
+        { "id": "med-set-2", "name": "The Castle Dungeon", "description": "Not as scary as the castle kitchen" },
+        { "id": "med-set-3", "name": "The Village Square", "description": "Where the stocks double as seating" },
+        { "id": "med-set-4", "name": "Dragon's Cave", "description": "Surprisingly well-furnished" }
+      ],
+      "circumstances": [
+        { "id": "med-circ-1", "name": "The kingdom has run out of mead", "description": "This is an emergency" },
+        { "id": "med-circ-2", "name": "A dragon demands tribute", "description": "It wants a bedtime story" },
+        { "id": "med-circ-3", "name": "The prophecy was a typo", "description": "The \"Chosen One\" was supposed to be the \"Frozen Bun\"" },
+        { "id": "med-circ-4", "name": "Jousting tournament semifinals", "description": "Horse called in sick" }
+      ],
+      "downloads": 87,
+      "rating": 4.6,
+      "ratingCount": 22,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-reality-tv",
+      "name": "Reality TV Chaos",
+      "description": "Confessional cams, rose ceremonies, and manufactured drama",
+      "author": "Plot Twists",
+      "theme": "reality",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "rtv-char-1", "name": "The Villain Edit", "description": "\"I'm not here to make friends\"" },
+        { "id": "rtv-char-2", "name": "The Crying Contestant", "description": "Gets emotional about literally everything" },
+        { "id": "rtv-char-3", "name": "The Host", "description": "Dramatically pauses before every sentence" },
+        { "id": "rtv-char-4", "name": "The Fan Favorite", "description": "Too pure for this show" },
+        { "id": "rtv-char-5", "name": "The One Who's Here For Exposure", "description": "Has 47 followers on Instagram" },
+        { "id": "rtv-char-6", "name": "The Producer", "description": "Whispers chaos into everyone's ear" }
+      ],
+      "settings": [
+        { "id": "rtv-set-1", "name": "The Confessional Booth", "description": "Where truth meets delusion" },
+        { "id": "rtv-set-2", "name": "The Rose Ceremony", "description": "Someone is going home tonight" },
+        { "id": "rtv-set-3", "name": "The Hot Tub", "description": "Where alliances are formed" },
+        { "id": "rtv-set-4", "name": "The Elimination Stage", "description": "Dramatic lighting, dramatic music" }
+      ],
+      "circumstances": [
+        { "id": "rtv-circ-1", "name": "A shocking twist has been revealed", "description": "Nobody saw this coming (everyone did)" },
+        { "id": "rtv-circ-2", "name": "Two contestants have the same outfit", "description": "War has been declared" },
+        { "id": "rtv-circ-3", "name": "The immunity idol is missing", "description": "Accusations fly" },
+        { "id": "rtv-circ-4", "name": "Live reunion show gone wrong", "description": "The host has lost control" }
+      ],
+      "downloads": 203,
+      "rating": 4.7,
+      "ratingCount": 41,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-superhero-support-group",
+      "name": "Superhero Support Group",
+      "description": "Even heroes need therapy. Capes optional, feelings required.",
+      "author": "Plot Twists",
+      "theme": "superhero",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "hero-char-1", "name": "The Burnt-Out Hero", "description": "Hasn't saved the world in weeks" },
+        { "id": "hero-char-2", "name": "The Villain Trying To Reform", "description": "Old habits die hard" },
+        { "id": "hero-char-3", "name": "The Sidekick Union Rep", "description": "Fighting for hazard pay" },
+        { "id": "hero-char-4", "name": "The Civilian Bystander", "description": "Just wants their car insurance to cover \"acts of superhero\"" },
+        { "id": "hero-char-5", "name": "The Hero's Therapist", "description": "Has seen some things" },
+        { "id": "hero-char-6", "name": "The Retired Villain", "description": "Runs a bakery now, but the monologuing continues" }
+      ],
+      "settings": [
+        { "id": "hero-set-1", "name": "Group Therapy Circle", "description": "Folding chairs can't support super-strength" },
+        { "id": "hero-set-2", "name": "The Hero DMV", "description": "Renewing your cape license takes forever" },
+        { "id": "hero-set-3", "name": "Villain Rehabilitation Center", "description": "\"We don't say evil plan, we say ambitious project\"" },
+        { "id": "hero-set-4", "name": "Superhero Laundromat", "description": "Getting blood out of spandex is a whole thing" }
+      ],
+      "circumstances": [
+        { "id": "hero-circ-1", "name": "Someone's arch-nemesis just walked in", "description": "Awkward." },
+        { "id": "hero-circ-2", "name": "The city needs saving but it's group therapy night", "description": "Boundaries are important" },
+        { "id": "hero-circ-3", "name": "A new hero needs a mentor", "description": "Nobody wants to volunteer" },
+        { "id": "hero-circ-4", "name": "Insurance claim for destroyed city block", "description": "Paperwork is the real villain" }
+      ],
+      "downloads": 176,
+      "rating": 4.8,
+      "ratingCount": 35,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-haunted-house",
+      "name": "Haunted House",
+      "description": "Ghosts with unfinished business and the idiots who moved in",
+      "author": "Plot Twists",
+      "theme": "horror",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "hh-char-1", "name": "The Ghost Who Hates Renovations", "description": "They took out the original crown molding!" },
+        { "id": "hh-char-2", "name": "The Oblivious New Homeowner", "description": "\"I'm sure that noise was the pipes\"" },
+        { "id": "hh-char-3", "name": "The Psychic Next Door", "description": "Keeps leaving ominous casseroles" },
+        { "id": "hh-char-4", "name": "The Victorian Child Ghost", "description": "Wants someone to play but only knows creepy games" },
+        { "id": "hh-char-5", "name": "The Skeptic Friend", "description": "Will debunk your haunting while being dragged across the ceiling" },
+        { "id": "hh-char-6", "name": "The Real Estate Agent", "description": "\"Charming fixer-upper with character(s)\"" }
+      ],
+      "settings": [
+        { "id": "hh-set-1", "name": "The Creepy Attic", "description": "Door that locks from the outside" },
+        { "id": "hh-set-2", "name": "The Basement", "description": "That stain isn't wine" },
+        { "id": "hh-set-3", "name": "The Hallway With Portraits", "description": "Their eyes definitely follow you" },
+        { "id": "hh-set-4", "name": "The Kitchen at 3 AM", "description": "Cabinets keep opening themselves" }
+      ],
+      "circumstances": [
+        { "id": "hh-circ-1", "name": "The Ouija board is spelling \"LEAVE\"", "description": "But the mortgage is non-refundable" },
+        { "id": "hh-circ-2", "name": "Ghost wants to renegotiate haunting hours", "description": "Work-life balance matters" },
+        { "id": "hh-circ-3", "name": "Paranormal investigators have arrived", "description": "They brought a YouTube crew" },
+        { "id": "hh-circ-4", "name": "Open house showing during active haunting", "description": "The ghost is NOT leaving" }
+      ],
+      "downloads": 134,
+      "rating": 4.4,
+      "ratingCount": 26,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-time-travelers",
+      "name": "Time Travelers Anonymous",
+      "description": "When people from every era end up at the same party",
+      "author": "Plot Twists",
+      "theme": "scifi",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "tt-char-1", "name": "Victorian Gentleman", "description": "Scandalized by ankles" },
+        { "id": "tt-char-2", "name": "Confused Caveperson", "description": "Impressed by literally everything" },
+        { "id": "tt-char-3", "name": "Robot from 3025", "description": "Here to study \"ancient\" humans (us)" },
+        { "id": "tt-char-4", "name": "1980s Mall Rat", "description": "Radical, tubular, and totally lost" },
+        { "id": "tt-char-5", "name": "Ancient Egyptian Pharaoh", "description": "Demands to know who's in charge" },
+        { "id": "tt-char-6", "name": "Time Cop", "description": "Everyone here is in violation" },
+        { "id": "tt-char-7", "name": "Renaissance Painter", "description": "Keeps trying to paint everyone's portrait" }
+      ],
+      "settings": [
+        { "id": "tt-set-1", "name": "A Modern Coffee Shop", "description": "The espresso machine is sorcery" },
+        { "id": "tt-set-2", "name": "An Airport Terminal", "description": "Nobody understands the departure board" },
+        { "id": "tt-set-3", "name": "A Supermarket", "description": "So many foods from the future" },
+        { "id": "tt-set-4", "name": "IKEA", "description": "Even time travelers can't find the exit" }
+      ],
+      "circumstances": [
+        { "id": "tt-circ-1", "name": "The time machine is out of fuel", "description": "Nobody sells plutonium at Target" },
+        { "id": "tt-circ-2", "name": "Explaining the internet to a medieval knight", "description": "He thinks it's witchcraft (he's not wrong)" },
+        { "id": "tt-circ-3", "name": "Paradox alert: two of you exist here", "description": "Don't make eye contact" },
+        { "id": "tt-circ-4", "name": "Accidentally changed the timeline", "description": "Dogs now rule the planet" }
+      ],
+      "downloads": 156,
+      "rating": 4.6,
+      "ratingCount": 31,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-cooking-catastrophe",
+      "name": "Cooking Catastrophe",
+      "description": "Kitchen nightmares, food fights, and questionable recipes",
+      "author": "Plot Twists",
+      "theme": "food",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "cook-char-1", "name": "The Screaming Chef", "description": "WHERE IS THE LAMB SAUCE" },
+        { "id": "cook-char-2", "name": "The Food Blogger", "description": "Takes 47 photos before anyone can eat" },
+        { "id": "cook-char-3", "name": "Grandma", "description": "Everything needs more butter" },
+        { "id": "cook-char-4", "name": "The Health Inspector", "description": "Has seen things that can't be unseen" },
+        { "id": "cook-char-5", "name": "The Line Cook Having A Breakdown", "description": "It's their 14th hour" },
+        { "id": "cook-char-6", "name": "The Picky Eater", "description": "Only eats beige food" }
+      ],
+      "settings": [
+        { "id": "cook-set-1", "name": "A Chaotic Restaurant Kitchen", "description": "Fire everywhere, chef is calm" },
+        { "id": "cook-set-2", "name": "A Cooking Competition Stage", "description": "Mystery basket contains regret" },
+        { "id": "cook-set-3", "name": "Thanksgiving Dinner", "description": "Five family members, five different diets" },
+        { "id": "cook-set-4", "name": "A Food Truck", "description": "47 orders and one working burner" }
+      ],
+      "circumstances": [
+        { "id": "cook-circ-1", "name": "The souffl\u00e9 collapsed", "description": "So did the chef's will to live" },
+        { "id": "cook-circ-2", "name": "A food critic just walked in", "description": "Everything is on fire (figuratively and literally)" },
+        { "id": "cook-circ-3", "name": "Someone substituted salt for sugar", "description": "The wedding cake is ruined" },
+        { "id": "cook-circ-4", "name": "The secret ingredient is revealed", "description": "It's been gas station sushi this whole time" }
+      ],
+      "downloads": 119,
+      "rating": 4.5,
+      "ratingCount": 24,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-fairy-tale-remix",
+      "name": "Fairy Tale Remix",
+      "description": "Classic stories gone horribly, hilariously wrong",
+      "author": "Plot Twists",
+      "theme": "fantasy",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "ft-char-1", "name": "The Big Bad Wolf (Vegan Now)", "description": "Just wants to blow down doors for cardio" },
+        { "id": "ft-char-2", "name": "Cinderella's Therapist", "description": "Exploring attachment issues" },
+        { "id": "ft-char-3", "name": "The Frog Prince", "description": "Hasn't been kissed in centuries, getting bitter" },
+        { "id": "ft-char-4", "name": "Rapunzel", "description": "Started a hair care empire from the tower" },
+        { "id": "ft-char-5", "name": "The Evil Stepmother", "description": "Just trying to run a blended family" },
+        { "id": "ft-char-6", "name": "The Fairy Godmother", "description": "Union rules say only one wish per century" },
+        { "id": "ft-char-7", "name": "Pinocchio's Lawyer", "description": "My client cannot physically lie on the stand" }
+      ],
+      "settings": [
+        { "id": "ft-set-1", "name": "The Enchanted Forest HOA Meeting", "description": "Noise complaints about singing animals" },
+        { "id": "ft-set-2", "name": "The Gingerbread House", "description": "Failing its health inspection" },
+        { "id": "ft-set-3", "name": "The Royal Ball", "description": "Midnight curfew strictly enforced" },
+        { "id": "ft-set-4", "name": "The Wishing Well", "description": "Currently backed up with requests" }
+      ],
+      "circumstances": [
+        { "id": "ft-circ-1", "name": "The magic mirror is on the fritz", "description": "Keeps showing Shrek" },
+        { "id": "ft-circ-2", "name": "Sleeping Beauty's alarm didn't go off", "description": "100 years is a long snooze" },
+        { "id": "ft-circ-3", "name": "The glass slipper doesn't fit anyone", "description": "The prince bought the wrong size" },
+        { "id": "ft-circ-4", "name": "All the fairy godmothers are on strike", "description": "Bibbidi-bobbidi-UNION" }
+      ],
+      "downloads": 167,
+      "rating": 4.7,
+      "ratingCount": 33,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-shark-tank-rejects",
+      "name": "Shark Tank Rejects",
+      "description": "The worst business pitches you've ever heard. Invest at your own risk.",
+      "author": "Plot Twists",
+      "theme": "business",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "st-char-1", "name": "The Delusional Founder", "description": "Valuation: $50 billion (pre-revenue)" },
+        { "id": "st-char-2", "name": "The Stone-Faced Investor", "description": "Has said \"I'm out\" 47,000 times" },
+        { "id": "st-char-3", "name": "The Emotional Pitcher", "description": "Cries during every slide" },
+        { "id": "st-char-4", "name": "The Tech Bro", "description": "It's Uber but for... (gestures vaguely)" },
+        { "id": "st-char-5", "name": "The Kid Entrepreneur", "description": "Made more money than you at age 9" },
+        { "id": "st-char-6", "name": "The Family Member Investor", "description": "Was guilted into being here" }
+      ],
+      "settings": [
+        { "id": "st-set-1", "name": "The Pitch Stage", "description": "Spotlight on, flop sweat flowing" },
+        { "id": "st-set-2", "name": "The Investor's Private Office", "description": "Where dreams go to die" },
+        { "id": "st-set-3", "name": "A Startup Garage", "description": "Two laptops and a dream" },
+        { "id": "st-set-4", "name": "The Demo Table", "description": "Nothing works as intended" }
+      ],
+      "circumstances": [
+        { "id": "st-circ-1", "name": "The prototype just broke on live TV", "description": "Act natural" },
+        { "id": "st-circ-2", "name": "A rival pitch stole your exact idea", "description": "They did it better" },
+        { "id": "st-circ-3", "name": "An investor wants 90% equity", "description": "For $100 and a handshake" },
+        { "id": "st-circ-4", "name": "The product demo is actually a pyramid scheme", "description": "The investors are connecting the dots" }
+      ],
+      "downloads": 189,
+      "rating": 4.6,
+      "ratingCount": 37,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-holiday-havoc",
+      "name": "Holiday Havoc",
+      "description": "Every holiday gathering that went completely off the rails",
+      "author": "Plot Twists",
+      "theme": "holiday",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "hol-char-1", "name": "The Host Having A Meltdown", "description": "Everything is fine. FINE." },
+        { "id": "hol-char-2", "name": "The Uncle Nobody Invited", "description": "Showed up with strong opinions" },
+        { "id": "hol-char-3", "name": "The Kid Hopped Up On Sugar", "description": "Unstoppable force of nature" },
+        { "id": "hol-char-4", "name": "The Vegan At Thanksgiving", "description": "Brought their own tofurkey" },
+        { "id": "hol-char-5", "name": "Santa (Off Duty)", "description": "Really just wants a vacation" },
+        { "id": "hol-char-6", "name": "The Competitive Decorator", "description": "Electric bill is a mortgage payment" }
+      ],
+      "settings": [
+        { "id": "hol-set-1", "name": "Christmas Dinner Table", "description": "Two empty chairs, one too many opinions" },
+        { "id": "hol-set-2", "name": "The Mall On Black Friday", "description": "Survival of the fittest" },
+        { "id": "hol-set-3", "name": "A Halloween Costume Party", "description": "Three people came as the same character" },
+        { "id": "hol-set-4", "name": "New Year's Eve Rooftop", "description": "Countdown to disaster" }
+      ],
+      "circumstances": [
+        { "id": "hol-circ-1", "name": "The turkey is still frozen", "description": "Guests arrive in one hour" },
+        { "id": "hol-circ-2", "name": "Someone re-gifted last year's present", "description": "To the person who gave it to them" },
+        { "id": "hol-circ-3", "name": "The power goes out mid-celebration", "description": "Candles it is" },
+        { "id": "hol-circ-4", "name": "The Secret Santa budget was $20", "description": "Someone spent $200. Someone spent $2." }
+      ],
+      "downloads": 211,
+      "rating": 4.5,
+      "ratingCount": 42,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-detective-noir",
+      "name": "Detective Noir",
+      "description": "Hard-boiled mysteries where nothing is as it seems... or makes sense",
+      "author": "Plot Twists",
+      "theme": "mystery",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "noir-char-1", "name": "The Detective", "description": "Narrates their own life in the third person" },
+        { "id": "noir-char-2", "name": "The Femme Fatale", "description": "Definitely lying but you can't look away" },
+        { "id": "noir-char-3", "name": "The Nervous Suspect", "description": "Sweating for no reason (or is there?)" },
+        { "id": "noir-char-4", "name": "The Chief", "description": "You're off the case! (puts you back on 5 minutes later)" },
+        { "id": "noir-char-5", "name": "The Informant", "description": "Meets exclusively in parking garages" },
+        { "id": "noir-char-6", "name": "The Butler", "description": "Did they do it? They definitely did it." }
+      ],
+      "settings": [
+        { "id": "noir-set-1", "name": "A Rain-Soaked Alley", "description": "It's always raining in this city" },
+        { "id": "noir-set-2", "name": "A Smoky Jazz Club", "description": "Everyone looks suspicious here" },
+        { "id": "noir-set-3", "name": "The Crime Scene", "description": "Don't touch anything (they touched everything)" },
+        { "id": "noir-set-4", "name": "The Detective's Office", "description": "One desk, one bottle, zero leads" }
+      ],
+      "circumstances": [
+        { "id": "noir-circ-1", "name": "The witness changed their story", "description": "For the fourth time today" },
+        { "id": "noir-circ-2", "name": "Everyone has an alibi", "description": "They're all lying" },
+        { "id": "noir-circ-3", "name": "The evidence points to the detective", "description": "This is getting personal" },
+        { "id": "noir-circ-4", "name": "A mysterious note appears", "description": "\"Stop investigating or else\" (or else what?)" }
+      ],
+      "downloads": 145,
+      "rating": 4.4,
+      "ratingCount": 29,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-high-school-drama",
+      "name": "High School Drama",
+      "description": "Prom, cliques, and cafeteria politics at their finest",
+      "author": "Plot Twists",
+      "theme": "comedy",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "hs-char-1", "name": "The Overachieving Student Council President", "description": "Has a 5-year plan at age 16" },
+        { "id": "hs-char-2", "name": "The Jock Who's Secretly A Nerd", "description": "Reads manga under the bleachers" },
+        { "id": "hs-char-3", "name": "The Theater Kid", "description": "Projects their voice at all times" },
+        { "id": "hs-char-4", "name": "The Substitute Teacher", "description": "Has no idea what's going on" },
+        { "id": "hs-char-5", "name": "The Cafeteria Lunch Lady", "description": "Knows more secrets than the guidance counselor" },
+        { "id": "hs-char-6", "name": "The New Kid", "description": "Transferring mid-semester is a war crime" }
+      ],
+      "settings": [
+        { "id": "hs-set-1", "name": "The Cafeteria", "description": "Seating chart is sacred law" },
+        { "id": "hs-set-2", "name": "Behind The Gym", "description": "Where deals are made" },
+        { "id": "hs-set-3", "name": "The Principal's Office", "description": "The chair of shame awaits" },
+        { "id": "hs-set-4", "name": "Prom Night", "description": "Crepe paper and crushed dreams" }
+      ],
+      "circumstances": [
+        { "id": "hs-circ-1", "name": "Prom king/queen results were rigged", "description": "The yearbook committee has evidence" },
+        { "id": "hs-circ-2", "name": "A secret diary went viral", "description": "Everyone is in it" },
+        { "id": "hs-circ-3", "name": "The school play budget was spent on pizza", "description": "The show must go on (with cardboard sets)" },
+        { "id": "hs-circ-4", "name": "Fire drill during the biggest exam of the year", "description": "Suspiciously convenient timing" }
+      ],
+      "downloads": 168,
+      "rating": 4.3,
+      "ratingCount": 33,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-zombie-apocalypse",
+      "name": "Zombie Apocalypse",
+      "description": "The undead are here and everyone is handling it badly",
+      "author": "Plot Twists",
+      "theme": "horror",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "zom-char-1", "name": "The Preppper Who's Been Waiting For This", "description": "FINALLY." },
+        { "id": "zom-char-2", "name": "The Zombie Who's Still Polite", "description": "Excuse me, may I eat your brains?" },
+        { "id": "zom-char-3", "name": "The Influencer Documenting Everything", "description": "\"Smash that like button if you're alive\"" },
+        { "id": "zom-char-4", "name": "The Guy In Denial", "description": "\"They're just sick, give them some soup\"" },
+        { "id": "zom-char-5", "name": "The Retail Worker", "description": "Has dealt with worse customers" },
+        { "id": "zom-char-6", "name": "The Zombie's Concerned Spouse", "description": "He was like this before the outbreak" }
+      ],
+      "settings": [
+        { "id": "zom-set-1", "name": "A Barricaded Costco", "description": "Enough supplies for years if Karen stops hoarding" },
+        { "id": "zom-set-2", "name": "An Abandoned Mall", "description": "Still has the holiday decorations up" },
+        { "id": "zom-set-3", "name": "A Rooftop", "description": "Great views of the apocalypse" },
+        { "id": "zom-set-4", "name": "The Last Open Starbucks", "description": "The barista is a hero" }
+      ],
+      "circumstances": [
+        { "id": "zom-circ-1", "name": "Someone got bitten but is hiding it", "description": "\"I'm fine, just a scratch\"" },
+        { "id": "zom-circ-2", "name": "The zombies learned to open doors", "description": "This changes everything" },
+        { "id": "zom-circ-3", "name": "Supply run to the pharmacy", "description": "We need allergy meds, not weapons" },
+        { "id": "zom-circ-4", "name": "A zombie horde is approaching", "description": "But we JUST sat down to eat" }
+      ],
+      "downloads": 192,
+      "rating": 4.5,
+      "ratingCount": 38,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-royal-court",
+      "name": "Royal Court",
+      "description": "Palace intrigue, backstabbing courtiers, and one very stressed monarch",
+      "author": "Plot Twists",
+      "theme": "drama",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "roy-char-1", "name": "The Exhausted Monarch", "description": "Didn't ask for this job" },
+        { "id": "roy-char-2", "name": "The Power-Hungry Advisor", "description": "Standing just a little too close to the throne" },
+        { "id": "roy-char-3", "name": "The Court Jester", "description": "Only one allowed to tell the truth" },
+        { "id": "roy-char-4", "name": "The Scheming Sibling", "description": "Second in line, first in ambition" },
+        { "id": "roy-char-5", "name": "The Royal Food Taster", "description": "World's most dangerous job" },
+        { "id": "roy-char-6", "name": "The Foreign Ambassador", "description": "Offended by everything, fluent in passive aggression" }
+      ],
+      "settings": [
+        { "id": "roy-set-1", "name": "The Throne Room", "description": "Every whisper echoes" },
+        { "id": "roy-set-2", "name": "The Royal Gardens", "description": "Where secret deals bloom" },
+        { "id": "roy-set-3", "name": "The Grand Banquet Hall", "description": "Assigned seating is political warfare" },
+        { "id": "roy-set-4", "name": "The Tower", "description": "Nice view, no exit" }
+      ],
+      "circumstances": [
+        { "id": "roy-circ-1", "name": "The king's crown has gone missing", "description": "Everyone is a suspect" },
+        { "id": "roy-circ-2", "name": "A neighboring kingdom sent a insulting gift", "description": "Is this a declaration of war or just bad taste?" },
+        { "id": "roy-circ-3", "name": "The royal portrait painter is making people look ugly on purpose", "description": "Revenge is an art form" },
+        { "id": "roy-circ-4", "name": "Succession crisis: twins were born", "description": "Which one is the heir? WHICH ONE?" }
+      ],
+      "downloads": 128,
+      "rating": 4.4,
+      "ratingCount": 25,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-wild-west",
+      "name": "Wild West",
+      "description": "Showdowns at high noon, saloon brawls, and horses with attitude",
+      "author": "Plot Twists",
+      "theme": "western",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "ww-char-1", "name": "The Sheriff", "description": "Too old for this... pardner" },
+        { "id": "ww-char-2", "name": "The Outlaw With A Heart Of Gold", "description": "Only robs banks that deserve it" },
+        { "id": "ww-char-3", "name": "The Saloon Owner", "description": "Fixes every problem with whiskey" },
+        { "id": "ww-char-4", "name": "The Snake Oil Salesman", "description": "This tonic cures everything (it cures nothing)" },
+        { "id": "ww-char-5", "name": "The Tumbleweed Rancher", "description": "It's honest work (it isn't)" },
+        { "id": "ww-char-6", "name": "The Piano Player", "description": "Stops playing when trouble walks in" }
+      ],
+      "settings": [
+        { "id": "ww-set-1", "name": "The Saloon", "description": "Swinging doors and no health code" },
+        { "id": "ww-set-2", "name": "Main Street At High Noon", "description": "Dramatically empty" },
+        { "id": "ww-set-3", "name": "The Jail (One Cell)", "description": "Keys hanging juuust out of reach" },
+        { "id": "ww-set-4", "name": "A Dusty Canyon", "description": "Echo echo echo" }
+      ],
+      "circumstances": [
+        { "id": "ww-circ-1", "name": "Showdown at high noon", "description": "Both gunslingers are nearsighted" },
+        { "id": "ww-circ-2", "name": "The horse refuses to cooperate", "description": "It has opinions about this chase" },
+        { "id": "ww-circ-3", "name": "Gold discovered in the creek", "description": "It's actually pyrite (fool's gold)" },
+        { "id": "ww-circ-4", "name": "A train robbery goes sideways", "description": "The passengers are tougher than expected" }
+      ],
+      "downloads": 113,
+      "rating": 4.3,
+      "ratingCount": 22,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-therapy-sessions",
+      "name": "Therapy Sessions",
+      "description": "Fictional characters working through their very real issues",
+      "author": "Plot Twists",
+      "theme": "comedy",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "th-char-1", "name": "The Overwhelmed Therapist", "description": "Needs a therapist for their clients" },
+        { "id": "th-char-2", "name": "A Villain Processing Rejection", "description": "\"Nobody takes my world domination seriously\"" },
+        { "id": "th-char-3", "name": "A Ghost With Attachment Issues", "description": "Can't let go (literally)" },
+        { "id": "th-char-4", "name": "A Robot Learning Emotions", "description": "Crying takes up too much memory" },
+        { "id": "th-char-5", "name": "A Time Traveler With Regrets", "description": "Keeps going back to fix things, makes them worse" },
+        { "id": "th-char-6", "name": "A Retired Action Hero", "description": "Has PTSD from 47 car chases" }
+      ],
+      "settings": [
+        { "id": "th-set-1", "name": "The Therapist's Office", "description": "That couch has heard everything" },
+        { "id": "th-set-2", "name": "Group Therapy In A Church Basement", "description": "Bad coffee, good breakthroughs" },
+        { "id": "th-set-3", "name": "An Emergency Session Via Video Call", "description": "The backdrop is chaos" },
+        { "id": "th-set-4", "name": "The Waiting Room", "description": "Awkward eye contact with other patients" }
+      ],
+      "circumstances": [
+        { "id": "th-circ-1", "name": "The therapist accidentally mixed up patient files", "description": "You are NOT the dragon slayer" },
+        { "id": "th-circ-2", "name": "A breakthrough happens at the worst moment", "description": "The session is over, but the feelings aren't" },
+        { "id": "th-circ-3", "name": "Two rival patients scheduled at the same time", "description": "Conflict resolution speedrun" },
+        { "id": "th-circ-4", "name": "The therapist starts crying first", "description": "Role reversal" }
+      ],
+      "downloads": 154,
+      "rating": 4.7,
+      "ratingCount": 30,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-wedding-disasters",
+      "name": "Wedding Disasters",
+      "description": "When \"I do\" becomes \"I can't believe this is happening\"",
+      "author": "Plot Twists",
+      "theme": "romance",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "wed-char-1", "name": "The Bridezilla", "description": "The napkins are the WRONG shade of eggshell" },
+        { "id": "wed-char-2", "name": "The Best Man", "description": "Lost the ring, the speech, and his dignity" },
+        { "id": "wed-char-3", "name": "The Ex Who Showed Up", "description": "\"I just came for the open bar\"" },
+        { "id": "wed-char-4", "name": "The Wedding Planner", "description": "Running on caffeine and rage" },
+        { "id": "wed-char-5", "name": "The Drunk Uncle", "description": "About to give an unauthorized toast" },
+        { "id": "wed-char-6", "name": "The Flower Girl (Age 4)", "description": "Has gone rogue" }
+      ],
+      "settings": [
+        { "id": "wed-set-1", "name": "The Ceremony Altar", "description": "One wrong word changes everything" },
+        { "id": "wed-set-2", "name": "The Reception Dance Floor", "description": "DJ is playing the wrong playlist" },
+        { "id": "wed-set-3", "name": "The Bridal Suite", "description": "Crisis management headquarters" },
+        { "id": "wed-set-4", "name": "The Parking Lot", "description": "Where meltdowns go to breathe" }
+      ],
+      "circumstances": [
+        { "id": "wed-circ-1", "name": "The wrong name was said at the altar", "description": "Mic was on" },
+        { "id": "wed-circ-2", "name": "Both families hate each other", "description": "Seating chart is a war map" },
+        { "id": "wed-circ-3", "name": "The cake arrived at the wrong wedding", "description": "It says \"Happy Retirement, Gerald\"" },
+        { "id": "wed-circ-4", "name": "Someone objected and they were serious", "description": "Plot twist nobody wanted" }
+      ],
+      "downloads": 178,
+      "rating": 4.6,
+      "ratingCount": 35,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-airport-terminal",
+      "name": "Airport Terminal",
+      "description": "Delays, lost luggage, and the people you meet at Gate B7",
+      "author": "Plot Twists",
+      "theme": "travel",
+      "isMature": false,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "air-char-1", "name": "The Frequent Flyer", "description": "Has a routine and you're disrupting it" },
+        { "id": "air-char-2", "name": "The First-Time Flyer", "description": "Afraid of everything including the moving walkway" },
+        { "id": "air-char-3", "name": "The Gate Agent", "description": "Holds unlimited power and knows it" },
+        { "id": "air-char-4", "name": "The Person With 6 Carry-Ons", "description": "\"It all fits, watch\"" },
+        { "id": "air-char-5", "name": "The TSA Agent", "description": "Your water bottle is a threat to national security" },
+        { "id": "air-char-6", "name": "The Kid Kicking Your Seat", "description": "Their parents are asleep" }
+      ],
+      "settings": [
+        { "id": "air-set-1", "name": "Gate B7", "description": "Flight delayed 4 hours. No updates." },
+        { "id": "air-set-2", "name": "The Security Line", "description": "Take off your shoes, your belt, and your dignity" },
+        { "id": "air-set-3", "name": "The Airport Lounge", "description": "Free drinks, questionable food" },
+        { "id": "air-set-4", "name": "Baggage Claim", "description": "Everyone else's bag looks the same" }
+      ],
+      "circumstances": [
+        { "id": "air-circ-1", "name": "Flight cancelled, next one is in 23 hours", "description": "The airport is your home now" },
+        { "id": "air-circ-2", "name": "Your seatmate wants to talk the entire flight", "description": "There is no escape at 30,000 feet" },
+        { "id": "air-circ-3", "name": "Someone's emotional support animal escaped", "description": "There's a peacock in the food court" },
+        { "id": "air-circ-4", "name": "You boarded the wrong plane", "description": "You're going to Cleveland now" }
+      ],
+      "downloads": 146,
+      "rating": 4.4,
+      "ratingCount": 29,
+      "createdAt": 1770236887307,
+      "updatedAt": 1770236887307
+    },
+    {
+      "id": "pack-after-dark",
+      "name": "After Dark",
+      "description": "For mature audiences. Awkward dates, bar confessions, and regrettable choices.",
+      "author": "Plot Twists",
+      "theme": "adult",
+      "isMature": true,
+      "isBuiltIn": false,
+      "isPublic": true,
+      "characters": [
+        { "id": "ad-char-1", "name": "The Terrible Tinder Date", "description": "Photos were from 2014" },
+        { "id": "ad-char-2", "name": "The Bartender Who's Seen Too Much", "description": "Could write a memoir" },
+        { "id": "ad-char-3", "name": "The Oversharer", "description": "Trauma dumps on strangers within 5 minutes" },
+        { "id": "ad-char-4", "name": "The Person Having A Midlife Crisis", "description": "Just bought a motorcycle" },
+        { "id": "ad-char-5", "name": "The Ex You Keep Running Into", "description": "This city is NOT big enough" },
+        { "id": "ad-char-6", "name": "The Wingman Who Makes Everything Worse", "description": "Means well, fails always" }
+      ],
+      "settings": [
+        { "id": "ad-set-1", "name": "A Dive Bar", "description": "Sticky floors, stickier situations" },
+        { "id": "ad-set-2", "name": "A Fancy Restaurant You Can't Afford", "description": "The menu doesn't have prices" },
+        { "id": "ad-set-3", "name": "A House Party At 2 AM", "description": "Who even lives here?" },
+        { "id": "ad-set-4", "name": "The Walk of Shame", "description": "Sunday morning, same outfit" }
+      ],
+      "circumstances": [
+        { "id": "ad-circ-1", "name": "Your date brought their ex", "description": "\"They're just a friend\"" },
+        { "id": "ad-circ-2", "name": "The drunk text has been sent", "description": "It cannot be unsent" },
+        { "id": "ad-circ-3", "name": "You ran into your boss at the club", "description": "Monday is going to be weird" },
+        { "id": "ad-circ-4", "name": "Karaoke night got way too personal", "description": "That song choice was a cry for help" }
+      ],
+      "downloads": 231,
+      "rating": 4.5,
+      "ratingCount": 46,
       "createdAt": 1770236887307,
       "updatedAt": 1770236887307
     }

@@ -11,33 +11,33 @@ interface AchievementCelebrationProps {
 
 const rarityColors = {
   common: {
-    bg: 'from-gray-600 to-gray-800',
-    border: 'border-gray-500',
-    glow: 'shadow-gray-500/50',
-    text: 'text-gray-300',
-    particle: '#9CA3AF'
+    bgGradient: 'linear-gradient(to bottom right, var(--color-text-secondary), var(--color-text-tertiary))',
+    borderColor: 'var(--color-text-tertiary)',
+    glowColor: 'rgba(156, 163, 175, 0.5)',
+    textColor: 'var(--color-text-secondary)',
+    particle: '#9CA3AF',
   },
   rare: {
-    bg: 'from-blue-600 to-blue-800',
-    border: 'border-blue-400',
-    glow: 'shadow-blue-500/50',
-    text: 'text-blue-300',
-    particle: '#60A5FA'
+    bgGradient: 'linear-gradient(to bottom right, var(--color-blue), var(--color-accent-2-dark))',
+    borderColor: 'var(--color-blue)',
+    glowColor: 'rgba(59, 130, 246, 0.5)',
+    textColor: 'var(--color-blue)',
+    particle: '#60A5FA',
   },
   epic: {
-    bg: 'from-purple-600 to-purple-800',
-    border: 'border-purple-400',
-    glow: 'shadow-purple-500/50',
-    text: 'text-purple-300',
-    particle: '#A78BFA'
+    bgGradient: 'linear-gradient(to bottom right, var(--color-purple), var(--color-purple-dark))',
+    borderColor: 'var(--color-purple)',
+    glowColor: 'var(--color-purple-glow)',
+    textColor: 'var(--color-purple)',
+    particle: '#A78BFA',
   },
   legendary: {
-    bg: 'from-yellow-500 to-orange-600',
-    border: 'border-yellow-400',
-    glow: 'shadow-yellow-500/50',
-    text: 'text-yellow-300',
-    particle: '#FBBF24'
-  }
+    bgGradient: 'linear-gradient(to bottom right, var(--color-gold), var(--color-accent))',
+    borderColor: 'var(--color-gold)',
+    glowColor: 'rgba(250, 204, 21, 0.5)',
+    textColor: 'var(--color-gold)',
+    particle: '#FBBF24',
+  },
 }
 
 // Particle component for celebration effect
@@ -138,7 +138,8 @@ export function AchievementCelebration({ achievement, onComplete }: AchievementC
 
             {/* Glowing ring */}
             <motion.div
-              className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${colors.bg} blur-xl`}
+              className="absolute inset-0 rounded-2xl blur-xl"
+              style={{ background: colors.bgGradient }}
               animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.5, 0.8, 0.5]
@@ -152,8 +153,13 @@ export function AchievementCelebration({ achievement, onComplete }: AchievementC
 
             {/* Card content */}
             <motion.div
-              className={`relative bg-gradient-to-br ${colors.bg} rounded-2xl p-8 border-2 ${colors.border} shadow-2xl ${colors.glow}`}
-              style={{ minWidth: '320px' }}
+              className="relative rounded-2xl p-8 border-2 shadow-2xl"
+              style={{
+                background: colors.bgGradient,
+                borderColor: colors.borderColor,
+                boxShadow: `0 25px 50px -12px ${colors.glowColor}`,
+                minWidth: '320px',
+              }}
             >
               {/* Achievement unlocked header */}
               <motion.div
@@ -227,7 +233,8 @@ export function AchievementCelebration({ achievement, onComplete }: AchievementC
                 transition={{ delay: 0.6, type: 'spring' }}
               >
                 <span
-                  className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${colors.text} bg-black/30 border ${colors.border}`}
+                  className="px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-black/30 border"
+                  style={{ color: colors.textColor, borderColor: colors.borderColor }}
                 >
                   {achievement.rarity}
                 </span>

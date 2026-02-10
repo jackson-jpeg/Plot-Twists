@@ -11,11 +11,11 @@ interface PlayerProfileProps {
   onClose?: () => void
 }
 
-const RARITY_COLORS = {
-  common: 'from-[var(--color-text-secondary)] to-[var(--color-text-tertiary)]',
-  rare: 'from-blue-400 to-blue-600',
-  epic: 'from-purple-400 to-purple-600',
-  legendary: 'from-yellow-400 to-orange-500'
+const RARITY_BADGE_BG: Record<string, string> = {
+  common: 'var(--color-text-tertiary)',
+  rare: 'var(--color-blue)',
+  epic: 'var(--color-purple)',
+  legendary: 'var(--color-gold)',
 }
 
 const RARITY_FRAME_CLASS: Record<string, string> = {
@@ -130,8 +130,9 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
 
         <motion.a
           href="/"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-xl shadow-lg"
-          whileHover={{ scale: 1.05, boxShadow: '0 10px 40px rgba(168, 85, 247, 0.4)' }}
+          className="inline-flex items-center gap-2 px-8 py-4 text-white font-semibold rounded-xl shadow-lg"
+          style={{ background: 'linear-gradient(to right, var(--color-purple), var(--color-pink))' }}
+          whileHover={{ scale: 1.05, boxShadow: `0 10px 40px var(--color-purple-glow)` }}
           whileTap={{ scale: 0.95 }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -207,18 +208,22 @@ export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/50 rounded-xl p-4 flex items-center justify-between"
+          className="rounded-xl p-4 flex items-center justify-between"
+          style={{
+            background: 'linear-gradient(to right, var(--color-accent-light), var(--color-danger-light))',
+            border: '1px solid var(--color-accent)',
+          }}
         >
           <div className="flex items-center gap-3">
             <span className="text-3xl">🔥</span>
             <div>
-              <p className="font-semibold text-orange-300">On Fire!</p>
-              <p className="text-sm text-orange-400/80">
+              <p className="font-semibold" style={{ color: 'var(--color-accent-dark)' }}>On Fire!</p>
+              <p className="text-sm" style={{ color: 'var(--color-accent)' }}>
                 {stats.currentWinStreak} game win streak
               </p>
             </div>
           </div>
-          <span className="text-4xl font-bold text-orange-400">
+          <span className="text-4xl font-bold" style={{ color: 'var(--color-accent)' }}>
             {stats.currentWinStreak}
           </span>
         </motion.div>
@@ -536,7 +541,13 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
               <h4 className={`font-semibold truncate ${unlocked ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-disabled)]'}`}>
                 {achievement.name}
               </h4>
-              <span className={`text-xs px-1.5 py-0.5 rounded bg-gradient-to-r ${RARITY_COLORS[achievement.rarity]} text-white`}>
+              <span
+                className="text-xs px-1.5 py-0.5 rounded font-medium"
+                style={{
+                  background: RARITY_BADGE_BG[achievement.rarity] || 'var(--color-text-tertiary)',
+                  color: achievement.rarity === 'legendary' ? 'var(--color-text-primary)' : 'white',
+                }}
+              >
                 {achievement.rarity}
               </span>
             </div>

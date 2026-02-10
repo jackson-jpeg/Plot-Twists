@@ -242,20 +242,22 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
             style={{ zIndex: 'var(--z-modal)' }}
           >
             <motion.div
-              className="bg-gray-900 rounded-2xl p-6 max-w-md w-full"
+              className="rounded-2xl p-6 max-w-md w-full"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', damping: 15 }}
             >
               <div className="text-center mb-6">
                 <motion.h2
-                  className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mb-2"
+                  className="text-3xl font-black text-transparent bg-clip-text mb-2"
+                  style={{ backgroundImage: 'linear-gradient(to right, var(--color-purple), var(--color-pink))' }}
                   animate={{ scale: [1, 1.02, 1] }}
                   transition={{ duration: 0.5, repeat: Infinity }}
                 >
                   PLOT TWIST!
                 </motion.h2>
-                <p className="text-gray-400 mb-4">Vote for chaos!</p>
+                <p className="mb-4" style={{ color: 'var(--color-text-secondary)' }}>Vote for chaos!</p>
 
                 {/* Circular countdown timer */}
                 <CircularTimer timeRemaining={timeRemaining} totalTime={totalTime} />
@@ -277,21 +279,28 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
                       whileTap={!hasVoted ? { scale: 0.98 } : {}}
                       className={`w-full p-4 rounded-xl text-left relative overflow-hidden transition-all ${
                         hasVoted
-                          ? 'bg-gray-800 cursor-default'
-                          : 'bg-gray-800 hover:bg-gray-700 cursor-pointer border-2 border-transparent hover:border-purple-500/50'
+                          ? 'cursor-default'
+                          : 'cursor-pointer border-2 border-transparent'
                       }`}
+                      style={{
+                        background: 'var(--color-surface-alt)',
+                        ...(hasVoted ? {} : { borderColor: 'transparent' }),
+                      }}
+                      onMouseEnter={e => { if (!hasVoted) (e.currentTarget.style.borderColor = 'var(--color-purple-border)') }}
+                      onMouseLeave={e => { if (!hasVoted) (e.currentTarget.style.borderColor = 'transparent') }}
                     >
                       {/* Vote progress bar */}
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${percentage}%` }}
-                        className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-600/40 to-pink-600/40"
+                        className="absolute inset-y-0 left-0"
+                        style={{ background: 'linear-gradient(to right, var(--color-purple-bg), var(--color-pink-bg))' }}
                         transition={{ type: 'spring', damping: 20 }}
                       />
 
                       <div className="relative z-10 flex justify-between items-center">
-                        <span className="text-white text-sm">{option.text}</span>
-                        <span className="text-purple-400 font-bold ml-2 min-w-[2ch] text-right">
+                        <span className="text-sm" style={{ color: 'var(--color-text-primary)' }}>{option.text}</span>
+                        <span className="font-bold ml-2 min-w-[2ch] text-right" style={{ color: 'var(--color-purple)' }}>
                           {option.votes}
                         </span>
                       </div>
@@ -304,7 +313,8 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
                 <motion.p
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center text-gray-400 mt-4"
+                  className="text-center mt-4"
+                  style={{ color: 'var(--color-text-secondary)' }}
                 >
                   Vote recorded! Waiting for results...
                 </motion.p>
@@ -328,7 +338,8 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
             <ExplosionParticles show={showParticles} />
 
             <motion.div
-              className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-5 sm:p-8 max-w-md w-full text-center relative overflow-hidden"
+              className="rounded-2xl p-5 sm:p-8 max-w-md w-full text-center relative overflow-hidden"
+              style={{ background: 'linear-gradient(to right, var(--color-purple-dark), var(--color-pink-dark))' }}
               initial={{ scale: 0, rotate: -10 }}
               animate={{
                 scale: 1,

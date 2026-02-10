@@ -146,7 +146,8 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
                 <motion.div
-                  className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center text-white font-bold text-lg shadow-md"
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md"
+                  style={{ background: `linear-gradient(to bottom right, var(--color-emerald), var(--color-success))` }}
                   whileHover={{ scale: 1.1, rotate: 5 }}
                 >
                   {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || user.phoneNumber?.[0] || '?'}
@@ -172,7 +173,10 @@ export default function ProfilePage() {
           ) : user?.isAnonymous ? (
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md"
+                  style={{ background: `linear-gradient(to bottom right, var(--color-purple), var(--color-purple-dark))` }}
+                >
                   🎭
                 </div>
                 <div>
@@ -392,19 +396,19 @@ export default function ProfilePage() {
             </h3>
             <ul className="space-y-2 text-[var(--color-text-secondary)] text-sm">
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <span style={{ color: 'var(--color-success)' }}>✓</span>
                 Sync your stats across all devices
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <span style={{ color: 'var(--color-success)' }}>✓</span>
                 Compete on global leaderboards
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <span style={{ color: 'var(--color-success)' }}>✓</span>
                 Never lose your achievements
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <span style={{ color: 'var(--color-success)' }}>✓</span>
                 Share your game replays with friends
               </li>
             </ul>

@@ -14,7 +14,7 @@ export type PlayerRole = 'HOST' | 'PLAYER' | 'SPECTATOR'
 // FEATURE 1: Audience Interaction System
 // ============================================================
 
-export type AudienceReactionType = 'laugh' | 'cheer' | 'gasp' | 'boo' | 'applause'
+export type AudienceReactionType = 'laugh' | 'cheer' | 'gasp' | 'boo' | 'applause' | 'cringe' | 'love' | 'mindblown'
 
 export interface AudienceReaction {
   id: string
@@ -36,6 +36,15 @@ export interface PlotTwistVote {
   timestamp: number
 }
 
+export interface SpectatorMessage {
+  id: string
+  senderId: string
+  senderName: string
+  text: string
+  timestamp: number
+  isPreset: boolean
+}
+
 export interface AudienceInteractionState {
   reactions: AudienceReaction[]
   reactionCounts: Record<AudienceReactionType, number>
@@ -46,6 +55,7 @@ export interface AudienceInteractionState {
     isActive: boolean
   }
   plotTwistHistory: string[] // Winning twist texts from previous rounds
+  spectatorMessages: SpectatorMessage[]
 }
 
 // ============================================================
@@ -53,7 +63,7 @@ export interface AudienceInteractionState {
 // ============================================================
 
 export type ComedyStyle = 'witty' | 'slapstick' | 'absurdist' | 'dark' | 'sitcom' | 'improv'
-export type ScriptLength = 'quick' | 'standard' | 'epic'
+export type ScriptLength = 'lightning' | 'quick' | 'standard' | 'epic'
 export type ScriptDifficulty = 'beginner' | 'intermediate' | 'advanced'
 export type PhysicalComedyLevel = 'none' | 'minimal' | 'heavy'
 
@@ -283,6 +293,7 @@ export interface VoteResult {
 export interface GameResults {
   winner?: VoteResult
   allResults: VoteResult[]
+  highlights?: { label: string; value: string; icon: string }[]
 }
 
 // Socket.io Event Interfaces
@@ -309,6 +320,7 @@ export interface ServerToClientEvents {
   plot_twist_vote_update: (optionId: string, newCount: number) => void
   plot_twist_result: (winningTwist: string) => void
   plot_twist_injected: (lineIndex: number, newLines: ScriptLine[]) => void
+  spectator_message_received: (message: SpectatorMessage) => void
 
   // Feature 3: Card Pack Events
   card_packs_list: (packs: CardPackMetadata[]) => void
@@ -363,6 +375,7 @@ export interface ClientToServerEvents {
   send_audience_reaction: (roomCode: string, reactionType: AudienceReactionType) => void
   start_plot_twist: (roomCode: string) => void
   vote_plot_twist: (roomCode: string, optionId: string) => void
+  send_spectator_message: (roomCode: string, text: string, isPreset: boolean) => void
 
   // Feature 3: Card Pack Events
   list_card_packs: (callback: (response: { success: boolean, packs?: CardPackMetadata[], error?: string }) => void) => void

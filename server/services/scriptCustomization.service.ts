@@ -14,6 +14,7 @@ import type {
 
 // Line count ranges for each script length
 const SCRIPT_LENGTH_RANGES: Record<ScriptLength, { min: number, max: number }> = {
+  lightning: { min: 8, max: 12 },
   quick: { min: 15, max: 25 },
   standard: { min: 30, max: 40 },
   epic: { min: 45, max: 60 }
@@ -21,6 +22,7 @@ const SCRIPT_LENGTH_RANGES: Record<ScriptLength, { min: number, max: number }> =
 
 // Max tokens for each script length
 const SCRIPT_LENGTH_TOKENS: Record<ScriptLength, number> = {
+  lightning: 2048,
   quick: 4096,
   standard: 8192,
   epic: 12000

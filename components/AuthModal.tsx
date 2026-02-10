@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { PhoneAuthForm } from './PhoneAuthForm'
+import { analytics } from '@/lib/analytics'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -52,6 +53,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
       }
 
       if (result.success) {
+        if (mode === 'signup') analytics.signupCompleted('email')
         onClose()
         resetForm()
       } else {
@@ -71,6 +73,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
     try {
       const result = await signInWithGoogle()
       if (result.success) {
+        analytics.signupCompleted('google')
         onClose()
         resetForm()
       } else {

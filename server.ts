@@ -48,7 +48,9 @@ import {
   resetReactionCounts,
   preGenerateTwistsForRoom,
   regenerateTwistsForRoom,
-  generateAITwistInjection
+  generateAITwistInjection,
+  canSendSpectatorMessage,
+  recordSpectatorMessage
 } from './server/services/audience.service'
 import {
   buildCustomizationPrompt,
@@ -80,6 +82,7 @@ import {
 import {
   saveGame,
   getGame,
+  getGameByShareCode,
   getPlayerGames,
   shareGame
 } from './server/services/gameHistory.service'
@@ -1019,6 +1022,36 @@ app.prepare().then(async () => {
       }
     }))
 
+    // Send spectator message (chat/heckle)
+    socket.on('send_spectator_message', withErrorHandler(socket, 'send_spectator_message', (roomCode, text, isPreset) => {
+      const room = validateRoom(roomCode, socket)
+      if (!room || !room.audienceInteraction) return
+      if (!requireRoomMember(room, socket)) return
+
+      // Find sender
+      let sender: Player | undefined
+      for (const player of room.players.values()) {
+        if (player.socketId === socket.id) {
+          sender = player
+          break
+        }
+      }
+      if (!sender) return
+
+      const message = recordSpectatorMessage(
+        room.audienceInteraction,
+        text,
+        sender.id,
+        sender.nickname,
+        isPreset
+      )
+
+      if (message) {
+        room.lastActivity = Date.now()
+        io.to(roomCode).emit('spectator_message_received', message)
+      }
+    }))
+
     // Start a plot twist vote
     socket.on('start_plot_twist', withErrorHandler(socket, 'start_plot_twist', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
@@ -1349,10 +1382,14 @@ app.prepare().then(async () => {
       }
     })
 
-    // Get specific game details
+    // Get specific game details (supports both share codes and UUIDs)
     socket.on('get_game_details', async (gameId, callback) => {
       try {
-        const game = await getGame(gameId)
+        // Try share code lookup first (8-char alphanumeric), then fall back to UUID
+        let game = await getGameByShareCode(gameId)
+        if (!game) {
+          game = await getGame(gameId)
+        }
         if (!game) {
           callback({ success: false, error: 'Game not found' })
           return
@@ -2020,6 +2057,39 @@ app.prepare().then(async () => {
     } catch (error) {
       console.error('[Stripe] Session status error:', error)
       res.status(500).json({ error: 'Failed to get session status' })
+    }
+  })
+
+  // Game metadata API (used by Next.js generateMetadata for dynamic OG images)
+  expressApp.get('/api/game/:shareCode', async (req, res) => {
+    try {
+      const { shareCode } = req.params
+      let game = await getGameByShareCode(shareCode)
+      if (!game) {
+        game = await getGame(shareCode)
+      }
+      if (!game) {
+        res.status(404).json({ error: 'Game not found' })
+        return
+      }
+      res.json({
+        title: game.title,
+        synopsis: game.synopsis,
+        gameMode: game.gameMode,
+        players: game.players.map(p => ({
+          nickname: p.nickname,
+          character: p.character,
+          isWinner: p.isWinner
+        })),
+        winner: game.winner,
+        setting: game.setting,
+        circumstance: game.circumstance,
+        playedAt: game.playedAt,
+        comedyStyle: game.comedyStyle
+      })
+    } catch (error) {
+      console.error('Error fetching game metadata:', error)
+      res.status(500).json({ error: 'Failed to load game' })
     }
   })
 

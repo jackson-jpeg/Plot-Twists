@@ -29,11 +29,27 @@ export async function calculateResults(room: Room, io: SocketIOServer): Promise<
 
   const winner = results[0]
 
+  // Compute post-game highlights from audience reactions
+  const highlights: { label: string; value: string; icon: string }[] = []
+  if (room.audienceInteraction) {
+    const counts = room.audienceInteraction.reactionCounts
+    if (counts.laugh > 0) highlights.push({ label: 'Most Laughs', value: `${counts.laugh} laughs`, icon: '😂' })
+    if (counts.gasp > 0) highlights.push({ label: 'Most Dramatic', value: `${counts.gasp} gasps`, icon: '😱' })
+    if (counts.cheer > 0) highlights.push({ label: 'Crowd Favorite', value: `${counts.cheer} cheers`, icon: '🎉' })
+    if (counts.love > 0) highlights.push({ label: 'Most Loved', value: `${counts.love} hearts`, icon: '❤️' })
+    if (counts.mindblown > 0) highlights.push({ label: 'Mind Blown', value: `${counts.mindblown}x`, icon: '🤯' })
+    const totalReactions = Object.values(counts).reduce((a, b) => a + b, 0)
+    if (totalReactions > 0) highlights.push({ label: 'Total Reactions', value: `${totalReactions}`, icon: '🔥' })
+    const chatCount = room.audienceInteraction.spectatorMessages?.length || 0
+    if (chatCount > 0) highlights.push({ label: 'Chat Messages', value: `${chatCount}`, icon: '💬' })
+  }
+
   room.gameState = 'RESULTS'
   roomService.updateRoom(room)
   io.to(room.code).emit('game_over', {
     winner,
-    allResults: results
+    allResults: results,
+    highlights
   })
   io.to(room.code).emit('game_state_change', 'RESULTS')
 

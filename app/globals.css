@@ -3,11 +3,7 @@
    Warm, playful, nostalgic - not overwhelming
    ========================================================================== */
 
-/* Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
+/* Fonts: Loaded via next/font/google in app/layout.tsx for performance */
 
 @import "tailwindcss";
 
@@ -16,11 +12,11 @@
    ========================================================================== */
 
 :root {
-  /* Typography */
-  --font-display: 'Fredoka', ui-rounded, sans-serif;
-  --font-ui: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-script: 'Courier Prime', 'Courier New', monospace;
-  --font-handwritten: 'Permanent Marker', cursive;
+  /* Typography — loaded via next/font/google CSS variables */
+  --font-display: var(--font-fredoka, 'Fredoka'), ui-rounded, sans-serif;
+  --font-ui: var(--font-dm-sans, 'DM Sans'), -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-script: var(--font-courier-prime, 'Courier Prime'), 'Courier New', monospace;
+  --font-handwritten: var(--font-permanent-marker, 'Permanent Marker'), cursive;
 
   /* Colors - Light Mode */
   --color-bg: #FDFCFA;
@@ -2577,6 +2573,13 @@ textarea:focus-visible {
 
   .script-container {
     padding: var(--space-4);
+    font-size: clamp(16px, 3.5vw, 28px);
+  }
+
+  /* Landscape teleprompter: compact layout, thinner progress bar */
+  .script-your-turn {
+    font-size: clamp(14px, 2.5vw, 20px);
+    padding: 4px 12px;
   }
 }
 

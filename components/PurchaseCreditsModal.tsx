@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { CREDIT_PACKAGES } from '@/lib/credits'
 import { getApiBaseUrl } from '@/lib/api'
 import { stripePromise } from '@/lib/stripe'
+import { analytics } from '@/lib/analytics'
 
 interface PurchaseCreditsModalProps {
   isOpen: boolean
@@ -33,6 +34,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
     if (!user) return
     setLoading(packageId)
     setError(null)
+    analytics.purchaseInitiated(packageId)
 
     try {
       const res = await fetch(`${getApiBaseUrl()}/api/stripe/create-checkout-session`, {

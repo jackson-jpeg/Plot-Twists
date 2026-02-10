@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Modal } from './Modal'
 
 interface OnboardingModalProps {
@@ -8,317 +10,198 @@ interface OnboardingModalProps {
   mode?: 'host' | 'join'
 }
 
+const STEPS = [
+  {
+    title: 'Welcome to Plot Twists!',
+    icon: '🎭',
+    content: (
+      <div style={{ textAlign: 'center' }}>
+        <motion.div
+          style={{ fontSize: '80px', marginBottom: '16px' }}
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
+        >
+          🎭
+        </motion.div>
+        <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, fontSize: '16px', maxWidth: '400px', margin: '0 auto' }}>
+          The AI-powered improv party game where random cards become hilarious comedy scenes.
+          No acting skills required!
+        </p>
+      </div>
+    ),
+  },
+  {
+    title: 'How It Works',
+    icon: '🎬',
+    content: (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', maxWidth: '400px', margin: '0 auto' }}>
+        {[
+          { icon: '🎴', label: 'Pick Cards', desc: 'Choose character, setting, and circumstance' },
+          { icon: '🤖', label: 'AI Writes', desc: 'Claude generates a hilarious custom script' },
+          { icon: '🎬', label: 'Perform', desc: 'Read your lines aloud for the group' },
+          { icon: '🗳️', label: 'Vote MVP', desc: 'Everyone votes for the best performance' },
+        ].map((step, i) => (
+          <motion.div
+            key={step.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 * i }}
+            style={{
+              textAlign: 'center',
+              padding: '16px 12px',
+              background: 'var(--color-surface)',
+              borderRadius: '12px',
+              border: '1px solid var(--color-border)',
+            }}
+          >
+            <div style={{ fontSize: '32px', marginBottom: '8px' }}>{step.icon}</div>
+            <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '4px', fontSize: '14px' }}>
+              {step.label}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
+              {step.desc}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+  {
+    title: "You're Ready!",
+    icon: '🚀',
+    content: (
+      <div style={{ textAlign: 'center' }}>
+        <motion.div
+          style={{ fontSize: '64px', marginBottom: '16px' }}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: 'spring', stiffness: 300, delay: 0.2 }}
+        >
+          🚀
+        </motion.div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '320px', margin: '0 auto' }}>
+          {[
+            "Don't overthink it — go with your gut!",
+            'Commit fully to the character',
+            'Watch the mood indicator for delivery cues',
+          ].map((tip, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15 * i + 0.3 }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                background: 'var(--color-surface)',
+                borderRadius: '8px',
+                border: '1px solid var(--color-border)',
+                fontSize: '14px',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
+              <span style={{ color: 'var(--color-accent)' }}>✓</span>
+              {tip}
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+]
+
 export function OnboardingModal({ isOpen, onClose, mode = 'join' }: OnboardingModalProps) {
+  const [step, setStep] = useState(0)
+
+  const handleClose = () => {
+    setStep(0)
+    onClose()
+  }
+
+  const handleNext = () => {
+    if (step < STEPS.length - 1) {
+      setStep(step + 1)
+    } else {
+      handleClose()
+    }
+  }
+
+  const handlePrev = () => {
+    if (step > 0) setStep(step - 1)
+  }
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="How to Play Plot Twists" maxWidth="700px">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }} className="onboarding-content">
-        {/* Game Overview */}
-        <section>
-          <h3
-            style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              color: 'var(--color-accent)',
-              marginBottom: '12px',
-              marginTop: 0
-            }}
-          >
-            🎭 What is Plot Twists?
-          </h3>
-          <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, margin: 0 }}>
-            Plot Twists is an improv storytelling game where you draw random cards and create
-            compelling stories on the spot. Perfect for theater kids, improv enthusiasts, and
-            anyone who loves creative storytelling!
-          </p>
-        </section>
-
-        {/* Game Modes */}
-        <section>
-          <h3
-            style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              color: 'var(--color-accent)',
-              marginBottom: '12px',
-              marginTop: 0
-            }}
-          >
-            🎮 Game Modes
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+    <Modal isOpen={isOpen} onClose={handleClose} title={STEPS[step].title} maxWidth="480px">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', minHeight: '280px' }}>
+        {/* Step indicators */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px' }}>
+          {STEPS.map((_, i) => (
             <div
+              key={i}
               style={{
-                padding: '12px',
-                background: 'var(--color-surface)',
-                borderRadius: '8px',
-                border: '1px solid var(--color-border)'
+                width: i === step ? '24px' : '8px',
+                height: '8px',
+                borderRadius: '4px',
+                background: i === step ? 'var(--color-accent)' : 'var(--color-border)',
+                transition: 'all 0.3s',
               }}
-            >
-              <strong style={{ color: 'var(--color-text-primary)' }}>Solo Mode</strong>
-              <p style={{ color: 'var(--color-text-secondary)', margin: '4px 0 0', fontSize: '14px' }}>
-                Practice your improv skills alone. Get random prompts and perform for yourself.
-                Great for warming up or building confidence!
-              </p>
-            </div>
-            <div
-              style={{
-                padding: '12px',
-                background: 'var(--color-surface)',
-                borderRadius: '8px',
-                border: '1px solid var(--color-border)'
-              }}
-            >
-              <strong style={{ color: 'var(--color-text-primary)' }}>Head-to-Head Mode</strong>
-              <p style={{ color: 'var(--color-text-secondary)', margin: '4px 0 0', fontSize: '14px' }}>
-                Two players compete with the same prompt. Both perform their stories, then vote for
-                their favorite. May the best storyteller win!
-              </p>
-            </div>
-            <div
-              style={{
-                padding: '12px',
-                background: 'var(--color-surface)',
-                borderRadius: '8px',
-                border: '1px solid var(--color-border)'
-              }}
-            >
-              <strong style={{ color: 'var(--color-text-primary)' }}>Ensemble Mode</strong>
-              <p style={{ color: 'var(--color-text-secondary)', margin: '4px 0 0', fontSize: '14px' }}>
-                Up to 6 players compete! Each player gets a unique prompt. Everyone performs, then
-                all players vote for their favorite story. Perfect for parties and game nights!
-              </p>
-            </div>
-          </div>
-        </section>
+            />
+          ))}
+        </div>
 
-        {/* How to Play - Timeline */}
-        {mode === 'host' ? (
-          <section>
-            <h3
-              style={{
-                fontSize: '18px',
-                fontWeight: 600,
-                color: 'var(--color-accent)',
-                marginBottom: '16px',
-                marginTop: 0
-              }}
-            >
-              🎪 Hosting a Game
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {[
-                { icon: '🎮', color: 'var(--color-accent)', text: 'Choose a game mode and click "Create Room"' },
-                { icon: '🔗', color: 'var(--color-accent-2)', text: 'Share the 4-letter room code with your players' },
-                { icon: '🎭', color: 'var(--color-warning)', text: 'Wait in the Green Room for players to join' },
-                { icon: '🎴', color: 'var(--color-accent)', text: 'Click "Deal Cards" to distribute random prompts' },
-                { icon: '⌨️', color: 'var(--color-accent-2)', text: 'Press Space to start each performance' },
-                { icon: '⏭️', color: 'var(--color-warning)', text: 'Press Space again to move to next player' },
-                { icon: '🗳️', color: 'var(--color-accent)', text: 'Click "Start Voting" after all performances' },
-                { icon: '🏆', color: 'var(--color-accent-2)', text: 'View results and celebrate the winner!' }
-              ].map((step, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px',
-                    background: 'var(--color-surface)',
-                    borderRadius: '8px',
-                    borderLeft: `3px solid ${step.color}`
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '18px',
-                      background: `${step.color}20`,
-                      borderRadius: '50%',
-                      flexShrink: 0
-                    }}
-                  >
-                    {step.icon}
-                  </div>
-                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
-                    {step.text}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : (
-          <section>
-            <h3
-              style={{
-                fontSize: '18px',
-                fontWeight: 600,
-                color: 'var(--color-accent)',
-                marginBottom: '16px',
-                marginTop: 0
-              }}
-            >
-              🎪 Joining a Game
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {[
-                { icon: '🔗', color: 'var(--color-accent)', text: 'Get the 4-letter room code from your host' },
-                { icon: '✍️', color: 'var(--color-accent-2)', text: 'Enter the code and choose a fun nickname' },
-                { icon: '🎭', color: 'var(--color-warning)', text: 'Wait in the lobby for the game to start' },
-                { icon: '🎴', color: 'var(--color-accent)', text: 'Pick your cards when selection begins' },
-                { icon: '💭', color: 'var(--color-accent-2)', text: 'Review the script and get ready to perform' },
-                { icon: '🎬', color: 'var(--color-warning)', text: 'Follow along and perform your lines!' },
-                { icon: '🗳️', color: 'var(--color-accent)', text: 'Vote for your favorite performance' },
-                { icon: '🎉', color: 'var(--color-accent-2)', text: 'Celebrate the winner and play again!' }
-              ].map((step, index) => (
-                <div
-                  key={index}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px',
-                    background: 'var(--color-surface)',
-                    borderRadius: '8px',
-                    borderLeft: `3px solid ${step.color}`
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '18px',
-                      background: `${step.color}20`,
-                      borderRadius: '50%',
-                      flexShrink: 0
-                    }}
-                  >
-                    {step.icon}
-                  </div>
-                  <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px', lineHeight: 1.5 }}>
-                    {step.text}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* The Three Cards */}
-        <section>
-          <h3
-            style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              color: 'var(--color-accent)',
-              marginBottom: '12px',
-              marginTop: 0
-            }}
+        {/* Content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -30 }}
+            transition={{ duration: 0.2 }}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            🃏 Understanding Your Prompt
-          </h3>
-          <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, margin: '0 0 12px' }}>
-            Each prompt consists of three cards:
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>🎭</span>
-              <strong style={{ color: 'var(--color-text-primary)' }}>Character:</strong>
-              <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
-                Who you're playing in your story
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>🏛️</span>
-              <strong style={{ color: 'var(--color-text-primary)' }}>Setting:</strong>
-              <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
-                Where your story takes place
-              </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>⚡</span>
-              <strong style={{ color: 'var(--color-text-primary)' }}>Circumstance:</strong>
-              <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
-                The dramatic situation or twist
-              </span>
-            </div>
-          </div>
-        </section>
+            {STEPS[step].content}
+          </motion.div>
+        </AnimatePresence>
 
-        {/* Tips */}
-        <section>
-          <h3
-            style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              color: 'var(--color-accent)',
-              marginBottom: '16px',
-              marginTop: 0
-            }}
-          >
-            💡 Pro Tips
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px' }}>
-            {[
-              { icon: '🧠', text: "Don't overthink it - go with your gut!" },
-              { icon: '✅', text: 'Yes, and... - build on ideas' },
-              { icon: '🎪', text: 'Embrace the weird combinations' },
-              { icon: '💪', text: 'Commit fully with confidence' },
-              { icon: '😊', text: 'Watch the mood indicator' },
-              { icon: '🎉', text: "Have fun! It's about creativity" }
-            ].map((tip, index) => (
-              <div
-                key={index}
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '8px',
-                  padding: '10px',
-                  background: 'var(--color-surface)',
-                  borderRadius: '8px',
-                  border: '1px solid var(--color-border)'
-                }}
-              >
-                <span style={{ fontSize: '18px', flexShrink: 0 }}>{tip.icon}</span>
-                <span style={{ color: 'var(--color-text-secondary)', fontSize: '13px', lineHeight: 1.4 }}>
-                  {tip.text}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Call to Action */}
-        <div style={{ textAlign: 'center', paddingTop: '12px' }}>
+        {/* Navigation */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button
-            onClick={onClose}
+            onClick={handlePrev}
             style={{
-              background: 'var(--color-accent)',
-              color: 'white',
-              border: 'none',
+              padding: '8px 16px',
               borderRadius: '8px',
-              padding: '12px 32px',
-              fontSize: '16px',
+              border: '1px solid var(--color-border)',
+              background: 'transparent',
+              color: 'var(--color-text-secondary)',
+              cursor: step > 0 ? 'pointer' : 'default',
+              opacity: step > 0 ? 1 : 0,
+              transition: 'all 0.2s',
+              fontSize: '14px',
+            }}
+            disabled={step === 0}
+          >
+            Back
+          </button>
+          <button
+            onClick={handleNext}
+            style={{
+              padding: '10px 24px',
+              borderRadius: '8px',
+              border: 'none',
+              background: step === STEPS.length - 1
+                ? 'linear-gradient(135deg, var(--color-purple), var(--color-pink))'
+                : 'var(--color-accent)',
+              color: 'white',
               fontWeight: 600,
               cursor: 'pointer',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(204, 130, 89, 0.3)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = 'none'
+              fontSize: '14px',
+              transition: 'all 0.2s',
             }}
           >
-            Got it! Let's Play 🎭
+            {step === STEPS.length - 1 ? "Let's Play!" : 'Next'}
           </button>
         </div>
       </div>

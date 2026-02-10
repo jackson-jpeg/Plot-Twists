@@ -9,6 +9,8 @@ import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
 import { TeleprompterSettings as TeleprompterSettingsPanel } from '@/components/TeleprompterSettings'
 import { getVisibleLines } from '@/lib/teleprompterUtils'
 import React from 'react'
+import { ReplayJsonLd } from '@/components/JsonLd'
+import { analytics } from '@/lib/analytics'
 
 // Share button configuration
 const SHARE_PLATFORMS = [
@@ -29,6 +31,18 @@ const SHARE_PLATFORMS = [
     icon: '💬',
     getUrl: (url: string, title: string) =>
       `https://wa.me/?text=${encodeURIComponent(`Check out this improv scene: "${title}" ${url}`)}`
+  },
+  {
+    name: 'Reddit',
+    icon: '🟠',
+    getUrl: (url: string, title: string) =>
+      `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(`I played "${title}" on Plot Twists!`)}`
+  },
+  {
+    name: 'SMS',
+    icon: '💬',
+    getUrl: (url: string, title: string) =>
+      `sms:?body=${encodeURIComponent(`Check out this improv scene: "${title}" ${url}`)}`
   }
 ]
 
@@ -109,6 +123,25 @@ export default function ReplayPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const handleNativeShare = async () => {
+    if (!game) return
+    analytics.replayShared('native_share')
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `"${game.title}" - Plot Twists`,
+          text: `Check out this hilarious improv scene: "${game.title}"`,
+          url: shareUrl,
+        })
+        setShowShareMenu(false)
+        return
+      } catch {
+        // User cancelled or share failed, fall through to dropdown
+      }
+    }
+    setShowShareMenu(!showShareMenu)
+  }
+
   const handleSocialShare = (platform: typeof SHARE_PLATFORMS[number]) => {
     if (!game) return
     const url = platform.getUrl(shareUrl, game.title)
@@ -183,6 +216,12 @@ export default function ReplayPage() {
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
+      <ReplayJsonLd
+        title={game.title}
+        synopsis={game.synopsis}
+        url={shareUrl}
+        playedAt={game.playedAt}
+      />
       {/* Header */}
       <div className="p-4 backdrop-blur-sm sticky top-0 z-10" style={{ background: 'var(--color-surface-elevated)', borderBottom: '1px solid var(--color-border)' }}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -200,7 +239,7 @@ export default function ReplayPage() {
           </div>
           <div className="relative">
             <button
-              onClick={() => setShowShareMenu(!showShareMenu)}
+              onClick={handleNativeShare}
               className="px-3 py-1.5 text-[var(--color-text-primary)] rounded-lg text-sm transition-colors"
               style={{ background: 'var(--color-surface-alt)' }}
               aria-label="Share options"

@@ -16,7 +16,10 @@ const REACTION_EMOJIS: Record<AudienceReactionType, string> = {
   cheer: '\u{1F389}',
   gasp: '\u{1F631}',
   boo: '\u{1F44E}',
-  applause: '\u{1F44F}'
+  applause: '\u{1F44F}',
+  cringe: '\u{1F62C}',
+  love: '\u{2764}\u{FE0F}',
+  mindblown: '\u{1F92F}'
 }
 
 const REACTION_LABELS: Record<AudienceReactionType, string> = {
@@ -24,7 +27,10 @@ const REACTION_LABELS: Record<AudienceReactionType, string> = {
   cheer: 'Cheer',
   gasp: 'Gasp',
   boo: 'Boo',
-  applause: 'Applause'
+  applause: 'Applause',
+  cringe: 'Cringe',
+  love: 'Love',
+  mindblown: 'Mind Blown'
 }
 
 const COOLDOWN_DURATION = 2000
@@ -36,7 +42,10 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
     cheer: 0,
     gasp: 0,
     boo: 0,
-    applause: 0
+    applause: 0,
+    cringe: 0,
+    love: 0,
+    mindblown: 0
   })
   const [floatingReactions, setFloatingReactions] = useState<AudienceReaction[]>([])
   const [cooldown, setCooldown] = useState(false)
@@ -48,7 +57,10 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
     cheer: 0,
     gasp: 0,
     boo: 0,
-    applause: 0
+    applause: 0,
+    cringe: 0,
+    love: 0,
+    mindblown: 0
   })
   const cooldownStartRef = useRef<number>(0)
   const rafRef = useRef<number>(0)

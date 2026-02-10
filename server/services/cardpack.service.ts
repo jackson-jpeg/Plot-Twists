@@ -6,6 +6,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import type { CardPack, CardPackMetadata, Card, CardPackInput } from '../../lib/types'
 import { getDatabase, Collections } from '../db'
+import { unlockAchievement } from './playerStats.service'
 
 // Built-in pack ID (standard content from content.ts)
 export const STANDARD_PACK_ID = 'standard'
@@ -181,6 +182,11 @@ export async function createCardPack(
 
   console.log(`Created new card pack: ${newPack.name} (${packId})`)
 
+  // Unlock card_creator achievement for the pack author
+  if (packData.author) {
+    unlockAchievement(packData.author, 'card_creator').catch(() => {})
+  }
+
   return { success: true, packId }
 }
 
@@ -259,7 +265,13 @@ export async function incrementDownloads(packId: string): Promise<void> {
   const pack = await db.get<CardPack>(Collections.CARD_PACKS, packId)
 
   if (pack && !pack.isBuiltIn) {
-    await db.update(Collections.CARD_PACKS, packId, { downloads: pack.downloads + 1 })
+    const newDownloads = pack.downloads + 1
+    await db.update(Collections.CARD_PACKS, packId, { downloads: newDownloads })
+
+    // Unlock trendsetter achievement when pack crosses 10 downloads
+    if (newDownloads >= 10 && pack.authorId) {
+      unlockAchievement(pack.authorId, 'trendsetter').catch(() => {})
+    }
   }
 }
 

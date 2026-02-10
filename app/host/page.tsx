@@ -26,6 +26,11 @@ import { useAuth } from '@/contexts/AuthContext'
 import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
 import { getMoodIndicator, getVisibleLines } from '@/lib/teleprompterUtils'
 import { MoviePosterFrame, MoviePosterSkeleton } from '@/components/MoviePosterFrame'
+import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
+import { VARIANTS } from '@/lib/animations'
+import { analytics } from '@/lib/analytics'
+import { SpectatorTicker } from '@/components/SpectatorChat'
+import type { Achievement, SpectatorMessage } from '@/lib/types'
 
 export default function HostPage() {
   const router = useRouter()
@@ -86,6 +91,12 @@ export default function HostPage() {
   const [showInsufficientCredits, setShowInsufficientCredits] = useState(false)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
 
+  // Share state
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [isSharing, setIsSharing] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
+  const [spectatorMessages, setSpectatorMessages] = useState<SpectatorMessage[]>([])
+
   // Teleprompter settings hook
   const {
     settings: teleprompterSettings,
@@ -123,21 +134,12 @@ export default function HostPage() {
     return loadingStages[0]
   }
 
-  // Enhanced page transition variants with blur/scale effects
-  const pageTransitionVariants = {
-    initial: { opacity: 0, scale: 0.95, y: 20, filter: 'blur(8px)' },
-    animate: {
-      opacity: 1, scale: 1, y: 0, filter: 'blur(0px)',
-      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }
-    },
-    exit: {
-      opacity: 0, scale: 1.02, y: -10, filter: 'blur(4px)',
-      transition: { duration: 0.25 }
-    }
-  }
+  // Use centralized animation variants
+  const pageTransitionVariants = VARIANTS.pageTransition
 
   // Solo mode card selection state
   const toast = useToast()
+  const achievementToasts = useAchievementToasts()
   const [availableCards, setAvailableCards] = useState<{
     characters: string[]
     settings: string[]
@@ -170,7 +172,10 @@ export default function HostPage() {
     if (!socket || !isConnected || roomCreatedRef.current) return
     roomCreatedRef.current = true
     socket.emit('create_room', settings, (response) => {
-      if (response.success && response.code) setRoomCode(response.code)
+      if (response.success && response.code) {
+        setRoomCode(response.code)
+        analytics.gameCreated(settings.gameMode)
+      }
     })
     // Fetch initial credit balance
     socket.emit('get_credit_balance', (response) => {
@@ -195,8 +200,9 @@ export default function HostPage() {
   useEffect(() => {
     if (gameState === 'RESULTS') {
       setTimeout(() => confetti.fireWinnerConfetti(), 500)
+      analytics.gameCompleted(settings.gameMode, players.length)
     }
-  }, [gameState, confetti])
+  }, [gameState, confetti, settings.gameMode, players.length])
 
   // Trigger mini confetti when all cards are selected for the first time (solo mode)
   useEffect(() => {
@@ -346,6 +352,12 @@ export default function HostPage() {
     socket.on('insufficient_credits', () => {
       setShowInsufficientCredits(true)
     })
+    socket.on('achievement_unlocked' as never, (achievement: Achievement) => {
+      achievementToasts.addAchievement(achievement)
+    })
+    socket.on('spectator_message_received', (message: SpectatorMessage) => {
+      setSpectatorMessages(prev => [...prev.slice(-49), message])
+    })
     socket.on('error', (errorMsg: string) => {
       toast.error(errorMsg)
     })
@@ -366,9 +378,11 @@ export default function HostPage() {
       socket.off('plot_twist_started')
       socket.off('credit_balance')
       socket.off('insufficient_credits')
+      socket.off('achievement_unlocked' as never)
+      socket.off('spectator_message_received')
       socket.off('error')
     }
-  }, [socket, isConnected, gameState, toast])
+  }, [socket, isConnected, gameState, toast, achievementToasts])
 
   const startGame = () => {
     // Send customization settings along with start game command
@@ -508,6 +522,57 @@ export default function HostPage() {
 
   const requestNewGame = (keepSelections: boolean = false) => {
     socket?.emit('request_new_game', roomCode, { keepSelections })
+  }
+
+  const handleShareScene = () => {
+    if (!socket || !script) return
+
+    if (shareUrl) {
+      // Already have share URL, trigger share
+      triggerShare(shareUrl)
+      return
+    }
+
+    setIsSharing(true)
+    // The server doesn't have a savedGameId on the client, so we need to use
+    // the share_game flow. First we need to find the game by looking it up.
+    // Since the game was just saved by the server in calculateResults,
+    // we can get the most recent game for this room via get_game_history
+    socket.emit('get_game_history', user?.uid || '', 1, (response) => {
+      if (response.success && response.games && response.games.length > 0) {
+        const latestGame = response.games[0]
+        socket.emit('share_game', latestGame.id, (shareResponse) => {
+          setIsSharing(false)
+          if (shareResponse.success && shareResponse.shareUrl) {
+            setShareUrl(shareResponse.shareUrl)
+            triggerShare(shareResponse.shareUrl)
+          }
+        })
+      } else {
+        setIsSharing(false)
+      }
+    })
+  }
+
+  const triggerShare = (url: string) => {
+    analytics.replayShared('host_results')
+    const text = `I just played "${script?.title}" on Plot Twists!`
+
+    if (navigator.share) {
+      navigator.share({ title: 'Plot Twists', text, url }).catch(() => {
+        // User cancelled or share failed, copy to clipboard instead
+        copyShareUrl(url)
+      })
+    } else {
+      copyShareUrl(url)
+    }
+  }
+
+  const copyShareUrl = (url: string) => {
+    navigator.clipboard.writeText(url)
+    setShareCopied(true)
+    toast.success('Share link copied!')
+    setTimeout(() => setShareCopied(false), 3000)
   }
 
   const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join?code=${roomCode}` : ''
@@ -1115,6 +1180,51 @@ export default function HostPage() {
                     onSelect={setSelectedPackId}
                     showCreateButton={true}
                   />
+
+                  {/* Theme Night Presets */}
+                  <div style={{
+                    padding: '12px',
+                    background: 'var(--color-surface)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--color-border)',
+                  }}>
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                      Quick Themes
+                    </p>
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {[
+                        { label: 'Horror Comedy', icon: '👻', style: 'dark' as const, mature: false },
+                        { label: 'Kids Party', icon: '🎈', style: 'slapstick' as const, mature: false },
+                        { label: 'Office Shenanigans', icon: '💼', style: 'sitcom' as const, mature: false },
+                        { label: 'After Hours', icon: '🌙', style: 'dark' as const, mature: true },
+                      ].map((theme) => (
+                        <button
+                          key={theme.label}
+                          onClick={() => {
+                            setScriptCustomization(prev => ({ ...prev, comedyStyle: theme.style }))
+                            if (theme.mature !== settings.isMature) {
+                              const newSettings = { ...settings, isMature: theme.mature }
+                              setSettings(newSettings)
+                              socket?.emit('update_room_settings', roomCode, { isMature: theme.mature })
+                            }
+                            toast.success(`${theme.icon} ${theme.label} theme activated!`)
+                          }}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--color-border)',
+                            background: 'transparent',
+                            color: 'var(--color-text-secondary)',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          {theme.icon} {theme.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
                   <ScriptCustomizationPanel
                     customization={scriptCustomization}
@@ -1793,6 +1903,9 @@ export default function HostPage() {
             exit="exit"
             className="container max-w-5xl"
           >
+            {/* Spectator Chat Ticker (Twitch-style overlay) */}
+            <SpectatorTicker messages={spectatorMessages} />
+
             {/* Audience Interaction Components */}
             <AudienceReactionBar roomCode={roomCode} isPerforming={true} isHost={true} />
             <PlotTwistVoting roomCode={roomCode} isHost={true} />
@@ -2361,7 +2474,60 @@ export default function HostPage() {
                 </>
               )}
 
+              {/* Post-Game Highlights */}
+              {gameResults?.highlights && gameResults.highlights.length > 0 && (
+                <motion.div
+                  className="w-full max-w-md mx-auto mt-8"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 }}
+                >
+                  <details className="rounded-xl overflow-hidden" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}>
+                    <summary className="p-4 cursor-pointer text-center font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                      🏆 Game Highlights
+                    </summary>
+                    <div className="px-4 pb-4 grid grid-cols-2 gap-3">
+                      {gameResults.highlights.map((h, i) => (
+                        <motion.div
+                          key={h.label}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 * i }}
+                          className="text-center p-3 rounded-lg"
+                          style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+                        >
+                          <div className="text-2xl mb-1">{h.icon}</div>
+                          <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{h.label}</div>
+                          <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{h.value}</div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </details>
+                </motion.div>
+              )}
+
               <div className="flex flex-col gap-4 items-center mt-8">
+                {script && (
+                  <motion.button
+                    onClick={handleShareScene}
+                    className="btn btn-large"
+                    style={{
+                      minWidth: '280px',
+                      background: 'linear-gradient(135deg, var(--color-purple), var(--color-pink))',
+                      color: 'white',
+                      border: 'none',
+                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.1 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    disabled={isSharing}
+                  >
+                    <span>{shareCopied ? '✓' : '🔗'}</span>
+                    <span>{isSharing ? 'Sharing...' : shareCopied ? 'Link Copied!' : 'Share This Scene'}</span>
+                  </motion.button>
+                )}
                 {script && (
                   <motion.button
                     onClick={requestSequel}
@@ -2423,6 +2589,7 @@ export default function HostPage() {
       </Modal>
 
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
+      <AchievementToast achievements={achievementToasts.achievements} onDismiss={achievementToasts.dismissAchievement} />
     </div>
   )
 }

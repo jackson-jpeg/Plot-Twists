@@ -11,12 +11,20 @@ import { ToastContainer } from '@/components/Toast'
 import { useConfetti } from '@/hooks/useConfetti'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
-import { SmartCardSelector } from '@/components/SmartCardSelector'
+import dynamic from 'next/dynamic'
 import { Modal } from '@/components/Modal'
 import { downloadScript, copyScriptToClipboard, getCharactersInScene } from '@/lib/scriptUtils'
-import { AudienceReactionBar } from '@/components/AudienceReactionBar'
-import { PlotTwistVoting } from '@/components/PlotTwistVoting'
+
+const SmartCardSelector = dynamic(() => import('@/components/SmartCardSelector').then(m => ({ default: m.SmartCardSelector })), { ssr: false })
+const AudienceReactionBar = dynamic(() => import('@/components/AudienceReactionBar').then(m => ({ default: m.AudienceReactionBar })), { ssr: false })
+const PlotTwistVoting = dynamic(() => import('@/components/PlotTwistVoting').then(m => ({ default: m.PlotTwistVoting })), { ssr: false })
 import { getMoodIndicator } from '@/lib/teleprompterUtils'
+import { VARIANTS } from '@/lib/animations'
+import { analytics } from '@/lib/analytics'
+import { MobileTeleprompter } from '@/components/MobileTeleprompter'
+import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
+import { SpectatorChat } from '@/components/SpectatorChat'
+import type { Achievement, SpectatorMessage } from '@/lib/types'
 
 function JoinPageContent() {
   const router = useRouter()
@@ -24,11 +32,13 @@ function JoinPageContent() {
   const searchParams = useSearchParams()
   const codeFromUrl = searchParams.get('code')
   const toast = useToast()
+  const achievementToasts = useAchievementToasts()
   const confetti = useConfetti()
   useWakeLock() // Prevent screen sleep during gameplay
 
   const [roomCode, setRoomCode] = useState(codeFromUrl || '')
   const [nickname, setNickname] = useState('')
+  const nicknameInputRef = React.useRef<HTMLInputElement>(null)
   const [hasJoined, setHasJoined] = useState(false)
   const [error, setError] = useState('')
   const [roomCodeError, setRoomCodeError] = useState('')
@@ -78,10 +88,15 @@ function JoinPageContent() {
   }
 
   const handleRoomCodeChange = (value: string) => {
-    setRoomCode(value.toUpperCase())
+    const upper = value.toUpperCase()
+    setRoomCode(upper)
     setRoomPreview(null) // Clear preview when code changes
     if (roomCodeTouched) {
       setRoomCodeError(validateRoomCode(value))
+    }
+    // Auto-advance to nickname when 4-char code entered
+    if (upper.length === 4 && VALID_ROOM_CODE_REGEX.test(upper)) {
+      nicknameInputRef.current?.focus()
     }
   }
 
@@ -149,19 +164,19 @@ function JoinPageContent() {
   const [scriptImageUrl, setScriptImageUrl] = useState<string | null>(null)
   const [showPosterLightbox, setShowPosterLightbox] = useState(false)
   const previousSpeaker = React.useRef<string>('')
+  const [countdown, setCountdown] = useState<number | null>(null)
+  const [spectatorMessages, setSpectatorMessages] = useState<SpectatorMessage[]>([])
 
-  // Enhanced page transition variants with blur/scale effects
-  const pageTransitionVariants = {
-    initial: { opacity: 0, scale: 0.95, y: 20, filter: 'blur(8px)' },
-    animate: {
-      opacity: 1, scale: 1, y: 0, filter: 'blur(0px)',
-      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }
-    },
-    exit: {
-      opacity: 0, scale: 1.02, y: -10, filter: 'blur(4px)',
-      transition: { duration: 0.25 }
+  // Use centralized animation variants
+  const pageTransitionVariants = VARIANTS.pageTransition
+
+  // Auto-show onboarding for first-time users
+  useEffect(() => {
+    if (!localStorage.getItem('pt-onboarding-seen')) {
+      setShowOnboarding(true)
+      localStorage.setItem('pt-onboarding-seen', '1')
     }
-  }
+  }, [])
 
   // Loading stage messages based on progress
   const [loadingProgress, setLoadingProgress] = useState(0)
@@ -256,7 +271,25 @@ function JoinPageContent() {
         toast.success(`${player.nickname} joined!`)
       }
     })
-    socket.on('game_state_change', setGameState)
+    socket.on('game_state_change', (newState: GameState) => {
+      if (newState === 'PERFORMING' && gameState !== 'PERFORMING') {
+        // Show 3-2-1 countdown before performing
+        setCountdown(3)
+        let count = 3
+        const interval = setInterval(() => {
+          count--
+          if (count > 0) {
+            setCountdown(count)
+          } else {
+            clearInterval(interval)
+            setCountdown(null)
+            setGameState('PERFORMING')
+          }
+        }, 800)
+      } else {
+        setGameState(newState)
+      }
+    })
     socket.on('available_cards', setAvailableCards)
     socket.on('green_room_prompt', setGreenRoomQuestion)
     socket.on('script_ready', (newScript) => {
@@ -283,6 +316,12 @@ function JoinPageContent() {
       }
     })
     socket.on('game_over', setGameResults)
+    socket.on('achievement_unlocked' as never, (achievement: Achievement) => {
+      achievementToasts.addAchievement(achievement)
+    })
+    socket.on('spectator_message_received', (message: SpectatorMessage) => {
+      setSpectatorMessages(prev => [...prev.slice(-49), message])
+    })
     socket.on('error', (errorMsg: string) => {
       toast.error(errorMsg)
       setError(errorMsg)
@@ -334,6 +373,8 @@ function JoinPageContent() {
       socket.off('script_image_update')
       socket.off('sync_teleprompter')
       socket.off('game_over')
+      socket.off('achievement_unlocked' as never)
+      socket.off('spectator_message_received')
       socket.off('error')
       socket.off('host_disconnected')
       socket.off('card_pack_selected')
@@ -382,6 +423,7 @@ function JoinPageContent() {
 
       if (response.success) {
         setHasJoined(true)
+        analytics.gameJoined(response.role === 'SPECTATOR' ? 'spectator' : 'player')
 
         // Set role from server response
         if (response.role) {
@@ -517,6 +559,10 @@ function JoinPageContent() {
                     onBlur={handleRoomCodeBlur}
                     placeholder="Enter code (e.g., QUIZ)"
                     maxLength={4}
+                    inputMode="text"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    enterKeyHint="next"
                     className={`input font-script text-center text-3xl ${
                       roomCodeTouched && roomCodeError ? 'input-error' : ''
                     } ${isRoomCodeValid ? 'input-valid' : ''}`}
@@ -638,12 +684,15 @@ function JoinPageContent() {
                 <label className="label">Your Name</label>
                 <div className="input-wrapper">
                   <input
+                    ref={nicknameInputRef}
                     type="text"
                     value={nickname}
                     onChange={(e) => handleNicknameChange(e.target.value)}
                     onBlur={handleNicknameBlur}
                     placeholder="Enter your name"
                     maxLength={20}
+                    autoComplete="off"
+                    enterKeyHint="go"
                     className={`input text-lg ${
                       nicknameTouched && nicknameError ? 'input-error' : ''
                     } ${isNicknameValid ? 'input-valid' : ''}`}
@@ -754,6 +803,37 @@ function JoinPageContent() {
                 </motion.button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Pre-Performance Countdown */}
+      <AnimatePresence>
+        {countdown !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: 'rgba(0, 0, 0, 0.85)' }}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={countdown}
+                initial={{ scale: 0.3, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 2, opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                className="text-center"
+              >
+                <div style={{ fontSize: '120px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1 }}>
+                  {countdown}
+                </div>
+                <div style={{ fontSize: '18px', color: 'var(--color-text-tertiary)', marginTop: '16px' }}>
+                  Get ready to perform!
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1274,194 +1354,30 @@ function JoinPageContent() {
             initial="initial"
             animate="animate"
             exit="exit"
-            className="min-h-screen flex flex-col"
           >
             {/* Audience Interaction - show for spectators and players not currently speaking */}
             <AudienceReactionBar roomCode={roomCode.toUpperCase()} isPerforming={true} isHost={false} />
             <PlotTwistVoting roomCode={roomCode.toUpperCase()} isHost={false} />
 
-            {/* Generated Poster (mobile-friendly) */}
-            <AnimatePresence mode="wait">
-              {scriptImageUrl && (
-                <motion.div
-                  key="poster"
-                  className="mx-auto my-4 flex flex-col items-center"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <motion.div
-                    onClick={() => setShowPosterLightbox(true)}
-                    style={{
-                      maxWidth: 240,
-                      maxHeight: 200,
-                      borderRadius: 'var(--radius-xl, 16px)',
-                      border: '3px solid var(--color-border)',
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      boxShadow: '0 20px 40px -12px rgba(0,0,0,0.2)',
-                    }}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <img
-                      src={scriptImageUrl}
-                      alt={`${script.title} Poster`}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-                    />
-                  </motion.div>
-                  <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginTop: 4 }}>Tap poster to enlarge</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Progress Bar */}
-            <div className="p-4" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
-              <div className="flex items-center justify-between text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
-                <span className="font-script">{script.title}</span>
-                <span className="font-script">{currentLineIndex + 1}/{script.lines.length}</span>
-              </div>
-              <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
-                <div
-                  className="h-full transition-all duration-300"
-                  style={{
-                    width: `${((currentLineIndex + 1) / script.lines.length) * 100}%`,
-                    background: 'var(--color-accent)'
+            {/* Spectator chat - visible during performance */}
+            {myRole === 'SPECTATOR' && (
+              <div style={{ marginBottom: '12px' }}>
+                <SpectatorChat
+                  messages={spectatorMessages}
+                  onSendMessage={(text, isPreset) => {
+                    socket?.emit('send_spectator_message', roomCode.toUpperCase(), text, isPreset)
                   }}
                 />
               </div>
-              <p className="px-4 pt-3 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                Characters: {getCharactersInScene(script).join(', ')}
-              </p>
-            </div>
+            )}
 
-            {/* Script Display */}
-            <div className="flex-1 flex flex-col items-center justify-center p-4">
-              {script.lines[currentLineIndex] && (() => {
-                const moodIndicator = getMoodIndicator(script.lines[currentLineIndex].mood)
-                return (
-                  <motion.div
-                    key={currentLineIndex}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="text-center w-full max-w-2xl"
-                  >
-                    {script.lines[currentLineIndex].speaker === myCharacter && (
-                      <div className="script-your-turn mb-6">
-                        ★ YOUR TURN
-                      </div>
-                    )}
-
-                    <div
-                      className="inline-block px-6 py-2 rounded-lg mb-3"
-                      style={{
-                        background: script.lines[currentLineIndex].speaker === myCharacter
-                          ? 'var(--color-highlight-pink)'
-                          : 'var(--color-surface-alt)',
-                        border: `2px solid ${script.lines[currentLineIndex].speaker === myCharacter ? 'var(--color-accent)' : 'var(--color-border)'}`
-                      }}
-                    >
-                      <p className="font-script font-bold text-lg" style={{
-                        color: 'var(--color-text-primary)'
-                      }}>
-                        {script.lines[currentLineIndex].speaker}
-                      </p>
-                    </div>
-
-                    <motion.div
-                      className="flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-6 inline-flex"
-                      style={{
-                        background: `${moodIndicator.color}20`,
-                        border: `1px solid ${moodIndicator.color}60`,
-                        color: moodIndicator.color
-                      }}
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: "spring", stiffness: 300, delay: 0.1 }}
-                    >
-                      <span className="text-lg">{moodIndicator.emoji}</span>
-                      <span>{moodIndicator.label}</span>
-                    </motion.div>
-
-                  <div
-                    className={`card p-8 ${script.lines[currentLineIndex].speaker === myCharacter ? 'your-turn-enhanced' : ''}`}
-                    style={{
-                      borderLeft: script.lines[currentLineIndex].speaker === myCharacter
-                        ? '3px solid var(--color-accent)'
-                        : '1px solid var(--color-border)'
-                    }}
-                  >
-                    <p className="font-script text-2xl leading-relaxed" style={{
-                      color: 'var(--color-text-primary)',
-                      fontSize: script.lines[currentLineIndex].speaker === myCharacter ? '28px' : '24px'
-                    }}>
-                      {script.lines[currentLineIndex].text}
-                    </p>
-                  </div>
-
-                  {currentLineIndex < script.lines.length - 1 && (
-                    <div className="mt-6 p-4 rounded-lg text-left" style={{ background: 'var(--color-surface-alt)' }}>
-                      <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>COMING UP:</p>
-                      <p className="font-script font-bold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-                        {script.lines[currentLineIndex + 1].speaker}
-                      </p>
-                      <p className="font-script text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                        {script.lines[currentLineIndex + 1].text}
-                      </p>
-                    </div>
-                  )}
-                </motion.div>
-                )
-              })()}
-            </div>
-
-            {/* Player Navigation Controls */}
-            <div className="p-4 pb-safe" style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}>
-              <div className="flex items-center justify-between max-w-md mx-auto">
-                <motion.button
-                  onClick={goToPreviousLine}
-                  disabled={currentLineIndex === 0}
-                  className="btn btn-ghost"
-                  style={{
-                    opacity: currentLineIndex === 0 ? 0.5 : 1,
-                    padding: '12px 20px'
-                  }}
-                  whileHover={currentLineIndex > 0 ? { scale: 1.05, x: -2 } : {}}
-                  whileTap={currentLineIndex > 0 ? { scale: 0.95 } : {}}
-                >
-                  ← Previous
-                </motion.button>
-
-                <span className="font-script text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  {currentLineIndex + 1} / {script.lines.length}
-                </span>
-
-                <motion.button
-                  onClick={goToNextLine}
-                  disabled={currentLineIndex >= script.lines.length - 1}
-                  className="btn btn-ghost"
-                  style={{
-                    opacity: currentLineIndex >= script.lines.length - 1 ? 0.5 : 1,
-                    padding: '12px 20px'
-                  }}
-                  whileHover={currentLineIndex < script.lines.length - 1 ? { scale: 1.05, x: 2 } : {}}
-                  whileTap={currentLineIndex < script.lines.length - 1 ? { scale: 0.95 } : {}}
-                >
-                  Next →
-                </motion.button>
-              </div>
-              <motion.p
-                className="text-center text-xs mt-2"
-                style={{ color: 'var(--color-text-tertiary)' }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                🔄 Navigation syncs with all players
-              </motion.p>
-            </div>
+            <MobileTeleprompter
+              script={script}
+              currentLineIndex={currentLineIndex}
+              myCharacter={myCharacter}
+              onNextLine={goToNextLine}
+              onPreviousLine={goToPreviousLine}
+            />
           </motion.div>
         )}
 
@@ -1872,6 +1788,7 @@ function JoinPageContent() {
       </Modal>
 
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
+      <AchievementToast achievements={achievementToasts.achievements} onDismiss={achievementToasts.dismissAchievement} />
     </div>
   )
 }

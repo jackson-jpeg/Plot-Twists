@@ -1,10 +1,42 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { Fredoka, DM_Sans, Courier_Prime, Permanent_Marker } from 'next/font/google'
 import { SocketProvider } from '@/contexts/SocketContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 import { SystemStatus } from '@/components/SystemStatus'
+import { HomeJsonLd } from '@/components/JsonLd'
+
+const fredoka = Fredoka({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-fredoka',
+  display: 'swap',
+})
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+})
+
+const courierPrime = Courier_Prime({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-courier-prime',
+  display: 'swap',
+})
+
+const permanentMarker = Permanent_Marker({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-permanent-marker',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Plot Twists - AI Improv Party Game',
@@ -45,8 +77,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${fredoka.variable} ${dmSans.variable} ${courierPrime.variable} ${permanentMarker.variable}`}>
       <body>
+        <HomeJsonLd />
         <ServiceWorkerRegistration />
         <AuthProvider>
           <SocketProvider>
@@ -55,6 +88,7 @@ export default function RootLayout({
         </AuthProvider>
         <SystemStatus />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

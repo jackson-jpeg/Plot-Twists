@@ -20,6 +20,7 @@ const COMEDY_STYLES: { value: ComedyStyle; label: string; emoji: string; descrip
 ]
 
 const SCRIPT_LENGTHS: { value: ScriptLength; label: string; lines: string }[] = [
+  { value: 'lightning', label: 'Lightning', lines: '8-12 lines' },
   { value: 'quick', label: 'Quick', lines: '15-25 lines' },
   { value: 'standard', label: 'Standard', lines: '30-40 lines' },
   { value: 'epic', label: 'Epic', lines: '45-60 lines' }

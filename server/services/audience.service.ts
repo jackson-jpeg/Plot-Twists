@@ -13,7 +13,8 @@ import type {
   PlotTwistOption,
   ScriptLine,
   Script,
-  ComedyStyle
+  ComedyStyle,
+  SpectatorMessage
 } from '../../lib/types'
 
 // Initialize Anthropic client for AI-powered twists
@@ -60,6 +61,10 @@ const PLOT_TWIST_TEMPLATES = {
 /**
  * Initialize audience interaction state for a room
  */
+// Rate limiting for spectator messages (per user)
+const spectatorMessageCooldowns = new Map<string, number>()
+const SPECTATOR_MESSAGE_COOLDOWN_MS = 5000 // 5 seconds between messages
+
 export function initializeAudienceState(): AudienceInteractionState {
   return {
     reactions: [],
@@ -68,9 +73,13 @@ export function initializeAudienceState(): AudienceInteractionState {
       cheer: 0,
       gasp: 0,
       boo: 0,
-      applause: 0
+      applause: 0,
+      cringe: 0,
+      love: 0,
+      mindblown: 0
     },
-    plotTwistHistory: []
+    plotTwistHistory: [],
+    spectatorMessages: []
   }
 }
 
@@ -284,15 +293,64 @@ export function generateTwistInjection(
 /**
  * Reset reaction counts (called at start of new performance)
  */
+/**
+ * Check if a user can send a spectator message (rate limiting)
+ */
+export function canSendSpectatorMessage(senderId: string): boolean {
+  const lastMessage = spectatorMessageCooldowns.get(senderId)
+  if (!lastMessage) return true
+  return Date.now() - lastMessage >= SPECTATOR_MESSAGE_COOLDOWN_MS
+}
+
+/**
+ * Record a spectator message
+ */
+export function recordSpectatorMessage(
+  state: AudienceInteractionState,
+  text: string,
+  senderId: string,
+  senderName: string,
+  isPreset: boolean
+): SpectatorMessage | null {
+  if (!canSendSpectatorMessage(senderId)) return null
+
+  // Sanitize and limit text length
+  const sanitized = text.trim().slice(0, 100)
+  if (!sanitized) return null
+
+  const message: SpectatorMessage = {
+    id: uuidv4(),
+    senderId,
+    senderName,
+    text: sanitized,
+    timestamp: Date.now(),
+    isPreset
+  }
+
+  spectatorMessageCooldowns.set(senderId, Date.now())
+
+  // Keep last 50 messages
+  state.spectatorMessages.push(message)
+  if (state.spectatorMessages.length > 50) {
+    state.spectatorMessages.shift()
+  }
+
+  return message
+}
+
 export function resetReactionCounts(state: AudienceInteractionState): void {
   state.reactionCounts = {
     laugh: 0,
     cheer: 0,
     gasp: 0,
     boo: 0,
-    applause: 0
+    applause: 0,
+    cringe: 0,
+    love: 0,
+    mindblown: 0
   }
   state.reactions = []
+  state.spectatorMessages = []
 }
 
 /**

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { AuthModal } from './AuthModal'
+import { analytics } from '@/lib/analytics'
 
 export function LandingPage() {
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -11,6 +12,7 @@ export function LandingPage() {
   const openAuth = (mode: 'signin' | 'signup') => {
     setAuthMode(mode)
     setShowAuthModal(true)
+    analytics.landingCtaClicked(mode)
   }
 
   return (

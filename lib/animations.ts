@@ -109,7 +109,7 @@ export const VARIANTS = {
       scale: 1,
       y: 0,
       filter: 'blur(0px)',
-      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] }
+      transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const }
     },
     exit: {
       opacity: 0,
@@ -117,6 +117,38 @@ export const VARIANTS = {
       y: -10,
       filter: 'blur(4px)',
       transition: { duration: 0.25 }
+    }
+  },
+
+  // Curtain rise — clipPath reveal for PERFORMING state
+  curtainRise: {
+    initial: { opacity: 0, clipPath: 'inset(100% 0 0 0)' },
+    animate: {
+      opacity: 1,
+      clipPath: 'inset(0% 0 0 0)',
+      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }
+    },
+    exit: {
+      opacity: 0,
+      clipPath: 'inset(0 0 100% 0)',
+      transition: { duration: 0.3 }
+    }
+  },
+
+  // Spotlight — brightness reveal for RESULTS state
+  spotlight: {
+    initial: { opacity: 0, scale: 0.9, filter: 'brightness(0.3)' },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      filter: 'brightness(1)',
+      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }
+    },
+    exit: {
+      opacity: 0,
+      scale: 1.05,
+      filter: 'brightness(1.5)',
+      transition: { duration: 0.3 }
     }
   }
 }
@@ -160,6 +192,18 @@ export const REDUCED_MOTION_VARIANTS = {
   },
 
   pageTransition: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 }
+  },
+
+  curtainRise: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 }
+  },
+
+  spotlight: {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 }

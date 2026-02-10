@@ -5,6 +5,7 @@
 
 import { v4 as uuidv4 } from 'uuid'
 import Anthropic from '@anthropic-ai/sdk'
+import { extractJSON } from '../utils/jsonExtractor'
 import type {
   AudienceReaction,
   AudienceReactionType,
@@ -17,7 +18,7 @@ import type {
 
 // Initialize Anthropic client for AI-powered twists
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY || '',
+  apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
 // Rate limiting for reactions (per user)
@@ -402,10 +403,7 @@ Make them hilarious and scene-specific. No generic twists.`
       throw new Error('Unexpected response type')
     }
 
-    let jsonText = content.text.trim()
-    if (jsonText.startsWith('```')) {
-      jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-    }
+    const jsonText = extractJSON(content.text)
 
     const parsed = JSON.parse(jsonText) as { text: string }[]
 
@@ -482,10 +480,7 @@ Return ONLY a JSON array:
       throw new Error('Unexpected response type')
     }
 
-    let jsonText = content.text.trim()
-    if (jsonText.startsWith('```')) {
-      jsonText = jsonText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-    }
+    const jsonText = extractJSON(content.text)
 
     const parsed = JSON.parse(jsonText) as ScriptLine[]
 

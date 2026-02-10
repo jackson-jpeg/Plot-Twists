@@ -177,25 +177,33 @@ export default function Home() {
           </motion.button>
         </div>
 
-        {/* Explore Packs — ticket stub */}
+        {/* Explore Packs — mini ticket matching the aesthetic */}
         <motion.div
-          className="flex justify-center mt-2"
+          className="flex justify-center mt-3"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, type: 'spring', stiffness: 100, damping: 15 }}
         >
           <motion.button
             onClick={() => router.push('/explore')}
-            className="flex items-center gap-3 px-6 py-3 bg-[var(--color-surface)] border-2 border-[var(--color-border)] rounded-xl shadow-md hover:shadow-lg transition-all font-medium"
+            className="polaroid-card flex items-center gap-4 px-5 py-3 cursor-pointer relative overflow-visible"
             style={{ transform: 'rotate(-0.5deg)' }}
-            whileHover={canHover ? { y: -4, rotate: 0, scale: 1.03 } : undefined}
+            whileHover={canHover ? { y: -6, rotate: 0, scale: 1.04 } : undefined}
             whileTap={{ scale: 0.98 }}
           >
-            <span className="text-2xl">🎴</span>
+            <div className="tape-piece tape-top-center" style={{ width: '40px', height: '14px', top: '-7px' }} />
+            <motion.span
+              className="text-3xl"
+              animate={{ rotate: [-3, 3, -3] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              🎴
+            </motion.span>
             <div className="text-left">
               <div className="text-sm font-semibold text-[var(--color-text-primary)] font-display">Explore Packs</div>
               <div className="text-xs text-[var(--color-text-tertiary)]">Browse community card packs</div>
             </div>
+            <span className="text-lg text-[var(--color-text-disabled)]">→</span>
           </motion.button>
         </motion.div>
 

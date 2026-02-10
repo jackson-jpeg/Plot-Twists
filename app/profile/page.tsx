@@ -10,12 +10,19 @@ import { AuthModal } from '@/components/AuthModal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 import { AccountSettings } from '@/components/AccountSettings'
-import { CreditHeaderBadge } from '@/components/CreditBadge'
+import { CreditHeaderBadge, useCreditBalance } from '@/components/CreditBadge'
 import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
 import type { PaymentTransaction, PlayerStats } from '@/lib/types'
 import { getApiBaseUrl } from '@/lib/api'
 
 type ProfileTab = 'profile' | 'leaderboard'
+
+const statRotations = [-1, 1, -0.5, 1.5]
+
+const emojiWiggle = {
+  rotate: [-3, 3, -3],
+  transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' as const }
+}
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -29,6 +36,7 @@ export default function ProfilePage() {
   const [portalLoading, setPortalLoading] = useState(false)
   const [accountExpanded, setAccountExpanded] = useState(false)
   const [stats, setStats] = useState<PlayerStats | null>(null)
+  const creditBalance = useCreditBalance()
 
   const playerId = getPlayerId()
 
@@ -86,11 +94,18 @@ export default function ProfilePage() {
     )
   }
 
-  const tabRotations = [-1, 0.5]
   const tabs: { id: ProfileTab; label: string; icon: string }[] = [
     { id: 'profile', label: 'My Profile', icon: '🎭' },
     { id: 'leaderboard', label: 'Leaderboard', icon: '🏆' },
   ]
+  const tabRotations = [-1, 0.5]
+
+  const heroStats = stats && stats.gamesPlayed > 0 ? [
+    { icon: '🎮', label: 'Games', value: stats.gamesPlayed },
+    { icon: '🏆', label: 'Wins', value: stats.gamesWon },
+    { icon: '📈', label: 'Win Rate', value: `${Math.round(stats.winRate)}%` },
+    { icon: '🔥', label: 'Best Streak', value: stats.bestWinStreak },
+  ] : null
 
   return (
     <main className="page-container home-nostalgic">
@@ -106,7 +121,7 @@ export default function ProfilePage() {
         onClose={() => setShowPurchaseModal(false)}
       />
 
-      {/* A. Fixed top bar */}
+      {/* Fixed top bar */}
       <motion.button
         onClick={() => router.push('/')}
         className="fixed top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] border-2 border-[var(--color-border)] rounded-lg shadow-lg hover:shadow-xl transition-all"
@@ -132,8 +147,92 @@ export default function ProfilePage() {
       )}
 
       <div className="container max-w-2xl pt-20 pb-8 px-4">
-        {/* B. Profile Hero — fallback header when no stats */}
-        {(!stats || stats.gamesPlayed === 0) && (
+        {/* Profile Hero — full stats */}
+        {heroStats ? (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            {/* Avatar + Name — polaroid-style card */}
+            <motion.div
+              className="flex items-center gap-4 mb-5"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+            >
+              <motion.div
+                className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-purple)] to-[var(--color-pink)] flex items-center justify-center text-3xl font-bold text-white shadow-lg ring-2 ring-[var(--color-border)]"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
+                {stats!.nickname[0]?.toUpperCase()}
+              </motion.div>
+              <div>
+                <h1 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats!.nickname}</h1>
+                <p className="text-sm text-[var(--color-text-secondary)] font-handwritten">
+                  Playing since {new Date(stats!.joinedAt).toLocaleDateString()}
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Current Streak Banner */}
+            {stats!.currentWinStreak >= 2 && (
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="note-card mb-4 overflow-hidden"
+              >
+                <div className="tape-piece tape-top-center" style={{ width: '50px', height: '16px', top: '-8px' }} />
+                <div className="flex items-center justify-between p-3 pt-4"
+                  style={{
+                    background: 'linear-gradient(to right, var(--color-accent-light), var(--color-danger-light))',
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <motion.span
+                      className="text-2xl"
+                      animate={{ scale: [1, 1.2, 1] }}
+                      transition={{ duration: 1, repeat: Infinity }}
+                    >
+                      🔥
+                    </motion.span>
+                    <div>
+                      <p className="font-semibold text-sm" style={{ color: 'var(--color-accent-dark)' }}>On Fire!</p>
+                      <p className="text-xs" style={{ color: 'var(--color-accent)' }}>
+                        {stats!.currentWinStreak} game win streak
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-3xl font-bold font-display" style={{ color: 'var(--color-accent)' }}>
+                    {stats!.currentWinStreak}
+                  </span>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Stat cards grid — with wiggling emojis */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {heroStats.map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  className="polaroid-card p-3 text-center relative"
+                  style={{ transform: `rotate(${statRotations[i]}deg)` }}
+                  initial={{ opacity: 0, y: 20, rotate: statRotations[i] + 5 }}
+                  animate={{ opacity: 1, y: 0, rotate: statRotations[i] }}
+                  transition={{ delay: i * 0.08 }}
+                  whileHover={{ scale: 1.05, rotate: 0 }}
+                >
+                  <div className="tape-piece tape-top-center" style={{ width: '36px', height: '14px', top: '-7px' }} />
+                  <motion.div className="text-xl mb-0.5" animate={emojiWiggle}>
+                    {stat.icon}
+                  </motion.div>
+                  <div className="text-lg font-bold text-[var(--color-text-primary)] font-display">{stat.value}</div>
+                  <div className="text-xs text-[var(--color-text-tertiary)]">{stat.label}</div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        ) : (
+          /* Fallback header when no stats */
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -148,86 +247,7 @@ export default function ProfilePage() {
           </motion.div>
         )}
 
-        {/* Profile Hero — full stats */}
-        {stats && stats.gamesPlayed > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-6"
-          >
-            {/* Avatar + Name */}
-            <div className="flex items-center gap-4 mb-4">
-              <motion.div
-                className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-purple)] to-[var(--color-pink)] flex items-center justify-center text-3xl font-bold text-white shadow-lg"
-                whileHover={{ scale: 1.1, rotate: 5 }}
-              >
-                {stats.nickname[0]?.toUpperCase()}
-              </motion.div>
-              <div>
-                <h1 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats.nickname}</h1>
-                <p className="text-sm text-[var(--color-text-secondary)]">
-                  Playing since {new Date(stats.joinedAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-
-            {/* Current Streak Banner */}
-            {stats.currentWinStreak >= 2 && (
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="rounded-xl p-3 flex items-center justify-between mb-4"
-                style={{
-                  background: 'linear-gradient(to right, var(--color-accent-light), var(--color-danger-light))',
-                  border: '1px solid var(--color-accent)',
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">🔥</span>
-                  <div>
-                    <p className="font-semibold text-sm" style={{ color: 'var(--color-accent-dark)' }}>On Fire!</p>
-                    <p className="text-xs" style={{ color: 'var(--color-accent)' }}>
-                      {stats.currentWinStreak} game win streak
-                    </p>
-                  </div>
-                </div>
-                <span className="text-3xl font-bold" style={{ color: 'var(--color-accent)' }}>
-                  {stats.currentWinStreak}
-                </span>
-              </motion.div>
-            )}
-
-            {/* Stat cards grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[
-                { icon: '🎮', label: 'Games', value: stats.gamesPlayed },
-                { icon: '🏆', label: 'Wins', value: stats.gamesWon },
-                { icon: '📈', label: 'Win Rate', value: `${Math.round(stats.winRate)}%` },
-                { icon: '🔥', label: 'Best Streak', value: stats.bestWinStreak },
-              ].map((stat, i) => {
-                const rotations = [-1, 1, -0.5, 1.5]
-                return (
-                  <motion.div
-                    key={stat.label}
-                    className="polaroid-card p-3 text-center relative"
-                    style={{ transform: `rotate(${rotations[i]}deg)` }}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                    whileHover={{ scale: 1.05, rotate: 0 }}
-                  >
-                    <div className="tape-piece tape-top-center" style={{ width: '36px', height: '14px', top: '-7px' }} />
-                    <div className="text-xl mb-0.5">{stat.icon}</div>
-                    <div className="text-lg font-bold text-[var(--color-text-primary)] font-display">{stat.value}</div>
-                    <div className="text-xs text-[var(--color-text-tertiary)]">{stat.label}</div>
-                  </motion.div>
-                )
-              })}
-            </div>
-          </motion.div>
-        )}
-
-        {/* C. Profile / Leaderboard tab nav — paper tabs */}
+        {/* Profile / Leaderboard tab nav — paper tabs */}
         <div className="flex gap-1 border-b border-[var(--color-border)] pb-0 relative mb-5">
           {tabs.map((tab, index) => {
             const isActive = activeTab === tab.id
@@ -235,7 +255,7 @@ export default function ProfilePage() {
               <motion.button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2.5 rounded-t-lg font-medium transition-all border border-b-0 relative -mb-px ${
+                className={`px-4 py-2.5 rounded-t-lg font-medium transition-all border border-b-0 relative -mb-px text-sm ${
                   isActive
                     ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-primary)] z-10'
                     : 'bg-[var(--color-surface-alt)] border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
@@ -253,19 +273,19 @@ export default function ProfilePage() {
           })}
         </div>
 
-        {/* D. Tab content */}
+        {/* Tab content */}
         <AnimatePresence mode="wait">
           {activeTab === 'profile' ? (
             <motion.div
               key="profile"
-              initial={{ opacity: 0, y: 20, rotate: -1 }}
+              initial={{ opacity: 0, y: 20, rotate: -0.5 }}
               animate={{ opacity: 1, y: 0, rotate: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="polaroid-card"
+              className="polaroid-card relative"
             >
-              <div className="tape-piece tape-top-left"></div>
-              <div className="tape-piece tape-top-right"></div>
+              <div className="tape-piece tape-top-left" />
+              <div className="tape-piece tape-top-right" />
 
               <div className="p-6">
                 {playerId ? (
@@ -280,14 +300,13 @@ export default function ProfilePage() {
           ) : (
             <motion.div
               key="leaderboard"
-              initial={{ opacity: 0, y: 20, rotate: 1 }}
+              initial={{ opacity: 0, y: 20, rotate: 0.5 }}
               animate={{ opacity: 1, y: 0, rotate: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="polaroid-card"
+              className="note-card relative"
             >
-              <div className="tape-piece tape-top-left"></div>
-              <div className="tape-piece tape-top-right"></div>
+              <div className="tape-piece tape-top-center" />
 
               <div className="p-6">
                 <Leaderboard />
@@ -308,7 +327,7 @@ export default function ProfilePage() {
           </motion.div>
         )}
 
-        {/* E. Account & Settings — collapsible note card */}
+        {/* Account & Settings — collapsible note card */}
         {user && !user.isAnonymous && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -317,21 +336,22 @@ export default function ProfilePage() {
             className="mt-6"
           >
             <div className="note-card overflow-hidden">
-              <div className="tape-piece tape-top-center"></div>
+              <div className="tape-piece tape-top-center" />
 
               <button
                 onClick={() => setAccountExpanded(!accountExpanded)}
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--color-surface-alt)] transition-colors"
+                className="w-full flex items-center justify-between p-4 pt-5 text-left hover:bg-[var(--color-surface-alt)] transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <motion.div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-md"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shadow-md text-sm"
                     style={{ background: 'linear-gradient(to bottom right, var(--color-emerald), var(--color-success))' }}
+                    whileHover={{ scale: 1.1, rotate: 5 }}
                   >
                     {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || user.phoneNumber?.[0] || '?'}
                   </motion.div>
                   <div>
-                    <p className="font-semibold text-[var(--color-text-primary)] text-sm">
+                    <p className="font-semibold text-[var(--color-text-primary)] text-sm font-display">
                       Account & Settings
                     </p>
                     <p className="text-xs text-[var(--color-text-secondary)]">
@@ -339,13 +359,21 @@ export default function ProfilePage() {
                     </p>
                   </div>
                 </div>
-                <motion.span
-                  className="text-lg text-[var(--color-text-tertiary)]"
-                  animate={{ rotate: accountExpanded ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  ↓
-                </motion.span>
+                <div className="flex items-center gap-3">
+                  {/* Inline credit preview when collapsed */}
+                  {!accountExpanded && creditBalance && (
+                    <span className="text-xs text-[var(--color-text-tertiary)] hidden sm:block">
+                      🎬 {creditBalance.total} script{creditBalance.total !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                  <motion.span
+                    className="text-lg text-[var(--color-text-tertiary)]"
+                    animate={{ rotate: accountExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    ↓
+                  </motion.span>
+                </div>
               </button>
 
               <AnimatePresence>
@@ -360,11 +388,9 @@ export default function ProfilePage() {
                     <div className="border-t border-[var(--color-border)] p-4 space-y-4">
                       {/* Auth status */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-[var(--color-text-secondary)]">
-                            Signed in as {user.displayName || user.email || user.phoneNumber}
-                          </span>
-                        </div>
+                        <span className="text-sm text-[var(--color-text-secondary)]">
+                          Signed in as <span className="font-medium text-[var(--color-text-primary)]">{user.displayName || user.email || user.phoneNumber}</span>
+                        </span>
                         <motion.button
                           onClick={handleSignOut}
                           className="px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)] rounded-lg transition-colors"
@@ -375,32 +401,48 @@ export default function ProfilePage() {
                         </motion.button>
                       </div>
 
-                      {/* Credit wallet details */}
-                      <div className="flex items-center justify-between rounded-lg p-3 bg-[var(--color-surface-alt)]">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">🎬</span>
-                          <span className="text-sm font-medium text-[var(--color-text-primary)]">Script Credits</span>
+                      {/* Credit wallet — mini polaroid */}
+                      <motion.div
+                        className="polaroid-card p-3 relative"
+                        style={{ transform: 'rotate(-0.3deg)' }}
+                        whileHover={{ rotate: 0 }}
+                      >
+                        <div className="tape-piece tape-top-center" style={{ width: '30px', height: '12px', top: '-6px' }} />
+                        <div className="flex items-center justify-between pt-1">
+                          <div className="flex items-center gap-3">
+                            <motion.span className="text-2xl" animate={emojiWiggle}>🎬</motion.span>
+                            <div>
+                              <p className="text-sm font-semibold text-[var(--color-text-primary)] font-display">
+                                {creditBalance ? `${creditBalance.total} Script${creditBalance.total !== 1 ? 's' : ''}` : 'Loading...'}
+                              </p>
+                              {creditBalance && (
+                                <p className="text-xs text-[var(--color-text-tertiary)]">
+                                  {creditBalance.free} free + {creditBalance.banked} banked
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <motion.button
+                            onClick={() => setShowPurchaseModal(true)}
+                            className="btn btn-primary btn-small"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            Buy More
+                          </motion.button>
                         </div>
-                        <motion.button
-                          onClick={() => setShowPurchaseModal(true)}
-                          className="text-sm px-3 py-1.5 rounded-lg font-medium transition-colors bg-[var(--color-accent)] text-white"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          Buy More
-                        </motion.button>
-                      </div>
+                      </motion.div>
 
                       {/* Payment History */}
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-semibold text-sm text-[var(--color-text-primary)] flex items-center gap-2">
+                          <h3 className="font-semibold text-sm text-[var(--color-text-primary)] flex items-center gap-2 font-display">
                             <span>🧾</span> Payment History
                           </h3>
                           <motion.button
                             onClick={openCustomerPortal}
                             disabled={portalLoading}
-                            className="text-xs px-2.5 py-1 rounded-lg transition-colors bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)]"
+                            className="text-xs px-2.5 py-1 rounded-lg transition-colors bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-elevated)]"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                           >
@@ -409,11 +451,11 @@ export default function ProfilePage() {
                         </div>
 
                         {loadingTransactions ? (
-                          <p className="text-sm text-center py-3 text-[var(--color-text-tertiary)]">
-                            Loading...
-                          </p>
+                          <div className="py-4">
+                            <LoadingSpinner size="sm" variant="dots" text="Loading..." />
+                          </div>
                         ) : transactions.length === 0 ? (
-                          <p className="text-sm text-center py-3 text-[var(--color-text-tertiary)]">
+                          <p className="text-sm text-center py-3 text-[var(--color-text-tertiary)] font-handwritten">
                             No transactions yet.
                           </p>
                         ) : (
@@ -462,13 +504,14 @@ export default function ProfilePage() {
         {/* Guest sign-in prompt */}
         {!user && isConfigured && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20, rotate: 1 }}
+            animate={{ opacity: 1, y: 0, rotate: 0.5 }}
             transition={{ delay: 0.2 }}
-            className="note-card mt-6 p-6 text-center"
+            className="note-card mt-6 p-6 text-center relative"
           >
-            <div className="tape-piece tape-top-center"></div>
-            <h3 className="text-lg font-bold mb-2 text-[var(--color-text-primary)] font-display">
+            <div className="tape-piece tape-top-left" />
+            <div className="tape-piece tape-top-right" />
+            <h3 className="text-lg font-bold mb-2 text-[var(--color-text-primary)] font-display pt-2">
               Create an Account
             </h3>
             <p className="text-sm text-[var(--color-text-secondary)] mb-4">

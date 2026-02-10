@@ -222,16 +222,14 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
 
   return (
     <motion.div
-      className="note-card overflow-hidden"
+      className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden shadow-sm"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <div className="tape-piece tape-top-center" />
-
       {/* Header - Click to expand */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full p-4 flex items-center justify-between text-left hover:bg-[var(--color-surface-alt)]/50 transition-colors"
+        className="w-full p-4 flex items-center justify-between text-left hover:bg-[var(--color-surface-alt)] transition-colors"
       >
         <div className="flex items-center gap-3">
           <span className="text-2xl">⚙️</span>

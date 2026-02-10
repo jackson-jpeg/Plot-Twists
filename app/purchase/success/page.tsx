@@ -66,19 +66,19 @@ function PurchaseSuccessContent() {
             >
               🎬
             </motion.div>
-            <p style={{ color: 'var(--color-text-secondary)' }}>Verifying your purchase...</p>
+            <p className="text-[var(--color-text-secondary)]">Verifying your purchase...</p>
           </motion.div>
         ) : error ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="polaroid-card p-8"
+            className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-8 shadow-sm"
           >
             <div className="text-5xl mb-4">😕</div>
-            <h1 className="text-2xl font-bold font-display mb-2" style={{ color: 'var(--color-text-primary)' }}>
+            <h1 className="text-2xl font-bold font-display mb-2 text-[var(--color-text-primary)]">
               Something went wrong
             </h1>
-            <p className="mb-6" style={{ color: 'var(--color-text-secondary)' }}>{error}</p>
+            <p className="mb-6 text-[var(--color-text-secondary)]">{error}</p>
             <button onClick={() => router.push('/')} className="btn btn-primary">
               Go Home
             </button>
@@ -99,12 +99,9 @@ function PurchaseSuccessContent() {
               🎉
             </motion.div>
 
-            <div className="polaroid-card p-8 relative">
-              <div className="tape-piece tape-top-center" />
-
+            <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-8 shadow-sm">
               <motion.h1
-                className="text-3xl font-bold font-display mb-2"
-                style={{ color: 'var(--color-text-primary)' }}
+                className="text-3xl font-bold font-display mb-2 text-[var(--color-text-primary)]"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -118,23 +115,20 @@ function PurchaseSuccessContent() {
                 transition={{ delay: 0.3 }}
               >
                 {pkg && (
-                  <p className="text-lg font-semibold mb-1" style={{ color: 'var(--color-accent)' }}>
+                  <p className="text-lg font-semibold mb-1 text-[var(--color-accent)]">
                     {pkg.label}
                   </p>
                 )}
 
-                <div
-                  className="my-6 p-6 rounded-xl"
-                  style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
-                >
-                  <div className="text-5xl font-bold font-display mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                <div className="my-6 p-6 rounded-xl bg-[var(--color-surface-alt)] border border-[var(--color-border)]">
+                  <div className="text-5xl font-bold font-display mb-2 text-[var(--color-text-primary)]">
                     +{scripts}
                   </div>
-                  <div style={{ color: 'var(--color-text-secondary)' }}>
+                  <div className="text-[var(--color-text-secondary)]">
                     script credit{scripts !== 1 ? 's' : ''} added to your account
                   </div>
                   {amount && (
-                    <div className="text-sm mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
+                    <div className="text-sm mt-2 text-[var(--color-text-tertiary)]">
                       ${amount} charged
                     </div>
                   )}
@@ -171,7 +165,7 @@ export default function PurchaseSuccessPage() {
       <main className="page-container items-center justify-center">
         <div className="text-center">
           <div className="inline-block text-5xl mb-4 animate-spin">🎬</div>
-          <p style={{ color: 'var(--color-text-secondary)' }}>Verifying your purchase...</p>
+          <p className="text-[var(--color-text-secondary)]">Verifying your purchase...</p>
         </div>
       </main>
     }>

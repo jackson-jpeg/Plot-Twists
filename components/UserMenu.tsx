@@ -87,50 +87,28 @@ export function UserMenu() {
       <div className="user-menu" ref={dropdownRef}>
         <button
           onClick={() => setShowDebugInfo(!showDebugInfo)}
-          className="user-menu-btn"
-          style={{
-            backgroundColor: '#f59e0b',
-            color: '#000',
-            padding: '0.5rem 1rem',
-            borderRadius: '0.5rem',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-          }}
+          className="user-menu-btn bg-[var(--color-warning)] text-black px-4 py-2 rounded-lg text-xs font-semibold"
           title="Firebase auth not configured - click for details"
         >
           Setup Incomplete
         </button>
         {showDebugInfo && (
-          <div
-            className="user-menu-dropdown"
-            style={{
-              position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: '0.5rem',
-              backgroundColor: '#1f2937',
-              border: '1px solid #374151',
-              borderRadius: '0.5rem',
-              padding: '1rem',
-              minWidth: '280px',
-              zIndex: 50,
-            }}
-          >
-            <div style={{ color: '#f59e0b', fontWeight: 600, marginBottom: '0.5rem' }}>
+          <div className="user-menu-dropdown absolute top-full right-0 mt-2 bg-[var(--color-surface-elevated)] border border-[var(--color-border)] rounded-lg p-4 min-w-[280px] z-50">
+            <div className="text-[var(--color-warning)] font-semibold mb-2">
               Missing Environment Variables:
             </div>
             {missingVars.length > 0 ? (
-              <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#9ca3af', fontSize: '0.75rem' }}>
+              <ul className="m-0 pl-5 text-[var(--color-text-tertiary)] text-xs">
                 {missingVars.map((v) => (
-                  <li key={v} style={{ marginBottom: '0.25rem' }}>{v}</li>
+                  <li key={v} className="mb-1">{v}</li>
                 ))}
               </ul>
             ) : (
-              <div style={{ color: '#9ca3af', fontSize: '0.75rem' }}>
+              <div className="text-[var(--color-text-tertiary)] text-xs">
                 All env vars present but Firebase failed to initialize. Check console for errors.
               </div>
             )}
-            <div style={{ marginTop: '0.75rem', color: '#6b7280', fontSize: '0.625rem' }}>
+            <div className="mt-3 text-[var(--color-text-disabled)] text-[10px]">
               Add these to .env.local and restart the dev server.
             </div>
           </div>
@@ -169,7 +147,7 @@ export function UserMenu() {
   // Authenticated user - show avatar dropdown
   return (
     <>
-      <div className="user-menu" ref={dropdownRef} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div className="user-menu flex items-center gap-2" ref={dropdownRef}>
         <CreditHeaderBadge onClick={() => setShowPurchaseModal(true)} />
         <button
           className="user-menu-trigger"

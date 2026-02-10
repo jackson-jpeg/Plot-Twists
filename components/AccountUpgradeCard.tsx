@@ -146,7 +146,7 @@ export function AccountUpgradeCard({ onSuccess }: AccountUpgradeCardProps) {
             <motion.button
               onClick={handleGoogleLink}
               disabled={loading}
-              className="w-full p-3 bg-white hover:bg-gray-100 text-gray-900 rounded-lg font-semibold flex items-center justify-center gap-3 transition-colors disabled:opacity-50"
+              className="w-full p-3 bg-[var(--color-surface)] hover:bg-[var(--color-surface-alt)] text-[var(--color-text-primary)] rounded-lg font-semibold flex items-center justify-center gap-3 transition-colors disabled:opacity-50 border border-[var(--color-border)]"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >

@@ -52,6 +52,10 @@ export function ScriptCustomizationPanel({
 }: ScriptCustomizationPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [local, setLocal] = useState<ScriptCustomization>(customization)
+  const [hoveredStyle, setHoveredStyle] = useState<ComedyStyle | null>(null)
+  const [hoveredLength, setHoveredLength] = useState<ScriptLength | null>(null)
+  const [hoveredDifficulty, setHoveredDifficulty] = useState<ScriptDifficulty | null>(null)
+  const [hoveredPhysical, setHoveredPhysical] = useState<PhysicalComedyLevel | null>(null)
 
   useEffect(() => {
     setLocal(customization)
@@ -67,18 +71,18 @@ export function ScriptCustomizationPanel({
   }
 
   return (
-    <div className="bg-gray-900/50 rounded-xl overflow-hidden">
+    <div className="settings-panel">
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         disabled={disabled}
-        className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-800/50 transition-colors disabled:opacity-50"
+        className="settings-panel-header disabled:opacity-50"
       >
         <div className="flex items-center gap-3">
           <span className="text-2xl">⚙️</span>
           <div>
-            <h3 className="font-semibold text-white">Script Customization</h3>
-            <p className="text-sm text-gray-400">
+            <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Script Customization</h3>
+            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
               {COMEDY_STYLES.find(s => s.value === local.comedyStyle)?.label} •{' '}
               {SCRIPT_LENGTHS.find(l => l.value === local.scriptLength)?.label} •{' '}
               {DIFFICULTIES.find(d => d.value === local.difficulty)?.label}
@@ -87,7 +91,7 @@ export function ScriptCustomizationPanel({
         </div>
         <motion.span
           animate={{ rotate: isExpanded ? 180 : 0 }}
-          className="text-gray-400"
+          style={{ color: 'var(--color-text-secondary)' }}
         >
           ▼
         </motion.span>
@@ -102,125 +106,175 @@ export function ScriptCustomizationPanel({
         <div className="p-4 pt-0 space-y-6">
           {/* Comedy Style */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
               Comedy Style
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {COMEDY_STYLES.map(style => (
-                <button
-                  key={style.value}
-                  onClick={() => handleChange('comedyStyle', style.value)}
-                  disabled={disabled}
-                  className={`p-3 rounded-lg text-center transition-all ${
-                    local.comedyStyle === style.value
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  } disabled:opacity-50`}
-                >
-                  <div className="text-2xl mb-1">{style.emoji}</div>
-                  <div className="text-sm font-medium">{style.label}</div>
-                </button>
-              ))}
+              {COMEDY_STYLES.map(style => {
+                const isSelected = local.comedyStyle === style.value
+                const isHovered = hoveredStyle === style.value
+                return (
+                  <button
+                    key={style.value}
+                    onClick={() => handleChange('comedyStyle', style.value)}
+                    onMouseEnter={() => setHoveredStyle(style.value)}
+                    onMouseLeave={() => setHoveredStyle(null)}
+                    disabled={disabled}
+                    className="p-3 rounded-lg text-center transition-all disabled:opacity-50"
+                    style={{
+                      background: isSelected
+                        ? 'var(--color-accent)'
+                        : isHovered
+                          ? 'var(--color-surface-alt)'
+                          : 'var(--color-surface-elevated)',
+                      color: isSelected ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                      borderLeft: isSelected ? '3px solid var(--color-accent)' : '3px solid transparent',
+                    }}
+                  >
+                    <div className="text-3xl mb-1">{style.emoji}</div>
+                    <div className="text-sm font-medium font-display">{style.label}</div>
+                  </button>
+                )
+              })}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
               {COMEDY_STYLES.find(s => s.value === local.comedyStyle)?.description}
             </p>
           </div>
 
+          <div className="divider-accent" />
+
           {/* Script Length */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
               Script Length
             </label>
             <div className="flex gap-2">
-              {SCRIPT_LENGTHS.map(length => (
-                <button
-                  key={length.value}
-                  onClick={() => handleChange('scriptLength', length.value)}
-                  disabled={disabled}
-                  className={`flex-1 p-3 rounded-lg text-center transition-all ${
-                    local.scriptLength === length.value
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  } disabled:opacity-50`}
-                >
-                  <div className="font-medium">{length.label}</div>
-                  <div className="text-xs opacity-70">{length.lines}</div>
-                </button>
-              ))}
+              {SCRIPT_LENGTHS.map(length => {
+                const isSelected = local.scriptLength === length.value
+                const isHovered = hoveredLength === length.value
+                return (
+                  <button
+                    key={length.value}
+                    onClick={() => handleChange('scriptLength', length.value)}
+                    onMouseEnter={() => setHoveredLength(length.value)}
+                    onMouseLeave={() => setHoveredLength(null)}
+                    disabled={disabled}
+                    className="flex-1 p-3 rounded-lg text-center transition-all disabled:opacity-50"
+                    style={{
+                      background: isSelected
+                        ? 'var(--color-accent)'
+                        : isHovered
+                          ? 'var(--color-surface-alt)'
+                          : 'var(--color-surface-elevated)',
+                      color: isSelected ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                    }}
+                  >
+                    <div className="font-medium">{length.label}</div>
+                    <div className="text-xs" style={{ opacity: 0.7 }}>{length.lines}</div>
+                  </button>
+                )
+              })}
             </div>
           </div>
+
+          <div className="divider-accent" />
 
           {/* Difficulty */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
               Difficulty
             </label>
             <div className="flex gap-2">
-              {DIFFICULTIES.map(diff => (
-                <button
-                  key={diff.value}
-                  onClick={() => handleChange('difficulty', diff.value)}
-                  disabled={disabled}
-                  className={`flex-1 p-3 rounded-lg text-center transition-all ${
-                    local.difficulty === diff.value
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  } disabled:opacity-50`}
-                >
-                  <div className="font-medium">{diff.label}</div>
-                  <div className="text-xs opacity-70">{diff.description}</div>
-                </button>
-              ))}
+              {DIFFICULTIES.map(diff => {
+                const isSelected = local.difficulty === diff.value
+                const isHovered = hoveredDifficulty === diff.value
+                return (
+                  <button
+                    key={diff.value}
+                    onClick={() => handleChange('difficulty', diff.value)}
+                    onMouseEnter={() => setHoveredDifficulty(diff.value)}
+                    onMouseLeave={() => setHoveredDifficulty(null)}
+                    disabled={disabled}
+                    className="flex-1 p-3 rounded-lg text-center transition-all disabled:opacity-50"
+                    style={{
+                      background: isSelected
+                        ? 'var(--color-accent)'
+                        : isHovered
+                          ? 'var(--color-surface-alt)'
+                          : 'var(--color-surface-elevated)',
+                      color: isSelected ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                    }}
+                  >
+                    <div className="font-medium">{diff.label}</div>
+                    <div className="text-xs" style={{ opacity: 0.7 }}>{diff.description}</div>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
+          <div className="divider-accent" />
+
           {/* Physical Comedy */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
               Physical Comedy Level
             </label>
             <div className="flex gap-2">
-              {PHYSICAL_LEVELS.map(level => (
-                <button
-                  key={level.value}
-                  onClick={() => handleChange('physicalComedy', level.value)}
-                  disabled={disabled}
-                  className={`flex-1 p-2 rounded-lg text-center transition-all ${
-                    local.physicalComedy === level.value
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  } disabled:opacity-50`}
-                >
-                  {level.label}
-                </button>
-              ))}
+              {PHYSICAL_LEVELS.map(level => {
+                const isSelected = local.physicalComedy === level.value
+                const isHovered = hoveredPhysical === level.value
+                return (
+                  <button
+                    key={level.value}
+                    onClick={() => handleChange('physicalComedy', level.value)}
+                    onMouseEnter={() => setHoveredPhysical(level.value)}
+                    onMouseLeave={() => setHoveredPhysical(null)}
+                    disabled={disabled}
+                    className="flex-1 p-2 rounded-lg text-center transition-all disabled:opacity-50"
+                    style={{
+                      background: isSelected
+                        ? 'var(--color-accent)'
+                        : isHovered
+                          ? 'var(--color-surface-alt)'
+                          : 'var(--color-surface-elevated)',
+                      color: isSelected ? 'var(--color-text-primary)' : 'var(--color-text-secondary)',
+                    }}
+                  >
+                    {level.label}
+                  </button>
+                )
+              })}
             </div>
           </div>
+
+          <div className="divider-accent" />
 
           {/* Enable Callbacks Toggle */}
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-sm font-medium text-gray-300">Enable Callbacks</span>
-              <p className="text-xs text-gray-500">Reference jokes from previous rounds</p>
+              <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>Enable Callbacks</span>
+              <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Reference jokes from previous rounds</p>
             </div>
             <button
               onClick={() => handleChange('enableCallbacks', !local.enableCallbacks)}
               disabled={disabled}
-              className={`w-12 h-6 rounded-full transition-colors relative ${
-                local.enableCallbacks ? 'bg-purple-600' : 'bg-gray-700'
-              } disabled:opacity-50`}
+              className="toggle-switch disabled:opacity-50"
+              data-on={local.enableCallbacks ? 'true' : 'false'}
             >
               <motion.div
                 animate={{ x: local.enableCallbacks ? 24 : 2 }}
-                className="absolute top-1 w-4 h-4 bg-white rounded-full"
+                className="toggle-switch-knob"
               />
             </button>
           </div>
 
+          <div className="divider-accent" />
+
           {/* Custom Instructions */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
+            <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-text-secondary)' }}>
               Custom Instructions (Optional)
             </label>
             <textarea
@@ -229,9 +283,14 @@ export function ScriptCustomizationPanel({
               disabled={disabled}
               placeholder="E.g., 'Include a running gag about coffee' or 'Make the villain sympathetic'"
               maxLength={500}
-              className="w-full p-3 bg-gray-800 rounded-lg text-white placeholder-gray-500 resize-none h-20 disabled:opacity-50"
+              className="w-full p-3 rounded-lg resize-none h-20 disabled:opacity-50"
+              style={{
+                background: 'var(--color-surface-elevated)',
+                color: 'var(--color-text-primary)',
+                '--tw-placeholder-opacity': 1,
+              } as React.CSSProperties}
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>
               {(local.customInstructions?.length || 0)}/500 characters
             </p>
           </div>

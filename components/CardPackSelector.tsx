@@ -20,6 +20,20 @@ interface CardPackSelectorProps {
 
 const STANDARD_PACK_ID = 'standard'
 
+const THEME_BORDER_CLASS: Record<string, string> = {
+  mixed: 'pack-card-border-mixed',
+  horror: 'pack-card-border-horror',
+  'sci-fi': 'pack-card-border-scifi',
+  scifi: 'pack-card-border-scifi',
+  fantasy: 'pack-card-border-fantasy',
+  romance: 'pack-card-border-romance',
+  mystery: 'pack-card-border-mystery',
+}
+
+function getThemeBorderClass(theme: string): string {
+  return THEME_BORDER_CLASS[theme.toLowerCase()] || 'pack-card-border-default'
+}
+
 export function CardPackSelector({
   roomCode,
   selectedPackId = STANDARD_PACK_ID,
@@ -228,35 +242,39 @@ export function CardPackSelector({
                 </div>
               ) : (
                 <>
-                  {packs.map(pack => (
+                  {packs.map(pack => {
+                    const isSelected = selectedPackId === pack.id
+                    return (
                     <motion.div
                       key={pack.id}
                       whileHover={{ scale: disabled ? 1 : 1.02 }}
-                      className="pack-card w-full p-4 rounded-xl text-left transition-all"
+                      className={`pack-card w-full p-4 rounded-xl text-left transition-all ${getThemeBorderClass(pack.theme)} ${isSelected ? 'polaroid-card' : ''}`}
                       style={{
-                        background: selectedPackId === pack.id ? 'var(--color-highlight)' : 'var(--color-surface-alt)',
-                        border: selectedPackId === pack.id ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
-                        opacity: disabled ? 0.5 : 1
+                        background: isSelected ? 'var(--color-highlight)' : 'var(--color-surface-alt)',
+                        border: isSelected ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
+                        opacity: disabled ? 0.5 : 1,
+                        boxShadow: isSelected ? '0 8px 24px rgba(42, 39, 34, 0.15)' : undefined,
                       }}
                     >
+                      {isSelected && <div className="tape-piece tape-top-center" style={{ width: '40px', height: '14px', top: '-7px' }} />}
                       <button
                         onClick={() => selectPack(pack.id)}
                         disabled={disabled}
                         className="w-full text-left"
                         style={{ minHeight: '44px' }}
-                        aria-pressed={selectedPackId === pack.id}
+                        aria-pressed={isSelected}
                       >
                         <div className="flex justify-between items-start mb-2">
                           <div>
                             <h4 className="font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
                               {pack.name}
                               {pack.isBuiltIn && (
-                                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--color-accent-2-light)', color: 'var(--color-accent-2)' }}>
+                                <span className="annotation" style={{ fontSize: 11, transform: 'rotate(-1deg)' }}>
                                   Default
                                 </span>
                               )}
                               {pack.isMature && (
-                                <span className="text-xs px-2 py-0.5 rounded" style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
+                                <span className="annotation" style={{ fontSize: 11, transform: 'rotate(1deg)', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
                                   18+
                                 </span>
                               )}
@@ -274,11 +292,13 @@ export function CardPackSelector({
                           </div>
                         </div>
 
-                        <div className="flex justify-between text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                          <span>By {pack.author}</span>
-                          <span>
-                            {pack.cardCounts.characters}C / {pack.cardCounts.settings}S / {pack.cardCounts.circumstances}X
-                          </span>
+                        <div className="flex justify-between items-center text-xs">
+                          <span style={{ color: 'var(--color-text-tertiary)' }}>By {pack.author}</span>
+                          <div className="flex gap-1.5">
+                            <span className="pack-count-pill pack-count-characters">🎭 {pack.cardCounts.characters}</span>
+                            <span className="pack-count-pill pack-count-settings">🏠 {pack.cardCounts.settings}</span>
+                            <span className="pack-count-pill pack-count-circumstances">⚡ {pack.cardCounts.circumstances}</span>
+                          </div>
                         </div>
                       </button>
 
@@ -328,7 +348,7 @@ export function CardPackSelector({
                         </div>
                       )}
                     </motion.div>
-                  ))}
+                  )})}
 
                   {/* Action buttons */}
                   <div className="flex gap-2 pt-2">

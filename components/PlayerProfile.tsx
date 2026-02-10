@@ -18,11 +18,10 @@ const RARITY_COLORS = {
   legendary: 'from-yellow-400 to-orange-500'
 }
 
-const RARITY_BG = {
-  common: 'bg-[var(--color-surface-alt)] border-[var(--color-border)]',
-  rare: 'bg-blue-500/20 border-blue-500/50',
-  epic: 'bg-purple-500/20 border-purple-500/50',
-  legendary: 'bg-yellow-500/20 border-yellow-500/50'
+const RARITY_FRAME_CLASS: Record<string, string> = {
+  rare: 'achievement-card-rare',
+  epic: 'achievement-card-epic',
+  legendary: 'achievement-card-legendary',
 }
 
 export function PlayerProfile({ playerId, onClose }: PlayerProfileProps) {
@@ -498,30 +497,19 @@ function ModeStatRow({
 function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Achievement, unlocked: boolean, index?: number }) {
   const rotations = [-1, 1, -0.5, 1.5, 0.5, -1.5]
   const rotation = rotations[index % rotations.length]
-
-  // Glow colors for epic and legendary
-  const glowStyles = unlocked && (achievement.rarity === 'legendary' || achievement.rarity === 'epic') ? {
-    boxShadow: achievement.rarity === 'legendary'
-      ? '0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(251, 191, 36, 0.1)'
-      : '0 0 20px rgba(168, 85, 247, 0.3), 0 0 40px rgba(168, 85, 247, 0.1)',
-    animation: 'glow-pulse 3s ease-in-out infinite'
-  } : {}
+  const rarityClass = RARITY_FRAME_CLASS[achievement.rarity] || ''
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
+      initial={{ opacity: 0, y: 20, rotate: unlocked ? rotation + 5 : 0 }}
+      animate={{ opacity: 1, y: 0, rotate: unlocked ? rotation : 0 }}
+      transition={{ delay: index * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ scale: 1.03, rotate: 0 }}
       className={`relative transition-all ${
         unlocked
-          ? 'polaroid-card'
+          ? `polaroid-card ${rarityClass}`
           : 'bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg opacity-60'
       }`}
-      style={{
-        transform: unlocked ? `rotate(${rotation}deg)` : 'none',
-        ...glowStyles
-      }}
     >
       {/* Tape decoration for unlocked achievements */}
       {unlocked && (
@@ -533,13 +521,16 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
 
       <div className={`p-4 ${unlocked ? 'pt-5' : ''}`}>
         <div className="flex items-start gap-3">
-          <motion.div
-            className={`text-3xl ${!unlocked ? 'grayscale' : ''}`}
-            animate={unlocked ? { rotate: [-3, 3, -3] } : {}}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >
-            {achievement.icon}
-          </motion.div>
+          <div className="relative">
+            <motion.div
+              className={`text-3xl ${!unlocked ? 'achievement-locked-icon' : ''}`}
+              animate={unlocked ? { rotate: [-3, 3, -3] } : {}}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            >
+              {achievement.icon}
+            </motion.div>
+            {!unlocked && <div className="achievement-lock-indicator">🔒</div>}
+          </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h4 className={`font-semibold truncate ${unlocked ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-disabled)]'}`}>

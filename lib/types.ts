@@ -552,6 +552,27 @@ export interface UserProfile {
   preferences?: UserPreferences
   credits: CreditBalance
   lifetimeSpend: number   // total $ spent (cents)
+  stripeCustomerId?: string
+}
+
+// ============================================================
+// Payment Transactions
+// ============================================================
+
+export type PaymentTransactionType = 'purchase' | 'refund' | 'expired' | 'failed'
+export type PaymentTransactionStatus = 'completed' | 'expired' | 'failed'
+
+export interface PaymentTransaction {
+  id: string
+  userId: string
+  type: PaymentTransactionType
+  stripeEventId: string
+  packageId: string
+  packageLabel: string
+  creditsAdded: number     // negative for refunds
+  amountCents: number      // negative for refunds
+  createdAt: string        // ISO timestamp
+  status: PaymentTransactionStatus
 }
 
 // ============================================================

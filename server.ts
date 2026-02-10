@@ -69,7 +69,7 @@ import {
   initializeCardPackService,
   STANDARD_PACK_ID
 } from './server/services/cardpack.service'
-import { initializeDatabase } from './server/db'
+import { initializeDatabase, getDatabase, Collections } from './server/db'
 import {
   enhanceScriptWithAudio,
   validateAudioSettings,
@@ -89,7 +89,8 @@ import {
   getLeaderboard
 } from './server/services/playerStats.service'
 import { generateTitleCard } from './server/services/image.service'
-import { checkAndDeductCredit, getCredits, addBankedCredits } from './server/services/credit.service'
+import { checkAndDeductCredit, getCredits, addBankedCredits, deductBankedCredits } from './server/services/credit.service'
+import { recordTransaction, getUserTransactions } from './server/services/payment.service'
 import { createSocketAuthMiddleware } from './server/middleware/socketAuth'
 import { CREDIT_PACKAGES } from './lib/credits'
 
@@ -1670,8 +1671,20 @@ app.prepare().then(async () => {
     return stripeClient
   }
 
-  // Track processed Stripe events to prevent duplicate fulfillment on retries
-  const processedStripeEvents = new Set<string>()
+  // Persistent idempotency: check DB instead of in-memory Set
+  const db = getDatabase()
+  async function isStripeEventProcessed(eventId: string): Promise<boolean> {
+    const existing = await db.get(Collections.STRIPE_EVENTS, eventId)
+    return existing !== null
+  }
+  async function markStripeEventProcessed(eventId: string, eventType: string, userId?: string): Promise<void> {
+    await db.set(Collections.STRIPE_EVENTS, eventId, {
+      eventId,
+      eventType,
+      userId: userId || null,
+      processedAt: new Date().toISOString()
+    })
+  }
 
   // Stripe webhook needs raw body — must be registered before express.json()
   expressApp.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -1693,21 +1706,35 @@ app.prepare().then(async () => {
       const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret)
 
       // Idempotency: skip already-processed events (Stripe retries on timeout)
-      if (processedStripeEvents.has(event.id)) {
+      if (await isStripeEventProcessed(event.id)) {
         console.log(`[Stripe] Skipping duplicate event ${event.id}`)
         res.json({ received: true })
         return
       }
 
       if (event.type === 'checkout.session.completed') {
-        const session = event.data.object as { metadata?: Record<string, string>; amount_total?: number | null }
+        const session = event.data.object as { metadata?: Record<string, string>; amount_total?: number | null; payment_intent?: string }
         const userId = session.metadata?.userId
         const scripts = parseInt(session.metadata?.scripts || '0', 10)
+        const packageId = session.metadata?.packageId || ''
         const amountTotal = session.amount_total || 0
 
         if (userId && scripts > 0) {
-          processedStripeEvents.add(event.id)
+          await markStripeEventProcessed(event.id, event.type, userId)
           await addBankedCredits(userId, scripts, amountTotal)
+
+          // Record purchase transaction
+          const pkg = CREDIT_PACKAGES.find(p => p.id === packageId)
+          await recordTransaction({
+            userId,
+            type: 'purchase',
+            stripeEventId: event.id,
+            packageId,
+            packageLabel: pkg?.label || packageId,
+            creditsAdded: scripts,
+            amountCents: amountTotal,
+            status: 'completed'
+          })
 
           // Emit updated balance to user's connected socket (if online)
           const balance = await getCredits(userId)
@@ -1720,6 +1747,92 @@ app.prepare().then(async () => {
 
           console.log(`[Stripe] Fulfilled ${scripts} credits for user ${userId}`)
         }
+      } else if (event.type === 'charge.refunded') {
+        const charge = event.data.object as { metadata?: Record<string, string>; amount_refunded?: number; amount?: number; payment_intent?: string }
+        const userId = charge.metadata?.userId
+        const originalScripts = parseInt(charge.metadata?.scripts || '0', 10)
+        const amountRefunded = charge.amount_refunded || 0
+        const originalAmount = charge.amount || 1
+
+        if (userId && originalScripts > 0 && amountRefunded > 0) {
+          await markStripeEventProcessed(event.id, event.type, userId)
+
+          // Proportional credit deduction
+          const creditsToDeduct = Math.ceil((amountRefunded / originalAmount) * originalScripts)
+          await deductBankedCredits(userId, creditsToDeduct)
+
+          await recordTransaction({
+            userId,
+            type: 'refund',
+            stripeEventId: event.id,
+            packageId: charge.metadata?.packageId || '',
+            packageLabel: 'Refund',
+            creditsAdded: -creditsToDeduct,
+            amountCents: -amountRefunded,
+            status: 'completed'
+          })
+
+          // Emit updated balance
+          const balance = await getCredits(userId)
+          for (const [, s] of io.sockets.sockets) {
+            if (s.data.uid === userId) {
+              s.emit('credit_balance', balance)
+              break
+            }
+          }
+
+          console.log(`[Stripe] Refund: deducted ${creditsToDeduct} credits from user ${userId}`)
+        }
+      } else if (event.type === 'checkout.session.expired') {
+        const session = event.data.object as { metadata?: Record<string, string> }
+        const userId = session.metadata?.userId
+        await markStripeEventProcessed(event.id, event.type, userId)
+
+        if (userId) {
+          await recordTransaction({
+            userId,
+            type: 'expired',
+            stripeEventId: event.id,
+            packageId: session.metadata?.packageId || '',
+            packageLabel: session.metadata?.packageId || 'Unknown',
+            creditsAdded: 0,
+            amountCents: 0,
+            status: 'expired'
+          })
+
+          // Notify connected user
+          for (const [, s] of io.sockets.sockets) {
+            if (s.data.uid === userId) {
+              s.emit('error', 'Your checkout session expired. No charges were made.')
+              break
+            }
+          }
+        }
+      } else if (event.type === 'payment_intent.payment_failed') {
+        const intent = event.data.object as { metadata?: Record<string, string>; last_payment_error?: { message?: string } }
+        const userId = intent.metadata?.userId
+        await markStripeEventProcessed(event.id, event.type, userId)
+
+        if (userId) {
+          await recordTransaction({
+            userId,
+            type: 'failed',
+            stripeEventId: event.id,
+            packageId: intent.metadata?.packageId || '',
+            packageLabel: intent.metadata?.packageId || 'Unknown',
+            creditsAdded: 0,
+            amountCents: 0,
+            status: 'failed'
+          })
+
+          // Notify connected user
+          for (const [, s] of io.sockets.sockets) {
+            if (s.data.uid === userId) {
+              s.emit('error', 'Payment failed. Please try again or use a different payment method.')
+              break
+            }
+          }
+        }
       }
 
       res.json({ received: true })
@@ -1731,6 +1844,21 @@ app.prepare().then(async () => {
 
   // JSON body parser for other Stripe routes
   expressApp.use('/api/stripe', express.json())
+
+  // Helper: get or create Stripe customer for a user
+  async function getOrCreateStripeCustomer(stripe: InstanceType<typeof Stripe>, userId: string): Promise<string> {
+    const user = await db.get<import('./lib/types').UserProfile>(Collections.USERS, userId)
+    if (user?.stripeCustomerId) return user.stripeCustomerId
+
+    const customer = await stripe.customers.create({
+      metadata: { userId },
+      email: user?.email || undefined,
+      name: user?.displayName || undefined
+    })
+
+    await db.update(Collections.USERS, userId, { stripeCustomerId: customer.id })
+    return customer.id
+  }
 
   expressApp.post('/api/stripe/create-checkout-session', async (req, res) => {
     const { packageId, userId } = req.body
@@ -1756,8 +1884,12 @@ app.prepare().then(async () => {
       // Determine base URL for redirects
       const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || `http://localhost:${port}`
 
+      // Get or create Stripe customer
+      const customerId = await getOrCreateStripeCustomer(stripe, userId)
+
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
+        customer: customerId,
         line_items: [{
           price_data: {
             currency: 'usd',
@@ -1774,14 +1906,102 @@ app.prepare().then(async () => {
           packageId: pkg.id,
           scripts: String(pkg.scripts)
         },
-        success_url: `${origin}/?credits=purchased`,
-        cancel_url: `${origin}/?credits=cancelled`
+        payment_intent_data: {
+          metadata: {
+            userId,
+            packageId: pkg.id,
+            scripts: String(pkg.scripts)
+          }
+        },
+        success_url: `${origin}/purchase/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/purchase/cancelled`
       })
 
       res.json({ sessionId: session.id, url: session.url })
     } catch (error) {
       console.error('[Stripe] Create checkout session error:', error)
       res.status(500).json({ error: 'Failed to create checkout session' })
+    }
+  })
+
+  // Payment transaction history
+  expressApp.get('/api/stripe/transactions', async (req, res) => {
+    const userId = req.query.userId as string
+    if (!userId) {
+      res.status(400).json({ error: 'Missing userId' })
+      return
+    }
+
+    try {
+      const transactions = await getUserTransactions(userId)
+      res.json({ transactions })
+    } catch (error) {
+      console.error('[Stripe] Get transactions error:', error)
+      res.status(500).json({ error: 'Failed to get transactions' })
+    }
+  })
+
+  // Stripe Customer Portal session
+  expressApp.post('/api/stripe/portal-session', async (req, res) => {
+    const { userId } = req.body
+    if (!userId) {
+      res.status(400).json({ error: 'Missing userId' })
+      return
+    }
+
+    try {
+      const stripe = getStripe()
+      if (!stripe) {
+        res.status(500).json({ error: 'Stripe not configured' })
+        return
+      }
+
+      const user = await db.get<import('./lib/types').UserProfile>(Collections.USERS, userId)
+      if (!user?.stripeCustomerId) {
+        res.status(400).json({ error: 'No Stripe customer found. Make a purchase first.' })
+        return
+      }
+
+      const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || `http://localhost:${port}`
+
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${origin}/profile`
+      })
+
+      res.json({ url: portalSession.url })
+    } catch (error) {
+      console.error('[Stripe] Portal session error:', error)
+      res.status(500).json({ error: 'Failed to create portal session' })
+    }
+  })
+
+  // Checkout session status (for success page)
+  expressApp.get('/api/stripe/session-status', async (req, res) => {
+    const sessionId = req.query.session_id as string
+    if (!sessionId) {
+      res.status(400).json({ error: 'Missing session_id' })
+      return
+    }
+
+    try {
+      const stripe = getStripe()
+      if (!stripe) {
+        res.status(500).json({ error: 'Stripe not configured' })
+        return
+      }
+
+      const session = await stripe.checkout.sessions.retrieve(sessionId)
+      res.json({
+        status: session.status,
+        paymentStatus: session.payment_status,
+        packageId: session.metadata?.packageId,
+        scripts: session.metadata?.scripts,
+        amountTotal: session.amount_total
+      })
+    } catch (error) {
+      console.error('[Stripe] Session status error:', error)
+      res.status(500).json({ error: 'Failed to get session status' })
     }
   })
 

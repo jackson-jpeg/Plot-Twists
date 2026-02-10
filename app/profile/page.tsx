@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
@@ -12,6 +12,7 @@ import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 import { AccountSettings } from '@/components/AccountSettings'
 import { useCreditBalance } from '@/components/CreditBadge'
 import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
+import type { PaymentTransaction } from '@/lib/types'
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -20,9 +21,44 @@ export default function ProfilePage() {
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
+  const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
+  const [loadingTransactions, setLoadingTransactions] = useState(false)
+  const [portalLoading, setPortalLoading] = useState(false)
   const creditBalance = useCreditBalance()
 
   const playerId = getPlayerId()
+
+  const fetchTransactions = useCallback(async () => {
+    if (!user || user.isAnonymous) return
+    setLoadingTransactions(true)
+    try {
+      const res = await fetch(`/api/stripe/transactions?userId=${user.uid}`)
+      const data = await res.json()
+      if (data.transactions) setTransactions(data.transactions)
+    } catch { /* ignore */ }
+    setLoadingTransactions(false)
+  }, [user])
+
+  useEffect(() => {
+    fetchTransactions()
+  }, [fetchTransactions])
+
+  const openCustomerPortal = async () => {
+    if (!user) return
+    setPortalLoading(true)
+    try {
+      const res = await fetch('/api/stripe/portal-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.uid })
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.open(data.url, '_blank')
+      }
+    } catch { /* ignore */ }
+    setPortalLoading(false)
+  }
 
   const handleSignOut = async () => {
     await signOut()
@@ -215,6 +251,78 @@ export default function ProfilePage() {
               >
                 Buy More
               </motion.button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Payment History & Receipts — authenticated users */}
+        {user && !user.isAnonymous && !showLeaderboard && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="note-card mb-6"
+          >
+            <div className="tape-piece tape-top-center"></div>
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                  <span>🧾</span> Payment History
+                </h3>
+                <motion.button
+                  onClick={openCustomerPortal}
+                  disabled={portalLoading}
+                  className="text-sm px-3 py-1.5 rounded-lg transition-colors"
+                  style={{
+                    background: 'var(--color-surface-alt)',
+                    color: 'var(--color-text-secondary)',
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {portalLoading ? 'Opening...' : 'View Receipts'}
+                </motion.button>
+              </div>
+
+              {loadingTransactions ? (
+                <p className="text-sm text-center py-4" style={{ color: 'var(--color-text-tertiary)' }}>
+                  Loading...
+                </p>
+              ) : transactions.length === 0 ? (
+                <p className="text-sm text-center py-4" style={{ color: 'var(--color-text-tertiary)' }}>
+                  No transactions yet. Purchase credits to see your history.
+                </p>
+              ) : (
+                <div style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+                  {transactions.slice(0, 5).map(txn => (
+                    <div key={txn.id} className="transaction-row">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">
+                          {txn.type === 'purchase' ? '💳' : txn.type === 'refund' ? '↩️' : txn.type === 'failed' ? '❌' : '⏱️'}
+                        </span>
+                        <div>
+                          <p className={`font-medium text-sm transaction-type-${txn.type}`}>
+                            {txn.type === 'purchase' ? txn.packageLabel : txn.type.charAt(0).toUpperCase() + txn.type.slice(1)}
+                          </p>
+                          <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                            {new Date(txn.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-sm" style={{ color: txn.creditsAdded > 0 ? 'var(--color-success)' : txn.creditsAdded < 0 ? 'var(--color-danger)' : 'var(--color-text-disabled)' }}>
+                          {txn.creditsAdded > 0 ? '+' : ''}{txn.creditsAdded} credits
+                        </p>
+                        {txn.amountCents !== 0 && (
+                          <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                            ${Math.abs(txn.amountCents / 100).toFixed(2)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         )}

@@ -7,6 +7,7 @@
 import type { UserProfile, CreditBalance } from '../../lib/types'
 import { getDefaultCredits, needsWeeklyReset, getAvailableCredits, formatCreditBalance, getFreeRemaining } from '../../lib/credits'
 import { getDatabase, Collections } from '../db'
+import { isAdminEmail, isAdminPhone } from '../../lib/admin'
 
 /**
  * Ensure a user has the credits field (backward compat for existing users).
@@ -52,12 +53,18 @@ function applyLazyReset(credits: CreditBalance): boolean {
  */
 export async function checkAndDeductCredit(userId: string): Promise<{
   success: boolean
-  source?: 'free' | 'banked'
+  source?: 'free' | 'banked' | 'admin'
   remaining?: number
 }> {
   const db = getDatabase()
   // Ensure credits field exists before entering the transaction
-  await ensureCreditsExist(userId)
+  const userProfile = await ensureCreditsExist(userId)
+
+  // Admin bypass: unlimited credits
+  if (isAdminEmail(userProfile.email) || isAdminPhone(userProfile.phoneNumber)) {
+    console.log(`[Credits] Admin bypass for user ${userId}`)
+    return { success: true, source: 'admin' as const, remaining: 999 }
+  }
 
   return db.runTransaction(async (txn) => {
     const user = await txn.get<UserProfile>(Collections.USERS, userId)
@@ -160,4 +167,29 @@ export async function initializeCredits(userId: string): Promise<void> {
     })
     console.log(`Initialized credits for user ${userId}`)
   }
+}
+
+/**
+ * Deduct banked credits from a user (for refunds).
+ * Uses a database transaction to prevent lost updates under concurrency.
+ * Credits cannot go below 0.
+ */
+export async function deductBankedCredits(userId: string, amount: number): Promise<void> {
+  const db = getDatabase()
+  await ensureCreditsExist(userId)
+
+  await db.runTransaction(async (txn) => {
+    const user = await txn.get<UserProfile>(Collections.USERS, userId)
+    if (!user || !user.credits) {
+      throw new Error(`User not found or missing credits: ${userId}`)
+    }
+
+    user.credits.banked = Math.max(0, user.credits.banked - amount)
+
+    await txn.update(Collections.USERS, userId, {
+      credits: user.credits
+    })
+  })
+
+  console.log(`Deducted ${amount} banked credits from user ${userId}`)
 }

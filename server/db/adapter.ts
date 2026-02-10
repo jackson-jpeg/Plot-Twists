@@ -69,7 +69,9 @@ export const Collections = {
   GAME_HISTORY: 'gameHistory',
   CARD_PACKS: 'cardPacks',
   ROOMS: 'rooms',
-  MIGRATIONS: 'migrations'
+  MIGRATIONS: 'migrations',
+  STRIPE_EVENTS: 'stripeEvents',
+  PAYMENT_TRANSACTIONS: 'paymentTransactions'
 } as const
 
 export type CollectionName = typeof Collections[keyof typeof Collections]

@@ -25,6 +25,7 @@ import { TeleprompterSettings as TeleprompterSettingsPanel } from '@/components/
 import { useAuth } from '@/contexts/AuthContext'
 import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
 import { getMoodIndicator, getVisibleLines } from '@/lib/teleprompterUtils'
+import { MoviePosterFrame, MoviePosterSkeleton } from '@/components/MoviePosterFrame'
 
 export default function HostPage() {
   const router = useRouter()
@@ -1799,64 +1800,19 @@ export default function HostPage() {
             {/* Generated Poster */}
             <AnimatePresence mode="wait">
               {scriptImageUrl ? (
-                <motion.div
-                  key="poster"
-                  className="mx-auto mb-6 flex flex-col items-center"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <motion.div
+                <motion.div key="poster" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <MoviePosterFrame
+                    imageUrl={scriptImageUrl}
+                    title={script.title}
                     onClick={() => setShowPosterLightbox(true)}
-                    style={{
-                      maxWidth: 320,
-                      maxHeight: 320,
-                      borderRadius: 'var(--radius-xl, 16px)',
-                      border: '3px solid var(--color-border)',
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-                    }}
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <img
-                      src={scriptImageUrl}
-                      alt={`${script.title} Poster`}
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-                    />
-                  </motion.div>
-                  <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 6 }}>Click poster to enlarge</p>
+                    maxWidth={320}
+                    showNowShowing={true}
+                    variant="performance"
+                  />
                 </motion.div>
               ) : isGeneratingImage && script ? (
-                <motion.div
-                  key="skeleton"
-                  className="mx-auto mb-6 flex justify-center"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <div
-                    className="skeleton"
-                    style={{
-                      width: 240,
-                      height: 180,
-                      borderRadius: 'var(--radius-xl, 16px)',
-                      border: '2px dashed var(--color-border-strong)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <motion.span
-                      style={{ fontSize: 32 }}
-                      animate={{ rotate: [0, 10, -10, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                      🎬
-                    </motion.span>
-                  </div>
+                <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <MoviePosterSkeleton maxWidth={240} />
                 </motion.div>
               ) : null}
             </AnimatePresence>
@@ -2182,44 +2138,13 @@ export default function HostPage() {
 
                   {/* Poster card with flip animation */}
                   {scriptImageUrl && (
-                    <motion.div
-                      className="mx-auto mb-6 flex flex-col items-center"
-                      initial={{ rotateY: 90, opacity: 0 }}
-                      animate={{ rotateY: 0, opacity: 1 }}
-                      transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                      style={{ perspective: 1000 }}
-                    >
-                      <motion.div
-                        onClick={() => setShowPosterLightbox(true)}
-                        style={{
-                          maxWidth: 280,
-                          borderRadius: 'var(--radius-xl, 16px)',
-                          border: '3px solid var(--color-accent)',
-                          overflow: 'hidden',
-                          cursor: 'pointer',
-                          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-                        }}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <img
-                          src={scriptImageUrl}
-                          alt={`${script?.title} Poster`}
-                          style={{ width: '100%', display: 'block', objectFit: 'contain' }}
-                        />
-                      </motion.div>
-                      {script && (
-                        <motion.p
-                          className="font-display text-lg mt-3"
-                          style={{ color: 'var(--color-text-secondary)' }}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.5 }}
-                        >
-                          {script.title}
-                        </motion.p>
-                      )}
-                    </motion.div>
+                    <MoviePosterFrame
+                      imageUrl={scriptImageUrl}
+                      title={script?.title}
+                      onClick={() => setShowPosterLightbox(true)}
+                      maxWidth={280}
+                      variant="results"
+                    />
                   )}
 
                   {/* Winner name with blur reveal */}
@@ -2406,44 +2331,13 @@ export default function HostPage() {
                   </div>
 
                   {scriptImageUrl && (
-                    <motion.div
-                      className="mx-auto mb-6 flex flex-col items-center"
-                      initial={{ rotateY: 90, opacity: 0 }}
-                      animate={{ rotateY: 0, opacity: 1 }}
-                      transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                      style={{ perspective: 1000 }}
-                    >
-                      <motion.div
-                        onClick={() => setShowPosterLightbox(true)}
-                        style={{
-                          maxWidth: 280,
-                          borderRadius: 'var(--radius-xl, 16px)',
-                          border: '3px solid var(--color-accent-2)',
-                          overflow: 'hidden',
-                          cursor: 'pointer',
-                          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
-                        }}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <img
-                          src={scriptImageUrl}
-                          alt={`${script?.title ?? 'Movie'} Poster`}
-                          style={{ width: '100%', display: 'block', objectFit: 'contain' }}
-                        />
-                      </motion.div>
-                      {script && (
-                        <motion.p
-                          className="font-display text-lg mt-3"
-                          style={{ color: 'var(--color-text-secondary)' }}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ delay: 0.5 }}
-                        >
-                          {script.title}
-                        </motion.p>
-                      )}
-                    </motion.div>
+                    <MoviePosterFrame
+                      imageUrl={scriptImageUrl}
+                      title={script?.title}
+                      onClick={() => setShowPosterLightbox(true)}
+                      maxWidth={280}
+                      variant="results"
+                    />
                   )}
 
                   <motion.h1
@@ -2520,13 +2414,11 @@ export default function HostPage() {
       {/* Poster Lightbox Modal */}
       <Modal isOpen={showPosterLightbox} onClose={() => setShowPosterLightbox(false)} title={script?.title ?? 'Movie Poster'} maxWidth="600px">
         {scriptImageUrl && (
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <img
-              src={scriptImageUrl}
-              alt={`${script?.title ?? 'Movie'} Poster`}
-              style={{ maxHeight: '75vh', maxWidth: '100%', objectFit: 'contain', borderRadius: 'var(--radius-lg, 12px)' }}
-            />
-          </div>
+          <MoviePosterFrame
+            imageUrl={scriptImageUrl}
+            title={script?.title}
+            variant="lightbox"
+          />
         )}
       </Modal>
 

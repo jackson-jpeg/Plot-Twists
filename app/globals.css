@@ -1301,6 +1301,168 @@ p {
   }
 }
 
+/* Audience Reaction Buttons */
+.reaction-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--duration-fast) var(--easing-spring);
+}
+
+.reaction-btn:active {
+  transform: scale(0.9);
+}
+
+.reaction-btn-laugh {
+  background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500);
+}
+
+.reaction-btn-cheer {
+  background: radial-gradient(circle at 30% 30%, #FF69B4, #FF1493);
+}
+
+.reaction-btn-gasp {
+  background: radial-gradient(circle at 30% 30%, #87CEEB, #4169E1);
+}
+
+.reaction-btn-boo {
+  background: radial-gradient(circle at 30% 30%, #9370DB, #6A0DAD);
+}
+
+.reaction-btn-applause {
+  background: radial-gradient(circle at 30% 30%, #50C878, #228B22);
+}
+
+.reaction-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+
+.reaction-btn:hover::after {
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 1;
+}
+
+@keyframes ring-burst {
+  0% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 0.6;
+  }
+  100% {
+    box-shadow: 0 0 0 20px transparent;
+    opacity: 0;
+  }
+}
+
+.reaction-btn-burst {
+  animation: ring-burst 0.4s var(--easing-out) forwards;
+}
+
+.reaction-cooldown-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    transparent var(--sweep-progress, 0%),
+    rgba(0, 0, 0, 0.4) var(--sweep-progress, 0%)
+  );
+  pointer-events: none;
+}
+
+.reaction-count-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  min-width: 20px;
+  text-align: center;
+}
+
+@keyframes count-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.reaction-count-bounce {
+  animation: count-bounce 0.3s var(--easing-spring);
+}
+
+@media (min-width: 640px) {
+  .reaction-btn {
+    width: 56px;
+    height: 56px;
+    font-size: 28px;
+  }
+}
+
+/* Settings Panel */
+.settings-panel {
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.settings-panel-header {
+  width: 100%;
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--easing-out);
+  border: none;
+  background: transparent;
+}
+
+.settings-panel-header:hover:not(:disabled) {
+  background: var(--color-surface-elevated);
+}
+
+.toggle-switch {
+  width: 48px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  position: relative;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--easing-out);
+  border: none;
+}
+
+.toggle-switch[data-on="true"] {
+  background: var(--color-accent);
+}
+
+.toggle-switch[data-on="false"] {
+  background: var(--color-border-strong);
+}
+
+.toggle-switch-knob {
+  position: absolute;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: var(--radius-full);
+}
+
+.toggle-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ==========================================================================
    Accessibility
    ========================================================================== */
@@ -3641,3 +3803,317 @@ textarea:focus-visible {
     font-size: 0.7rem;
   }
 }
+
+/* ==========================================================================
+   Audience Reaction Buttons
+   ========================================================================== */
+
+.reaction-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--duration-fast) var(--easing-spring);
+}
+
+.reaction-btn:active {
+  transform: scale(0.9);
+}
+
+.reaction-btn-laugh {
+  background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500);
+}
+
+.reaction-btn-cheer {
+  background: radial-gradient(circle at 30% 30%, #FF69B4, #FF1493);
+}
+
+.reaction-btn-gasp {
+  background: radial-gradient(circle at 30% 30%, #87CEEB, #4169E1);
+}
+
+.reaction-btn-boo {
+  background: radial-gradient(circle at 30% 30%, #9370DB, #6A0DAD);
+}
+
+.reaction-btn-applause {
+  background: radial-gradient(circle at 30% 30%, #50C878, #228B22);
+}
+
+.reaction-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+
+.reaction-btn:hover::after {
+  background: rgba(255, 255, 255, 0.15);
+  opacity: 1;
+}
+
+@keyframes ring-burst {
+  0% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 0.6;
+  }
+  100% {
+    box-shadow: 0 0 0 20px transparent;
+    opacity: 0;
+  }
+}
+
+.reaction-btn-burst {
+  animation: ring-burst 0.4s var(--easing-out) forwards;
+}
+
+.reaction-cooldown-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    transparent var(--sweep-progress, 0%),
+    rgba(0, 0, 0, 0.4) var(--sweep-progress, 0%)
+  );
+  pointer-events: none;
+}
+
+.reaction-count-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  min-width: 20px;
+  text-align: center;
+}
+
+@keyframes count-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.reaction-count-bounce {
+  animation: count-bounce 0.3s var(--easing-spring);
+}
+
+@media (min-width: 640px) {
+  .reaction-btn {
+    width: 56px;
+    height: 56px;
+    font-size: 28px;
+  }
+}
+
+/* ==========================================================================
+   Movie Poster Frame
+   ========================================================================== */
+
+.movie-poster-frame {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  border: 4px solid #1a1a1a;
+  outline: 2px solid var(--color-accent);
+  outline-offset: -6px;
+  box-shadow:
+    inset 0 0 30px rgba(0, 0, 0, 0.3),
+    0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.movie-poster-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    rgba(0, 0, 0, 0.25) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.movie-poster-ribbon {
+  position: absolute;
+  top: 16px;
+  right: -32px;
+  background: var(--color-accent);
+  color: white;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 40px;
+  transform: rotate(45deg);
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.movie-poster-skeleton {
+  background: var(--color-surface-alt);
+  border: 4px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.movie-poster-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-border) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ==========================================================================
+   Card Pack Selector Polish
+   ========================================================================== */
+
+.pack-card-border-mixed { border-top: 3px solid var(--color-accent); }
+.pack-card-border-horror { border-top: 3px solid var(--color-danger); }
+.pack-card-border-scifi { border-top: 3px solid var(--color-blue); }
+.pack-card-border-fantasy { border-top: 3px solid var(--color-purple); }
+.pack-card-border-romance { border-top: 3px solid var(--color-pink); }
+.pack-card-border-mystery { border-top: 3px solid var(--color-emerald); }
+.pack-card-border-default { border-top: 3px solid var(--color-accent-2); }
+
+.pack-count-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pack-count-characters {
+  background: var(--color-highlight-pink);
+  color: var(--color-pink);
+}
+
+.pack-count-settings {
+  background: var(--color-highlight-blue);
+  color: var(--color-accent-2);
+}
+
+.pack-count-circumstances {
+  background: var(--color-highlight-green);
+  color: var(--color-emerald);
+}
+
+/* ==========================================================================
+   Achievement Display Polish
+   ========================================================================== */
+
+.achievement-card {
+  position: relative;
+  transition: all var(--duration-fast) var(--easing-out);
+}
+
+.achievement-card-rare {
+  border-left: 3px solid var(--color-blue);
+}
+
+.achievement-card-epic {
+  border-left: 3px solid var(--color-purple);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.15);
+}
+
+.achievement-card-legendary {
+  border-left: 3px solid var(--color-gold);
+  position: relative;
+  overflow: hidden;
+}
+
+.achievement-card-legendary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(250, 204, 21, 0.08) 50%,
+    transparent 70%
+  );
+  animation: shine 3s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.achievement-locked-icon {
+  filter: blur(1px) saturate(0.3);
+  opacity: 0.5;
+}
+
+.achievement-lock-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 16px;
+  z-index: 1;
+}
+
+@keyframes deal-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) rotate(-8deg) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(4px) rotate(1deg) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--deal-rotation, 0deg)) scale(1);
+  }
+}
+
+.achievement-deal-in {
+  animation: deal-in 0.5s var(--easing-spring) backwards;
+}
+
+/* ==========================================================================
+   Payment History
+   ========================================================================== */
+
+.transaction-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--duration-fast);
+}
+
+.transaction-row:last-child {
+  border-bottom: none;
+}
+
+.transaction-row:hover {
+  background: var(--color-surface-alt);
+}
+
+.transaction-type-purchase { color: var(--color-success); }
+.transaction-type-refund { color: var(--color-danger); }
+.transaction-type-failed { color: var(--color-text-disabled); }
+.transaction-type-expired { color: var(--color-warning); }

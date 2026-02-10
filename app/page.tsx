@@ -176,67 +176,49 @@ export default function Home() {
           </motion.button>
         </div>
 
-        {/* Explore Packs — mini ticket matching the aesthetic */}
-        <motion.div
-          className="flex justify-center mt-3"
+        {/* Explore Packs */}
+        <motion.button
+          onClick={() => router.push('/explore')}
+          className="mx-auto mt-4 flex items-center gap-3 px-5 py-2.5 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm cursor-pointer"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, type: 'spring', stiffness: 100, damping: 15 }}
+          whileHover={canHover ? { y: -3, scale: 1.03, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } : undefined}
+          whileTap={{ scale: 0.97 }}
         >
-          <motion.button
-            onClick={() => router.push('/explore')}
-            className="polaroid-card flex items-center gap-4 px-5 py-3 cursor-pointer relative overflow-visible"
-            style={{ transform: 'rotate(-0.5deg)' }}
-            whileHover={canHover ? { y: -6, rotate: 0, scale: 1.04 } : undefined}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="tape-piece tape-top-center" style={{ width: '40px', height: '14px', top: '-7px' }} />
-            <motion.span
-              className="text-3xl"
-              animate={{ rotate: [-3, 3, -3] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              🎴
-            </motion.span>
-            <div className="text-left">
-              <div className="text-sm font-semibold text-[var(--color-text-primary)] font-display">Explore Packs</div>
-              <div className="text-xs text-[var(--color-text-tertiary)]">Browse community card packs</div>
-            </div>
-            <span className="text-lg text-[var(--color-text-disabled)]">→</span>
-          </motion.button>
-        </motion.div>
+          <span className="text-xl">🎴</span>
+          <span className="text-sm font-medium text-[var(--color-text-primary)]">Explore Packs</span>
+          <span className="text-[var(--color-text-disabled)]">›</span>
+        </motion.button>
 
-        {/* How it works — playbill style */}
+        {/* How it works */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="mt-6"
+          className="mt-8 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] p-6 shadow-sm"
         >
-          <div className="text-center mb-4">
-            <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-text-disabled)]">
-              How it works
-            </span>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-4 sm:gap-6 items-start">
             {[
-              { step: '1', icon: '🃏', title: 'Draw cards', desc: 'Pick a character, setting & wild card' },
-              { step: '2', icon: '✍️', title: 'AI writes', desc: 'Get a custom comedy scene in seconds' },
-              { step: '3', icon: '🎤', title: 'Perform & vote', desc: 'Act it out, then crown the MVP' },
-            ].map((item, i) => (
+              { num: '1', emoji: '🃏', title: 'Draw cards', desc: 'Character + setting + a wild twist' },
+              { num: '2', emoji: '✨', title: 'AI writes the scene', desc: 'A custom comedy script in seconds' },
+              { num: '3', emoji: '🎭', title: 'Perform & vote', desc: 'Act it out, crown the MVP' },
+            ].map((step, i) => (
               <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 15 }}
+                key={step.num}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.55 + i * 0.1, type: 'spring', stiffness: 120, damping: 14 }}
                 className="text-center"
               >
-                <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-[var(--color-surface-elevated)] border border-[var(--color-border)] flex items-center justify-center text-lg">
-                  {item.icon}
+                <div className="text-3xl sm:text-4xl mb-2">{step.emoji}</div>
+                <div className="inline-flex items-center gap-1.5 mb-1">
+                  <span className="w-5 h-5 rounded-full bg-[var(--color-purple)] text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+                    {step.num}
+                  </span>
+                  <span className="text-sm font-semibold text-[var(--color-text-primary)] font-display">{step.title}</span>
                 </div>
-                <p className="text-sm font-semibold text-[var(--color-text-primary)] font-display">{item.title}</p>
-                <p className="text-xs text-[var(--color-text-tertiary)] mt-0.5 leading-snug">{item.desc}</p>
+                <p className="text-xs text-[var(--color-text-secondary)] leading-snug">{step.desc}</p>
               </motion.div>
             ))}
           </div>

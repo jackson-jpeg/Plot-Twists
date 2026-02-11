@@ -1,4 +1,5 @@
 import type { Script } from './types'
+import { logger } from '@/lib/logger'
 
 export function formatScriptAsText(script: Script): string {
   let output = ''
@@ -61,7 +62,7 @@ export async function copyScriptToClipboard(script: Script): Promise<boolean> {
     await navigator.clipboard.writeText(text)
     return true
   } catch (error) {
-    console.error('Failed to copy script:', error)
+    logger.error('Failed to copy script:', error)
     return false
   }
 }

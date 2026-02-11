@@ -8,6 +8,7 @@ import type { CardPack, CardPackMetadata, Card, CardPackInput } from '../../lib/
 import { getDatabase, Collections } from '../db'
 import { unlockAchievement } from './playerStats.service'
 import { COMMUNITY_PACKS } from '../data/communityPacks'
+import { logger } from '../../lib/logger'
 
 // Built-in pack ID (standard content from content.ts)
 export const STANDARD_PACK_ID = 'standard'
@@ -52,7 +53,7 @@ export async function initializeCardPackService(): Promise<void> {
 
   initialized = true
   const count = await db.count(Collections.CARD_PACKS)
-  console.log(`Card Pack Service initialized with ${count} packs`)
+  logger.info(`Card Pack Service initialized with ${count} packs`)
 }
 
 /**
@@ -175,7 +176,7 @@ export async function createCardPack(
 
   await db.set(Collections.CARD_PACKS, packId, newPack)
 
-  console.log(`Created new card pack: ${newPack.name} (${packId})`)
+  logger.info(`Created new card pack: ${newPack.name} (${packId})`)
 
   // Unlock card_creator achievement for the pack author
   if (packData.author) {
@@ -247,7 +248,7 @@ export async function deleteCardPack(packId: string): Promise<{ success: boolean
 
   await db.delete(Collections.CARD_PACKS, packId)
 
-  console.log(`Deleted card pack: ${packId}`)
+  logger.info(`Deleted card pack: ${packId}`)
 
   return { success: true }
 }
@@ -382,8 +383,8 @@ export async function createExamplePacks(): Promise<void> {
   }
 
   if (created > 0) {
-    console.log(`Created ${created} community pack(s)`)
+    logger.info(`Created ${created} community pack(s)`)
   } else {
-    console.log(`All ${COMMUNITY_PACKS.length} community packs already exist`)
+    logger.info(`All ${COMMUNITY_PACKS.length} community packs already exist`)
   }
 }

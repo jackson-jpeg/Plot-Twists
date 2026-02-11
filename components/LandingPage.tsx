@@ -40,7 +40,7 @@ export function LandingPage() {
         <motion.div
           initial={{ y: -60, opacity: 0, scale: 0.9 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+          transition={{ type: 'spring', stiffness: 100, damping: 15 }} // Intentionally dreamy for hero entrance
           className="bulletin-board-header"
         >
           <div className="header-polaroid">

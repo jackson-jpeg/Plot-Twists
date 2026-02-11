@@ -12,6 +12,7 @@ import type { Room, Player, CardSelection, GameState, RoomSettings } from '../..
 import { ROOM_CODE_LENGTH, ROOM_CODE_CHARS, ROOM_CLEANUP_INTERVAL, ROOM_INACTIVITY_TIMEOUT } from '../utils/constants'
 import { roomToFirestore, firestoreToRoom, type FirestoreRoom } from '../utils/roomSerializer'
 import { getDatabase, Collections } from '../db'
+import { logger } from '../../lib/logger'
 
 // ── Hot cache ──────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ function startRetryQueue(): void {
           await db.set(Collections.ROOMS, item.code, item.data)
         }
       } catch (err) {
-        console.error(`[RoomService] Retry failed for room ${item.code}:`, err)
+        logger.error(`[RoomService] Retry failed for room ${item.code}:`, err)
         // Re-queue for next cycle
         retryQueue.push(item)
       }
@@ -59,7 +60,7 @@ async function persistToFirestore(room: Room): Promise<void> {
     const data = roomToFirestore(room)
     await db.set(Collections.ROOMS, room.code, data)
   } catch (err) {
-    console.error(`[RoomService] Firestore write failed for room ${room.code}:`, err)
+    logger.error(`[RoomService] Firestore write failed for room ${room.code}:`, err)
     retryQueue.push({ code: room.code, data: roomToFirestore(room) })
   }
 }
@@ -81,7 +82,7 @@ async function deleteFromFirestore(code: string): Promise<void> {
     if (!db.isConnected()) return
     await db.delete(Collections.ROOMS, code)
   } catch (err) {
-    console.error(`[RoomService] Firestore delete failed for room ${code}:`, err)
+    logger.error(`[RoomService] Firestore delete failed for room ${code}:`, err)
   }
 }
 
@@ -126,7 +127,7 @@ export async function getRoom(code: string): Promise<Room | null> {
     rooms.set(upperCode, room)
     return room
   } catch (err) {
-    console.error(`[RoomService] Firestore read failed for room ${upperCode}:`, err)
+    logger.error(`[RoomService] Firestore read failed for room ${upperCode}:`, err)
     return null
   }
 }
@@ -249,7 +250,7 @@ export async function loadRoomsFromFirestore(): Promise<void> {
   try {
     const db = getDatabase()
     if (!db.isConnected()) {
-      console.log('[RoomService] Database not connected, skipping room recovery')
+      logger.info('[RoomService] Database not connected, skipping room recovery')
       return
     }
 
@@ -284,10 +285,10 @@ export async function loadRoomsFromFirestore(): Promise<void> {
     }
 
     if (recovered > 0 || cleaned > 0) {
-      console.log(`[RoomService] Recovered ${recovered} room(s), cleaned ${cleaned} stale room(s) from Firestore`)
+      logger.info(`[RoomService] Recovered ${recovered} room(s), cleaned ${cleaned} stale room(s) from Firestore`)
     }
   } catch (err) {
-    console.error('[RoomService] Failed to load rooms from Firestore:', err)
+    logger.error('[RoomService] Failed to load rooms from Firestore:', err)
   }
 }
 
@@ -305,7 +306,7 @@ export function startRoomCleanup(): void {
 
     for (const [code, room] of rooms.entries()) {
       if (now - room.lastActivity > ROOM_INACTIVITY_TIMEOUT) {
-        console.log(`Cleaning up inactive room: ${code}`)
+        logger.info(`Cleaning up inactive room: ${code}`)
         clearAllRoomTimeouts(code)
         rooms.delete(code)
         deleteFromFirestore(code)
@@ -314,11 +315,11 @@ export function startRoomCleanup(): void {
     }
 
     if (cleanedCount > 0) {
-      console.log(`Cleaned up ${cleanedCount} inactive room(s)`)
+      logger.info(`Cleaned up ${cleanedCount} inactive room(s)`)
     }
   }, ROOM_CLEANUP_INTERVAL)
 
-  console.log('Room cleanup service started')
+  logger.info('Room cleanup service started')
 }
 
 /** Stop cleanup (for graceful shutdown) */

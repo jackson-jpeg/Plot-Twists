@@ -57,6 +57,13 @@ export const MOTION = {
   }
 }
 
+// Stagger delay presets (in seconds)
+export const STAGGER = {
+  fast: 0.05,
+  standard: 0.08,
+  slow: 0.12
+}
+
 // Common animation variants for reusable patterns
 export const VARIANTS = {
   // Fade in from below

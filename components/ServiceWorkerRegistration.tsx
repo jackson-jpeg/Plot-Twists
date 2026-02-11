@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { logger } from '@/lib/logger'
 
 /**
  * Register service worker for PWA functionality
@@ -11,13 +12,13 @@ export function ServiceWorkerRegistration() {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          console.log('Service Worker registered successfully:', registration.scope)
+          logger.info('Service Worker registered successfully:', registration.scope)
 
           // Check for updates periodically
           registration.update()
         })
         .catch((error) => {
-          console.error('Service Worker registration failed:', error)
+          logger.error('Service Worker registration failed:', error)
         })
     }
   }, [])

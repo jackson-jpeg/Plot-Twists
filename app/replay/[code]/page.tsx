@@ -200,13 +200,22 @@ export default function ReplayPage() {
           <div className="text-6xl mb-4">🎭</div>
           <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>Script Not Found</h1>
           <p className="mb-6" style={{ color: 'var(--color-text-tertiary)' }}>{error || 'This replay may have expired or been removed.'}</p>
-          <button
-            onClick={() => router.push('/')}
-            className="px-6 py-3 text-white rounded-lg font-semibold transition-colors"
-            style={{ background: 'var(--color-purple)' }}
-          >
-            Go Home
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              onClick={() => { setError(null); fetchGame(); }}
+              className="px-6 py-3 text-white rounded-lg font-semibold transition-colors"
+              style={{ background: 'var(--color-purple)' }}
+            >
+              Try Again
+            </button>
+            <button
+              onClick={() => router.push('/')}
+              className="px-6 py-3 rounded-lg font-semibold transition-colors text-[var(--color-text-primary)]"
+              style={{ background: 'var(--color-surface)' }}
+            >
+              Go Home
+            </button>
+          </div>
         </motion.div>
       </div>
     )

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import type { AudioSettings, SoundEffectType } from '@/lib/types'
+import { logger } from '@/lib/logger'
 
 interface AudioSettingsPanelProps {
   settings?: AudioSettings
@@ -70,7 +71,7 @@ export function AudioSettingsPanel({
       audio.volume = local.soundEffectsVolume
       await audio.play()
     } catch (e) {
-      console.log('Sound test not available in preview')
+      logger.debug('Sound test not available in preview')
     }
 
     setTimeout(() => setTestingSound(null), 1000)

@@ -12,6 +12,8 @@
  * Then install Firebase: npm install firebase
  */
 
+import { logger } from '@/lib/logger'
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -60,7 +62,7 @@ export async function initializeFirebase(): Promise<boolean> {
     return true
   } catch {
     // Firebase not installed or failed to initialize
-    console.log('Firebase not available - running in guest-only mode')
+    logger.info('Firebase not available - running in guest-only mode')
     initialized = true
     return false
   }
@@ -84,14 +86,14 @@ export function getFirebaseApp(): any {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createRecaptchaVerifier(containerId: string): Promise<any | null> {
   if (!auth || typeof window === 'undefined') {
-    console.warn('[Phone Auth] Cannot create reCAPTCHA verifier: auth not initialized')
+    logger.warn('[Phone Auth] Cannot create reCAPTCHA verifier: auth not initialized')
     return null
   }
 
   try {
     const container = document.getElementById(containerId)
     if (!container) {
-      console.error('[Phone Auth] reCAPTCHA container element not found:', containerId)
+      logger.error('[Phone Auth] reCAPTCHA container element not found:', containerId)
       return null
     }
 
@@ -104,20 +106,20 @@ export async function createRecaptchaVerifier(containerId: string): Promise<any 
     const verifier = new RecaptchaVerifier(auth, containerId, {
       size: 'invisible',
       callback: () => {
-        console.log('[Phone Auth] reCAPTCHA solved')
+        logger.debug('[Phone Auth] reCAPTCHA solved')
       },
       'expired-callback': () => {
-        console.log('[Phone Auth] reCAPTCHA expired, user will need to re-verify')
+        logger.info('[Phone Auth] reCAPTCHA expired, user will need to re-verify')
       }
     })
 
     // Render immediately to catch init errors early (missing container, blocked scripts)
     await verifier.render()
-    console.log('[Phone Auth] reCAPTCHA verifier initialized and rendered')
+    logger.debug('[Phone Auth] reCAPTCHA verifier initialized and rendered')
 
     return verifier
   } catch (error) {
-    console.error('[Phone Auth] Failed to create reCAPTCHA verifier:', error)
+    logger.error('[Phone Auth] Failed to create reCAPTCHA verifier:', error)
     return null
   }
 }

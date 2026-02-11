@@ -96,6 +96,7 @@ import { checkAndDeductCredit, getCredits, addBankedCredits, deductBankedCredits
 import { recordTransaction, getUserTransactions } from './server/services/payment.service'
 import { createSocketAuthMiddleware } from './server/middleware/socketAuth'
 import { CREDIT_PACKAGES } from './lib/credits'
+import { logger } from './lib/logger'
 
 // Validate environment on startup
 validateEnvironment()
@@ -191,7 +192,7 @@ app.prepare().then(async () => {
     origin: (origin, callback) => {
       if (!origin) return callback(null, true)
       if (isAllowedOrigin(origin)) return callback(null, true)
-      console.log(`Express CORS blocked origin: ${origin}`)
+      logger.warn(`Express CORS blocked origin: ${origin}`)
       callback(new Error('Not allowed by CORS'))
     },
     methods: ['GET', 'POST', 'OPTIONS'],
@@ -209,7 +210,7 @@ app.prepare().then(async () => {
       origin: (origin, callback) => {
         if (!origin) return callback(null, true)
         if (isAllowedOrigin(origin)) return callback(null, true)
-        console.log(`Socket.IO CORS blocked origin: ${origin}`)
+        logger.warn(`Socket.IO CORS blocked origin: ${origin}`)
         callback(new Error('Not allowed by CORS'))
       },
       methods: ['GET', 'POST', 'OPTIONS'],
@@ -225,20 +226,20 @@ app.prepare().then(async () => {
     allowUpgrades: true
   })
 
-  console.log(`Socket.IO configured for ${dev ? 'development' : 'production'} mode`)
-  console.log(`Transports: polling + websocket`)
+  logger.info(`Socket.IO configured for ${dev ? 'development' : 'production'} mode`)
+  logger.info(`Transports: polling + websocket`)
 
   // Apply Firebase auth middleware to socket connections
   io.use(createSocketAuthMiddleware())
 
   io.on('connection', (socket) => {
-    console.log('Client connected:', socket.id)
+    logger.info('Client connected:', socket.id)
 
     // Create room
     socket.on('create_room', (settings, callback) => {
       // Rate limiting
       if (!roomCreationLimiter.check(socket.id)) {
-        console.warn(`Rate limit exceeded for room creation: ${socket.id}`)
+        logger.warn(`Rate limit exceeded for room creation: ${socket.id}`)
         callback({ success: false, error: 'Too many room creation attempts. Please try again later.' })
         return
       }
@@ -283,11 +284,11 @@ app.prepare().then(async () => {
         roomService.createRoom(room)
         socket.join(code)
 
-        console.log(`Room created: ${code} (host: ${room.hostUid || 'unknown'})`)
+        logger.info(`Room created: ${code} (host: ${room.hostUid || 'unknown'})`)
         callback({ success: true, code })
         socket.emit('room_created', code)
       } catch (error) {
-        console.error('Error creating room:', error)
+        logger.error('Error creating room:', error)
         callback({ success: false, error: 'Failed to create room' })
       }
     })
@@ -296,7 +297,7 @@ app.prepare().then(async () => {
     socket.on('join_room', (roomCode, nickname, callback) => {
       // Rate limiting
       if (!joinRoomLimiter.check(socket.id)) {
-        console.warn(`Rate limit exceeded for join room: ${socket.id}`)
+        logger.warn(`Rate limit exceeded for join room: ${socket.id}`)
         callback({ success: false, error: 'Too many join attempts. Please slow down.' })
         return
       }
@@ -304,25 +305,25 @@ app.prepare().then(async () => {
       try {
         // Validate room code format
         if (!isValidRoomCode(roomCode)) {
-          console.log(`Invalid room code format: ${roomCode}`)
+          logger.info(`Invalid room code format: ${roomCode}`)
           callback({ success: false, error: 'Invalid room code format' })
           return
         }
 
         // Validate nickname
         if (!isValidNickname(nickname)) {
-          console.log(`Invalid nickname: ${nickname}`)
+          logger.info(`Invalid nickname: ${nickname}`)
           callback({ success: false, error: 'Invalid nickname. Please use 1-50 characters.' })
           return
         }
 
         const upperRoomCode = roomCode.toUpperCase()
-        console.log(`Join attempt - Room: ${upperRoomCode}, Nickname: ${nickname}`)
-        console.log(`Available rooms: ${roomService.getActiveRoomCount()} active`)
+        logger.debug(`Join attempt - Room: ${upperRoomCode}, Nickname: ${nickname}`)
+        logger.debug(`Available rooms: ${roomService.getActiveRoomCount()} active`)
 
         const room = roomService.getRoomFromCache(upperRoomCode)
         if (!room) {
-          console.log(`Room ${upperRoomCode} not found!`)
+          logger.info(`Room ${upperRoomCode} not found!`)
           callback({ success: false, error: 'Room not found' })
           return
         }
@@ -335,7 +336,7 @@ app.prepare().then(async () => {
 
         const sanitizedNickname = sanitizeInput(nickname)
         if (!sanitizedNickname) {
-          console.log(`Invalid nickname: ${nickname}`)
+          logger.info(`Invalid nickname: ${nickname}`)
           callback({ success: false, error: 'Invalid nickname' })
           return
         }
@@ -376,8 +377,8 @@ app.prepare().then(async () => {
           gameMode: room.gameMode
         }
 
-        console.log(`✓ ${player.role === 'SPECTATOR' ? 'Spectator' : 'Player'} "${sanitizedNickname}" (ID: ${player.id}) successfully joined room ${upperRoomCode}`)
-        console.log(`Total players in room: ${playersList.length}`, playersList.map(p => p.nickname))
+        logger.info(`${player.role === 'SPECTATOR' ? 'Spectator' : 'Player'} "${sanitizedNickname}" (ID: ${player.id}) successfully joined room ${upperRoomCode}`)
+        logger.debug(`Total players in room: ${playersList.length}`, playersList.map(p => p.nickname))
 
         callback({
           success: true,
@@ -386,7 +387,7 @@ app.prepare().then(async () => {
           role: player.role
         })
       } catch (error) {
-        console.error('Error joining room:', error)
+        logger.error('Error joining room:', error)
         callback({ success: false, error: 'Failed to join room' })
       }
     })
@@ -424,7 +425,7 @@ app.prepare().then(async () => {
 
         io.to(roomCode).emit('players_update', Array.from(room.players.values()))
 
-        console.log(`Player ${playerId} submitted selections for room ${roomCode}`)
+        logger.debug(`Player ${playerId} submitted selections for room ${roomCode}`)
         callback({ success: true })
 
         // Solo mode: Start immediately when the host (as player) submits
@@ -446,7 +447,7 @@ app.prepare().then(async () => {
           startScriptGeneration(room, io)
         }
       } catch (error) {
-        console.error('Error submitting cards:', error)
+        logger.error('Error submitting cards:', error)
         callback({ success: false, error: 'Failed to submit selections' })
       }
     })
@@ -531,7 +532,7 @@ app.prepare().then(async () => {
         roomService.clearRoomTimeout(roomCode)
       }
 
-      console.log(`Script paused for room ${roomCode}`)
+      logger.debug(`Script paused for room ${roomCode}`)
     }))
 
     // Resume script
@@ -543,7 +544,7 @@ app.prepare().then(async () => {
       room.isPaused = false
       room.lastActivity = Date.now()
 
-      console.log(`Script resumed for room ${roomCode}`)
+      logger.debug(`Script resumed for room ${roomCode}`)
 
       // Restart teleprompter from current line using smart timing
       const advanceLine = (lineIndex: number) => {
@@ -610,7 +611,7 @@ app.prepare().then(async () => {
         expectedDuration: calculateLineDisplayTime(room.script.lines[lineIndex])
       })
 
-      console.log(`Jumped to line ${lineIndex} in room ${roomCode}`)
+      logger.debug(`Jumped to line ${lineIndex} in room ${roomCode}`)
 
       // If not paused, restart timer for new line using smart timing
       if (!room.isPaused) {
@@ -677,7 +678,7 @@ app.prepare().then(async () => {
         expectedDuration: calculateLineDisplayTime(room.script.lines[lineIndex])
       })
 
-      console.log(`Player navigated to line ${lineIndex} in room ${roomCode}`)
+      logger.debug(`Player navigated to line ${lineIndex} in room ${roomCode}`)
 
       // Resume auto-advance from new position after brief delay
       setTimeout(() => {
@@ -691,19 +692,19 @@ app.prepare().then(async () => {
     socket.on('request_sequel', async (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) {
-        console.log(`Cannot generate sequel: room or script not found for ${roomCode}`)
+        logger.info(`Cannot generate sequel: room or script not found for ${roomCode}`)
         return
       }
       if (!requireHost(room, socket)) return
 
-      console.log(`🎬 Sequel requested for room ${roomCode}`)
+      logger.info(`Sequel requested for room ${roomCode}`)
 
       // Credit gate: deduct 1 credit from host before generating sequel
       if (room.hostUid) {
         try {
           const creditResult = await checkAndDeductCredit(room.hostUid)
           if (!creditResult.success) {
-            console.log(`Insufficient credits for sequel: host ${room.hostUid} in room ${roomCode}`)
+            logger.info(`Insufficient credits for sequel: host ${room.hostUid} in room ${roomCode}`)
             io.to(roomCode).emit('insufficient_credits', { needed: 1, available: 0 })
             return
           }
@@ -714,12 +715,12 @@ app.prepare().then(async () => {
             hostSocket.emit('credit_balance', balance)
           }
         } catch (creditError) {
-          console.error(`Credit check failed for sequel host ${room.hostUid}:`, creditError)
+          logger.error(`Credit check failed for sequel host ${room.hostUid}:`, creditError)
           io.to(roomCode).emit('error', 'Failed to verify credits. Please try again.')
           return
         }
       } else if (!dev) {
-        console.warn(`Sequel blocked: no hostUid for room ${roomCode}`)
+        logger.warn(`Sequel blocked: no hostUid for room ${roomCode}`)
         io.to(roomCode).emit('error', 'Authentication required to generate scripts.')
         return
       }
@@ -757,7 +758,7 @@ app.prepare().then(async () => {
         const chosenSetting = playerSelections[0]?.setting || 'Unknown Setting'
         const chosenCircumstance = playerSelections[0]?.circumstance || 'Unknown Circumstance'
 
-        console.log(`Generating sequel with ${characters.length} character(s)`)
+        logger.info(`Generating sequel with ${characters.length} character(s)`)
 
         // Generate sequel script with customization and streaming progress
         const sequelScript = await generateScript(
@@ -810,12 +811,12 @@ app.prepare().then(async () => {
           io.to(roomCode).emit('ambience_start', ambienceTrack)
         }
 
-        console.log(`✅ Sequel generated: "${finalScript.title}"`)
+        logger.info(`Sequel generated: "${finalScript.title}"`)
 
         // Start teleprompter sync
         startTeleprompterSync(room, io)
       } catch (error) {
-        console.error('Sequel generation failed:', error)
+        logger.error('Sequel generation failed:', error)
         io.to(roomCode).emit('error', 'Failed to generate sequel. Please try again.')
 
         // Reset to results state
@@ -829,17 +830,17 @@ app.prepare().then(async () => {
     socket.on('request_new_game', withErrorHandler(socket, 'request_new_game', (roomCode, options?: NewGameOptions) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room) {
-        console.log(`Cannot start new game: room not found for ${roomCode}`)
+        logger.info(`Cannot start new game: room not found for ${roomCode}`)
         return
       }
 
       // Verify this is the host
       if (room.host.socketId !== socket.id) {
-        console.log(`Non-host tried to start new game in room ${roomCode}`)
+        logger.warn(`Non-host tried to start new game in room ${roomCode}`)
         return
       }
 
-      console.log(`🎮 New game requested for room ${roomCode}`)
+      logger.info(`New game requested for room ${roomCode}`)
 
       // Clear teleprompter timeout
       const timeout = roomService.getRoomTimeout(roomCode)
@@ -882,7 +883,7 @@ app.prepare().then(async () => {
       io.to(roomCode).emit('game_state_change', 'LOBBY')
       io.to(roomCode).emit('players_update', Array.from(room.players.values()))
 
-      console.log(`✅ New game started in room ${roomCode}`)
+      logger.info(`New game started in room ${roomCode}`)
     }))
 
     // Get room preview (for join page)
@@ -916,7 +917,7 @@ app.prepare().then(async () => {
           }
         })
       } catch (error) {
-        console.error('Error getting room preview:', error)
+        logger.error('Error getting room preview:', error)
         callback({ success: false, error: 'Failed to get room info' })
       }
     })
@@ -1165,7 +1166,7 @@ app.prepare().then(async () => {
         const packs = await listCardPacks()
         callback({ success: true, packs })
       } catch (error) {
-        console.error('Error listing card packs:', error)
+        logger.error('Error listing card packs:', error)
         callback({ success: false, error: 'Failed to list card packs' })
       }
     })
@@ -1214,7 +1215,7 @@ app.prepare().then(async () => {
         const result = await createCardPack(packData)
         callback(result)
       } catch (error) {
-        console.error('Error creating card pack:', error)
+        logger.error('Error creating card pack:', error)
         callback({ success: false, error: 'Failed to create card pack' })
       }
     })
@@ -1231,7 +1232,7 @@ app.prepare().then(async () => {
         const result = await rateCardPack(packId, rating)
         callback(result)
       } catch (error) {
-        console.error('Error rating card pack:', error)
+        logger.error('Error rating card pack:', error)
         callback({ success: false, error: 'Failed to rate card pack' })
       }
     })
@@ -1248,7 +1249,7 @@ app.prepare().then(async () => {
         const result = await updateCardPack(packId, updates)
         callback(result)
       } catch (error) {
-        console.error('Error updating card pack:', error)
+        logger.error('Error updating card pack:', error)
         callback({ success: false, error: 'Failed to update card pack' })
       }
     })
@@ -1265,7 +1266,7 @@ app.prepare().then(async () => {
         const result = await deleteCardPack(packId)
         callback(result)
       } catch (error) {
-        console.error('Error deleting card pack:', error)
+        logger.error('Error deleting card pack:', error)
         callback({ success: false, error: 'Failed to delete card pack' })
       }
     })
@@ -1276,7 +1277,7 @@ app.prepare().then(async () => {
         const packs = await searchCardPacks(query)
         callback({ success: true, packs })
       } catch (error) {
-        console.error('Error searching card packs:', error)
+        logger.error('Error searching card packs:', error)
         callback({ success: false, error: 'Failed to search card packs' })
       }
     })
@@ -1287,7 +1288,7 @@ app.prepare().then(async () => {
         const packs = await getFeaturedPacks(limit)
         callback({ success: true, packs })
       } catch (error) {
-        console.error('Error getting featured packs:', error)
+        logger.error('Error getting featured packs:', error)
         callback({ success: false, error: 'Failed to get featured packs' })
       }
     })
@@ -1302,7 +1303,7 @@ app.prepare().then(async () => {
           callback({ success: false, error: 'Pack not found' })
         }
       } catch (error) {
-        console.error('Error getting card pack:', error)
+        logger.error('Error getting card pack:', error)
         callback({ success: false, error: 'Failed to get card pack' })
       }
     })
@@ -1377,7 +1378,7 @@ app.prepare().then(async () => {
         const games = await getPlayerGames(playerId, limit)
         callback({ success: true, games })
       } catch (error) {
-        console.error('Error fetching game history:', error)
+        logger.error('Error fetching game history:', error)
         callback({ success: false, error: 'Failed to load game history' })
       }
     })
@@ -1396,7 +1397,7 @@ app.prepare().then(async () => {
         }
         callback({ success: true, game })
       } catch (error) {
-        console.error('Error fetching game details:', error)
+        logger.error('Error fetching game details:', error)
         callback({ success: false, error: 'Failed to load game' })
       }
     })
@@ -1415,7 +1416,7 @@ app.prepare().then(async () => {
           callback({ success: false, error: result.error })
         }
       } catch (error) {
-        console.error('Error sharing game:', error)
+        logger.error('Error sharing game:', error)
         callback({ success: false, error: 'Failed to share game' })
       }
     })
@@ -1430,7 +1431,7 @@ app.prepare().then(async () => {
         const stats = await getPlayerStats(playerId)
         callback({ success: true, stats })
       } catch (error) {
-        console.error('Error fetching player stats:', error)
+        logger.error('Error fetching player stats:', error)
         callback({ success: false, error: 'Failed to load stats' })
       }
     })
@@ -1441,7 +1442,7 @@ app.prepare().then(async () => {
         const entries = await getLeaderboard(category, limit)
         callback({ success: true, entries })
       } catch (error) {
-        console.error('Error fetching leaderboard:', error)
+        logger.error('Error fetching leaderboard:', error)
         callback({ success: false, error: 'Failed to load leaderboard' })
       }
     })
@@ -1460,7 +1461,7 @@ app.prepare().then(async () => {
         const balance = await getCredits(uid)
         callback({ success: true, balance })
       } catch (error) {
-        console.error('Error fetching credit balance:', error)
+        logger.error('Error fetching credit balance:', error)
         callback({ success: false, error: 'Failed to load credits' })
       }
     })
@@ -1481,14 +1482,14 @@ app.prepare().then(async () => {
 
     // Handle disconnect
     socket.on('disconnect', withErrorHandler(socket, 'disconnect', (reason) => {
-      console.log('Client disconnected:', socket.id, 'Reason:', reason)
+      logger.info('Client disconnected:', socket.id, 'Reason:', reason)
 
       // Give a grace period before removing players (helps with reconnections)
       setTimeout(() => {
         // Check if socket reconnected (if it's connected again, don't remove)
         const reconnected = io.sockets.sockets.get(socket.id)
         if (reconnected && reconnected.connected) {
-          console.log('Socket reconnected, not removing player:', socket.id)
+          logger.debug('Socket reconnected, not removing player:', socket.id)
           return
         }
 
@@ -1496,7 +1497,7 @@ app.prepare().then(async () => {
         for (const [code, room] of roomService.getRoomEntries()) {
           for (const [playerId, player] of room.players.entries()) {
             if (player.socketId === socket.id) {
-              console.log(`Removing player ${player.nickname} from room ${code}`)
+              logger.info(`Removing player ${player.nickname} from room ${code}`)
               roomService.removePlayer(room, playerId)
               io.to(code).emit('player_left', playerId)
               io.to(code).emit('players_update', Array.from(room.players.values()))
@@ -1504,12 +1505,12 @@ app.prepare().then(async () => {
               // If host left and room is still in lobby, allow others to continue
               // Only delete room if it's empty or has been too long
               if (player.isHost && room.gameState === 'LOBBY' && room.players.size === 0) {
-                console.log(`Deleting empty room ${code}`)
+                logger.info(`Deleting empty room ${code}`)
                 roomService.clearAllRoomTimeouts(code)
                 roomService.deleteRoom(code)
               } else if (player.isHost) {
                 // Host left during game - notify players with specific event and cleanup timeouts
-                console.log(`Host disconnected from room ${code}`)
+                logger.info(`Host disconnected from room ${code}`)
                 roomService.clearAllRoomTimeouts(code)
                 io.to(code).emit('host_disconnected', { message: 'The host has left the game. You can wait for them to reconnect or return to the home page.' })
               }
@@ -1526,7 +1527,7 @@ app.prepare().then(async () => {
     // Rate limiting for script generation (use host socket ID)
     const hostSocketId = room.host.socketId
     if (!scriptGenerationLimiter.check(hostSocketId)) {
-      console.warn(`Script generation rate limit exceeded for room ${room.code}`)
+      logger.warn(`Script generation rate limit exceeded for room ${room.code}`)
       io.to(room.code).emit('error', 'Too many script generation requests. Please wait a moment.')
       room.gameState = 'SELECTION'
       io.to(room.code).emit('game_state_change', 'SELECTION')
@@ -1538,7 +1539,7 @@ app.prepare().then(async () => {
       try {
         const creditResult = await checkAndDeductCredit(room.hostUid)
         if (!creditResult.success) {
-          console.log(`Insufficient credits for host ${room.hostUid} in room ${room.code}`)
+          logger.info(`Insufficient credits for host ${room.hostUid} in room ${room.code}`)
           io.to(room.code).emit('insufficient_credits', { needed: 1, available: 0 })
           room.gameState = 'SELECTION'
           io.to(room.code).emit('game_state_change', 'SELECTION')
@@ -1551,7 +1552,7 @@ app.prepare().then(async () => {
           hostSocket.emit('credit_balance', balance)
         }
       } catch (creditError) {
-        console.error(`Credit check failed for host ${room.hostUid}:`, creditError)
+        logger.error(`Credit check failed for host ${room.hostUid}:`, creditError)
         io.to(room.code).emit('error', 'Failed to verify credits. Please try again.')
         room.gameState = 'SELECTION'
         io.to(room.code).emit('game_state_change', 'SELECTION')
@@ -1559,7 +1560,7 @@ app.prepare().then(async () => {
       }
     } else if (!dev) {
       // In production, require authenticated host
-      console.warn(`Script generation blocked: no hostUid for room ${room.code}`)
+      logger.warn(`Script generation blocked: no hostUid for room ${room.code}`)
       io.to(room.code).emit('error', 'Authentication required to generate scripts.')
       room.gameState = 'SELECTION'
       io.to(room.code).emit('game_state_change', 'SELECTION')
@@ -1581,8 +1582,8 @@ app.prepare().then(async () => {
     const chosenSetting = allSelections[randomSettingIndex].setting
     const chosenCircumstance = allSelections[randomCircumstanceIndex].circumstance
 
-    console.log(`🎲 Randomly selected setting: "${chosenSetting}" (from player ${randomSettingIndex + 1})`)
-    console.log(`🎲 Randomly selected circumstance: "${chosenCircumstance}" (from player ${randomCircumstanceIndex + 1})`)
+    logger.info(`Randomly selected setting: "${chosenSetting}" (from player ${randomSettingIndex + 1})`)
+    logger.info(`Randomly selected circumstance: "${chosenCircumstance}" (from player ${randomCircumstanceIndex + 1})`)
 
     // Send green room trivia based on chosen setting
     const triviaQuestion = getGreenRoomQuestion(chosenSetting)
@@ -1601,12 +1602,12 @@ app.prepare().then(async () => {
 
       let characters = playerSelections.map(s => s.character)
 
-      console.log(`🎭 ${room.gameMode} mode: ${characters.length} player${characters.length > 1 ? 's' : ''}`)
-      console.log(`   Characters: ${characters.join(', ')}`)
-      console.log(`   Setting: "${chosenSetting}"`)
-      console.log(`   Circumstance: "${chosenCircumstance}"`)
+      logger.info(`${room.gameMode} mode: ${characters.length} player${characters.length > 1 ? 's' : ''}`)
+      logger.debug(`   Characters: ${characters.join(', ')}`)
+      logger.debug(`   Setting: "${chosenSetting}"`)
+      logger.debug(`   Circumstance: "${chosenCircumstance}"`)
       if (room.gameMode === 'SOLO') {
-        console.log(`   Note: AI will invent a hilarious Co-Star character to play opposite the human player`)
+        logger.debug(`   Note: AI will invent a hilarious Co-Star character to play opposite the human player`)
       }
 
       // Generate script with customization and streaming progress
@@ -1659,7 +1660,7 @@ app.prepare().then(async () => {
             io.to(room.code).emit('script_image_update', imageUrl)
           }
         })
-        .catch((err) => console.error('[Image Service] Background generation error:', err))
+        .catch((err) => logger.error('[Image Service] Background generation error:', err))
 
       // Start ambience if enabled
       if (room.audioSettings?.ambienceEnabled) {
@@ -1670,7 +1671,7 @@ app.prepare().then(async () => {
       // Start teleprompter sync
       startTeleprompterSync(room, io)
     } catch (error) {
-      console.error('Script generation failed:', error)
+      logger.error('Script generation failed:', error)
       io.to(room.code).emit('error', 'Failed to generate script. Please try again.')
 
       // Reset game state to SELECTION so players can try again
@@ -1710,14 +1711,14 @@ app.prepare().then(async () => {
 
   // Log Stripe configuration status on startup
   if (process.env.STRIPE_SECRET_KEY) {
-    console.log('[Stripe] Secret key configured ✓')
+    logger.info('[Stripe] Secret key configured')
     if (process.env.STRIPE_WEBHOOK_SECRET) {
-      console.log('[Stripe] Webhook secret configured ✓')
+      logger.info('[Stripe] Webhook secret configured')
     } else {
-      console.warn('[Stripe] STRIPE_WEBHOOK_SECRET not set — webhooks will fail')
+      logger.warn('[Stripe] STRIPE_WEBHOOK_SECRET not set — webhooks will fail')
     }
   } else {
-    console.warn('[Stripe] STRIPE_SECRET_KEY not set — payments disabled')
+    logger.warn('[Stripe] STRIPE_SECRET_KEY not set — payments disabled')
   }
 
   // Persistent idempotency: check DB instead of in-memory Set
@@ -1741,7 +1742,7 @@ app.prepare().then(async () => {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
     if (!webhookSecret) {
-      console.error('[Stripe] STRIPE_WEBHOOK_SECRET not configured')
+      logger.error('[Stripe] STRIPE_WEBHOOK_SECRET not configured')
       res.status(500).json({ error: 'Webhook not configured' })
       return
     }
@@ -1756,7 +1757,7 @@ app.prepare().then(async () => {
 
       // Idempotency: skip already-processed events (Stripe retries on timeout)
       if (await isStripeEventProcessed(event.id)) {
-        console.log(`[Stripe] Skipping duplicate event ${event.id}`)
+        logger.info(`[Stripe] Skipping duplicate event ${event.id}`)
         res.json({ received: true })
         return
       }
@@ -1794,7 +1795,7 @@ app.prepare().then(async () => {
             }
           }
 
-          console.log(`[Stripe] Fulfilled ${scripts} credits for user ${userId}`)
+          logger.info(`[Stripe] Fulfilled ${scripts} credits for user ${userId}`)
         }
       } else if (event.type === 'charge.refunded') {
         const charge = event.data.object as { metadata?: Record<string, string>; amount_refunded?: number; amount?: number; payment_intent?: string }
@@ -1830,7 +1831,7 @@ app.prepare().then(async () => {
             }
           }
 
-          console.log(`[Stripe] Refund: deducted ${creditsToDeduct} credits from user ${userId}`)
+          logger.info(`[Stripe] Refund: deducted ${creditsToDeduct} credits from user ${userId}`)
         }
       } else if (event.type === 'checkout.session.expired') {
         const session = event.data.object as { metadata?: Record<string, string> }
@@ -1886,7 +1887,7 @@ app.prepare().then(async () => {
 
       res.json({ received: true })
     } catch (error) {
-      console.error('[Stripe] Webhook error:', error)
+      logger.error('[Stripe] Webhook error:', error)
       res.status(400).json({ error: 'Webhook signature verification failed' })
     }
   })
@@ -1910,18 +1911,18 @@ app.prepare().then(async () => {
   }
 
   expressApp.post('/api/stripe/create-checkout-session', async (req, res) => {
-    console.log('[Stripe] Checkout session request received')
+    logger.info('[Stripe] Checkout session request received')
     const { packageId, userId } = req.body
 
     if (!packageId || !userId) {
-      console.error('[Stripe] Missing packageId or userId in checkout request', { packageId: !!packageId, userId: !!userId, bodyKeys: Object.keys(req.body || {}) })
+      logger.error('[Stripe] Missing packageId or userId in checkout request', { packageId: !!packageId, userId: !!userId, bodyKeys: Object.keys(req.body || {}) })
       res.status(400).json({ error: 'Missing packageId or userId' })
       return
     }
 
     const pkg = CREDIT_PACKAGES.find(p => p.id === packageId)
     if (!pkg) {
-      console.error(`[Stripe] Invalid packageId: ${packageId}`)
+      logger.error(`[Stripe] Invalid packageId: ${packageId}`)
       res.status(400).json({ error: 'Invalid package' })
       return
     }
@@ -1929,7 +1930,7 @@ app.prepare().then(async () => {
     try {
       const stripe = getStripe()
       if (!stripe) {
-        console.error('[Stripe] STRIPE_SECRET_KEY not set — cannot create checkout session')
+        logger.error('[Stripe] STRIPE_SECRET_KEY not set — cannot create checkout session')
         res.status(500).json({ error: 'Stripe not configured' })
         return
       }
@@ -1973,7 +1974,7 @@ app.prepare().then(async () => {
 
       res.json({ clientSecret: session.client_secret })
     } catch (error) {
-      console.error('[Stripe] Create checkout session error:', error)
+      logger.error('[Stripe] Create checkout session error:', error)
       res.status(500).json({ error: 'Failed to create checkout session' })
     }
   })
@@ -1990,7 +1991,7 @@ app.prepare().then(async () => {
       const transactions = await getUserTransactions(userId)
       res.json({ transactions })
     } catch (error) {
-      console.error('[Stripe] Get transactions error:', error)
+      logger.error('[Stripe] Get transactions error:', error)
       res.status(500).json({ error: 'Failed to get transactions' })
     }
   })
@@ -2006,7 +2007,7 @@ app.prepare().then(async () => {
     try {
       const stripe = getStripe()
       if (!stripe) {
-        console.error('[Stripe] STRIPE_SECRET_KEY not set — cannot create portal session')
+        logger.error('[Stripe] STRIPE_SECRET_KEY not set — cannot create portal session')
         res.status(500).json({ error: 'Stripe not configured' })
         return
       }
@@ -2026,7 +2027,7 @@ app.prepare().then(async () => {
 
       res.json({ url: portalSession.url })
     } catch (error) {
-      console.error('[Stripe] Portal session error:', error)
+      logger.error('[Stripe] Portal session error:', error)
       res.status(500).json({ error: 'Failed to create portal session' })
     }
   })
@@ -2055,7 +2056,7 @@ app.prepare().then(async () => {
         amountTotal: session.amount_total
       })
     } catch (error) {
-      console.error('[Stripe] Session status error:', error)
+      logger.error('[Stripe] Session status error:', error)
       res.status(500).json({ error: 'Failed to get session status' })
     }
   })
@@ -2088,7 +2089,7 @@ app.prepare().then(async () => {
         comedyStyle: game.comedyStyle
       })
     } catch (error) {
-      console.error('Error fetching game metadata:', error)
+      logger.error('Error fetching game metadata:', error)
       res.status(500).json({ error: 'Failed to load game' })
     }
   })
@@ -2100,6 +2101,6 @@ app.prepare().then(async () => {
   })
 
   server.listen(port, () => {
-    console.log(`> Ready on http://${hostname}:${port}`)
+    logger.info(`> Ready on http://${hostname}:${port}`)
   })
 })

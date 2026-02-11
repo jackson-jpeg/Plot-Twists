@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Modal } from './Modal'
+import { MOTION } from '@/lib/animations'
 
 interface OnboardingModalProps {
   isOpen: boolean
@@ -20,7 +21,7 @@ const STEPS = [
           style={{ fontSize: '80px', marginBottom: '16px' }}
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
+          transition={{ ...MOTION.gentle, delay: 0.2 }}
         >
           🎭
         </motion.div>
@@ -76,7 +77,7 @@ const STEPS = [
           style={{ fontSize: '64px', marginBottom: '16px' }}
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 300, delay: 0.2 }}
+          transition={{ ...MOTION.spring, delay: 0.2 }}
         >
           🚀
         </motion.div>

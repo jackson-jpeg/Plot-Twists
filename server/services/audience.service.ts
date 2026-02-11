@@ -16,6 +16,7 @@ import type {
   ComedyStyle,
   SpectatorMessage
 } from '../../lib/types'
+import { logger } from '../../lib/logger'
 
 // Initialize Anthropic client for AI-powered twists
 const anthropic = new Anthropic({
@@ -178,10 +179,10 @@ export function startPlotTwist(
       // Use pre-generated and clear the cache
       options = preGenerated.map(opt => ({ ...opt, votes: 0 }))
       clearPreGeneratedTwists(roomCode)
-      console.log(`🎭 Using pre-generated AI twists for room ${roomCode}`)
+      logger.info(`Using pre-generated AI twists for room ${roomCode}`)
     } else {
       options = generatePlotTwistOptions()
-      console.log(`🎭 Using template twists for room ${roomCode} (no pre-generated available)`)
+      logger.info(`Using template twists for room ${roomCode} (no pre-generated available)`)
     }
   } else {
     options = generatePlotTwistOptions()
@@ -474,10 +475,10 @@ Make them hilarious and scene-specific. No generic twists.`
     // Cache for this room
     preGeneratedTwists.set(roomCode, options)
 
-    console.log(`🎭 AI generated ${options.length} plot twists for room ${roomCode}`)
+    logger.info(`AI generated ${options.length} plot twists for room ${roomCode}`)
     return options
   } catch (error) {
-    console.error('❌ AI plot twist generation failed, using templates:', error)
+    logger.error('AI plot twist generation failed, using templates:', error)
     // Fall back to template-based generation
     return generatePlotTwistOptions()
   }
@@ -542,10 +543,10 @@ Return ONLY a JSON array:
 
     const parsed = JSON.parse(jsonText) as ScriptLine[]
 
-    console.log(`🎭 AI generated ${parsed.length} twist reaction lines`)
+    logger.info(`AI generated ${parsed.length} twist reaction lines`)
     return parsed
   } catch (error) {
-    console.error('❌ AI twist injection failed, using templates:', error)
+    logger.error('AI twist injection failed, using templates:', error)
     // Fall back to template-based injection
     return generateTwistInjection(twistText, characters)
   }
@@ -579,7 +580,7 @@ export function preGenerateTwistsForRoom(
 
   // Generate in background (don't await)
   generateAIPlotTwistOptions(roomCode, context).catch(err => {
-    console.error(`Failed to pre-generate twists for room ${roomCode}:`, err)
+    logger.error(`Failed to pre-generate twists for room ${roomCode}:`, err)
   })
 }
 
@@ -616,6 +617,6 @@ export function regenerateTwistsForRoom(
 
   // Generate in background
   generateAIPlotTwistOptions(roomCode, context).catch(err => {
-    console.error(`Failed to regenerate twists for room ${roomCode}:`, err)
+    logger.error(`Failed to regenerate twists for room ${roomCode}:`, err)
   })
 }

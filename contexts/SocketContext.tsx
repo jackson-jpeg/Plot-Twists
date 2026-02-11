@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useRef } from 'r
 import { io, Socket } from 'socket.io-client'
 import type { ServerToClientEvents, ClientToServerEvents } from '@/lib/types'
 import { getFirebaseAuth, initializeFirebase } from '@/lib/firebase'
+import { logger } from '@/lib/logger'
 
 type SocketType = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -40,7 +41,7 @@ async function getIdToken(): Promise<string | null> {
       return await currentUser.getIdToken()
     }
   } catch (error) {
-    console.warn('[SocketContext] Failed to get ID token:', error)
+    logger.warn('[SocketContext] Failed to get ID token:', error)
   }
   return null
 }
@@ -58,7 +59,7 @@ async function waitForAuthReady(): Promise<void> {
       await auth.authStateReady()
     }
   } catch (error) {
-    console.warn('[SocketContext] Failed to wait for auth ready:', error)
+    logger.warn('[SocketContext] Failed to wait for auth ready:', error)
   }
 }
 
@@ -79,7 +80,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         // Wait for Firebase auth to restore session before getting token
         await waitForAuthReady()
         const token = await getIdToken()
-        console.log(`[SocketContext] initSocket: token ${token ? 'present' : 'absent'}`)
+        logger.debug(`[SocketContext] initSocket: token ${token ? 'present' : 'absent'}`)
 
         // Determine socket URL based on environment
         let socketUrl: string
@@ -129,19 +130,19 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         setConnectionState('connecting')
 
         globalSocket.on('connect', () => {
-          console.log('Socket connected:', globalSocket?.id)
+          logger.info('Socket connected:', globalSocket?.id)
           setIsConnected(true)
           setConnectionState('connected')
         })
 
         globalSocket.on('disconnect', (reason) => {
-          console.log('Socket disconnected:', reason)
+          logger.info('Socket disconnected:', reason)
           setIsConnected(false)
           setConnectionState('disconnected')
         })
 
         globalSocket.on('connect_error', async (error) => {
-          console.error('Socket connection error:', error)
+          logger.error('Socket connection error:', error)
           setConnectionState('disconnected')
 
           // If auth error, try refreshing token and reconnecting
@@ -155,7 +156,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         })
 
         globalSocket.io.on('reconnect_attempt', async () => {
-          console.log('Socket reconnecting...')
+          logger.info('Socket reconnecting...')
           setConnectionState('reconnecting')
 
           // Refresh token on reconnect
@@ -166,7 +167,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         })
 
         globalSocket.io.on('reconnect', () => {
-          console.log('Socket reconnected')
+          logger.info('Socket reconnected')
           setConnectionState('connected')
         })
       }
@@ -215,7 +216,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
             globalSocket.auth = freshToken ? { token: freshToken } : {}
             globalSocket.disconnect().connect()
-            console.log(`[SocketContext] Auth changed (uid: ${newUid ?? 'null'}), reconnecting socket`)
+            logger.info(`[SocketContext] Auth changed (uid: ${newUid ?? 'null'}), reconnecting socket`)
           }
         })
       } catch {

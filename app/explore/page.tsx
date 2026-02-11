@@ -6,7 +6,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/Modal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
-import { EmptyState } from '@/components/EmptyState'
+import { EmptyState, CardSkeleton } from '@/components/EmptyState'
 import type { CardPackMetadata, CardPack } from '@/lib/types'
 
 type Tab = 'featured' | 'search'
@@ -250,7 +250,7 @@ export default function ExplorePage() {
         <span className="font-medium text-[var(--color-text-primary)]">Home</span>
       </motion.button>
 
-      <div className="container max-w-2xl pt-20 pb-8 px-4">
+      <div className="container max-w-2xl xl:max-w-4xl pt-20 pb-8 px-4">
         {/* Bulletin board header */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -323,8 +323,8 @@ export default function ExplorePage() {
 
         {/* Pack grid */}
         {loading ? (
-          <div className="py-16">
-            <LoadingSpinner size="lg" variant="theater" text="Searching the archives..." />
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+            <CardSkeleton count={4} />
           </div>
         ) : currentPacks.length === 0 ? (
           activeTab === 'search' ? (
@@ -342,7 +342,7 @@ export default function ExplorePage() {
             />
           )
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
             {currentPacks.map((pack, index) => (
               <PackCard key={pack.id} pack={pack} onSelect={handleSelectPack} index={index} />
             ))}

@@ -6,6 +6,7 @@
 import type { UserProfile, UserMigrationData, UserPreferences } from '../../lib/types'
 import { getDatabase, Collections } from '../db'
 import { getDefaultCredits } from '../../lib/credits'
+import { logger } from '../../lib/logger'
 
 // ============================================================
 // Core Functions
@@ -83,7 +84,7 @@ export async function upsertUser(
 
   await db.set(Collections.USERS, uid, newUser)
 
-  console.log(`Created new user: ${uid} (${newUser.displayName})`)
+  logger.info(`Created new user: ${uid} (${newUser.displayName})`)
   return newUser
 }
 
@@ -134,7 +135,7 @@ export async function linkAccount(
 
   await db.update(Collections.USERS, uid, updates)
 
-  console.log(`Linked ${accountType} account to user ${uid}`)
+  logger.info(`Linked ${accountType} account to user ${uid}`)
   return { success: true }
 }
 
@@ -244,7 +245,7 @@ export async function migrateAnonymousUser(
       await db.set(Collections.PLAYER_STATS, newAuthenticatedId, newStats)
 
       migrationData.statsTransferred = true
-      console.log(`Migrated stats from ${oldAnonymousId} to ${newAuthenticatedId}`)
+      logger.info(`Migrated stats from ${oldAnonymousId} to ${newAuthenticatedId}`)
     }
 
     // Migrate game history - update player IDs in saved games
@@ -261,7 +262,7 @@ export async function migrateAnonymousUser(
         await db.update(Collections.GAME_HISTORY, game.id, { players: updatedPlayers })
       }
       migrationData.historyTransferred = true
-      console.log(`Migrated ${gamesToUpdate.length} games from ${oldAnonymousId} to ${newAuthenticatedId}`)
+      logger.info(`Migrated ${gamesToUpdate.length} games from ${oldAnonymousId} to ${newAuthenticatedId}`)
     }
 
     // Update user profile with migration info
@@ -278,7 +279,7 @@ export async function migrateAnonymousUser(
 
     return { success: true }
   } catch (error) {
-    console.error('Migration error:', error)
+    logger.error('Migration error:', error)
     return { success: false, error: 'Migration failed' }
   }
 }

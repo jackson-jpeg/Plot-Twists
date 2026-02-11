@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { SavedGame } from '@/lib/types'
 
@@ -12,6 +13,7 @@ interface GameHistoryProps {
 }
 
 export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHistoryProps) {
+  const router = useRouter()
   const { socket } = useSocket()
   const [games, setGames] = useState<SavedGame[]>([])
   const [loading, setLoading] = useState(true)
@@ -239,7 +241,14 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
                         {sharingGameId === game.id ? 'Sharing...' : game.isPublic ? '📋 Copy Link' : '🔗 Share'}
                       </button>
                       <button
-                        onClick={() => {/* TODO: View full script */}}
+                        onClick={() => {
+                          if (game.shareCode) {
+                            router.push(`/replay/${game.shareCode}`)
+                          } else {
+                            handleShare(game.id)
+                            router.push(`/replay/${game.id}`)
+                          }
+                        }}
                         className="px-4 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-surface-alt)] text-[var(--color-text-primary)] border border-[var(--color-border)] rounded-lg text-sm font-medium transition-colors"
                       >
                         📄 View Script

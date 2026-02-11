@@ -27,7 +27,7 @@ import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
 import { getMoodIndicator, getVisibleLines } from '@/lib/teleprompterUtils'
 import { MoviePosterFrame, MoviePosterSkeleton } from '@/components/MoviePosterFrame'
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
-import { VARIANTS } from '@/lib/animations'
+import { VARIANTS, MOTION } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
 import { SpectatorTicker } from '@/components/SpectatorChat'
 import type { Achievement, SpectatorMessage } from '@/lib/types'
@@ -1778,7 +1778,7 @@ export default function HostPage() {
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
                   exit={{ scale: 0, rotate: 180 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  transition={MOTION.gentle}
                   className="text-8xl mb-6"
                 >
                   {getCurrentLoadingStage().icon}
@@ -2040,7 +2040,7 @@ export default function HostPage() {
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0, opacity: 0 }}
-                            transition={{ type: "spring", stiffness: 300 }}
+                            transition={MOTION.spring}
                           >
                             <span className="text-base">{moodIndicator.emoji}</span>
                             <span>{moodIndicator.label}</span>

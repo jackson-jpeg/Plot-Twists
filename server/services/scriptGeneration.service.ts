@@ -13,6 +13,7 @@ import {
   getMaxTokens,
   getLineCountRange
 } from './scriptCustomization.service'
+import { logger } from '../../lib/logger'
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
@@ -90,23 +91,21 @@ The premise is already absurd. Your job is to EXPLOIT that absurdity through sha
 Write the scene now. Make it genuinely funny - the kind of funny where people will want to perform it again.`
 
   try {
-    console.log(`\n🎬 AI SCRIPT GENERATION ${previousScript ? '(SEQUEL MODE)' : ''}`)
-    console.log(`════════════════════════════════════════`)
-    console.log(`Mode: ${gameMode}`)
-    console.log(`Rating: ${isMature ? '18+ (Adult Comedy)' : 'Family Friendly'}`)
-    console.log(`Characters: ${characterList}`)
-    console.log(`Setting: ${setting}`)
-    console.log(`Circumstance: ${circumstance}`)
+    logger.info(`AI SCRIPT GENERATION ${previousScript ? '(SEQUEL MODE)' : ''}`)
+    logger.info(`Mode: ${gameMode}`)
+    logger.debug(`Rating: ${isMature ? '18+ (Adult Comedy)' : 'Family Friendly'}`)
+    logger.debug(`Characters: ${characterList}`)
+    logger.debug(`Setting: ${setting}`)
+    logger.debug(`Circumstance: ${circumstance}`)
     if (customization) {
-      console.log(`Style: ${customization.comedyStyle}, Length: ${customization.scriptLength}, Difficulty: ${customization.difficulty}`)
+      logger.debug(`Style: ${customization.comedyStyle}, Length: ${customization.scriptLength}, Difficulty: ${customization.difficulty}`)
     }
     if (previousScript) {
-      console.log(`Sequel to: "${previousScript.title}"`)
+      logger.debug(`Sequel to: "${previousScript.title}"`)
     }
     if (isSoloMode) {
-      console.log(`Note: AI will invent a hilarious Co-Star character to play opposite the human player`)
+      logger.debug(`Note: AI will invent a hilarious Co-Star character to play opposite the human player`)
     }
-    console.log(`════════════════════════════════════════\n`)
 
     onProgress?.({ phase: 'Connecting to AI...', percent: 5 })
 
@@ -163,7 +162,7 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
 
     const finalMessage = await stream.finalMessage()
 
-    console.log(`✅ Script generated successfully!\n`)
+    logger.info(`Script generated successfully!`)
 
     const content = finalMessage.content[0]
     if (content.type !== 'text') {
@@ -180,7 +179,7 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
     const validationResult = ScriptSchema.safeParse(rawScript)
 
     if (!validationResult.success) {
-      console.error('❌ Script validation failed:', validationResult.error.format())
+      logger.error('Script validation failed:', validationResult.error.format())
       throw new Error(`Invalid script format: ${validationResult.error.message}`)
     }
 
@@ -188,7 +187,7 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
     const script = validationResult.data
     return script
   } catch (error) {
-    console.error('Error generating script:', error)
+    logger.error('Error generating script:', error)
     throw error
   }
 }

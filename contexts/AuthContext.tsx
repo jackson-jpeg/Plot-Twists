@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { initializeFirebase, getFirebaseAuth, isFirebaseConfigured } from '@/lib/firebase'
 import { getFirebaseErrorMessage } from '@/lib/authErrors'
+import { logger } from '@/lib/logger'
 
 // Auth result type
 interface AuthResult {
@@ -123,9 +124,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const missing = getMissingFirebaseConfig()
     if (missing.length > 0) {
-      console.warn('[AuthContext] Missing Firebase env vars:', missing)
+      logger.warn('[AuthContext] Missing Firebase env vars:', missing)
     } else {
-      console.log('[AuthContext] Firebase config complete, isFirebaseConfigured:', isFirebaseConfigured)
+      logger.debug('[AuthContext] Firebase config complete, isFirebaseConfigured:', isFirebaseConfigured)
     }
   }, [])
 
@@ -165,7 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         success = await initializeFirebase()
       } catch (error) {
-        console.warn('[AuthContext] Firebase initialization failed, falling back to guest mode:', error)
+        logger.warn('[AuthContext] Firebase initialization failed, falling back to guest mode:', error)
         success = false
       }
       setFirebaseReady(success)
@@ -204,7 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setLoading(false)
         }
       } catch (error) {
-        console.warn('[AuthContext] Firebase auth not available, continuing in guest mode')
+        logger.warn('[AuthContext] Firebase auth not available, continuing in guest mode')
         setFirebaseReady(false)
         setLoading(false)
       }
@@ -275,11 +276,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (!verifier) {
-      console.error('[Phone Auth] sendPhoneCode called with null/undefined verifier')
+      logger.error('[Phone Auth] sendPhoneCode called with null/undefined verifier')
       return { success: false, error: 'reCAPTCHA not initialized. Please refresh the page and try again.' }
     }
 
-    console.log('[Phone Auth] Sending verification code to:', phone)
+    logger.info('[Phone Auth] Sending verification code to:', phone)
 
     try {
       const firebaseAuth = await import('firebase/auth')
@@ -288,17 +289,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const confirmationResult = await signInWithPhoneNumber(auth as any, phone, verifier)
 
       if (!confirmationResult?.verificationId) {
-        console.error('[Phone Auth] signInWithPhoneNumber returned no verificationId')
+        logger.error('[Phone Auth] signInWithPhoneNumber returned no verificationId')
         return { success: false, error: 'Failed to send verification code. Please try again.' }
       }
 
-      console.log('[Phone Auth] Verification code sent successfully')
+      logger.info('[Phone Auth] Verification code sent successfully')
       return { success: true, verificationId: confirmationResult.verificationId }
     } catch (error: unknown) {
       const errorCode = error && typeof error === 'object' && 'code' in error
         ? (error as { code: string }).code
         : 'unknown'
-      console.error('[Phone Auth] sendPhoneCode error:', errorCode, error)
+      logger.error('[Phone Auth] sendPhoneCode error:', errorCode, error)
 
       if (errorCode === 'auth/operation-not-allowed') {
         return {
@@ -493,7 +494,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const auth = getFirebaseAuth()
       await firebaseSignOut(auth as any)
     } catch (error) {
-      console.error('Sign out error:', error)
+      logger.error('Sign out error:', error)
     }
   }, [firebaseReady])
 

@@ -8,6 +8,7 @@ import type { UserProfile, CreditBalance } from '../../lib/types'
 import { getDefaultCredits, needsWeeklyReset, getAvailableCredits, formatCreditBalance, getFreeRemaining } from '../../lib/credits'
 import { getDatabase, Collections } from '../db'
 import { isAdminEmail, isAdminPhone } from '../../lib/admin'
+import { logger } from '../../lib/logger'
 
 /**
  * Ensure a user has the credits field (backward compat for existing users).
@@ -62,7 +63,7 @@ export async function checkAndDeductCredit(userId: string): Promise<{
 
   // Admin bypass: unlimited credits
   if (isAdminEmail(userProfile.email) || isAdminPhone(userProfile.phoneNumber)) {
-    console.log(`[Credits] Admin bypass for user ${userId}`)
+    logger.info(`[Credits] Admin bypass for user ${userId}`)
     return { success: true, source: 'admin' as const, remaining: 999 }
   }
 
@@ -145,7 +146,7 @@ export async function addBankedCredits(userId: string, amount: number, spendCent
     })
   })
 
-  console.log(`Added ${amount} banked credits to user ${userId} ($${(spendCents / 100).toFixed(2)})`)
+  logger.info(`Added ${amount} banked credits to user ${userId} ($${(spendCents / 100).toFixed(2)})`)
 }
 
 /**
@@ -165,7 +166,7 @@ export async function initializeCredits(userId: string): Promise<void> {
       credits: getDefaultCredits(),
       lifetimeSpend: 0
     })
-    console.log(`Initialized credits for user ${userId}`)
+    logger.info(`Initialized credits for user ${userId}`)
   }
 }
 
@@ -191,5 +192,5 @@ export async function deductBankedCredits(userId: string, amount: number): Promi
     })
   })
 
-  console.log(`Deducted ${amount} banked credits from user ${userId}`)
+  logger.info(`Deducted ${amount} banked credits from user ${userId}`)
 }

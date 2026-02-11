@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { PhoneAuthForm } from './PhoneAuthForm'
 import { analytics } from '@/lib/analytics'
+import { MOTION } from '@/lib/animations'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -146,7 +147,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
             initial={{ y: -100, opacity: 0, rotateX: -10 }}
             animate={{ y: 0, opacity: 1, rotateX: 0 }}
             exit={{ y: 100, opacity: 0 }}
-            transition={{ type: "spring", damping: 20, stiffness: 300 }}
+            transition={MOTION.bouncy}
             className="w-full max-w-md overflow-hidden rounded-2xl bg-[var(--color-bg)] border-2 border-dashed border-[var(--color-border)]"
           >
             {/* Header */}
@@ -199,7 +200,7 @@ export function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModal
           initial={{ y: -100, opacity: 0, rotateX: -10 }}
           animate={{ y: 0, opacity: 1, rotateX: 0 }}
           exit={{ y: 100, opacity: 0 }}
-          transition={{ type: "spring", damping: 20, stiffness: 300 }}
+          transition={MOTION.bouncy}
           className="w-full max-w-md overflow-hidden rounded-2xl bg-[var(--color-bg)] border-2 border-dashed border-[var(--color-border)]"
           role="dialog"
           aria-modal="true"

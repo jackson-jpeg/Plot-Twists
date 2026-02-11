@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { MOTION } from '@/lib/animations'
 
 export default function PurchaseCancelledPage() {
   const router = useRouter()
@@ -12,7 +13,7 @@ export default function PurchaseCancelledPage() {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', damping: 15, stiffness: 200 }}
+          transition={MOTION.gentle}
         >
           <div className="text-6xl mb-6">🎬</div>
 

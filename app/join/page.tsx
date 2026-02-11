@@ -19,7 +19,7 @@ const SmartCardSelector = dynamic(() => import('@/components/SmartCardSelector')
 const AudienceReactionBar = dynamic(() => import('@/components/AudienceReactionBar').then(m => ({ default: m.AudienceReactionBar })), { ssr: false })
 const PlotTwistVoting = dynamic(() => import('@/components/PlotTwistVoting').then(m => ({ default: m.PlotTwistVoting })), { ssr: false })
 import { getMoodIndicator } from '@/lib/teleprompterUtils'
-import { VARIANTS } from '@/lib/animations'
+import { VARIANTS, MOTION } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
 import { MobileTeleprompter } from '@/components/MobileTeleprompter'
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
@@ -583,19 +583,16 @@ function JoinPageContent() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="mt-3 p-3 rounded-lg"
+                      className="mt-3 p-4 rounded-lg"
                       style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
                     >
-                      <div className="flex items-center justify-center gap-2">
-                        <motion.span
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        >
-                          🔍
-                        </motion.span>
-                        <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                          Looking for room...
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-[var(--color-surface)] animate-pulse shrink-0" />
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 w-24 bg-[var(--color-surface)] animate-pulse rounded" />
+                          <div className="h-3 w-16 bg-[var(--color-surface)] animate-pulse rounded" />
+                        </div>
+                        <div className="h-7 w-12 bg-[var(--color-surface)] animate-pulse rounded-full" />
                       </div>
                     </motion.div>
                   )}
@@ -823,7 +820,7 @@ function JoinPageContent() {
                 initial={{ scale: 0.3, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 2, opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                transition={MOTION.bouncy}
                 className="text-center"
               >
                 <div style={{ fontSize: '120px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1 }}>
@@ -1186,7 +1183,7 @@ function JoinPageContent() {
                     style={{ background: 'var(--color-highlight)', border: '2px solid var(--color-accent)' }}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: 'spring', stiffness: 200 }}
+                    transition={MOTION.gentle}
                   >
                     <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>YOUR SELECTION:</p>
                     <div className="text-sm space-y-1">
@@ -1298,7 +1295,7 @@ function JoinPageContent() {
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
                   exit={{ scale: 0, rotate: 180 }}
-                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  transition={MOTION.gentle}
                   className="text-8xl mb-4"
                 >
                   {getCurrentLoadingStage().icon}

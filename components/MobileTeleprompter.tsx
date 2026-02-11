@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion'
 import { getMoodIndicator } from '@/lib/teleprompterUtils'
+import { MOTION } from '@/lib/animations'
 import { getCharactersInScene } from '@/lib/scriptUtils'
 import type { Script } from '@/lib/types'
 
@@ -122,7 +123,7 @@ export function MobileTeleprompter({
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.2, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              transition={MOTION.bouncy}
               style={{
                 fontSize: '48px',
                 fontWeight: 800,
@@ -232,7 +233,7 @@ export function MobileTeleprompter({
                 }}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ type: 'spring', stiffness: 300, delay: 0.1 }}
+                transition={{ ...MOTION.spring, delay: 0.1 }}
               >
                 <span style={{ fontSize: '1.25rem' }}>{moodIndicator.emoji}</span>
                 <span>{moodIndicator.label}</span>

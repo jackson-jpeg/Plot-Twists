@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { PlayerStats, Achievement, LeaderboardEntry, LeaderboardCategory } from '@/lib/types'
 import { GameHistory } from './GameHistory'
+import { StatsSkeleton } from './EmptyState'
 
 interface PlayerProfileProps {
   playerId: string
@@ -55,15 +56,8 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
 
   if (loading) {
     return (
-      <div className="text-center py-12 text-[var(--color-text-secondary)]">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="inline-block text-4xl mb-4"
-        >
-          🎭
-        </motion.div>
-        <p>Loading profile...</p>
+      <div className="py-6 space-y-6">
+        <StatsSkeleton />
       </div>
     )
   }

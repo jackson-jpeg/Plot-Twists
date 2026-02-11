@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useRef, useId } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { MOTION } from '@/lib/animations'
 
 interface CardCarouselProps {
   label: string
@@ -138,9 +139,9 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
             animate={isShaking ? "shake" : "center"}
             exit={shouldReduceMotion ? { opacity: 0 } : "exit"}
             transition={shouldReduceMotion ? { duration: 0 } : {
-              x: { type: "spring", stiffness: 300, damping: 30 },
+              x: MOTION.spring,
               opacity: { duration: 0.2 },
-              rotateY: { type: "spring", stiffness: 200, damping: 20 }
+              rotateY: MOTION.bouncy
             }}
             className="absolute inset-0"
             style={{ transformStyle: 'preserve-3d' }}

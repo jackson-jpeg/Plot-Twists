@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Achievement } from '@/lib/types'
+import { MOTION } from '@/lib/animations'
 
 interface AchievementToastProps {
   achievements: Achievement[]
@@ -58,7 +59,7 @@ function AchievementToastItem({ achievement, onDismiss }: { achievement: Achieve
       initial={{ x: 400, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 400, opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      transition={MOTION.spring}
       style={{
         background: colors.bg,
         backdropFilter: 'blur(12px)',
@@ -78,7 +79,7 @@ function AchievementToastItem({ achievement, onDismiss }: { achievement: Achieve
         style={{ fontSize: '32px', lineHeight: 1 }}
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: 'spring', stiffness: 300, delay: 0.2 }}
+        transition={{ ...MOTION.spring, delay: 0.2 }}
       >
         {achievement.icon}
       </motion.div>

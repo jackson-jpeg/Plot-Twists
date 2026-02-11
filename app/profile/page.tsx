@@ -9,6 +9,7 @@ import { PlayerProfile, Leaderboard } from '@/components/PlayerProfile'
 import { AuthModal } from '@/components/AuthModal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
+import { StatsSkeleton, Skeleton } from '@/components/EmptyState'
 import { AccountSettings } from '@/components/AccountSettings'
 import { CreditHeaderBadge, useCreditBalance } from '@/components/CreditBadge'
 import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
@@ -27,6 +28,8 @@ export default function ProfilePage() {
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
   const [loadingTransactions, setLoadingTransactions] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
+  const [transactionError, setTransactionError] = useState<string | null>(null)
+  const [portalError, setPortalError] = useState<string | null>(null)
   const [accountExpanded, setAccountExpanded] = useState(false)
   const [stats, setStats] = useState<PlayerStats | null>(null)
   const creditBalance = useCreditBalance()
@@ -46,11 +49,14 @@ export default function ProfilePage() {
   const fetchTransactions = useCallback(async () => {
     if (!user || user.isAnonymous) return
     setLoadingTransactions(true)
+    setTransactionError(null)
     try {
       const res = await fetch(`${getApiBaseUrl()}/api/stripe/transactions?userId=${user.uid}`)
       const data = await res.json()
       if (data.transactions) setTransactions(data.transactions)
-    } catch { /* ignore */ }
+    } catch {
+      setTransactionError('Failed to load transactions')
+    }
     setLoadingTransactions(false)
   }, [user])
 
@@ -71,7 +77,9 @@ export default function ProfilePage() {
       if (data.url) {
         window.open(data.url, '_blank')
       }
-    } catch { /* ignore */ }
+    } catch {
+      setPortalError('Could not open billing portal')
+    }
     setPortalLoading(false)
   }
 
@@ -81,8 +89,17 @@ export default function ProfilePage() {
 
   if (!isConnected || authLoading) {
     return (
-      <main className="page-container items-center justify-center">
-        <LoadingSpinner size="lg" variant="theater" text="Loading your profile..." />
+      <main className="page-container home-nostalgic">
+        <div className="container max-w-2xl xl:max-w-3xl pt-20 pb-8 px-4 space-y-6">
+          <div className="flex items-center gap-4 mb-5">
+            <Skeleton variant="circle" width={64} height={64} />
+            <div className="flex-1 space-y-2">
+              <Skeleton variant="text" width="50%" height={24} />
+              <Skeleton variant="text" width="35%" height={14} />
+            </div>
+          </div>
+          <StatsSkeleton />
+        </div>
       </main>
     )
   }
@@ -139,7 +156,7 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      <div className="container max-w-2xl pt-20 pb-8 px-4">
+      <div className="container max-w-2xl xl:max-w-3xl pt-20 pb-8 px-4">
         {/* Profile Hero — full stats */}
         {heroStats ? (
           <motion.div
@@ -425,8 +442,21 @@ export default function ProfilePage() {
                             {portalLoading ? 'Opening...' : 'View Receipts'}
                           </motion.button>
                         </div>
+                        {portalError && (
+                          <p className="text-xs text-[var(--color-danger)] mt-1 text-right">{portalError}</p>
+                        )}
 
-                        {loadingTransactions ? (
+                        {transactionError ? (
+                          <div className="py-3 text-center">
+                            <p className="text-sm text-[var(--color-danger)] mb-2">{transactionError}</p>
+                            <button
+                              onClick={fetchTransactions}
+                              className="text-sm text-[var(--color-purple)] hover:underline"
+                            >
+                              Try again
+                            </button>
+                          </div>
+                        ) : loadingTransactions ? (
                           <div className="py-4">
                             <LoadingSpinner size="sm" variant="dots" text="Loading..." />
                           </div>

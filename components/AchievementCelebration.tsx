@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Achievement } from '@/lib/types'
+import { MOTION } from '@/lib/animations'
 
 interface AchievementCelebrationProps {
   achievement: Achievement | null
@@ -127,11 +128,7 @@ export function AchievementCelebration({ achievement, onComplete }: AchievementC
             initial={{ scale: 0, rotate: -180 }}
             animate={{ scale: 1, rotate: 0 }}
             exit={{ scale: 0, y: -100, opacity: 0 }}
-            transition={{
-              type: 'spring',
-              stiffness: 200,
-              damping: 15
-            }}
+            transition={MOTION.gentle}
           >
             {/* Particle effects */}
             {showParticles && <StarBurst color={colors.particle} />}
@@ -182,12 +179,7 @@ export function AchievementCelebration({ achievement, onComplete }: AchievementC
                 className="flex justify-center mb-4"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 300,
-                  damping: 10,
-                  delay: 0.2
-                }}
+                transition={{ ...MOTION.bouncy, damping: 10, delay: 0.2 }} // Extra bouncy for celebration
               >
                 <motion.div
                   className="text-6xl"

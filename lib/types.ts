@@ -231,6 +231,12 @@ export interface CardSelection {
   circumstance: string
 }
 
+export interface AvailableCards {
+  characters: string[]
+  settings: string[]
+  circumstances: string[]
+}
+
 export interface ScriptLine {
   speaker: string
   text: string

@@ -15,7 +15,7 @@ export function configureSecurityMiddleware(app: Express): void {
           scriptSrc: ["'self'", "'unsafe-inline'", "https://www.gstatic.com", "https://www.google.com", "https://apis.google.com", ...(process.env.NODE_ENV !== 'production' ? ["'unsafe-eval'"] : [])],
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'data:', 'https:'],
-          connectSrc: ["'self'", 'wss:', 'https:'],
+          connectSrc: ["'self'", 'wss:', 'https:', 'capacitor://localhost', 'ionic://localhost'],
           fontSrc: ["'self'", 'data:'],
           objectSrc: ["'none'"],
           mediaSrc: ["'self'"],

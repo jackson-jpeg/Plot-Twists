@@ -2,13 +2,18 @@
 
 import { useEffect } from 'react'
 import { logger } from '@/lib/logger'
+import { isCapacitorNative } from '@/lib/platform'
 
 /**
  * Register service worker for PWA functionality.
  * Also sets data-standalone attribute on <html> for CSS targeting.
+ * Skipped entirely inside Capacitor WKWebView (no SW support).
  */
 export function ServiceWorkerRegistration() {
   useEffect(() => {
+    // Skip service worker in Capacitor (WKWebView doesn't support it)
+    if (isCapacitorNative()) return
+
     // Set data-standalone attribute for CSS targeting (covers older iOS)
     const isStandalone =
       ('standalone' in navigator && (navigator as { standalone?: boolean }).standalone === true) ||

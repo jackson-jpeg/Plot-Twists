@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStandaloneMode } from '@/hooks/useStandaloneMode'
 import { MOTION, VARIANTS } from '@/lib/animations'
+import { isCapacitorNative } from '@/lib/platform'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
@@ -85,7 +86,7 @@ export function InstallPrompt() {
     deferredPromptRef.current = null
   }
 
-  if (isStandalone) return null
+  if (isStandalone || isCapacitorNative()) return null
 
   return (
     <AnimatePresence>

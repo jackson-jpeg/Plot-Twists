@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -17,6 +18,7 @@ import { ReferralCard } from '@/components/ReferralCard'
 import type { PaymentTransaction, PlayerStats } from '@/lib/types'
 import { getApiBaseUrl } from '@/lib/api'
 import { isAdminUser } from '@/lib/admin'
+import { isIOSNative } from '@/lib/platform'
 
 type ProfileTab = 'profile' | 'leaderboard'
 
@@ -472,15 +474,17 @@ export default function ProfilePage() {
                           <h3 className="font-semibold text-sm text-[var(--color-text-primary)] flex items-center gap-2 font-display">
                             <span>🧾</span> Payment History
                           </h3>
-                          <motion.button
-                            onClick={openCustomerPortal}
-                            disabled={portalLoading}
-                            className="text-xs px-2.5 py-1 rounded-lg transition-colors bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-elevated)]"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            {portalLoading ? 'Opening...' : 'View Receipts'}
-                          </motion.button>
+                          {!isIOSNative() && (
+                            <motion.button
+                              onClick={openCustomerPortal}
+                              disabled={portalLoading}
+                              className="text-xs px-2.5 py-1 rounded-lg transition-colors bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-elevated)]"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              {portalLoading ? 'Opening...' : 'View Receipts'}
+                            </motion.button>
+                          )}
                         </div>
                         {portalError && (
                           <p className="text-xs text-[var(--color-danger)] mt-1 text-right">{portalError}</p>
@@ -539,6 +543,13 @@ export default function ProfilePage() {
 
                       {/* Account Settings */}
                       <AccountSettings />
+
+                      {/* Legal Links */}
+                      <div className="text-center text-xs pt-2" style={{ color: 'var(--color-text-disabled)' }}>
+                        <Link href="/privacy" className="hover:underline" style={{ color: 'var(--color-text-tertiary)' }}>Privacy Policy</Link>
+                        {' '}&middot;{' '}
+                        <Link href="/terms" className="hover:underline" style={{ color: 'var(--color-text-tertiary)' }}>Terms of Service</Link>
+                      </div>
                     </div>
                   </motion.div>
                 )}

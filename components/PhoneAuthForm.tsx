@@ -6,6 +6,8 @@ import { OTPInput } from './OTPInput'
 import { useAuth } from '@/contexts/AuthContext'
 import { createRecaptchaVerifier } from '@/lib/firebase'
 import { getFirebaseErrorMessage } from '@/lib/authErrors'
+import { isCapacitorNative } from '@/lib/platform'
+import { getApiBaseUrl } from '@/lib/api'
 
 interface PhoneAuthFormProps {
   onSuccess: () => void
@@ -27,7 +29,7 @@ const COUNTRY_CODES = [
 ]
 
 export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps) {
-  const { sendPhoneCode, verifyPhoneCode, linkWithPhone } = useAuth()
+  const { sendPhoneCode, verifyPhoneCode, linkWithPhone, signInWithCustomToken } = useAuth()
   const [step, setStep] = useState<'phone' | 'code'>('phone')
   const [countryCode, setCountryCode] = useState('+1')
   const [phoneNumber, setPhoneNumber] = useState('')
@@ -51,8 +53,17 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
     }
   }, [resendCountdown])
 
-  // Initialize reCAPTCHA verifier
+  // In Capacitor WKWebView, reCAPTCHA doesn't work — use server-side auth
+  const isNative = typeof window !== 'undefined' && isCapacitorNative()
+  const [serverSessionInfo, setServerSessionInfo] = useState<string | null>(null)
+
+  // Initialize reCAPTCHA verifier (skip in Capacitor)
   useEffect(() => {
+    if (isNative) {
+      setRecaptchaReady(true) // No reCAPTCHA needed in native
+      return
+    }
+
     let cancelled = false
 
     const initRecaptcha = async () => {
@@ -79,7 +90,7 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
         setRecaptchaReady(false)
       }
     }
-  }, [step, recaptchaContainerId])
+  }, [step, recaptchaContainerId, isNative])
 
   const formatPhoneNumber = (value: string) => {
     // Remove all non-digits
@@ -119,6 +130,33 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
 
     const fullPhone = getFullPhoneNumber()
 
+    // Capacitor native: use server-side SMS flow
+    if (isNative) {
+      setLoading(true)
+      try {
+        const res = await fetch(`${getApiBaseUrl()}/api/auth/send-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: fullPhone }),
+        })
+        const data = await res.json()
+        if (res.ok && data.success) {
+          setServerSessionInfo(data.sessionInfo || null)
+          setVerificationId('server-side')
+          setStep('code')
+          setResendCountdown(60)
+        } else {
+          setError(data.error || 'Failed to send verification code')
+        }
+      } catch {
+        setError('Network error. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    // Web: standard reCAPTCHA flow
     if (!recaptchaVerifierRef.current) {
       // Try to re-initialize before giving up
       const verifier = await createRecaptchaVerifier(recaptchaContainerId)
@@ -174,6 +212,33 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
     setLoading(true)
 
     try {
+      // Capacitor native: verify via server, then sign in with custom token
+      if (isNative) {
+        const fullPhone = getFullPhoneNumber()
+        const res = await fetch(`${getApiBaseUrl()}/api/auth/verify-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phoneNumber: fullPhone,
+            code: codeToVerify,
+            sessionInfo: serverSessionInfo,
+          }),
+        })
+        const data = await res.json()
+        if (res.ok && data.success && data.customToken) {
+          const result = await signInWithCustomToken(data.customToken)
+          if (result.success) {
+            onSuccess()
+          } else {
+            setError(result.error || 'Sign-in failed')
+          }
+        } else {
+          setError(data.error || 'Verification failed')
+        }
+        return
+      }
+
+      // Web: standard Firebase verification
       const verifyFn = mode === 'link' ? linkWithPhone : verifyPhoneCode
       const result = await verifyFn(verificationId, codeToVerify)
 
@@ -194,7 +259,32 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
 
     setError(null)
 
-    // Recreate reCAPTCHA verifier for resend
+    // Capacitor native: resend via server
+    if (isNative) {
+      setLoading(true)
+      try {
+        const res = await fetch(`${getApiBaseUrl()}/api/auth/send-code`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: getFullPhoneNumber() }),
+        })
+        const data = await res.json()
+        if (res.ok && data.success) {
+          setServerSessionInfo(data.sessionInfo || null)
+          setResendCountdown(60)
+          setVerificationCode('')
+        } else {
+          setError(data.error || 'Failed to resend code')
+        }
+      } catch {
+        setError('Network error. Please try again.')
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    // Web: recreate reCAPTCHA verifier for resend
     recaptchaVerifierRef.current = await createRecaptchaVerifier(recaptchaContainerId)
 
     if (!recaptchaVerifierRef.current) {
@@ -229,8 +319,8 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
 
   return (
     <div className="space-y-4">
-      {/* Hidden reCAPTCHA container - positioned off-screen for safer invisible placement */}
-      <div id={recaptchaContainerId} style={{ position: 'absolute', left: '-9999px' }} />
+      {/* Hidden reCAPTCHA container - positioned off-screen for safer invisible placement (skipped in Capacitor) */}
+      {!isNative && <div id={recaptchaContainerId} style={{ position: 'absolute', left: '-9999px' }} />}
 
       {error && (
         <motion.div
@@ -314,7 +404,7 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
               We&apos;ll send a 6-digit code to verify your phone number
             </p>
 
-            {!recaptchaReady && (
+            {!recaptchaReady && !isNative && (
               <p className="text-[10px] text-center text-[var(--color-text-disabled)]">
                 Initializing security check...
               </p>

@@ -309,7 +309,8 @@ export async function getUserCount(): Promise<number> {
 }
 
 /**
- * Delete a user
+ * Delete a user and all associated data (cascade delete).
+ * Removes: user profile, player stats, game history, Stripe customer, Firebase Auth user.
  */
 export async function deleteUser(uid: string): Promise<{ success: boolean; error?: string }> {
   const db = getDatabase()
@@ -318,8 +319,71 @@ export async function deleteUser(uid: string): Promise<{ success: boolean; error
     return { success: false, error: 'User not found' }
   }
 
+  // 1. Delete player stats
+  try {
+    await db.delete(Collections.PLAYER_STATS, uid)
+  } catch (e) {
+    logger.warn('[deleteUser] Failed to delete player stats:', e)
+  }
+
+  // 2. Delete game history records where this user was host
+  try {
+    const games = await db.query(Collections.GAME_HISTORY, [
+      { field: 'hostId', operator: '==', value: uid }
+    ])
+    for (const game of games) {
+      if (game && typeof game === 'object' && 'id' in game) {
+        await db.delete(Collections.GAME_HISTORY, (game as { id: string }).id)
+      }
+    }
+  } catch (e) {
+    logger.warn('[deleteUser] Failed to delete game history:', e)
+  }
+
+  // 3. Delete payment transactions
+  try {
+    const transactions = await db.query(Collections.PAYMENT_TRANSACTIONS, [
+      { field: 'userId', operator: '==', value: uid }
+    ])
+    for (const txn of transactions) {
+      if (txn && typeof txn === 'object' && 'id' in txn) {
+        await db.delete(Collections.PAYMENT_TRANSACTIONS, (txn as { id: string }).id)
+      }
+    }
+  } catch (e) {
+    logger.warn('[deleteUser] Failed to delete payment transactions:', e)
+  }
+
+  // 4. Delete Stripe customer if exists
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((user as any).stripeCustomerId) {
+    try {
+      const Stripe = (await import('stripe')).default
+      const key = process.env.STRIPE_SECRET_KEY
+      if (key) {
+        const stripe = new Stripe(key)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await stripe.customers.del((user as any).stripeCustomerId)
+      }
+    } catch (e) {
+      logger.warn('[deleteUser] Failed to delete Stripe customer:', e)
+    }
+  }
+
+  // 5. Delete Firebase Auth user via admin SDK
+  try {
+    const admin = await import('firebase-admin')
+    if (admin.apps.length > 0) {
+      await admin.auth().deleteUser(uid)
+    }
+  } catch (e) {
+    logger.warn('[deleteUser] Failed to delete Firebase Auth user:', e)
+  }
+
+  // 6. Delete user profile (last, so partial failures don't orphan the account)
   await db.delete(Collections.USERS, uid)
 
+  logger.info(`[deleteUser] Successfully deleted user ${uid} and associated data`)
   return { success: true }
 }
 

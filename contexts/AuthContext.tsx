@@ -38,6 +38,7 @@ interface AuthContextType {
   sendPhoneCode: (phone: string, verifier: any) => Promise<PhoneCodeResult>
   verifyPhoneCode: (verificationId: string, code: string) => Promise<AuthResult>
   linkWithPhone: (verificationId: string, code: string) => Promise<AuthResult>
+  signInWithCustomToken: (token: string) => Promise<AuthResult>
   updateDisplayName: (displayName: string) => Promise<AuthResult>
   signOut: () => Promise<void>
   getPlayerId: () => string
@@ -52,6 +53,7 @@ const AuthContext = createContext<AuthContextType>({
   sendPhoneCode: async () => ({ success: false, error: 'Not configured' }),
   verifyPhoneCode: async () => ({ success: false, error: 'Not configured' }),
   linkWithPhone: async () => ({ success: false, error: 'Not configured' }),
+  signInWithCustomToken: async () => ({ success: false, error: 'Not configured' }),
   updateDisplayName: async () => ({ success: false, error: 'Not configured' }),
   signOut: async () => {},
   getPlayerId: () => ''
@@ -272,6 +274,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [firebaseReady])
 
+  // Sign in with a custom token (used by server-side phone auth for Capacitor)
+  const signInWithCustomToken = useCallback(async (token: string): Promise<AuthResult> => {
+    if (!firebaseReady) {
+      return { success: false, error: 'Authentication not configured' }
+    }
+
+    try {
+      const firebaseAuth = await import('firebase/auth')
+      const { signInWithCustomToken: firebaseSignInWithCustomToken } = firebaseAuth
+      const auth = getFirebaseAuth()
+      await firebaseSignInWithCustomToken(auth as any, token)
+      return { success: true }
+    } catch (error: unknown) {
+      return { success: false, error: getFirebaseErrorMessage(error) }
+    }
+  }, [firebaseReady])
+
   // Update display name
   const updateDisplayName = useCallback(async (displayName: string): Promise<AuthResult> => {
     if (!firebaseReady) {
@@ -329,6 +348,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     sendPhoneCode,
     verifyPhoneCode,
     linkWithPhone,
+    signInWithCustomToken,
     updateDisplayName,
     signOut,
     getPlayerId

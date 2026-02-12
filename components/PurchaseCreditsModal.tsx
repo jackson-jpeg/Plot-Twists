@@ -8,6 +8,8 @@ import { CREDIT_PACKAGES } from '@/lib/credits'
 import { getApiBaseUrl } from '@/lib/api'
 import { stripePromise } from '@/lib/stripe'
 import { analytics } from '@/lib/analytics'
+import { isIOSNative } from '@/lib/platform'
+import { purchaseViaStoreKit } from '@/lib/purchases'
 
 interface PurchaseCreditsModalProps {
   isOpen: boolean
@@ -36,6 +38,24 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
     setError(null)
     analytics.purchaseInitiated(packageId)
 
+    // iOS native → StoreKit flow
+    if (isIOSNative()) {
+      try {
+        const result = await purchaseViaStoreKit(packageId, user.uid)
+        if (result.success) {
+          onClose()
+        } else {
+          setError(result.error || 'Purchase failed')
+        }
+      } catch {
+        setError('Something went wrong. Please try again.')
+      } finally {
+        setLoading(null)
+      }
+      return
+    }
+
+    // Web → Stripe flow
     try {
       const res = await fetch(`${getApiBaseUrl()}/api/stripe/create-checkout-session`, {
         method: 'POST',

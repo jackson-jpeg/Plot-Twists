@@ -1,0 +1,43 @@
+import type { CapacitorConfig } from '@capacitor/cli'
+
+const config: CapacitorConfig = {
+  appId: 'com.plottwists.app',
+  appName: 'Plot Twists',
+  webDir: 'public',
+
+  // Load the live production URL (not bundled static files)
+  server: {
+    url: 'https://plot-twists.com',
+    allowNavigation: [
+      'plot-twists.com',
+      '*.plot-twists.com',
+      '*.firebaseapp.com',
+      '*.googleapis.com',
+      'web-production-c7981.up.railway.app',
+    ],
+  },
+
+  ios: {
+    scheme: 'PlotTwists',
+    backgroundColor: '#FDFCFA',
+    contentInset: 'automatic',
+    preferredContentMode: 'mobile',
+  },
+
+  plugins: {
+    SplashScreen: {
+      launchAutoHide: true,
+      backgroundColor: '#FDFCFA',
+      showSpinner: false,
+      androidScaleType: 'CENTER_CROP',
+      splashFullScreen: true,
+      splashImmersive: true,
+    },
+    StatusBar: {
+      style: 'DARK',
+      backgroundColor: '#FDFCFA',
+    },
+  },
+}
+
+export default config

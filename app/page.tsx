@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
@@ -224,6 +225,13 @@ export default function Home() {
             ))}
           </div>
         </motion.div>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-xs" style={{ color: 'var(--color-text-disabled)' }}>
+          <Link href="/privacy" className="hover:underline" style={{ color: 'var(--color-text-tertiary)' }}>Privacy</Link>
+          {' '}&middot;{' '}
+          <Link href="/terms" className="hover:underline" style={{ color: 'var(--color-text-tertiary)' }}>Terms</Link>
+        </div>
 
       </div>
     </main>

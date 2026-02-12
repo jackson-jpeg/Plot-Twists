@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { getApiBaseUrl } from '@/lib/api'
 import type { UserPreferences, GameMode, TeleprompterVisibilityMode } from '@/lib/types'
 import { DEFAULT_TELEPROMPTER_SETTINGS, TELEPROMPTER_PRESETS } from '@/lib/types'
 import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
@@ -34,6 +35,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
   const {
     user,
     updateDisplayName,
+    signOut,
     isConfigured
   } = useAuth()
 
@@ -116,8 +118,6 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
     setTimeout(() => setPrefsSuccess(false), 3000)
   }
 
-  // Delete account - would need Firebase Admin SDK on server
-  // For now, show a message that they should contact support
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE') {
       return
@@ -125,14 +125,39 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
 
     setDeleteLoading(true)
 
-    // In a real implementation, this would call a server endpoint
-    // that uses Firebase Admin SDK to delete the user
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      const { getFirebaseAuth } = await import('@/lib/firebase')
+      const auth = getFirebaseAuth()
+      const idToken = await auth?.currentUser?.getIdToken()
 
-    setDeleteLoading(false)
-    alert('Account deletion requires server-side processing. Please contact support to delete your account.')
-    setShowDeleteConfirm(false)
-    setDeleteConfirmText('')
+      if (!idToken) {
+        alert('Unable to verify your identity. Please sign in again and retry.')
+        setDeleteLoading(false)
+        return
+      }
+
+      const res = await fetch(`${getApiBaseUrl()}/api/account/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        }
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to delete account')
+      }
+
+      // Sign out and redirect to home
+      await signOut()
+      window.location.href = '/'
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete account. Please try again.')
+      setDeleteLoading(false)
+      setShowDeleteConfirm(false)
+      setDeleteConfirmText('')
+    }
   }
 
   if (!user || !isConfigured) {

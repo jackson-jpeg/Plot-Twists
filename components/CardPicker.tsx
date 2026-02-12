@@ -38,9 +38,17 @@ export function CardPicker({
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [customMode, setCustomMode] = useState<Record<TabKey, boolean>>({ character: false, setting: false, circumstance: false })
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   const activeTabConfig = TABS.find(t => t.key === activeTab)!
+
+  // Cleanup auto-advance timer on unmount
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current)
+    }
+  }, [])
 
   // Debounce search
   useEffect(() => {
@@ -55,16 +63,30 @@ export function CardPicker({
     setSelectedCategories([])
   }, [activeTab])
 
+  // Scroll selected card into view when revisiting a tab
+  useEffect(() => {
+    if (!gridRef.current) return
+    const selectedEl = gridRef.current.querySelector('[data-selected="true"]')
+    if (selectedEl) {
+      selectedEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    }
+  }, [activeTab])
+
   // Rich content from the content library
   const richContent = useMemo(() => getFilteredContentRich({ isMature }), [isMature])
 
   // Content items for the active tab
   const contentItems = richContent[activeTabConfig.contentType]
 
-  // Available categories for this tab's content
+  // Available categories for this tab's content, with counts
   const availableCategories = useMemo(() => {
-    const categoryIds = new Set(contentItems.map(item => item.category))
-    return CATEGORIES.filter(cat => categoryIds.has(cat.id))
+    const categoryCounts = new Map<string, number>()
+    contentItems.forEach(item => {
+      categoryCounts.set(item.category, (categoryCounts.get(item.category) || 0) + 1)
+    })
+    return CATEGORIES
+      .filter(cat => categoryCounts.has(cat.id))
+      .map(cat => ({ ...cat, count: categoryCounts.get(cat.id) || 0 }))
   }, [contentItems])
 
   // Filtered items based on search + category chips
@@ -84,8 +106,18 @@ export function CardPicker({
       )
     }
 
+    // Sort: selected card first so it's always visible
+    const currentValue = selection[activeTab]
+    if (currentValue) {
+      filtered = [...filtered].sort((a, b) => {
+        if (a.name === currentValue) return -1
+        if (b.name === currentValue) return 1
+        return 0
+      })
+    }
+
     return filtered
-  }, [contentItems, selectedCategories, debouncedQuery])
+  }, [contentItems, selectedCategories, debouncedQuery, selection, activeTab])
 
   const toggleCategory = useCallback((categoryId: string) => {
     setSelectedCategories(prev =>
@@ -114,7 +146,7 @@ export function CardPicker({
         }
       }
       // All filled — stay on current tab
-    }, 200)
+    }, 250)
   }, [selection, setSelection, activeTab])
 
   // Shuffle current tab's card
@@ -145,8 +177,13 @@ export function CardPicker({
     }
   }, [customMode, activeTab, selection, setSelection])
 
+  const clearSearch = useCallback(() => {
+    setSearchQuery('')
+    setDebouncedQuery('')
+    searchInputRef.current?.focus()
+  }, [])
+
   const selectedCount = [selection.character, selection.setting, selection.circumstance].filter(Boolean).length
-  const allSelected = selectedCount === 3
   const noCardsSelected = selectedCount === 0
 
   return (
@@ -157,10 +194,17 @@ export function CardPicker({
           🎴 Pick Your Cards
         </h1>
         <div className="flex items-center gap-2">
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {TABS.map(tab => (
-              <div key={tab.key} className="w-3 h-3 rounded-full transition-all duration-300"
-                style={{ background: selection[tab.key] ? 'var(--color-success)' : 'var(--color-border)', transform: selection[tab.key] ? 'scale(1)' : 'scale(0.8)' }} />
+              <motion.div
+                key={tab.key}
+                className="w-3 h-3 rounded-full"
+                animate={{
+                  backgroundColor: selection[tab.key] ? 'var(--color-success)' : 'var(--color-border)',
+                  scale: selection[tab.key] ? 1 : 0.75,
+                }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+              />
             ))}
           </div>
           <span className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{selectedCount}/3</span>
@@ -181,7 +225,7 @@ export function CardPicker({
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1" role="tablist">
+      <div className="flex gap-0.5 p-1 rounded-xl" style={{ background: 'var(--color-surface-alt)' }} role="tablist">
         {TABS.map(tab => {
           const isActive = activeTab === tab.key
           const hasValue = !!selection[tab.key]
@@ -191,22 +235,31 @@ export function CardPicker({
               role="tab"
               aria-selected={isActive}
               onClick={() => setActiveTab(tab.key)}
-              className="flex-1 flex items-center justify-center gap-1 py-2.5 px-2 rounded-t-lg font-semibold text-sm transition-colors relative"
+              className="flex-1 flex items-center justify-center gap-1 py-2.5 px-2 rounded-lg font-semibold text-sm relative overflow-hidden"
               style={{
-                background: isActive ? 'var(--color-surface)' : 'var(--color-surface-alt)',
                 color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
-                borderBottom: isActive ? `3px solid ${tab.color}` : '3px solid transparent',
-                boxShadow: isActive ? '0 -2px 8px rgba(0,0,0,0.06)' : 'none',
               }}
               whileTap={{ scale: 0.97 }}
             >
-              <span>{tab.icon}</span>
-              <span className="hidden min-[420px]:inline">{tab.label}</span>
-              <span className="inline min-[420px]:hidden">{tab.shortLabel}</span>
+              {isActive && (
+                <motion.div
+                  layoutId="activeTabBg"
+                  className="absolute inset-0 rounded-lg"
+                  style={{
+                    background: 'var(--color-surface)',
+                    boxShadow: 'var(--shadow-2)',
+                  }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10">{tab.icon}</span>
+              <span className="relative z-10 hidden min-[420px]:inline">{tab.label}</span>
+              <span className="relative z-10 inline min-[420px]:hidden">{tab.shortLabel}</span>
               {hasValue && (
                 <motion.span
+                  className="relative z-10"
                   initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  transition={MOTION.bouncy}
+                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                   style={{ color: 'var(--color-success)', fontSize: '12px' }}
                 >
                   ✓
@@ -221,14 +274,20 @@ export function CardPicker({
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
+          initial={{ opacity: 0, x: 6 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -6 }}
           transition={{ duration: 0.15 }}
         >
           {customMode[activeTab] ? (
             /* Custom Input Mode */
             <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">{activeTabConfig.icon}</span>
+                <span className="font-display text-base" style={{ color: 'var(--color-text-primary)' }}>
+                  Write your own {activeTabConfig.label.toLowerCase()}
+                </span>
+              </div>
               <input
                 type="text"
                 value={selection[activeTab]}
@@ -239,13 +298,18 @@ export function CardPicker({
                 style={{ background: 'var(--color-surface-alt)', border: `2px solid ${activeTabConfig.color}`, fontStyle: 'italic' }}
                 autoFocus
               />
-              <button
-                onClick={toggleCustom}
-                className="btn btn-ghost text-sm self-start"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
-                🃏 Browse cards instead
-              </button>
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={toggleCustom}
+                  className="text-sm flex items-center gap-1"
+                  style={{ color: 'var(--color-text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  <span>🃏</span> Browse cards instead
+                </button>
+                <span className="text-xs" style={{ color: 'var(--color-text-disabled)' }}>
+                  {(selection[activeTab] || '').length}/{activeTabConfig.maxCustomLength}
+                </span>
+              </div>
             </div>
           ) : (
             /* Browse Mode */
@@ -260,7 +324,7 @@ export function CardPicker({
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={`Search ${activeTabConfig.label.toLowerCase()}s...`}
                     className="input w-full"
-                    style={{ paddingLeft: '40px' }}
+                    style={{ paddingLeft: '40px', paddingRight: searchQuery ? '36px' : '12px' }}
                   />
                   <span
                     className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg"
@@ -268,6 +332,19 @@ export function CardPicker({
                   >
                     🔍
                   </span>
+                  {/* Clear search button */}
+                  {searchQuery && (
+                    <motion.button
+                      onClick={clearSearch}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 w-7 h-7 flex items-center justify-center rounded-full"
+                      style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-tertiary)', fontSize: '14px', border: 'none', cursor: 'pointer' }}
+                      initial={{ scale: 0 }} animate={{ scale: 1 }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      whileTap={{ scale: 0.85 }}
+                    >
+                      ✕
+                    </motion.button>
+                  )}
                 </div>
                 <motion.button
                   onClick={shuffleCurrentTab}
@@ -275,7 +352,7 @@ export function CardPicker({
                   style={{ padding: '8px 12px', fontSize: '20px', flexShrink: 0 }}
                   whileHover={{ scale: 1.1, rotate: 180 }}
                   whileTap={{ scale: 0.9 }}
-                  title="Shuffle"
+                  title={`Shuffle ${activeTabConfig.label.toLowerCase()}`}
                 >
                   🎲
                 </motion.button>
@@ -283,7 +360,7 @@ export function CardPicker({
 
               {/* Category Chips */}
               {availableCategories.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
                   {availableCategories.map(category => {
                     const isSelected = selectedCategories.includes(category.id)
                     return (
@@ -303,6 +380,13 @@ export function CardPicker({
                       >
                         <span>{category.emoji}</span>
                         <span>{category.name}</span>
+                        <span style={{
+                          fontSize: '11px',
+                          opacity: 0.7,
+                          marginLeft: '1px',
+                        }}>
+                          {category.count}
+                        </span>
                       </motion.button>
                     )
                   })}
@@ -310,42 +394,56 @@ export function CardPicker({
               )}
 
               {/* Results Count */}
-              <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                {filteredItems.length} {filteredItems.length === 1 ? 'option' : 'options'}
-                {debouncedQuery && ` matching "${debouncedQuery}"`}
+              <div className="flex items-center justify-between">
+                <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {filteredItems.length} {filteredItems.length === 1 ? 'option' : 'options'}
+                  {debouncedQuery && ` for "${debouncedQuery}"`}
+                </span>
+                <button
+                  onClick={toggleCustom}
+                  className="text-xs flex items-center gap-1"
+                  style={{ color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                >
+                  ✎ Write your own
+                </button>
               </div>
 
               {/* Card Grid */}
-              <div className="overflow-y-auto pr-1" style={{ maxHeight: '280px', scrollbarWidth: 'thin' }}>
+              <div ref={gridRef} className="overflow-y-auto" style={{ maxHeight: '300px', scrollbarWidth: 'thin' }}>
                 {filteredItems.length === 0 ? (
                   <div className="text-center py-8">
                     <div className="text-3xl mb-2">🔍</div>
-                    <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No matches found</p>
+                    <p className="text-sm mb-1" style={{ color: 'var(--color-text-secondary)' }}>No matches found</p>
+                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Try a different search or clear your filters</p>
                     {(searchQuery || selectedCategories.length > 0) && (
                       <button
                         onClick={() => { setSearchQuery(''); setSelectedCategories([]) }}
-                        className="btn btn-ghost text-xs mt-2"
+                        className="btn btn-ghost text-xs mt-3"
                         style={{ color: activeTabConfig.color }}
                       >
-                        Clear filters
+                        Clear all filters
                       </button>
                     )}
                   </div>
                 ) : (
                   <div className="grid grid-cols-3 max-[380px]:grid-cols-2 gap-2">
-                    {filteredItems.map((item) => {
+                    {filteredItems.map((item, index) => {
                       const isSelected = item.name === selection[activeTab]
                       return (
                         <motion.button
                           key={item.id}
+                          data-selected={isSelected || undefined}
                           onClick={() => selectCard(item.name)}
                           className="text-left p-2.5 rounded-lg relative"
                           style={{
                             background: isSelected ? `${activeTabConfig.color}15` : 'var(--color-surface-alt)',
                             border: isSelected ? `2px solid ${activeTabConfig.color}` : '1px solid var(--color-border)',
-                            boxShadow: isSelected ? `0 0 8px ${activeTabConfig.color}30` : 'none',
+                            boxShadow: isSelected ? `0 0 10px ${activeTabConfig.color}25` : 'none',
                           }}
-                          whileHover={{ scale: 1.02 }}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.12, delay: Math.min(index * 0.015, 0.3) }}
+                          whileHover={{ scale: 1.03, y: -1 }}
                           whileTap={{ scale: 0.97 }}
                         >
                           <p className="font-semibold text-xs leading-tight line-clamp-1" style={{ color: 'var(--color-text-primary)' }}>
@@ -361,9 +459,9 @@ export function CardPicker({
                               className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
                               style={{ background: activeTabConfig.color }}
                               initial={{ scale: 0 }} animate={{ scale: 1 }}
-                              transition={{ type: 'spring', stiffness: 300 }}
+                              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                             >
-                              <span className="text-white" style={{ fontSize: '10px' }}>✓</span>
+                              <span className="text-white" style={{ fontSize: '10px', lineHeight: 1 }}>✓</span>
                             </motion.div>
                           )}
                         </motion.button>
@@ -372,65 +470,70 @@ export function CardPicker({
                   </div>
                 )}
               </div>
-
-              {/* Write your own link */}
-              <button
-                onClick={toggleCustom}
-                className="text-sm self-start"
-                style={{ color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-              >
-                ✎ Write your own
-              </button>
             </div>
           )}
         </motion.div>
       </AnimatePresence>
 
-      {/* Selected Summary */}
-      {(selection.character || selection.setting || selection.circumstance) && (
-        <motion.div
-          className="p-3 rounded-lg"
-          style={{ background: 'var(--color-highlight)', border: '2px solid var(--color-accent)' }}
-          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-          transition={MOTION.gentle}
-        >
-          <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>YOUR CARDS</p>
-          <div className="flex flex-col gap-1.5">
-            {TABS.map(tab => {
-              const value = selection[tab.key]
-              return (
-                <div key={tab.key} className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span>{tab.icon}</span>
-                    {value ? (
-                      <span className="font-semibold truncate" style={{ color: 'var(--color-text-primary)' }}>{value}</span>
-                    ) : (
-                      <button
-                        onClick={() => setActiveTab(tab.key)}
-                        className="italic"
-                        style={{ color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                      >
-                        Tap &ldquo;{tab.label}&rdquo; to pick
-                      </button>
-                    )}
-                  </div>
-                  {value && (
+      {/* Selected Summary — pill-style cards */}
+      <motion.div
+        className="rounded-xl overflow-hidden"
+        style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+        layout
+      >
+        <div className="px-3 py-2 flex items-center justify-between" style={{ borderBottom: '1px solid var(--color-border)' }}>
+          <span className="text-xs font-semibold tracking-wide" style={{ color: 'var(--color-text-tertiary)' }}>YOUR CARDS</span>
+          {selectedCount === 3 && (
+            <motion.span
+              className="text-xs font-semibold px-2 py-0.5 rounded-full"
+              style={{ background: 'var(--color-success-light)', color: 'var(--color-success)' }}
+              initial={{ scale: 0 }} animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+            >
+              Ready!
+            </motion.span>
+          )}
+        </div>
+        <div className="p-2 flex flex-col gap-1.5">
+          {TABS.map(tab => {
+            const value = selection[tab.key]
+            return (
+              <div
+                key={tab.key}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm"
+                style={{
+                  background: value ? `${tab.color}10` : 'transparent',
+                  border: value ? `1px solid ${tab.color}30` : '1px dashed var(--color-border)',
+                }}
+              >
+                <span className="flex-shrink-0" style={{ fontSize: '14px' }}>{tab.icon}</span>
+                {value ? (
+                  <>
+                    <span className="font-semibold truncate flex-1 min-w-0" style={{ color: 'var(--color-text-primary)' }}>{value}</span>
                     <motion.button
                       onClick={() => clearCard(tab.key)}
-                      className="flex-shrink-0 ml-2"
-                      style={{ color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 6px', fontSize: '14px' }}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      className="flex-shrink-0"
+                      style={{ color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 4px', fontSize: '13px', lineHeight: 1 }}
+                      whileHover={{ scale: 1.15, color: 'var(--color-danger)' }}
+                      whileTap={{ scale: 0.85 }}
                     >
                       ✕
                     </motion.button>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </motion.div>
-      )}
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setActiveTab(tab.key)}
+                    className="text-xs italic flex-1 text-left"
+                    style={{ color: 'var(--color-text-disabled)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    Tap to pick {tab.label.toLowerCase()}
+                  </button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </motion.div>
     </div>
   )
 }

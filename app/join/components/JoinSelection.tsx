@@ -4,7 +4,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import type { CardSelection, PlayerRole, AvailableCards } from '@/lib/types'
-import { VARIANTS, MOTION } from '@/lib/animations'
+import { VARIANTS } from '@/lib/animations'
 
 const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false })
 

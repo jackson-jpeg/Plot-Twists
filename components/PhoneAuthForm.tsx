@@ -36,6 +36,7 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [resendCountdown, setResendCountdown] = useState(0)
+  const [recaptchaReady, setRecaptchaReady] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recaptchaVerifierRef = useRef<any>(null)
   // Use unique ID to avoid conflicts when multiple forms exist
@@ -59,7 +60,9 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
         // Small delay to ensure DOM element exists after AnimatePresence renders
         await new Promise(resolve => setTimeout(resolve, 100))
         if (cancelled) return
-        recaptchaVerifierRef.current = await createRecaptchaVerifier(recaptchaContainerId)
+        const verifier = await createRecaptchaVerifier(recaptchaContainerId)
+        recaptchaVerifierRef.current = verifier
+        setRecaptchaReady(!!verifier)
       }
     }
     initRecaptcha()
@@ -73,6 +76,7 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
           // Ignore cleanup errors
         }
         recaptchaVerifierRef.current = null
+        setRecaptchaReady(false)
       }
     }
   }, [step, recaptchaContainerId])
@@ -113,15 +117,23 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
 
     if (!validatePhoneNumber()) return
 
+    const fullPhone = getFullPhoneNumber()
+
     if (!recaptchaVerifierRef.current) {
-      setError('reCAPTCHA not initialized. Please refresh the page.')
-      return
+      // Try to re-initialize before giving up
+      const verifier = await createRecaptchaVerifier(recaptchaContainerId)
+      recaptchaVerifierRef.current = verifier
+      setRecaptchaReady(!!verifier)
+      if (!verifier) {
+        setError('reCAPTCHA failed to load. Check browser console for details, then refresh.')
+        return
+      }
     }
 
     setLoading(true)
 
     try {
-      const result = await sendPhoneCode(getFullPhoneNumber(), recaptchaVerifierRef.current)
+      const result = await sendPhoneCode(fullPhone, recaptchaVerifierRef.current)
 
       if (result.success && result.verificationId) {
         setVerificationId(result.verificationId)
@@ -130,12 +142,16 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
       } else {
         setError(result.error || 'Failed to send verification code')
         // Recreate reCAPTCHA verifier after error
-        recaptchaVerifierRef.current = await createRecaptchaVerifier(recaptchaContainerId)
+        const verifier = await createRecaptchaVerifier(recaptchaContainerId)
+        recaptchaVerifierRef.current = verifier
+        setRecaptchaReady(!!verifier)
       }
     } catch (err) {
       setError(getFirebaseErrorMessage(err))
       // Recreate reCAPTCHA verifier after error
-      recaptchaVerifierRef.current = await createRecaptchaVerifier(recaptchaContainerId)
+      const verifier = await createRecaptchaVerifier(recaptchaContainerId)
+      recaptchaVerifierRef.current = verifier
+      setRecaptchaReady(!!verifier)
     } finally {
       setLoading(false)
     }
@@ -297,6 +313,12 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
             <p className="text-xs text-center text-[var(--color-text-disabled)]">
               We&apos;ll send a 6-digit code to verify your phone number
             </p>
+
+            {!recaptchaReady && (
+              <p className="text-[10px] text-center text-[var(--color-text-disabled)]">
+                Initializing security check...
+              </p>
+            )}
           </motion.div>
         ) : (
           <motion.div

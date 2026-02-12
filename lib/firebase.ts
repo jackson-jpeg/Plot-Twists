@@ -86,14 +86,13 @@ export function getFirebaseApp(): any {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function createRecaptchaVerifier(containerId: string): Promise<any | null> {
   if (!auth || typeof window === 'undefined') {
-    logger.warn('[Phone Auth] Cannot create reCAPTCHA verifier: auth not initialized')
     return null
   }
 
   try {
     const container = document.getElementById(containerId)
     if (!container) {
-      logger.error('[Phone Auth] reCAPTCHA container element not found:', containerId)
+      logger.warn('[Phone Auth] reCAPTCHA container not found:', containerId)
       return null
     }
 
@@ -105,17 +104,14 @@ export async function createRecaptchaVerifier(containerId: string): Promise<any 
 
     const verifier = new RecaptchaVerifier(auth, containerId, {
       size: 'invisible',
-      callback: () => {
-        logger.debug('[Phone Auth] reCAPTCHA solved')
-      },
+      callback: () => {},
       'expired-callback': () => {
-        logger.info('[Phone Auth] reCAPTCHA expired, user will need to re-verify')
+        logger.warn('[Phone Auth] reCAPTCHA expired')
       }
     })
 
-    // Render immediately to catch init errors early (missing container, blocked scripts)
+    // Render immediately to catch init errors early
     await verifier.render()
-    logger.debug('[Phone Auth] reCAPTCHA verifier initialized and rendered')
 
     return verifier
   } catch (error) {

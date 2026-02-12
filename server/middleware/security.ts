@@ -12,14 +12,14 @@ export function configureSecurityMiddleware(app: Express): void {
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "'unsafe-inline'", ...(process.env.NODE_ENV !== 'production' ? ["'unsafe-eval'"] : [])],
+          scriptSrc: ["'self'", "'unsafe-inline'", "https://www.gstatic.com", "https://www.google.com", "https://apis.google.com", ...(process.env.NODE_ENV !== 'production' ? ["'unsafe-eval'"] : [])],
           styleSrc: ["'self'", "'unsafe-inline'"],
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: ["'self'", 'wss:', 'https:'],
           fontSrc: ["'self'", 'data:'],
           objectSrc: ["'none'"],
           mediaSrc: ["'self'"],
-          frameSrc: ["'none'"],
+          frameSrc: ["https://www.google.com", "https://www.gstatic.com", "https://*.firebaseapp.com"],
         },
       },
       crossOriginEmbedderPolicy: false, // Required for Next.js

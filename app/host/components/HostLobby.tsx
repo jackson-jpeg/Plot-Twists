@@ -135,6 +135,7 @@ export function HostLobby({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     title="Copy join link"
+                    aria-label="Copy join link"
                   >
                     <span className="text-xl">📋</span>
                   </motion.button>

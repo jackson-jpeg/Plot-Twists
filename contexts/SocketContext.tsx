@@ -178,13 +178,16 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     initSocket()
 
     // Don't disconnect on unmount to prevent issues with strict mode
+  }, [])
+
+  // Disconnect socket when the page actually unloads
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      globalSocket?.disconnect()
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
     return () => {
-      // Only disconnect if window is actually closing
-      if (typeof window !== 'undefined') {
-        window.addEventListener('beforeunload', () => {
-          globalSocket?.disconnect()
-        })
-      }
+      window.removeEventListener('beforeunload', handleBeforeUnload)
     }
   }, [])
 

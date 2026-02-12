@@ -117,10 +117,14 @@ export default function ReplayPage() {
     }
   }, [currentLineIndex, teleprompterSettings.autoScroll])
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Clipboard API may fail in insecure contexts
+    }
   }
 
   const handleNativeShare = async () => {

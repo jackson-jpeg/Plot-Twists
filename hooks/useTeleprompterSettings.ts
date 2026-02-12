@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import type { TeleprompterSettings, TeleprompterVisibilityMode } from '@/lib/types'
 import { DEFAULT_TELEPROMPTER_SETTINGS, TELEPROMPTER_PRESETS } from '@/lib/types'
+import { logger } from '@/lib/logger'
 
 const STORAGE_KEY = 'plottwists_teleprompter_settings'
 const FIREBASE_DEBOUNCE_MS = 500
@@ -62,7 +63,7 @@ export function useTeleprompterSettings() {
             }
           }
         } catch (error) {
-          console.log('Could not load teleprompter settings from Firebase:', error)
+          logger.warn('Could not load teleprompter settings from Firebase:', error)
         }
       }
 
@@ -89,7 +90,7 @@ export function useTeleprompterSettings() {
         }
       }, { merge: true })
     } catch (error) {
-      console.log('Could not save teleprompter settings to Firebase:', error)
+      logger.warn('Could not save teleprompter settings to Firebase:', error)
     }
   }, [user, isConfigured])
 

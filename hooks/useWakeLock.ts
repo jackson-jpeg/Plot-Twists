@@ -1,26 +1,23 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { logger } from '@/lib/logger'
 
 export function useWakeLock() {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
   const requestWakeLock = async () => {
     try {
-      // Check if Wake Lock API is supported
       if ('wakeLock' in navigator) {
         wakeLockRef.current = await navigator.wakeLock.request('screen')
-        console.log('Wake Lock activated')
+        logger.debug('Wake Lock activated')
 
-        // Listen for release events
         wakeLockRef.current.addEventListener('release', () => {
-          console.log('Wake Lock released')
+          logger.debug('Wake Lock released')
         })
-      } else {
-        console.log('Wake Lock API not supported')
       }
     } catch (err) {
-      console.error('Failed to activate Wake Lock:', err)
+      logger.error('Failed to activate Wake Lock:', err)
     }
   }
 
@@ -30,7 +27,7 @@ export function useWakeLock() {
         await wakeLockRef.current.release()
         wakeLockRef.current = null
       } catch (err) {
-        console.error('Failed to release Wake Lock:', err)
+        logger.error('Failed to release Wake Lock:', err)
       }
     }
   }

@@ -42,7 +42,7 @@ export function HostResults({
   const handleDownloadScript = () => { if (script) downloadScript(script) }
 
   const copyShareUrl = (url: string) => {
-    navigator.clipboard.writeText(url)
+    navigator.clipboard.writeText(url).catch(() => {})
     setShareCopied(true)
     toast.success('Share link copied!')
     setTimeout(() => setShareCopied(false), 3000)

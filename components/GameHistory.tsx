@@ -49,8 +49,7 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
     socket.emit('share_game', gameId, (response) => {
       setSharingGameId(null)
       if (response.success && response.shareUrl) {
-        navigator.clipboard.writeText(response.shareUrl)
-        // Show toast or feedback
+        navigator.clipboard.writeText(response.shareUrl).catch(() => {})
       }
     })
   }

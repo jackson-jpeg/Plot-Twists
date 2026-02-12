@@ -46,8 +46,12 @@ export function MoviePosterFrame({
     >
       <motion.div
         onClick={onClick}
+        onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } } : undefined}
+        role={onClick ? 'button' : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        aria-label={onClick ? `View ${title ?? 'movie'} poster` : undefined}
         className="movie-poster-frame"
-        style={{ maxWidth, position: 'relative' }}
+        style={{ maxWidth, position: 'relative', cursor: onClick ? 'pointer' : undefined }}
         whileHover={onClick ? { scale: 1.03 } : undefined}
         whileTap={onClick ? { scale: 0.98 } : undefined}
       >

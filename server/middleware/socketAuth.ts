@@ -51,6 +51,8 @@ export function createSocketAuthMiddleware() {
 
       const decodedToken = await auth.verifyIdToken(token)
       socket.data.uid = decodedToken.uid
+      socket.data.email = decodedToken.email || null
+      socket.data.phoneNumber = decodedToken.phone_number || null
 
       try {
         await upsertUser(decodedToken.uid, {

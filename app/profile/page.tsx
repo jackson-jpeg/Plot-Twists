@@ -16,6 +16,7 @@ import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
 import { ReferralCard } from '@/components/ReferralCard'
 import type { PaymentTransaction, PlayerStats } from '@/lib/types'
 import { getApiBaseUrl } from '@/lib/api'
+import { isAdminUser } from '@/lib/admin'
 
 type ProfileTab = 'profile' | 'leaderboard'
 
@@ -178,10 +179,34 @@ export default function ProfilePage() {
                 {stats!.nickname[0]?.toUpperCase()}
               </motion.div>
               <div>
-                <h1 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats!.nickname}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats!.nickname}</h1>
+                  {user && isAdminUser({ email: user.email, phoneNumber: user.phoneNumber }) && (
+                    <span
+                      className="text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider"
+                      style={{
+                        backgroundColor: 'color-mix(in srgb, var(--color-danger) 15%, transparent)',
+                        color: 'var(--color-danger)',
+                      }}
+                    >
+                      Admin
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-[var(--color-text-secondary)] font-handwritten">
                   Playing since {new Date(stats!.joinedAt).toLocaleDateString()}
                 </p>
+                {user && isAdminUser({ email: user.email, phoneNumber: user.phoneNumber }) && (
+                  <motion.button
+                    onClick={() => router.push('/admin')}
+                    className="mt-1 text-xs font-medium px-2 py-0.5 rounded-lg transition-colors hover:bg-[var(--color-surface-alt)]"
+                    style={{ color: 'var(--color-accent)' }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Admin Dashboard →
+                  </motion.button>
+                )}
               </div>
             </motion.div>
 

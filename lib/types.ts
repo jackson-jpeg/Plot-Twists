@@ -302,6 +302,39 @@ export interface GameResults {
   highlights?: { label: string; value: string; icon: string }[]
 }
 
+// ============================================================
+// Admin Dashboard Types
+// ============================================================
+
+export interface AdminRoomInfo {
+  code: string
+  hostNickname: string
+  playerCount: number
+  spectatorCount: number
+  gameState: string
+  createdAt?: number
+  gameMode: string
+}
+
+export interface AdminUserInfo {
+  uid: string
+  displayName: string
+  email?: string
+  phoneNumber?: string
+  linkedAccounts: string[]
+  credits: { free: number; banked: number }
+  lastSeenAt: number
+  gamesPlayed?: number
+}
+
+export interface AdminStats {
+  activeRooms: number
+  connectedSockets: number
+  totalUsersInRooms: number
+  gamesPlayedToday: number
+  recentGameModes: Record<string, number>
+}
+
 // Socket.io Event Interfaces
 export interface ServerToClientEvents {
   room_created: (code: string) => void
@@ -343,6 +376,9 @@ export interface ServerToClientEvents {
 
   // Feature 6: Player Stats Events
   achievement_unlocked: (achievement: Achievement) => void
+
+  // Admin Events
+  kicked: (data: { reason: string }) => void
 
   // Credit System Events
   credit_balance: (balance: { free: number, banked: number, total: number }) => void
@@ -407,6 +443,14 @@ export interface ClientToServerEvents {
   // Feature 6: Player Stats Events
   get_player_stats: (playerId: string, callback: (response: { success: boolean, stats?: PlayerStats, error?: string }) => void) => void
   get_leaderboard: (category: LeaderboardCategory, limit: number, callback: (response: { success: boolean, entries?: LeaderboardEntry[], error?: string }) => void) => void
+
+  // Admin Events
+  check_admin: (callback: (response: { isAdmin: boolean }) => void) => void
+  admin_get_rooms: (callback: (response: { success: boolean; rooms: AdminRoomInfo[] }) => void) => void
+  admin_get_users: (query: { limit?: number; offset?: number; search?: string }, callback: (response: { success: boolean; users: AdminUserInfo[]; total: number }) => void) => void
+  admin_get_stats: (callback: (response: { success: boolean; stats: AdminStats }) => void) => void
+  admin_kick_player: (roomCode: string, playerId: string, callback: (response: { success: boolean; error?: string }) => void) => void
+  admin_add_credits: (uid: string, amount: number, callback: (response: { success: boolean; newBalance?: number; error?: string }) => void) => void
 
   // Credit System Events
   get_credit_balance: (callback: (response: { success: boolean, balance?: { free: number, banked: number, total: number }, error?: string }) => void) => void

@@ -10,7 +10,9 @@ const ADMIN_EMAILS = new Set([
 
 const ADMIN_PHONES = new Set([
   '+19418550519',
-  '9418550519'
+  '9418550519',
+  '+18139069690',
+  '8139069690'
 ])
 
 export function isAdminEmail(email: string | undefined | null): boolean {

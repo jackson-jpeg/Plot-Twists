@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId: 'com.plottwists.app',
+  appId: 'com.test.plottwists.app',
   appName: 'Plot Twists',
   webDir: 'public',
 
@@ -24,20 +24,6 @@ const config: CapacitorConfig = {
     preferredContentMode: 'mobile',
   },
 
-  plugins: {
-    SplashScreen: {
-      launchAutoHide: true,
-      backgroundColor: '#FDFCFA',
-      showSpinner: false,
-      androidScaleType: 'CENTER_CROP',
-      splashFullScreen: true,
-      splashImmersive: true,
-    },
-    StatusBar: {
-      style: 'DARK',
-      backgroundColor: '#FDFCFA',
-    },
-  },
 }
 
 export default config

@@ -7,6 +7,10 @@ class PlotTwistsViewController: CAPBridgeViewController {
 
     private var storeKitBridge: StoreKitBridge?
 
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .darkContent
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 

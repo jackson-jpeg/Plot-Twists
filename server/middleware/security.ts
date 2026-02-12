@@ -1,5 +1,6 @@
 import helmet from 'helmet'
 import type { Express } from 'express'
+import { logger } from '../../lib/logger'
 
 /**
  * Configure security middleware using Helmet
@@ -50,11 +51,11 @@ export function validateEnvironment(): void {
   }
 
   if (missing.length > 0) {
-    console.error('❌ Missing required environment variables:')
-    missing.forEach((key) => console.error(`   - ${key}`))
-    console.error('\nPlease check your .env file')
+    logger.error('Missing required environment variables:')
+    missing.forEach((key) => logger.error(`   - ${key}`))
+    logger.error('Please check your .env file')
     process.exit(1)
   }
 
-  console.log('✓ Environment variables validated')
+  logger.info('Environment variables validated')
 }

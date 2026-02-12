@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import type { Socket } from 'socket.io-client'
 import type {
-  Player, Script, GameState, GameResults, RoomSettings,
+  Player, Script, ScriptLine, GameState, GameResults, RoomSettings,
   TeleprompterSyncData, AvailableCards, Achievement, SpectatorMessage,
   CardSelection,
 } from '@/lib/types'
@@ -50,9 +50,11 @@ export function useHostSocket({
   const scriptGenerationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Use a ref to track gameState inside listeners without re-subscribing
+  // Use refs to track state inside listeners without re-subscribing
   const gameStateRef = useRef(gameState)
   gameStateRef.current = gameState
+  const playersRef = useRef(players)
+  playersRef.current = players
 
   // Socket listeners
   useEffect(() => {
@@ -143,11 +145,25 @@ export function useHostSocket({
     socket.on('plot_twist_started', () => setChaosCooldown(true))
     socket.on('credit_balance', setCreditBalance)
     socket.on('insufficient_credits', () => setShowInsufficientCredits(true))
-    socket.on('achievement_unlocked' as never, (a: Achievement) => achievementToasts.addAchievement(a))
+    socket.on('achievement_unlocked', (a: Achievement) => achievementToasts.addAchievement(a))
     socket.on('spectator_message_received', (msg: SpectatorMessage) => {
       setSpectatorMessages(prev => [...prev.slice(-49), msg])
     })
     socket.on('error', (errorMsg: string) => toast.error(errorMsg))
+    socket.on('player_left', (playerId: string) => {
+      const player = playersRef.current.find(p => p.id === playerId)
+      if (player && !player.isHost) {
+        toast.info(`${player.nickname} left the game`)
+      }
+    })
+    socket.on('plot_twist_injected', (insertIndex: number, newLines: ScriptLine[]) => {
+      setScript(prev => {
+        if (!prev) return prev
+        const lines = [...prev.lines]
+        lines.splice(insertIndex, 0, ...newLines)
+        return { ...prev, lines }
+      })
+    })
 
     return () => {
       socket.off('players_update'); socket.off('player_joined')
@@ -159,8 +175,17 @@ export function useHostSocket({
       socket.off('latency_ping'); socket.off('latency_pong_response')
       socket.off('plot_twist_started'); socket.off('credit_balance')
       socket.off('insufficient_credits')
-      socket.off('achievement_unlocked' as never)
+      socket.off('achievement_unlocked')
       socket.off('spectator_message_received'); socket.off('error')
+      socket.off('player_left'); socket.off('plot_twist_injected')
+      if (scriptGenerationTimeoutRef.current) {
+        clearTimeout(scriptGenerationTimeoutRef.current)
+        scriptGenerationTimeoutRef.current = null
+      }
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current)
+        loadingIntervalRef.current = null
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, isConnected])

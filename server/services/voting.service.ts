@@ -4,15 +4,16 @@
  */
 
 import type { Server as SocketIOServer } from 'socket.io'
-import type { Room, Script } from '../../lib/types'
+import type { Room, Script, ClientToServerEvents, ServerToClientEvents } from '../../lib/types'
 import * as roomService from './room.service'
 import { saveGame } from './gameHistory.service'
 import { recordGameResult } from './playerStats.service'
+import { logger } from '../../lib/logger'
 
 /**
  * Calculate voting results, emit game_over, and save game history + player stats.
  */
-export async function calculateResults(room: Room, io: SocketIOServer): Promise<void> {
+export async function calculateResults(room: Room, io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>): Promise<void> {
   const voteCounts = new Map<string, number>()
 
   for (const targetId of room.votes.values()) {
@@ -87,7 +88,7 @@ export async function calculateResults(room: Room, io: SocketIOServer): Promise<
         }
       )
 
-      console.log(`Saved game to history: ${savedGame.id}`)
+      logger.info(`Saved game to history: ${savedGame.id}`)
 
       // Update player stats
       const players = Array.from(room.players.values()).filter(p => p.role === 'PLAYER')
@@ -111,13 +112,13 @@ export async function calculateResults(room: Room, io: SocketIOServer): Promise<
           if (playerSocket) {
             // Emit achievement unlocked events (client can show toast)
             newAchievements.forEach(achievement => {
-              playerSocket.emit('achievement_unlocked' as never, achievement)
+              playerSocket.emit('achievement_unlocked', achievement)
             })
           }
         }
       }
     }
   } catch (error) {
-    console.error('Error saving game to history:', error)
+    logger.error('Error saving game to history:', error)
   }
 }

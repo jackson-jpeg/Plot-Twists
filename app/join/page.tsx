@@ -15,6 +15,7 @@ import { AchievementToast, useAchievementToasts } from '@/components/Achievement
 import { MOTION } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
 import { useJoinSocket } from '@/hooks/useJoinSocket'
+import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 
 import { JoinForm } from './components/JoinForm'
 import { JoinLobby } from './components/JoinLobby'
@@ -33,6 +34,7 @@ function JoinPageContent() {
   const achievementToasts = useAchievementToasts()
   const confetti = useConfetti()
   useWakeLock()
+  useAudioPlayer({ socket, isConnected })
 
   const [roomCode, setRoomCode] = useState(codeFromUrl || '')
   const [hasJoined, setHasJoined] = useState(false)

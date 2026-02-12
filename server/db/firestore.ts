@@ -5,6 +5,7 @@
 
 import type { DatabaseAdapter, WhereClause, QueryOptions, TransactionContext } from './adapter'
 import type { Firestore as FirestoreType } from 'firebase-admin/firestore'
+import { logger } from '../../lib/logger'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let adminInstance: any = null
@@ -25,7 +26,7 @@ async function initializeFirebaseAdmin(): Promise<FirestoreType | null> {
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
 
     if (!serviceAccountKey || !projectId) {
-      console.log('Firebase Admin not configured - service account key missing')
+      logger.info('Firebase Admin not configured - service account key missing')
       isInitialized = true
       return null
     }
@@ -43,10 +44,10 @@ async function initializeFirebaseAdmin(): Promise<FirestoreType | null> {
     db.settings({ ignoreUndefinedProperties: true })
     adminInstance = admin
     isInitialized = true
-    console.log('Firebase Admin initialized successfully')
+    logger.info('Firebase Admin initialized successfully')
     return db
   } catch (error) {
-    console.error('Failed to initialize Firebase Admin:', error)
+    logger.error('Failed to initialize Firebase Admin:', error)
     isInitialized = true
     return null
   }

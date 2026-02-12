@@ -5,6 +5,8 @@
 
 import type { PaymentTransaction, PaymentTransactionType, PaymentTransactionStatus } from '../../lib/types'
 import { getDatabase, Collections } from '../db'
+import { v4 as uuidv4 } from 'uuid'
+import { logger } from '../../lib/logger'
 
 interface RecordTransactionInput {
   userId: string
@@ -22,7 +24,7 @@ interface RecordTransactionInput {
  */
 export async function recordTransaction(input: RecordTransactionInput): Promise<PaymentTransaction> {
   const db = getDatabase()
-  const id = `txn_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+  const id = `txn_${uuidv4()}`
 
   const transaction: PaymentTransaction = {
     id,
@@ -38,7 +40,7 @@ export async function recordTransaction(input: RecordTransactionInput): Promise<
   }
 
   await db.set(Collections.PAYMENT_TRANSACTIONS, id, transaction)
-  console.log(`[Payment] Recorded ${input.type} transaction ${id} for user ${input.userId}`)
+  logger.info(`[Payment] Recorded ${input.type} transaction ${id} for user ${input.userId}`)
 
   return transaction
 }

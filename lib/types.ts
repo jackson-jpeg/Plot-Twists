@@ -330,7 +330,7 @@ export interface ServerToClientEvents {
 
   // Feature 3: Card Pack Events
   card_packs_list: (packs: CardPackMetadata[]) => void
-  card_pack_selected: (packId: string) => void
+  card_pack_selected: (packId: string, packName: string) => void
   custom_cards_available: (cards: { characters: Card[], settings: Card[], circumstances: Card[] }) => void
 
   // Feature 4: Audio Events

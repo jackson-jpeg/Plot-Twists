@@ -17,6 +17,7 @@ import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
 import { analytics } from '@/lib/analytics'
 import { useHostSocket } from '@/hooks/useHostSocket'
+import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 
 import { HostLobby } from './components/HostLobby'
 import { HostSelection } from './components/HostSelection'
@@ -31,6 +32,7 @@ export default function HostPage() {
   const { socket, isConnected } = useSocket()
   const confetti = useConfetti()
   useWakeLock()
+  useAudioPlayer({ socket, isConnected })
   const toast = useToast()
   const achievementToasts = useAchievementToasts()
 

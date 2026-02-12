@@ -5,6 +5,7 @@
 
 import type { Socket } from 'socket.io'
 import { upsertUser } from '../services/user.service'
+import { logger } from '../../lib/logger'
 
 /**
  * Get the Firebase Admin auth instance.
@@ -43,7 +44,7 @@ export function createSocketAuthMiddleware() {
       const auth = await getAdminAuth()
       if (!auth) {
         // Firebase Admin not configured — allow connection in dev/fallback mode
-        console.warn('[SocketAuth] Firebase Admin not available, allowing connection without verification')
+        logger.warn('[SocketAuth] Firebase Admin not available, allowing connection without verification')
         socket.data.uid = null
         return next()
       }
@@ -58,13 +59,13 @@ export function createSocketAuthMiddleware() {
           phoneNumber: decodedToken.phone_number,
         })
       } catch (profileError) {
-        console.warn(`[SocketAuth] Failed to upsert user profile for ${decodedToken.uid}:`, profileError)
+        logger.warn(`[SocketAuth] Failed to upsert user profile for ${decodedToken.uid}:`, profileError)
       }
 
-      console.log(`[SocketAuth] Authenticated socket ${socket.id} as user ${decodedToken.uid}`)
+      logger.info(`[SocketAuth] Authenticated socket ${socket.id} as user ${decodedToken.uid}`)
       next()
     } catch (error) {
-      console.warn(`[SocketAuth] Token verification failed for ${socket.id}:`, error)
+      logger.warn(`[SocketAuth] Token verification failed for ${socket.id}:`, error)
       // Still allow connection but without uid — don't block the whole app
       socket.data.uid = null
       next()

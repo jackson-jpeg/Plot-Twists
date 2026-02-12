@@ -4,6 +4,7 @@
  */
 
 import { v4 as uuidv4 } from 'uuid'
+import { logger } from '../../lib/logger'
 import type {
   SavedGame,
   SavedGamePlayer,
@@ -121,7 +122,7 @@ export async function saveGame(
   // Save to database
   await db.set(Collections.GAME_HISTORY, gameId, savedGame)
 
-  console.log(`Saved game: ${script.title} (${gameId})`)
+  logger.info(`Saved game: ${script.title} (${gameId})`)
 
   return savedGame
 }

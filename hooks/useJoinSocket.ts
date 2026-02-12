@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Socket } from 'socket.io-client'
 import type {
-  Player, Script, GameState, GameResults, PlayerRole,
+  Player, Script, ScriptLine, GameState, GameResults, PlayerRole,
   TeleprompterSyncData, AvailableCards, Achievement, SpectatorMessage,
   CardSelection,
 } from '@/lib/types'
@@ -51,6 +51,8 @@ export function useJoinSocket({
   selectionCharacterRef.current = selectionCharacter
   const myRoleRef = useRef(myRole)
   myRoleRef.current = myRole
+  const playersRef = useRef(players)
+  playersRef.current = players
 
   // Loading progress animation
   useEffect(() => {
@@ -128,17 +130,14 @@ export function useJoinSocket({
       setCurrentLineIndex(typeof data === 'number' ? data : data.lineIndex)
     })
     socket.on('game_over', setGameResults)
-    socket.on('achievement_unlocked' as never, (a: Achievement) => achievementToasts.addAchievement(a))
+    socket.on('achievement_unlocked', (a: Achievement) => achievementToasts.addAchievement(a))
     socket.on('spectator_message_received', (msg: SpectatorMessage) => {
       setSpectatorMessages(prev => [...prev.slice(-49), msg])
     })
     socket.on('error', (errorMsg: string) => { toast.error(errorMsg); setError(errorMsg) })
     socket.on('host_disconnected', (data) => { toast.error('Host Disconnected'); setError(data.message); setHostDisconnected(true) })
-    socket.on('card_pack_selected', (packId: string) => {
-      if (packId === 'standard') setSelectedPackName('Standard Pack')
-      else if (packId === 'example-office-comedy') setSelectedPackName('Office Comedy')
-      else if (packId === 'example-scifi-adventures') setSelectedPackName('Sci-Fi Adventures')
-      else setSelectedPackName('Custom Pack')
+    socket.on('card_pack_selected', (_packId: string, packName: string) => {
+      setSelectedPackName(packName)
     })
     socket.on('new_game_started', () => {
       setGameState('LOBBY')
@@ -151,17 +150,33 @@ export function useJoinSocket({
     })
     socket.on('latency_ping', (ts: number) => socket.emit('latency_pong', ts, Date.now()))
     socket.on('latency_pong_response', (d) => setNetworkLatency(d.latency))
+    socket.on('player_left', (playerId: string) => {
+      if (playerId === myPlayerIdRef.current) return
+      const player = playersRef.current.find(p => p.id === playerId)
+      if (player && !player.isHost) {
+        toast.info(`${player.nickname} left the game`)
+      }
+    })
+    socket.on('plot_twist_injected', (insertIndex: number, newLines: ScriptLine[]) => {
+      setScript(prev => {
+        if (!prev) return prev
+        const lines = [...prev.lines]
+        lines.splice(insertIndex, 0, ...newLines)
+        return { ...prev, lines }
+      })
+    })
 
     return () => {
       socket.off('players_update'); socket.off('player_joined')
       socket.off('game_state_change'); socket.off('available_cards')
       socket.off('green_room_prompt'); socket.off('script_ready')
       socket.off('script_image_update'); socket.off('sync_teleprompter')
-      socket.off('game_over'); socket.off('achievement_unlocked' as never)
+      socket.off('game_over'); socket.off('achievement_unlocked')
       socket.off('spectator_message_received'); socket.off('error')
       socket.off('host_disconnected'); socket.off('card_pack_selected')
       socket.off('new_game_started'); socket.off('latency_ping')
       socket.off('latency_pong_response')
+      socket.off('player_left'); socket.off('plot_twist_injected')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, isConnected])

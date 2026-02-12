@@ -7,6 +7,7 @@ import type { Server as SocketIOServer } from 'socket.io'
 import type { Room } from '../../lib/types'
 import { calculateLineDisplayTime } from '../utils/timing'
 import * as roomService from './room.service'
+import { logger } from '../../lib/logger'
 
 /**
  * Start auto-advancing the teleprompter for a room.
@@ -19,7 +20,7 @@ export function startTeleprompterSync(room: Room, io: SocketIOServer): void {
   const advanceLine = (lineIndex: number) => {
     // Check if paused
     if (room.isPaused) {
-      console.log(`Teleprompter paused for room ${room.code}`)
+      logger.debug(`Teleprompter paused for room ${room.code}`)
       return
     }
 

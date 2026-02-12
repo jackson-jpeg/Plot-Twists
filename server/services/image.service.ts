@@ -6,6 +6,7 @@
 import { GoogleGenAI } from '@google/genai'
 import { getStorage } from '../db/firestore'
 import { v4 as uuidv4 } from 'uuid'
+import { logger } from '../../lib/logger'
 
 const PLACEHOLDER_IMAGE_URL = '/images/default-poster.svg'
 
@@ -19,7 +20,7 @@ export async function generateTitleCard(
   setting: string
 ): Promise<string> {
   if (!process.env.GEMINI_API_KEY) {
-    console.warn('GEMINI_API_KEY not configured - using placeholder image')
+    logger.warn('GEMINI_API_KEY not configured - using placeholder image')
     return PLACEHOLDER_IMAGE_URL
   }
 
@@ -32,7 +33,7 @@ Setting: ${setting}
 Synopsis: ${synopsis}
 Style: Vibrant Pixar-quality 3D art, dramatic composition, include title text at bottom.`
 
-    console.log(`[Image Service] Generating poster for "${title}"...`)
+    logger.info(`[Image Service] Generating poster for "${title}"...`)
 
     const response = await genAI.models.generateImages({
       model: 'imagen-4.0-generate-001',
@@ -48,10 +49,10 @@ Style: Vibrant Pixar-quality 3D art, dramatic composition, include title text at
     const buffer = Buffer.from(imageData.imageBytes, 'base64')
     const url = await uploadToStorage(buffer)
 
-    console.log(`[Image Service] Poster generated successfully for "${title}"`)
+    logger.info(`[Image Service] Poster generated successfully for "${title}"`)
     return url
   } catch (error) {
-    console.error('[Image Service] Poster generation failed:', error)
+    logger.error('[Image Service] Poster generation failed:', error)
     return PLACEHOLDER_IMAGE_URL
   }
 }
@@ -63,7 +64,7 @@ Style: Vibrant Pixar-quality 3D art, dramatic composition, include title text at
 async function uploadToStorage(buffer: Buffer): Promise<string> {
   const bucket = await getStorage()
   if (!bucket) {
-    console.warn('[Image Service] Firebase Storage not configured - using placeholder')
+    logger.warn('[Image Service] Firebase Storage not configured - using placeholder')
     return PLACEHOLDER_IMAGE_URL
   }
 
@@ -81,7 +82,7 @@ async function uploadToStorage(buffer: Buffer): Promise<string> {
 
     return `https://storage.googleapis.com/${bucket.name}/${filename}`
   } catch (error) {
-    console.error('[Image Service] Storage upload failed:', error)
+    logger.error('[Image Service] Storage upload failed:', error)
     return PLACEHOLDER_IMAGE_URL
   }
 }

@@ -6,6 +6,7 @@
 import { DatabaseAdapter, Collections, CollectionName } from './adapter'
 import { firestoreAdapter } from './firestore'
 import { jsonAdapter } from './json'
+import { logger } from '../../lib/logger'
 
 // Determine which adapter to use based on environment
 const useFirestore = Boolean(
@@ -30,10 +31,10 @@ export async function initializeDatabase(): Promise<void> {
   if (!db.isConnected()) {
     try {
       await db.connect()
-      console.log(`Database connected using ${useFirestore ? 'Firestore' : 'JSON file'} adapter`)
+      logger.info(`Database connected using ${useFirestore ? 'Firestore' : 'JSON file'} adapter`)
     } catch (error) {
       if (useFirestore) {
-        console.warn('Firestore connection failed, falling back to JSON adapter')
+        logger.warn('Firestore connection failed, falling back to JSON adapter')
         await jsonAdapter.connect()
       } else {
         throw error

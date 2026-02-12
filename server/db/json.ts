@@ -7,6 +7,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { DatabaseAdapter, WhereClause, QueryOptions, TransactionContext } from './adapter'
+import { logger } from '../../lib/logger'
 
 const DATA_DIR = path.join(process.cwd(), 'data')
 
@@ -55,7 +56,7 @@ function loadCollection(collection: string): Map<string, unknown> {
         }
       }
     } catch (error) {
-      console.error(`Failed to load collection ${collection}:`, error)
+      logger.error(`Failed to load collection ${collection}:`, error)
     }
   }
 
@@ -80,7 +81,7 @@ function saveCollection(collection: string): void {
   try {
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2))
   } catch (error) {
-    console.error(`Failed to save collection ${collection}:`, error)
+    logger.error(`Failed to save collection ${collection}:`, error)
   }
 }
 

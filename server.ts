@@ -1199,7 +1199,8 @@ app.prepare().then(async () => {
         await incrementDownloads(packId)
       }
 
-      io.to(roomCode).emit('card_pack_selected', packId)
+      const pack = packId !== STANDARD_PACK_ID ? await getCardPack(packId) : null
+      io.to(roomCode).emit('card_pack_selected', packId, pack?.name || 'Standard Pack')
       callback({ success: true })
     })
 
@@ -1523,7 +1524,7 @@ app.prepare().then(async () => {
   })
 
   // Helper function to start script generation
-  async function startScriptGeneration(room: Room, io: SocketIOServer) {
+  async function startScriptGeneration(room: Room, io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>) {
     // Rate limiting for script generation (use host socket ID)
     const hostSocketId = room.host.socketId
     if (!scriptGenerationLimiter.check(hostSocketId)) {

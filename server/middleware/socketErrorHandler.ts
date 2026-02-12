@@ -1,5 +1,6 @@
 import type { Socket } from 'socket.io'
 import crypto from 'crypto'
+import { logger } from '../../lib/logger'
 
 /**
  * Wraps a socket event handler with centralized error handling.
@@ -17,7 +18,7 @@ export function withErrorHandler<TArgs extends unknown[]>(
       await handler(...args)
     } catch (error) {
       const requestId = crypto.randomUUID()
-      console.error(`[Socket:${eventName}] [${requestId}] Error for ${socket.id}:`, error)
+      logger.error(`[Socket:${eventName}] [${requestId}] Error for ${socket.id}:`, error)
 
       // If the last argument is a callback function, call it with an error
       const lastArg = args[args.length - 1]

@@ -102,9 +102,9 @@ function JoinPageContent() {
     if (selection.character && selection.setting && selection.circumstance &&
         !hasTriggeredSelectionConfetti && gameState === 'SELECTION' && !hasSubmitted) {
       setHasTriggeredSelectionConfetti(true)
-      confetti.fireWinnerConfetti()
+      setTimeout(() => confetti.fireWinnerConfetti(), 250)
     }
-  }, [selection, hasTriggeredSelectionConfetti, gameState, hasSubmitted, confetti, toast])
+  }, [selection, hasTriggeredSelectionConfetti, gameState, hasSubmitted, confetti])
 
   useEffect(() => {
     if (!selection.character && !selection.setting && !selection.circumstance) setHasTriggeredSelectionConfetti(false)

@@ -143,9 +143,9 @@ export default function HostPage() {
     if (settings.gameMode === 'SOLO' && selection.character && selection.setting && selection.circumstance &&
         !hasTriggeredSelectionConfetti && gameState === 'SELECTION' && !hasSubmittedSelection) {
       setHasTriggeredSelectionConfetti(true)
-      confetti.fireWinnerConfetti()
+      setTimeout(() => confetti.fireWinnerConfetti(), 250)
     }
-  }, [selection, hasTriggeredSelectionConfetti, gameState, hasSubmittedSelection, settings.gameMode, confetti, toast])
+  }, [selection, hasTriggeredSelectionConfetti, gameState, hasSubmittedSelection, settings.gameMode, confetti])
 
   useEffect(() => {
     if (!selection.character && !selection.setting && !selection.circumstance) setHasTriggeredSelectionConfetti(false)

@@ -89,7 +89,7 @@ export function HostSelection({
                 className="btn btn-primary btn-large w-full mt-6"
                 style={{ opacity: (!selection.character || !selection.setting || !selection.circumstance || isSubmittingCards) ? 0.6 : 1 }}
                 whileHover={{ scale: isSubmittingCards ? 1 : 1.02 }} whileTap={{ scale: isSubmittingCards ? 1 : 0.98 }}
-                animate={(selection.character && selection.setting && selection.circumstance && !isSubmittingCards) ? { boxShadow: ['0 0 0 0 rgba(245, 158, 66, 0)', '0 0 0 10px rgba(245, 158, 66, 0.3)', '0 0 0 0 rgba(245, 158, 66, 0)'] } : {}}
+                animate={(selection.character && selection.setting && selection.circumstance && !isSubmittingCards) ? { boxShadow: ['0 0 0 0 rgba(245, 158, 66, 0.1)', '0 0 0 8px rgba(245, 158, 66, 0.15)', '0 0 0 0 rgba(245, 158, 66, 0.1)'] } : {}}
                 transition={(selection.character && selection.setting && selection.circumstance && !isSubmittingCards) ? { duration: 2, repeat: Infinity } : {}}
               >
                 {isSubmittingCards ? (

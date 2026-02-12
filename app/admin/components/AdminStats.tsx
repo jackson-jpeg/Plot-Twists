@@ -13,6 +13,18 @@ const MODE_COLORS: Record<string, string> = {
   ENSEMBLE: 'var(--color-pink)',
 }
 
+const MODE_LABELS: Record<string, string> = {
+  SOLO: 'Solo',
+  HEAD_TO_HEAD: 'Head-to-Head',
+  ENSEMBLE: 'Ensemble',
+}
+
+const MODE_ICONS: Record<string, string> = {
+  SOLO: '🎤',
+  HEAD_TO_HEAD: '⚔️',
+  ENSEMBLE: '🎭',
+}
+
 export function AdminStats({ stats }: AdminStatsProps) {
   if (!stats) {
     return (
@@ -100,7 +112,9 @@ export function AdminStats({ stats }: AdminStatsProps) {
               return (
                 <div key={mode}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-medium text-[var(--color-text-primary)]">{mode}</span>
+                    <span className="text-xs font-medium text-[var(--color-text-primary)]">
+                      {MODE_ICONS[mode] || '🎲'} {MODE_LABELS[mode] || mode}
+                    </span>
                     <span className="text-xs text-[var(--color-text-disabled)]">
                       {count} room{count !== 1 ? 's' : ''} ({pct}%)
                     </span>
@@ -134,6 +148,18 @@ export function AdminStats({ stats }: AdminStatsProps) {
           </p>
         </motion.div>
       )}
+
+      {/* Keyboard shortcuts hint */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="rounded-xl bg-[var(--color-surface-alt)] border border-[var(--color-border)] p-3 mt-2"
+      >
+        <p className="text-[10px] text-[var(--color-text-disabled)] text-center">
+          Keyboard shortcuts: <kbd className="px-1 py-0.5 rounded bg-[var(--color-surface)] border border-[var(--color-border)] font-mono text-[10px]">1</kbd> <kbd className="px-1 py-0.5 rounded bg-[var(--color-surface)] border border-[var(--color-border)] font-mono text-[10px]">2</kbd> <kbd className="px-1 py-0.5 rounded bg-[var(--color-surface)] border border-[var(--color-border)] font-mono text-[10px]">3</kbd> switch tabs · <kbd className="px-1 py-0.5 rounded bg-[var(--color-surface)] border border-[var(--color-border)] font-mono text-[10px]">R</kbd> refresh
+        </p>
+      </motion.div>
     </div>
   )
 }

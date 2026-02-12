@@ -1700,6 +1700,31 @@ app.prepare().then(async () => {
       callback({ success: true })
     })
 
+    socket.on('admin_close_room', async (roomCode, callback) => {
+      if (!isAdminSocket(socket)) {
+        callback({ success: false, error: 'Unauthorized' })
+        return
+      }
+      const room = roomService.getRoomFromCache(roomCode)
+      if (!room) {
+        callback({ success: false, error: 'Room not found' })
+        return
+      }
+      // Notify all players and disconnect them
+      io.to(roomCode).emit('kicked', { reason: 'Room closed by admin' })
+      // Disconnect all player sockets from the room
+      for (const [, player] of room.players) {
+        const playerSocket = io.sockets.sockets.get(player.socketId)
+        if (playerSocket) {
+          playerSocket.leave(roomCode)
+          playerSocket.disconnect(true)
+        }
+      }
+      await roomService.deleteRoom(roomCode)
+      logger.info(`[Admin] Closed room ${roomCode} (${room.players.size} players disconnected)`)
+      callback({ success: true })
+    })
+
     socket.on('admin_add_credits', async (uid, amount, callback) => {
       if (!isAdminSocket(socket)) {
         callback({ success: false, error: 'Unauthorized' })

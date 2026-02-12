@@ -122,6 +122,24 @@ export default function AdminPage() {
     fetchUsers()
   }, [fetchUsers])
 
+  // Keyboard shortcuts: 1/2/3 to switch tabs, R to refresh
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Skip if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+
+      switch (e.key) {
+        case '1': setActiveTab('rooms'); break
+        case '2': setActiveTab('users'); break
+        case '3': setActiveTab('stats'); break
+        case 'r': refreshAll(); break
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [refreshAll])
+
   // Loading state
   if (authLoading || isAdmin === null) {
     return (
@@ -144,10 +162,10 @@ export default function AdminPage() {
 
   if (!isAdmin) return null
 
-  const tabs: { id: AdminTab; label: string; icon: string; count?: number }[] = [
-    { id: 'rooms', label: 'Rooms', icon: '🏠', count: rooms.length },
-    { id: 'users', label: 'Users', icon: '👥', count: userTotal },
-    { id: 'stats', label: 'Stats', icon: '📊' },
+  const tabs: { id: AdminTab; label: string; icon: string; count?: number; shortcut: string }[] = [
+    { id: 'rooms', label: 'Rooms', icon: '🏠', count: rooms.length, shortcut: '1' },
+    { id: 'users', label: 'Users', icon: '👥', count: userTotal, shortcut: '2' },
+    { id: 'stats', label: 'Stats', icon: '📊', shortcut: '3' },
   ]
 
   const formatLastRefreshed = () => {
@@ -260,6 +278,7 @@ export default function AdminPage() {
                 key={tab.id}
                 role="tab"
                 aria-selected={isActive}
+                title={`${tab.label} (${tab.shortcut})`}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2.5 rounded-t-lg font-medium transition-all border border-b-0 relative -mb-px text-sm ${
                   isActive
@@ -311,7 +330,7 @@ export default function AdminPage() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <AdminRooms rooms={rooms} socket={socket!} onToast={showToast} />
+              <AdminRooms rooms={rooms} socket={socket!} onToast={showToast} onRefresh={refreshAll} />
             </motion.div>
           )}
           {activeTab === 'users' && (

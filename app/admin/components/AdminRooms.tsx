@@ -4,12 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { AdminRoomInfo } from '@/lib/types'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 
 interface AdminRoomsProps {
   rooms: AdminRoomInfo[]
   socket: Socket<ServerToClientEvents, ClientToServerEvents>
   onToast: (message: string, type: 'success' | 'error' | 'info') => void
+  onRefresh: () => void
 }
 
 const STATE_COLORS: Record<string, string> = {
@@ -38,21 +39,45 @@ function formatRelativeTime(timestamp: number): string {
   return `${Math.floor(secs / 86400)}d ago`
 }
 
-export function AdminRooms({ rooms, socket, onToast }: AdminRoomsProps) {
+export function AdminRooms({ rooms, socket, onToast, onRefresh }: AdminRoomsProps) {
   const [expandedRoom, setExpandedRoom] = useState<string | null>(null)
   const [kickingPlayer, setKickingPlayer] = useState<string | null>(null)
+  const [closingRoom, setClosingRoom] = useState<string | null>(null)
+  const [confirmClose, setConfirmClose] = useState<string | null>(null)
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
-  const handleKick = (roomCode: string, playerId: string, playerName: string) => {
+  const handleKick = useCallback((roomCode: string, playerId: string, playerName: string) => {
     setKickingPlayer(playerId)
     socket.emit('admin_kick_player', roomCode, playerId, (response) => {
       setKickingPlayer(null)
       if (response.success) {
         onToast(`Kicked ${playerName}`, 'success')
+        onRefresh()
       } else {
         onToast(response.error || 'Failed to kick player', 'error')
       }
     })
-  }
+  }, [socket, onToast, onRefresh])
+
+  const handleCloseRoom = useCallback((roomCode: string) => {
+    setClosingRoom(roomCode)
+    socket.emit('admin_close_room', roomCode, (response) => {
+      setClosingRoom(null)
+      setConfirmClose(null)
+      if (response.success) {
+        onToast(`Room ${roomCode} closed`, 'success')
+        onRefresh()
+      } else {
+        onToast(response.error || 'Failed to close room', 'error')
+      }
+    })
+  }, [socket, onToast, onRefresh])
+
+  const copyRoomCode = useCallback((code: string) => {
+    navigator.clipboard.writeText(code)
+    setCopiedCode(code)
+    setTimeout(() => setCopiedCode(null), 1500)
+  }, [])
 
   if (rooms.length === 0) {
     return (
@@ -70,6 +95,13 @@ export function AdminRooms({ rooms, socket, onToast }: AdminRoomsProps) {
 
   return (
     <div className="space-y-3">
+      {/* Summary bar */}
+      <div className="flex items-center gap-3 px-1 mb-1 text-xs text-[var(--color-text-disabled)]">
+        <span>{rooms.length} room{rooms.length !== 1 ? 's' : ''}</span>
+        <span>·</span>
+        <span>{rooms.reduce((sum, r) => sum + r.playerCount + r.spectatorCount, 0)} total users</span>
+      </div>
+
       {rooms.map((room, i) => {
         const isExpanded = expandedRoom === room.code
         const totalOccupants = room.playerCount + room.spectatorCount
@@ -169,7 +201,7 @@ export function AdminRooms({ rooms, socket, onToast }: AdminRoomsProps) {
 
                     {/* Player list with kick */}
                     {room.players.length > 0 && (
-                      <div>
+                      <div className="mb-4">
                         <h4 className="text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider mb-2">
                           Players in Room
                         </h4>
@@ -193,7 +225,7 @@ export function AdminRooms({ rooms, socket, onToast }: AdminRoomsProps) {
                                     color: 'var(--color-danger)',
                                     backgroundColor: 'color-mix(in srgb, var(--color-danger) 10%, transparent)',
                                   }}
-                                  whileHover={{ scale: 1.05, backgroundColor: 'color-mix(in srgb, var(--color-danger) 20%, transparent)' }}
+                                  whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
                                 >
                                   {kickingPlayer === player.id ? 'Kicking...' : 'Kick'}
@@ -204,6 +236,58 @@ export function AdminRooms({ rooms, socket, onToast }: AdminRoomsProps) {
                         </div>
                       </div>
                     )}
+
+                    {/* Room actions */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-[var(--color-border)]">
+                      {/* Copy room code */}
+                      <motion.button
+                        onClick={() => copyRoomCode(room.code)}
+                        className="text-[11px] font-medium px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-alt)] transition-colors"
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                      >
+                        {copiedCode === room.code ? '✓ Copied' : '📋 Copy Code'}
+                      </motion.button>
+
+                      <div className="flex-1" />
+
+                      {/* Close room */}
+                      {confirmClose === room.code ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-[var(--color-danger)] font-medium">Close room?</span>
+                          <motion.button
+                            onClick={() => handleCloseRoom(room.code)}
+                            disabled={closingRoom === room.code}
+                            className="text-[11px] font-semibold px-2.5 py-1.5 rounded-lg text-white transition-colors"
+                            style={{ backgroundColor: 'var(--color-danger)' }}
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                          >
+                            {closingRoom === room.code ? 'Closing...' : 'Confirm'}
+                          </motion.button>
+                          <motion.button
+                            onClick={() => setConfirmClose(null)}
+                            className="text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-alt)] transition-colors"
+                            whileTap={{ scale: 0.97 }}
+                          >
+                            Cancel
+                          </motion.button>
+                        </div>
+                      ) : (
+                        <motion.button
+                          onClick={() => setConfirmClose(room.code)}
+                          className="text-[11px] font-medium px-3 py-1.5 rounded-lg transition-colors"
+                          style={{
+                            color: 'var(--color-danger)',
+                            backgroundColor: 'color-mix(in srgb, var(--color-danger) 8%, transparent)',
+                          }}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                        >
+                          Close Room
+                        </motion.button>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               )}

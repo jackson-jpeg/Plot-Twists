@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { AdminUserInfo } from '@/lib/types'
 import type { Socket } from 'socket.io-client'
@@ -55,6 +55,19 @@ export function AdminUsers({ users, total, search, onSearchChange, page, onPageC
       }
     })
   }
+
+  // Escape key closes the credit modal
+  useEffect(() => {
+    if (!creditModal) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setCreditModal(null)
+        setCreditAmount('')
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [creditModal])
 
   const copyUid = (uid: string) => {
     navigator.clipboard.writeText(uid)

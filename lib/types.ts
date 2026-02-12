@@ -460,6 +460,7 @@ export interface ClientToServerEvents {
   admin_get_users: (query: { limit?: number; offset?: number; search?: string }, callback: (response: { success: boolean; users: AdminUserInfo[]; total: number }) => void) => void
   admin_get_stats: (callback: (response: { success: boolean; stats: AdminStats }) => void) => void
   admin_kick_player: (roomCode: string, playerId: string, callback: (response: { success: boolean; error?: string }) => void) => void
+  admin_close_room: (roomCode: string, callback: (response: { success: boolean; error?: string }) => void) => void
   admin_add_credits: (uid: string, amount: number, callback: (response: { success: boolean; newBalance?: number; error?: string }) => void) => void
 
   // Credit System Events

@@ -14,6 +14,9 @@ import { logger } from '../../lib/logger'
  * Calculate voting results, emit game_over, and save game history + player stats.
  */
 export async function calculateResults(room: Room, io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>): Promise<void> {
+  // Guard against double-execution from race conditions
+  if (room.gameState === 'RESULTS') return
+
   const voteCounts = new Map<string, number>()
 
   for (const targetId of room.votes.values()) {

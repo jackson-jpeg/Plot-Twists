@@ -1,9 +1,18 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import confetti from 'canvas-confetti'
 
 export function useConfetti() {
+  const intervalsRef = useRef<NodeJS.Timeout[]>([])
+
+  // Clean up any running confetti intervals on unmount
+  useEffect(() => {
+    return () => {
+      intervalsRef.current.forEach(clearInterval)
+      intervalsRef.current = []
+    }
+  }, [])
   const fireConfetti = useCallback(() => {
     const count = 200
     const defaults = {
@@ -60,7 +69,9 @@ export function useConfetti() {
       const timeLeft = animationEnd - Date.now()
 
       if (timeLeft <= 0) {
-        return clearInterval(interval)
+        clearInterval(interval)
+        intervalsRef.current = intervalsRef.current.filter(i => i !== interval)
+        return
       }
 
       const particleCount = 50 * (timeLeft / duration)
@@ -79,6 +90,7 @@ export function useConfetti() {
         origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
       })
     }, 250)
+    intervalsRef.current.push(interval)
   }, [])
 
   const fireCelebration = useCallback(() => {

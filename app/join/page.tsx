@@ -81,6 +81,17 @@ function JoinPageContent() {
     }
   }, [])
 
+  // Reset orchestrator state when returning to LOBBY (new game)
+  useEffect(() => {
+    if (gameState === 'LOBBY') {
+      setSelection({ character: '', setting: '', circumstance: '' })
+      setCustomInputActive({ character: false, setting: false, circumstance: false })
+      setHasSubmitted(false)
+      setIsSubmitting(false)
+      setHasTriggeredSelectionConfetti(false)
+    }
+  }, [gameState])
+
   // Confetti on results
   useEffect(() => {
     if (gameState === 'RESULTS' && gameResults?.winner) {

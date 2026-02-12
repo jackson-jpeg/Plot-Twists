@@ -1592,7 +1592,13 @@ app.prepare().then(async () => {
 
     // Get all player selections
     const allSelections = Array.from(room.selections.values())
-    if (allSelections.length === 0) return
+    if (allSelections.length === 0) {
+      logger.error(`No selections found for room ${room.code}, cannot generate script`)
+      io.to(room.code).emit('error', 'No card selections found. Please try again.')
+      room.gameState = 'SELECTION'
+      io.to(room.code).emit('game_state_change', 'SELECTION')
+      return
+    }
 
     // For fairness in multiplayer, randomly pick setting and circumstance from all player selections
     // (Each player picked their own, so we combine them randomly)

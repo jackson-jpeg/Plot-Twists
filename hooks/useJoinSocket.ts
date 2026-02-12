@@ -105,7 +105,7 @@ export function useJoinSocket({
           if (count > 0) {
             setCountdown(count)
           } else {
-            clearInterval(countdownIntervalRef.current!)
+            if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
             countdownIntervalRef.current = null
             setCountdown(null)
             setGameState('PERFORMING')
@@ -150,6 +150,13 @@ export function useJoinSocket({
       setGameResults(null)
       setMyCharacter('')
       setGreenRoomQuestion('')
+      setLoadingProgress(0)
+      setCountdown(null)
+      setError('')
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current)
+        countdownIntervalRef.current = null
+      }
     })
     socket.on('latency_ping', (ts: number) => socket.emit('latency_pong', ts, Date.now()))
     socket.on('latency_pong_response', (d) => setNetworkLatency(d.latency))

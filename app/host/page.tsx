@@ -89,7 +89,6 @@ export default function HostPage() {
     showInsufficientCredits, setShowInsufficientCredits,
     spectatorMessages,
     selection, setSelection,
-    customInputActive, setCustomInputActive,
     hasSubmittedSelection, setHasSubmittedSelection,
   } = useHostSocket({ socket, isConnected, settings, toast, achievementToasts })
 
@@ -338,7 +337,6 @@ export default function HostPage() {
             key="selection"
             settings={settings} players={players}
             selection={selection} setSelection={setSelection}
-            customInputActive={customInputActive} setCustomInputActive={setCustomInputActive}
             hasSubmittedSelection={hasSubmittedSelection}
             isSubmittingCards={isSubmittingCards}
             availableCards={availableCards}

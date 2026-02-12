@@ -46,7 +46,6 @@ function JoinPageContent() {
 
   // Card selection state (kept in orchestrator so socket actions can use it)
   const [selection, setSelection] = useState<CardSelection>({ character: '', setting: '', circumstance: '' })
-  const [customInputActive, setCustomInputActive] = useState({ character: false, setting: false, circumstance: false })
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasTriggeredSelectionConfetti, setHasTriggeredSelectionConfetti] = useState(false)
@@ -85,7 +84,6 @@ function JoinPageContent() {
   useEffect(() => {
     if (gameState === 'LOBBY') {
       setSelection({ character: '', setting: '', circumstance: '' })
-      setCustomInputActive({ character: false, setting: false, circumstance: false })
       setHasSubmitted(false)
       setIsSubmitting(false)
       setHasTriggeredSelectionConfetti(false)
@@ -242,7 +240,6 @@ function JoinPageContent() {
             key="selection"
             myRole={myRole} hasSubmitted={hasSubmitted} isSubmitting={isSubmitting}
             selection={selection} setSelection={setSelection}
-            customInputActive={customInputActive} setCustomInputActive={setCustomInputActive}
             availableCards={availableCards} roomIsMature={roomIsMature}
             error={error} onSubmitCards={handleSubmitCards} toast={toast}
           />

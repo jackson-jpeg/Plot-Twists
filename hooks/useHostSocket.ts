@@ -44,7 +44,7 @@ export function useHostSocket({
 
   // Solo card selection state
   const [selection, setSelection] = useState<CardSelection>({ character: '', setting: '', circumstance: '' })
-  const [customInputActive, setCustomInputActive] = useState({ character: false, setting: false, circumstance: false })
+
   const [hasSubmittedSelection, setHasSubmittedSelection] = useState(false)
 
   const scriptGenerationTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -137,7 +137,6 @@ export function useHostSocket({
       setGameResults(null)
       setIsPlaying(true)
       setSelection({ character: '', setting: '', circumstance: '' })
-      setCustomInputActive({ character: false, setting: false, circumstance: false })
       setHasSubmittedSelection(false)
     })
     socket.on('latency_ping', (ts: number) => socket.emit('latency_pong', ts, Date.now()))
@@ -211,7 +210,6 @@ export function useHostSocket({
     showInsufficientCredits, setShowInsufficientCredits,
     spectatorMessages,
     selection, setSelection,
-    customInputActive, setCustomInputActive,
     hasSubmittedSelection, setHasSubmittedSelection,
     scriptGenerationTimeoutRef,
     loadingIntervalRef,

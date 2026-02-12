@@ -155,7 +155,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
               {/* Room Preview */}
               <AnimatePresence>
                 {isLoadingPreview && isRoomCodeValid && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-3 p-4 rounded-lg" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}>
+                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-3 p-4 rounded-lg" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }} aria-busy="true" aria-label="Loading room info">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-[var(--color-surface)] animate-pulse shrink-0" />
                       <div className="flex-1 space-y-2">
@@ -218,8 +218,8 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
             </div>
 
             {error && (
-              <motion.div className="error-banner p-4 rounded-lg flex items-center gap-3 justify-center" style={{ background: 'var(--color-danger)', border: '2px solid var(--color-bg)' }} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-                <span className="text-2xl">{error.includes('not found') ? '🔍' : error.includes('full') ? '🚫' : error.includes('timeout') ? '⏱️' : '⚠️'}</span>
+              <motion.div className="error-banner p-4 rounded-lg flex items-center gap-3 justify-center" style={{ background: 'var(--color-danger)', border: '2px solid var(--color-bg)' }} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} role="alert">
+                <span className="text-2xl" aria-hidden="true">{error.includes('not found') ? '🔍' : error.includes('full') ? '🚫' : error.includes('timeout') ? '⏱️' : '⚠️'}</span>
                 <p className="text-white font-semibold">{error}</p>
               </motion.div>
             )}

@@ -58,10 +58,10 @@ export function UserMenu() {
         .toUpperCase()
         .slice(0, 2)
     }
-    if (user?.email) {
-      return user.email[0].toUpperCase()
+    if (user?.phoneNumber) {
+      return '📱'
     }
-    return '?'
+    return '🎭'
   }
 
   // Loading state - show skeleton

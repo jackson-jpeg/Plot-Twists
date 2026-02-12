@@ -140,7 +140,7 @@ export function Toast({
         background: 'var(--color-surface)',
         border: `1px solid var(--glass-border)`,
         ...(!isCompact && { borderLeft: `3px solid ${colors.border}` }),
-        boxShadow: isCompact ? '0 4px 16px rgba(0,0,0,0.12)' : '0 4px 20px rgba(0,0,0,0.15)',
+        boxShadow: 'var(--shadow-3, 0 4px 20px rgba(0,0,0,0.15))',
       }}
     >
       {/* Progress bar — only on longer toasts */}

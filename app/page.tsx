@@ -71,7 +71,8 @@ export default function Home() {
             initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -40 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] bg-[var(--color-success,#4ade80)] text-black px-6 py-3 rounded-xl font-semibold text-[0.95rem] shadow-lg"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] bg-[var(--color-success)] text-black px-6 py-3 rounded-xl font-semibold text-[0.95rem] shadow-lg"
+            role="status"
           >
             Credits added to your account!
           </motion.div>

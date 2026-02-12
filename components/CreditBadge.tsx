@@ -64,9 +64,10 @@ export function CreditHeaderBadge({ onClick }: { onClick?: () => void }) {
     <button
       onClick={onClick}
       title={`${balance.free} free + ${balance.banked} banked scripts`}
+      aria-label={`${balance.total} scripts available: ${balance.free} free + ${balance.banked} banked`}
       className={`credit-header-badge ${variant}`}
     >
-      <span className="credit-header-badge-icon">🎬</span>
+      <span className="credit-header-badge-icon" aria-hidden="true">🎬</span>
       <span>{balance.total}</span>
     </button>
   )

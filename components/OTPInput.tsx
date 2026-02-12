@@ -102,7 +102,7 @@ export function OTPInput({
   }
 
   return (
-    <div className="flex justify-center gap-2 sm:gap-3">
+    <div className="flex justify-center gap-2 sm:gap-3" role="group" aria-label="Verification code">
       {digits.map((digit, index) => (
         <motion.input
           key={index}
@@ -118,7 +118,8 @@ export function OTPInput({
           onFocus={() => handleFocus(index)}
           onBlur={handleBlur}
           disabled={disabled}
-          className="w-10 h-12 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-bold rounded-lg outline-none transition-all"
+          aria-label={`Digit ${index + 1} of ${length}`}
+          className="w-11 h-13 sm:w-13 sm:h-15 text-center text-xl sm:text-2xl font-bold rounded-xl outline-none transition-all"
           style={{
             background: disabled ? 'var(--color-surface-alt)' : 'var(--color-surface)',
             border: error
@@ -128,6 +129,8 @@ export function OTPInput({
               : '2px solid var(--color-border)',
             color: 'var(--color-text-primary)',
             opacity: disabled ? 0.6 : 1,
+            minWidth: '44px',
+            minHeight: '48px',
           }}
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{

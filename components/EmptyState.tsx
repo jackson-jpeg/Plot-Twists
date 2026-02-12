@@ -74,6 +74,7 @@ export function EmptyState({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      role="status"
       className={`flex flex-col items-center justify-center py-12 px-4 text-center ${className}`}
     >
       {/* Animated illustration */}
@@ -90,7 +91,7 @@ export function EmptyState({
         <div className="absolute inset-0 blur-xl opacity-30 bg-[var(--color-purple)] rounded-full scale-150" />
 
         {/* Main emoji */}
-        <span className="relative text-7xl block">{config.emoji}</span>
+        <span className="relative text-7xl block" aria-hidden="true">{config.emoji}</span>
       </motion.div>
 
       {/* Title */}

@@ -252,12 +252,14 @@ export default function AdminPage() {
         </motion.div>
 
         {/* Tab nav */}
-        <div className="flex gap-1 border-b border-[var(--color-border)] pb-0 relative mb-5">
+        <div className="flex gap-1 border-b border-[var(--color-border)] pb-0 relative mb-5" role="tablist">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id
             return (
               <motion.button
                 key={tab.id}
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2.5 rounded-t-lg font-medium transition-all border border-b-0 relative -mb-px text-sm ${
                   isActive

@@ -306,6 +306,13 @@ export interface GameResults {
 // Admin Dashboard Types
 // ============================================================
 
+export interface AdminRoomPlayer {
+  id: string
+  nickname: string
+  role: string
+  isHost: boolean
+}
+
 export interface AdminRoomInfo {
   code: string
   hostNickname: string
@@ -314,6 +321,8 @@ export interface AdminRoomInfo {
   gameState: string
   createdAt?: number
   gameMode: string
+  scriptTitle?: string
+  players: AdminRoomPlayer[]
 }
 
 export interface AdminUserInfo {
@@ -333,6 +342,7 @@ export interface AdminStats {
   totalUsersInRooms: number
   gamesPlayedToday: number
   recentGameModes: Record<string, number>
+  totalRegisteredUsers: number
 }
 
 // Socket.io Event Interfaces

@@ -7,72 +7,132 @@ interface AdminStatsProps {
   stats: AdminStatsType | null
 }
 
+const MODE_COLORS: Record<string, string> = {
+  SOLO: 'var(--color-accent)',
+  HEAD_TO_HEAD: 'var(--color-purple)',
+  ENSEMBLE: 'var(--color-pink)',
+}
+
 export function AdminStats({ stats }: AdminStatsProps) {
   if (!stats) {
     return (
-      <div className="text-center py-12">
-        <p className="text-[var(--color-text-secondary)] font-handwritten">Loading stats...</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="text-center py-16 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)]"
+      >
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          className="inline-block text-2xl mb-2"
+        >
+          ⚙️
+        </motion.div>
+        <p className="text-sm text-[var(--color-text-secondary)]">Loading stats...</p>
+      </motion.div>
     )
   }
 
-  const cards = [
-    { label: 'Active Rooms', value: stats.activeRooms, icon: '🏠' },
-    { label: 'Connected Sockets', value: stats.connectedSockets, icon: '🔌' },
-    { label: 'Users in Rooms', value: stats.totalUsersInRooms, icon: '👥' },
-    { label: 'Games Today', value: stats.gamesPlayedToday, icon: '🎮' },
+  const primaryCards = [
+    { label: 'Active Rooms', value: stats.activeRooms, icon: '🏠', color: 'var(--color-accent)' },
+    { label: 'Connected Sockets', value: stats.connectedSockets, icon: '🔌', color: 'var(--color-purple)' },
+    { label: 'Users in Rooms', value: stats.totalUsersInRooms, icon: '👥', color: 'var(--color-pink)' },
+    { label: 'Games Today', value: stats.gamesPlayedToday, icon: '🎮', color: 'var(--color-success)' },
   ]
 
   const gameModeEntries = Object.entries(stats.recentGameModes)
   const totalModes = gameModeEntries.reduce((sum, [, count]) => sum + count, 0)
 
   return (
-    <div className="space-y-6">
-      {/* Stat cards */}
+    <div className="space-y-5">
+      {/* Primary stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {cards.map((card, i) => (
+        {primaryCards.map((card, i) => (
           <motion.div
             key={card.label}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4 text-center"
+            className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4 text-center shadow-sm"
             whileHover={{ scale: 1.04, y: -2 }}
           >
             <div className="text-2xl mb-1">{card.icon}</div>
-            <div className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{card.value}</div>
-            <div className="text-xs text-[var(--color-text-tertiary)] mt-0.5">{card.label}</div>
+            <div className="text-2xl font-bold font-display" style={{ color: card.color }}>{card.value}</div>
+            <div className="text-[10px] text-[var(--color-text-disabled)] mt-0.5 uppercase tracking-wider">{card.label}</div>
           </motion.div>
         ))}
       </div>
 
+      {/* Secondary stats row */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+        className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">📋</span>
+            <div>
+              <p className="text-sm font-semibold text-[var(--color-text-primary)] font-display">Total Registered Users</p>
+              <p className="text-xs text-[var(--color-text-disabled)]">All users who have created an account</p>
+            </div>
+          </div>
+          <span className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats.totalRegisteredUsers}</span>
+        </div>
+      </motion.div>
+
       {/* Game mode breakdown */}
       {gameModeEntries.length > 0 && (
-        <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4">
-          <h3 className="font-semibold text-sm text-[var(--color-text-primary)] mb-3 font-display">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4"
+        >
+          <h3 className="font-semibold text-sm text-[var(--color-text-primary)] mb-4 font-display">
             Active Game Modes
           </h3>
-          <div className="space-y-2">
-            {gameModeEntries.map(([mode, count]) => {
+          <div className="space-y-3">
+            {gameModeEntries.map(([mode, count], i) => {
               const pct = totalModes > 0 ? Math.round((count / totalModes) * 100) : 0
+              const color = MODE_COLORS[mode] || 'var(--color-accent)'
               return (
-                <div key={mode} className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-[var(--color-text-primary)] w-28">{mode}</span>
-                  <div className="flex-1 h-6 rounded-full bg-[var(--color-surface-alt)] overflow-hidden">
+                <div key={mode}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-[var(--color-text-primary)]">{mode}</span>
+                    <span className="text-xs text-[var(--color-text-disabled)]">
+                      {count} room{count !== 1 ? 's' : ''} ({pct}%)
+                    </span>
+                  </div>
+                  <div className="h-2.5 rounded-full bg-[var(--color-surface-alt)] overflow-hidden">
                     <motion.div
                       className="h-full rounded-full"
-                      style={{ backgroundColor: 'var(--color-accent)' }}
+                      style={{ backgroundColor: color }}
                       initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.6, delay: 0.2 }}
+                      animate={{ width: `${Math.max(pct, 2)}%` }}
+                      transition={{ duration: 0.6, delay: 0.3 + i * 0.1 }}
                     />
                   </div>
-                  <span className="text-xs text-[var(--color-text-tertiary)] w-16 text-right">{count} ({pct}%)</span>
                 </div>
               )
             })}
           </div>
-        </div>
+        </motion.div>
+      )}
+
+      {/* Empty state for no game modes */}
+      {gameModeEntries.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-6 text-center"
+        >
+          <p className="text-sm text-[var(--color-text-disabled)]">
+            No active game modes — rooms will appear as they're created
+          </p>
+        </motion.div>
       )}
     </div>
   )

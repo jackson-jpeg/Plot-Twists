@@ -21,6 +21,7 @@ import type {
   SoundEffectType,
   NewGameOptions,
   AdminRoomInfo,
+  AdminRoomPlayer,
   UserProfile
 } from './lib/types'
 import { calculateLineDisplayTime } from './server/utils/timing'
@@ -1567,6 +1568,13 @@ app.prepare().then(async () => {
           gameState: room.gameState,
           createdAt: room.createdAt,
           gameMode: room.gameMode,
+          scriptTitle: room.script?.title,
+          players: players.map(p => ({
+            id: p.id,
+            nickname: p.nickname,
+            role: p.role,
+            isHost: p.isHost,
+          })),
         })
       }
       callback({ success: true, rooms })
@@ -1619,7 +1627,7 @@ app.prepare().then(async () => {
 
     socket.on('admin_get_stats', async (callback) => {
       if (!isAdminSocket(socket)) {
-        callback({ success: false, stats: { activeRooms: 0, connectedSockets: 0, totalUsersInRooms: 0, gamesPlayedToday: 0, recentGameModes: {} } })
+        callback({ success: false, stats: { activeRooms: 0, connectedSockets: 0, totalUsersInRooms: 0, gamesPlayedToday: 0, recentGameModes: {}, totalRegisteredUsers: 0 } })
         return
       }
       try {
@@ -1635,10 +1643,11 @@ app.prepare().then(async () => {
 
         // Count games played today
         let gamesPlayedToday = 0
+        let totalRegisteredUsers = 0
+        const db = getDatabase()
         try {
           const todayStart = new Date()
           todayStart.setHours(0, 0, 0, 0)
-          const db = getDatabase()
           const todayGames = await db.query(Collections.GAME_HISTORY, [
             { field: 'playedAt', operator: '>=', value: todayStart.getTime() }
           ], { limit: 1000 })
@@ -1646,14 +1655,20 @@ app.prepare().then(async () => {
         } catch {
           // Game history query may fail in dev — that's fine
         }
+        try {
+          const allUsers = await db.query(Collections.USERS, [], { limit: 10000 })
+          totalRegisteredUsers = allUsers.length
+        } catch {
+          // Users query may fail in dev
+        }
 
         callback({
           success: true,
-          stats: { activeRooms, connectedSockets, totalUsersInRooms, gamesPlayedToday, recentGameModes }
+          stats: { activeRooms, connectedSockets, totalUsersInRooms, gamesPlayedToday, recentGameModes, totalRegisteredUsers }
         })
       } catch (error) {
         logger.error('[Admin] Error fetching stats:', error)
-        callback({ success: false, stats: { activeRooms: 0, connectedSockets: 0, totalUsersInRooms: 0, gamesPlayedToday: 0, recentGameModes: {} } })
+        callback({ success: false, stats: { activeRooms: 0, connectedSockets: 0, totalUsersInRooms: 0, gamesPlayedToday: 0, recentGameModes: {}, totalRegisteredUsers: 0 } })
       }
     })
 

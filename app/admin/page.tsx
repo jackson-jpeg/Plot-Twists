@@ -12,6 +12,12 @@ import type { AdminRoomInfo, AdminUserInfo, AdminStats as AdminStatsType } from 
 
 type AdminTab = 'rooms' | 'users' | 'stats'
 
+interface Toast {
+  id: string
+  message: string
+  type: 'success' | 'error' | 'info'
+}
+
 export default function AdminPage() {
   const router = useRouter()
   const { socket, isConnected } = useSocket()
@@ -26,6 +32,16 @@ export default function AdminPage() {
   const [userSearch, setUserSearch] = useState('')
   const [userPage, setUserPage] = useState(0)
   const [stats, setStats] = useState<AdminStatsType | null>(null)
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  // Toast system
+  const [toasts, setToasts] = useState<Toast[]>([])
+  const showToast = useCallback((message: string, type: Toast['type'] = 'info') => {
+    const id = `t_${Date.now()}`
+    setToasts(prev => [...prev, { id, message, type }])
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000)
+  }, [])
 
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -67,20 +83,29 @@ export default function AdminPage() {
     })
   }, [socket, isConnected, isAdmin])
 
-  // Initial data fetch + auto-refresh
-  useEffect(() => {
-    if (!isAdmin) return
+  // Refresh all data
+  const refreshAll = useCallback(() => {
+    setIsRefreshing(true)
     fetchRooms()
     fetchStats()
     fetchUsers()
+    setLastRefreshed(new Date())
+    setTimeout(() => setIsRefreshing(false), 600)
+  }, [fetchRooms, fetchStats, fetchUsers])
+
+  // Initial data fetch + auto-refresh
+  useEffect(() => {
+    if (!isAdmin) return
+    refreshAll()
 
     const interval = setInterval(() => {
       fetchRooms()
       fetchStats()
+      setLastRefreshed(new Date())
     }, 10_000)
 
     return () => clearInterval(interval)
-  }, [isAdmin, fetchRooms, fetchStats, fetchUsers])
+  }, [isAdmin, refreshAll, fetchRooms, fetchStats])
 
   // Debounced user search
   const handleSearchChange = useCallback((search: string) => {
@@ -119,14 +144,44 @@ export default function AdminPage() {
 
   if (!isAdmin) return null
 
-  const tabs: { id: AdminTab; label: string; icon: string }[] = [
-    { id: 'rooms', label: 'Rooms', icon: '🏠' },
-    { id: 'users', label: 'Users', icon: '👥' },
+  const tabs: { id: AdminTab; label: string; icon: string; count?: number }[] = [
+    { id: 'rooms', label: 'Rooms', icon: '🏠', count: rooms.length },
+    { id: 'users', label: 'Users', icon: '👥', count: userTotal },
     { id: 'stats', label: 'Stats', icon: '📊' },
   ]
 
+  const formatLastRefreshed = () => {
+    if (!lastRefreshed) return ''
+    const secs = Math.floor((Date.now() - lastRefreshed.getTime()) / 1000)
+    if (secs < 5) return 'just now'
+    if (secs < 60) return `${secs}s ago`
+    return `${Math.floor(secs / 60)}m ago`
+  }
+
   return (
     <main className="page-container home-nostalgic">
+      {/* Toast container */}
+      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none">
+        <AnimatePresence>
+          {toasts.map((toast) => (
+            <motion.div
+              key={toast.id}
+              initial={{ opacity: 0, y: -20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="pointer-events-auto px-4 py-2 rounded-full shadow-lg border text-sm font-medium"
+              style={{
+                backgroundColor: toast.type === 'success' ? 'var(--color-success-light)' : toast.type === 'error' ? 'var(--color-danger-light)' : 'var(--color-surface)',
+                borderColor: toast.type === 'success' ? 'var(--color-success)' : toast.type === 'error' ? 'var(--color-danger)' : 'var(--color-border)',
+                color: toast.type === 'success' ? 'var(--color-success)' : toast.type === 'error' ? 'var(--color-danger)' : 'var(--color-text-primary)',
+              }}
+            >
+              {toast.type === 'success' ? '✓ ' : toast.type === 'error' ? '✕ ' : 'ℹ '}{toast.message}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
       {/* Back button */}
       <motion.button
         onClick={() => router.push('/')}
@@ -147,20 +202,52 @@ export default function AdminPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-6"
         >
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">Admin Dashboard</h1>
-            <span
-              className="text-xs font-semibold px-2 py-0.5 rounded-full"
-              style={{
-                backgroundColor: 'color-mix(in srgb, var(--color-danger) 15%, transparent)',
-                color: 'var(--color-danger)',
-              }}
-            >
-              ADMIN
-            </span>
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">Admin Dashboard</h1>
+              <span
+                className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: 'color-mix(in srgb, var(--color-danger) 15%, transparent)',
+                  color: 'var(--color-danger)',
+                }}
+              >
+                ADMIN
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Last refreshed */}
+              {lastRefreshed && (
+                <span className="text-xs text-[var(--color-text-disabled)] hidden sm:inline">
+                  Updated {formatLastRefreshed()}
+                </span>
+              )}
+              {/* Refresh button */}
+              <motion.button
+                onClick={refreshAll}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-alt)] transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                disabled={isRefreshing}
+              >
+                <motion.span
+                  animate={isRefreshing ? { rotate: 360 } : {}}
+                  transition={isRefreshing ? { duration: 0.6, ease: 'linear' } : {}}
+                  className="inline-block"
+                >
+                  ↻
+                </motion.span>
+                Refresh
+              </motion.button>
+            </div>
           </div>
           <p className="text-sm text-[var(--color-text-tertiary)]">
             Signed in as {user?.email || user?.phoneNumber || 'Admin'}
+            {stats && (
+              <span className="ml-3 text-[var(--color-text-disabled)]">
+                {stats.connectedSockets} socket{stats.connectedSockets !== 1 ? 's' : ''} connected
+              </span>
+            )}
           </p>
         </motion.div>
 
@@ -185,12 +272,31 @@ export default function AdminPage() {
                 whileTap={{ scale: 0.98 }}
               >
                 {tab.icon} {tab.label}
-                {tab.id === 'rooms' && rooms.length > 0 && (
-                  <span className="ml-1.5 text-xs font-normal text-[var(--color-text-tertiary)]">({rooms.length})</span>
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span
+                    className="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: isActive ? 'color-mix(in srgb, var(--color-accent) 15%, transparent)' : 'var(--color-surface-elevated)',
+                      color: isActive ? 'var(--color-accent)' : 'var(--color-text-disabled)',
+                    }}
+                  >
+                    {tab.count > 999 ? '999+' : tab.count}
+                  </span>
                 )}
               </motion.button>
             )
           })}
+
+          {/* Live pulse dot */}
+          <div className="ml-auto flex items-center gap-1.5 px-2 text-[10px] text-[var(--color-text-disabled)]">
+            <motion.div
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: isConnected ? 'var(--color-success)' : 'var(--color-danger)' }}
+              animate={isConnected ? { scale: [1, 1.4, 1], opacity: [1, 0.6, 1] } : {}}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <span className="hidden sm:inline">{isConnected ? 'Live' : 'Disconnected'}</span>
+          </div>
         </div>
 
         {/* Tab content */}
@@ -203,7 +309,7 @@ export default function AdminPage() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <AdminRooms rooms={rooms} socket={socket!} />
+              <AdminRooms rooms={rooms} socket={socket!} onToast={showToast} />
             </motion.div>
           )}
           {activeTab === 'users' && (
@@ -222,6 +328,7 @@ export default function AdminPage() {
                 page={userPage}
                 onPageChange={setUserPage}
                 socket={socket!}
+                onToast={showToast}
               />
             </motion.div>
           )}

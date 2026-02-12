@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import type { UserPreferences, GameMode, TeleprompterVisibilityMode } from '@/lib/types'
 import { DEFAULT_TELEPROMPTER_SETTINGS, TELEPROMPTER_PRESETS } from '@/lib/types'
 import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
+import { useTheme } from '@/contexts/ThemeContext'
 
 interface AccountSettingsProps {
   onClose?: () => void
@@ -81,6 +82,9 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleteLoading, setDeleteLoading] = useState(false)
+
+  // Theme
+  const { theme, setTheme } = useTheme()
 
   // Teleprompter settings
   const {
@@ -548,6 +552,30 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                       exit={{ opacity: 0, x: 10 }}
                       className="space-y-4"
                     >
+                      <div>
+                        <label className="label">Theme</label>
+                        <div className="flex gap-2">
+                          {([
+                            { value: 'system', label: 'System', icon: '💻' },
+                            { value: 'light', label: 'Light', icon: '☀️' },
+                            { value: 'dark', label: 'Dark', icon: '🌙' },
+                          ] as const).map((option) => (
+                            <button
+                              key={option.value}
+                              onClick={() => setTheme(option.value)}
+                              className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                                theme === option.value
+                                  ? 'bg-[var(--color-accent)] text-white border-[var(--color-accent)]'
+                                  : 'bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)]'
+                              }`}
+                            >
+                              {option.icon} {option.label}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="help-text">Choose light, dark, or follow your device setting</p>
+                      </div>
+
                       <div>
                         <label className="label">Default Nickname</label>
                         <input

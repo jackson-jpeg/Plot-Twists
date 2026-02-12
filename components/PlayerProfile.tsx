@@ -502,6 +502,22 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
   const rotations = [-1, 1, -0.5, 1.5, 0.5, -1.5]
   const rotation = rotations[index % rotations.length]
   const rarityClass = RARITY_FRAME_CLASS[achievement.rarity] || ''
+  const progressPct = (!unlocked && achievement.progress !== undefined && achievement.target)
+    ? Math.min((achievement.progress / achievement.target) * 100, 100)
+    : 0
+
+  const handleShare = async () => {
+    const text = `I unlocked "${achievement.name}" (${achievement.rarity}) in Plot Twists! ${achievement.icon}`
+    if (navigator.share) {
+      try {
+        await navigator.share({ text, url: window.location.origin })
+      } catch {
+        // User cancelled or share failed
+      }
+    } else {
+      await navigator.clipboard.writeText(text)
+    }
+  }
 
   return (
     <motion.div
@@ -553,13 +569,16 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
             <p className={`text-xs mt-1 ${unlocked ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-text-disabled)]'}`}>
               {achievement.description}
             </p>
-            {/* Progress bar for locked achievements with progress */}
+            {/* Animated progress bar for locked achievements */}
             {!unlocked && achievement.progress !== undefined && achievement.target && (
               <div className="mt-2">
                 <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[var(--color-accent)] rounded-full"
-                    style={{ width: `${Math.min((achievement.progress / achievement.target) * 100, 100)}%` }}
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: progressPct >= 75 ? 'var(--color-success)' : 'var(--color-accent)' }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPct}%` }}
+                    transition={{ duration: 0.8, delay: index * 0.06 + 0.2, ease: [0.22, 1, 0.36, 1] }}
                   />
                 </div>
                 <p className="text-xs text-[var(--color-text-disabled)] mt-1">
@@ -568,9 +587,19 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
               </div>
             )}
             {unlocked && achievement.unlockedAt && (
-              <p className="text-xs text-[var(--color-text-tertiary)] mt-1 font-handwritten">
-                {new Date(achievement.unlockedAt).toLocaleDateString()}
-              </p>
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-xs text-[var(--color-text-tertiary)] font-handwritten">
+                  {new Date(achievement.unlockedAt).toLocaleDateString()}
+                </p>
+                <motion.button
+                  onClick={handleShare}
+                  className="text-xs px-2 py-0.5 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-alt)] transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  Share
+                </motion.button>
+              </div>
             )}
           </div>
         </div>

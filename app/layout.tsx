@@ -5,6 +5,7 @@ import { SocketProvider } from '@/contexts/SocketContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 import { SystemStatus } from '@/components/SystemStatus'
 import { HomeJsonLd } from '@/components/JsonLd'
@@ -83,17 +84,26 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${fredoka.variable} ${dmSans.variable} ${courierPrime.variable} ${permanentMarker.variable}`}>
+    <html lang="en" className={`${fredoka.variable} ${dmSans.variable} ${courierPrime.variable} ${permanentMarker.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('plot-twists-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body>
         <HomeJsonLd />
         <ServiceWorkerRegistration />
-        <AuthProvider>
-          <SocketProvider>
-            {children}
-          </SocketProvider>
-        </AuthProvider>
-        <SystemStatus />
-        <InstallPrompt />
+        <ThemeProvider>
+          <AuthProvider>
+            <SocketProvider>
+              {children}
+            </SocketProvider>
+          </AuthProvider>
+          <SystemStatus />
+          <InstallPrompt />
+        </ThemeProvider>
         <Analytics />
         <SpeedInsights />
       </body>

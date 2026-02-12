@@ -1,0 +1,143 @@
+'use client'
+
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useStandaloneMode } from '@/hooks/useStandaloneMode'
+import { MOTION, VARIANTS } from '@/lib/animations'
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
+
+const DISMISS_KEY = 'plot-twists-install-dismissed'
+const IOS_DELAY_MS = 30_000
+
+function isIOS(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
+}
+
+function isSafari(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+}
+
+export function InstallPrompt() {
+  const isStandalone = useStandaloneMode()
+  const [showBanner, setShowBanner] = useState(false)
+  const [isIOSDevice, setIsIOSDevice] = useState(false)
+  const deferredPromptRef = useRef<BeforeInstallPromptEvent | null>(null)
+
+  const dismiss = useCallback(() => {
+    setShowBanner(false)
+    try {
+      localStorage.setItem(DISMISS_KEY, Date.now().toString())
+    } catch {
+      // localStorage unavailable
+    }
+  }, [])
+
+  useEffect(() => {
+    if (isStandalone) return
+
+    // Check if previously dismissed (within last 7 days)
+    try {
+      const dismissed = localStorage.getItem(DISMISS_KEY)
+      if (dismissed) {
+        const daysSince = (Date.now() - Number(dismissed)) / (1000 * 60 * 60 * 24)
+        if (daysSince < 7) return
+      }
+    } catch {
+      // localStorage unavailable
+    }
+
+    // Android / Desktop: listen for beforeinstallprompt
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault()
+      deferredPromptRef.current = e as BeforeInstallPromptEvent
+      setShowBanner(true)
+    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+
+    // iOS Safari: show instructions after delay
+    let iosTimer: ReturnType<typeof setTimeout> | undefined
+    if (isIOS() && isSafari()) {
+      setIsIOSDevice(true)
+      iosTimer = setTimeout(() => setShowBanner(true), IOS_DELAY_MS)
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+      if (iosTimer) clearTimeout(iosTimer)
+    }
+  }, [isStandalone])
+
+  const handleInstall = async () => {
+    const prompt = deferredPromptRef.current
+    if (!prompt) return
+
+    await prompt.prompt()
+    const { outcome } = await prompt.userChoice
+    if (outcome === 'accepted') {
+      setShowBanner(false)
+    }
+    deferredPromptRef.current = null
+  }
+
+  if (isStandalone) return null
+
+  return (
+    <AnimatePresence>
+      {showBanner && (
+        <motion.div
+          className="install-banner"
+          initial={{ opacity: 0, y: 60 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 60 }}
+          transition={MOTION.spring}
+        >
+          <div className="install-banner-content">
+            <div className="install-banner-text">
+              <strong style={{ color: 'var(--color-text-primary)' }}>
+                Install Plot Twists
+              </strong>
+              <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+                {isIOSDevice
+                  ? 'Tap Share \u2192 Add to Home Screen'
+                  : 'Add to your home screen for the best experience'}
+              </span>
+            </div>
+            <div className="install-banner-actions">
+              {!isIOSDevice && (
+                <button
+                  className="btn btn-small"
+                  onClick={handleInstall}
+                  style={{
+                    background: 'var(--color-accent)',
+                    color: 'white',
+                    border: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  Install
+                </button>
+              )}
+              <button
+                className="btn btn-small"
+                onClick={dismiss}
+                style={{
+                  background: 'transparent',
+                  color: 'var(--color-text-secondary)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                {isIOSDevice ? 'Got it' : 'Not now'}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}

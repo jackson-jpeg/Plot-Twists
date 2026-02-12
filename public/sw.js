@@ -1,10 +1,12 @@
 // Service Worker for Plot Twists PWA
-const CACHE_NAME = 'plot-twists-v1'
+const CACHE_NAME = 'plot-twists-v2'
 const STATIC_ASSETS = [
   '/',
   '/join',
   '/host',
   '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
 ]
 
 // Install event - cache static assets

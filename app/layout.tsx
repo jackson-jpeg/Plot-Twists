@@ -8,6 +8,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 import { SystemStatus } from '@/components/SystemStatus'
 import { HomeJsonLd } from '@/components/JsonLd'
+import { InstallPrompt } from '@/components/InstallPrompt'
 
 const fredoka = Fredoka({
   subsets: ['latin'],
@@ -44,6 +45,11 @@ export const metadata: Metadata = {
   keywords: ['improv', 'party game', 'comedy', 'AI', 'theater', 'multiplayer', 'social game'],
   authors: [{ name: 'Plot Twists' }],
   manifest: '/manifest.json',
+  icons: [
+    { rel: 'icon', url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    { rel: 'icon', url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    { rel: 'apple-touch-icon', url: '/icons/icon-192.png', sizes: '192x192' },
+  ],
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -87,6 +93,7 @@ export default function RootLayout({
           </SocketProvider>
         </AuthProvider>
         <SystemStatus />
+        <InstallPrompt />
         <Analytics />
         <SpeedInsights />
       </body>

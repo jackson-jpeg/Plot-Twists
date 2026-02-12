@@ -18,7 +18,7 @@ export interface JoinSelectionProps {
   roomIsMature: boolean
   error: string
   onSubmitCards: () => void
-  toast: { success: (m: string) => void }
+  toast: { success: (m: string, opts?: { duration?: number }) => void }
 }
 
 export function JoinSelection({

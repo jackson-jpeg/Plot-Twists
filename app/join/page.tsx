@@ -103,7 +103,6 @@ function JoinPageContent() {
         !hasTriggeredSelectionConfetti && gameState === 'SELECTION' && !hasSubmitted) {
       setHasTriggeredSelectionConfetti(true)
       confetti.fireWinnerConfetti()
-      toast.success('All cards selected! Ready to submit!')
     }
   }, [selection, hasTriggeredSelectionConfetti, gameState, hasSubmitted, confetti, toast])
 

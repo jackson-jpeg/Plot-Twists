@@ -16,7 +16,7 @@ export interface HostSelectionProps {
   availableCards: AvailableCards
   onSubmitSoloCards: () => void
   onBackToLobby: () => void
-  toast: { success: (m: string) => void }
+  toast: { success: (m: string, opts?: { duration?: number }) => void }
 }
 
 export function HostSelection({

@@ -144,7 +144,6 @@ export default function HostPage() {
         !hasTriggeredSelectionConfetti && gameState === 'SELECTION' && !hasSubmittedSelection) {
       setHasTriggeredSelectionConfetti(true)
       confetti.fireWinnerConfetti()
-      toast.success('All cards selected! Ready to submit!')
     }
   }, [selection, hasTriggeredSelectionConfetti, gameState, hasSubmittedSelection, settings.gameMode, confetti, toast])
 

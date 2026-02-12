@@ -60,7 +60,7 @@ export function Toast({
   title,
   type = 'info',
   onClose,
-  duration = 5000,
+  duration = 3000,
   action,
   showProgress = true
 }: ToastProps) {
@@ -69,6 +69,8 @@ export function Toast({
   const x = useMotionValue(0)
   const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0])
   const shouldReduceMotion = useReducedMotion()
+
+  const isCompact = !title && !action
 
   // Handle Escape key to dismiss
   useEffect(() => {
@@ -105,7 +107,7 @@ export function Toast({
   }, [duration, onClose, isPaused])
 
   const handleDragEnd = (_: never, info: PanInfo) => {
-    if (Math.abs(info.offset.x) > 100 || Math.abs(info.velocity.x) > 500) {
+    if (Math.abs(info.offset.x) > 80 || Math.abs(info.velocity.x) > 400) {
       onClose()
     }
   }
@@ -116,31 +118,35 @@ export function Toast({
     <motion.div
       key={id}
       layout
-      initial={shouldReduceMotion ? false : { opacity: 0, y: 50, scale: 0.9 }}
+      initial={shouldReduceMotion ? false : { opacity: 0, y: -20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9, transition: { duration: shouldReduceMotion ? 0 : 0.2 } }}
+      exit={{ opacity: 0, scale: 0.95, y: -10, transition: { duration: shouldReduceMotion ? 0 : 0.15 } }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.9}
       onDragEnd={handleDragEnd}
-      style={{
-        x,
-        opacity,
-        border: `1px solid var(--glass-border)`,
-        borderLeft: `4px solid ${colors.border}`
-      }}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={() => setIsPaused(true)}
       onTouchEnd={() => setIsPaused(false)}
       role={type === 'error' ? 'alert' : 'status'}
       aria-live={type === 'error' ? 'assertive' : 'polite'}
-      className="relative overflow-hidden w-full sm:w-auto sm:min-w-[320px] sm:max-w-[420px] bg-[var(--color-surface)] backdrop-blur-lg rounded-lg shadow-2xl cursor-grab active:cursor-grabbing touch-pan-y"
+      className={`
+        relative overflow-hidden rounded-xl cursor-grab active:cursor-grabbing touch-pan-y
+        ${isCompact ? 'backdrop-blur-md' : 'backdrop-blur-lg'}
+      `}
+      style={{
+        x, opacity,
+        background: 'var(--color-surface)',
+        border: `1px solid var(--glass-border)`,
+        ...(!isCompact && { borderLeft: `3px solid ${colors.border}` }),
+        boxShadow: isCompact ? '0 4px 16px rgba(0,0,0,0.12)' : '0 4px 20px rgba(0,0,0,0.15)',
+      }}
     >
-      {/* Progress bar */}
-      {showProgress && duration > 0 && (
+      {/* Progress bar — only on longer toasts */}
+      {showProgress && duration > 3000 && (
         <motion.div
-          className="absolute top-0 left-0 h-1"
+          className="absolute top-0 left-0 h-0.5"
           style={{ background: colors.progress }}
           initial={{ width: '100%' }}
           animate={{ width: `${progress}%` }}
@@ -148,11 +154,11 @@ export function Toast({
         />
       )}
 
-      <div className="flex items-start gap-3 p-4">
+      <div className={`flex items-center gap-2.5 ${isCompact ? 'px-3.5 py-2.5' : 'p-3.5'}`}>
         {/* Icon */}
         <div
-          className="text-xl font-bold flex-shrink-0 mt-0.5"
-          style={{ color: colors.icon }}
+          className={`font-bold flex-shrink-0 flex items-center justify-center rounded-full ${isCompact ? 'text-xs w-5 h-5' : 'text-sm w-6 h-6'}`}
+          style={{ color: colors.icon, background: colors.bg }}
           aria-hidden="true"
         >
           {icons[type]}
@@ -163,7 +169,7 @@ export function Toast({
           {title && (
             <p className="font-semibold text-sm mb-0.5" style={{ color: 'var(--color-text-primary)' }}>{title}</p>
           )}
-          <p className="text-sm leading-relaxed break-words" style={{ color: 'var(--color-text-secondary)' }}>
+          <p className={`leading-snug break-words ${isCompact ? 'text-xs' : 'text-sm'}`} style={{ color: 'var(--color-text-secondary)' }}>
             {message}
           </p>
 
@@ -182,29 +188,24 @@ export function Toast({
           )}
         </div>
 
-        {/* Close button - 44px touch target */}
-        <button
-          onClick={onClose}
-          className="flex-shrink-0 transition-colors flex items-center justify-center"
-          style={{
-            color: 'var(--color-text-tertiary)',
-            minWidth: '44px',
-            minHeight: '44px',
-            marginRight: '-8px',
-            marginTop: '-8px',
-            borderRadius: 'var(--radius-md)'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-tertiary)'}
-          aria-label="Dismiss notification"
-        >
-          <span className="text-xl leading-none">×</span>
-        </button>
-      </div>
-
-      {/* Swipe hint on mobile */}
-      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 sm:hidden">
-        <div className="w-8 h-1 rounded-full" style={{ background: 'var(--color-border)' }} />
+        {/* Close button — only on non-compact or error toasts */}
+        {(!isCompact || type === 'error') && (
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 transition-colors flex items-center justify-center rounded-full"
+            style={{
+              color: 'var(--color-text-tertiary)',
+              width: '28px',
+              height: '28px',
+              fontSize: '16px',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text-primary)'}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-tertiary)'}
+            aria-label="Dismiss notification"
+          >
+            ×
+          </button>
+        )}
       </div>
     </motion.div>
   )
@@ -227,37 +228,25 @@ interface ToastContainerProps {
   maxVisible?: number
 }
 
-const positionStyles = {
-  'top-right': 'top-4 right-4 items-end',
-  'top-center': 'top-4 left-1/2 -translate-x-1/2 items-center',
-  'bottom-right': 'bottom-4 right-4 items-end',
-  'bottom-center': 'bottom-4 left-1/2 -translate-x-1/2 items-center'
-}
-
-const mobilePositionStyles = {
-  'top-right': 'sm:top-4 sm:right-4 sm:left-auto sm:translate-x-0 top-0 left-0 right-0',
-  'top-center': 'sm:top-4 sm:left-1/2 sm:-translate-x-1/2 top-0 left-0 right-0',
-  'bottom-right': 'sm:bottom-4 sm:right-4 sm:left-auto sm:translate-x-0 bottom-0 left-0 right-0',
-  'bottom-center': 'sm:bottom-4 sm:left-1/2 sm:-translate-x-1/2 bottom-0 left-0 right-0'
-}
-
 export function ToastContainer({
   toasts,
   onRemove,
-  position = 'bottom-right',
-  maxVisible = 5
+  position = 'top-center',
+  maxVisible = 3
 }: ToastContainerProps) {
   const visibleToasts = toasts.slice(-maxVisible)
   const hiddenCount = toasts.length - maxVisible
 
   return (
     <div
-      className={`
-        fixed z-[9999] flex flex-col gap-2 p-2 sm:p-0
-        ${mobilePositionStyles[position]}
-        sm:${positionStyles[position]}
-        pointer-events-none
-      `}
+      className="fixed z-[9999] flex flex-col gap-2 pointer-events-none"
+      style={{
+        top: 'env(safe-area-inset-top, 12px)',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 'min(calc(100% - 24px), 380px)',
+        paddingTop: '12px',
+      }}
     >
       <AnimatePresence mode="popLayout">
         {hiddenCount > 0 && (
@@ -268,12 +257,12 @@ export function ToastContainer({
             exit={{ opacity: 0, scale: 0.8 }}
             className="text-center text-[var(--color-text-tertiary)] text-xs py-1 pointer-events-auto"
           >
-            +{hiddenCount} more notification{hiddenCount > 1 ? 's' : ''}
+            +{hiddenCount} more
           </motion.div>
         )}
 
         {visibleToasts.map((toast) => (
-          <div key={toast.id} className="pointer-events-auto w-full sm:w-auto">
+          <div key={toast.id} className="pointer-events-auto">
             <Toast
               id={toast.id}
               message={toast.message}

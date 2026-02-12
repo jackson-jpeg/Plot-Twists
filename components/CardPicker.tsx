@@ -21,7 +21,7 @@ export interface CardPickerProps {
   isMature: boolean
   availableCards: AvailableCards
   onShuffleAll: () => void
-  toast: { success: (m: string) => void }
+  toast: { success: (m: string, opts?: { duration?: number }) => void }
 }
 
 export function CardPicker({
@@ -159,7 +159,7 @@ export function CardPicker({
       while (pick === current) pick = cards[Math.floor(Math.random() * cards.length)]
     }
     selectCard(pick)
-    toast.success('Shuffled! 🎲')
+    toast.success('Shuffled! 🎲', { duration: 1500 })
   }, [availableCards, activeTabConfig, selection, activeTab, selectCard, toast])
 
   // Clear a card
@@ -214,7 +214,7 @@ export function CardPicker({
       {/* Shuffle All (only when no cards selected) */}
       {noCardsSelected && !customMode.character && !customMode.setting && !customMode.circumstance && availableCards.characters.length > 0 && (
         <motion.button
-          onClick={() => { onShuffleAll(); toast.success('Shuffled! 🎲') }}
+          onClick={() => { onShuffleAll(); toast.success('Shuffled! 🎲', { duration: 1500 }) }}
           className="btn btn-ghost w-full"
           style={{ background: 'linear-gradient(135deg, var(--color-highlight-pink), var(--color-highlight-yellow))', border: '2px solid var(--color-accent)', fontWeight: 'bold' }}
           whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}

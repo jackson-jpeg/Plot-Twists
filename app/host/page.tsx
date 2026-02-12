@@ -122,6 +122,15 @@ export default function HostPage() {
     })
   }, [socket, isConnected, settings, authLoading, user, setCreditBalance])
 
+  // Reset orchestrator state when returning to LOBBY (new game)
+  useEffect(() => {
+    if (gameState === 'LOBBY') {
+      setIsSubmittingCards(false)
+      setHasTriggeredSelectionConfetti(false)
+      setShowPosterLightbox(false)
+    }
+  }, [gameState])
+
   // Confetti on results
   useEffect(() => {
     if (gameState === 'RESULTS') {

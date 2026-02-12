@@ -10,19 +10,12 @@ import { AuthModal } from './AuthModal'
  */
 export function UpgradeModal() {
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup')
-
-  const openAuth = (mode: 'signin' | 'signup') => {
-    setAuthMode(mode)
-    setShowAuthModal(true)
-  }
 
   return (
     <main className="page-container items-center justify-center home-nostalgic">
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        initialMode={authMode}
       />
 
       <div className="container max-w-3xl">
@@ -75,44 +68,22 @@ export function UpgradeModal() {
               marginBottom: '1.5rem',
               lineHeight: 1.5
             }}>
-              Create an account to save your stats and get <strong>5 free scripts</strong> every week.
+              Sign in with your phone number to save your stats and get <strong>5 free scripts</strong> every week.
               Your previous game history will be transferred.
             </div>
 
             <button
-              onClick={() => openAuth('signup')}
+              onClick={() => setShowAuthModal(true)}
               className="user-menu-btn user-menu-btn-primary"
               style={{
                 width: '100%',
                 padding: '0.75rem 1.5rem',
                 fontSize: '1.1rem',
-                marginBottom: '0.75rem',
                 borderRadius: '0.5rem'
               }}
             >
-              Create Account
+              Sign In with Phone
             </button>
-
-            <div style={{
-              fontSize: '0.875rem',
-              color: 'var(--color-text-secondary)'
-            }}>
-              Already have an account?{' '}
-              <button
-                onClick={() => openAuth('signin')}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--color-primary)',
-                  cursor: 'pointer',
-                  textDecoration: 'underline',
-                  fontSize: '0.875rem',
-                  padding: 0
-                }}
-              >
-                Log in
-              </button>
-            </div>
           </div>
         </motion.div>
       </div>

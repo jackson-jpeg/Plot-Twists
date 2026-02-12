@@ -19,12 +19,10 @@ const socialBadges = [
 
 export function LandingPage() {
   const [showAuthModal, setShowAuthModal] = useState(false)
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup')
 
-  const openAuth = (mode: 'signin' | 'signup') => {
-    setAuthMode(mode)
+  const openAuth = () => {
     setShowAuthModal(true)
-    analytics.landingCtaClicked(mode)
+    analytics.landingCtaClicked('phone')
   }
 
   return (
@@ -32,7 +30,6 @@ export function LandingPage() {
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
-        initialMode={authMode}
       />
 
       <div className="container max-w-3xl">
@@ -106,30 +103,20 @@ export function LandingPage() {
             <div className="tape-piece tape-top-right" />
 
             <h2 className="text-2xl font-bold text-[var(--color-text-primary)] font-display mb-2">
-              Sign up to get 5 free scripts
+              Sign in to get 5 free scripts
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-              No credit card required. Start hosting games in seconds.
+              No credit card required. Just your phone number to start hosting games.
             </p>
 
             <motion.button
-              onClick={() => openAuth('signup')}
-              className="btn btn-primary w-full py-3 text-lg font-semibold mb-3"
+              onClick={openAuth}
+              className="btn btn-primary w-full py-3 text-lg font-semibold"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Create Account
+              Sign In with Phone
             </motion.button>
-
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              Already have an account?{' '}
-              <button
-                onClick={() => openAuth('signin')}
-                className="text-[var(--color-primary)] hover:underline bg-transparent border-none cursor-pointer text-sm p-0"
-              >
-                Log in
-              </button>
-            </p>
           </motion.div>
         </motion.div>
 

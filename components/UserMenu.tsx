@@ -11,7 +11,6 @@ export function UserMenu() {
   const { user, loading, signOut, isConfigured } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [authModalOpen, setAuthModalOpen] = useState(false)
-  const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin')
   const [showDebugInfo, setShowDebugInfo] = useState(false)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -45,8 +44,7 @@ export function UserMenu() {
     await signOut()
   }
 
-  const openAuthModal = (mode: 'signin' | 'signup') => {
-    setAuthModalMode(mode)
+  const openAuthModal = () => {
     setAuthModalOpen(true)
   }
 
@@ -117,28 +115,21 @@ export function UserMenu() {
     )
   }
 
-  // Guest/Anonymous user - show sign in/up buttons
+  // Guest/Anonymous user - show sign in button
   if (!user || user.isAnonymous) {
     return (
       <>
         <div className="user-menu">
           <button
-            onClick={() => openAuthModal('signin')}
-            className="user-menu-btn user-menu-btn-secondary"
-          >
-            Log In
-          </button>
-          <button
-            onClick={() => openAuthModal('signup')}
+            onClick={openAuthModal}
             className="user-menu-btn user-menu-btn-primary"
           >
-            Sign Up
+            Sign In
           </button>
         </div>
         <AuthModal
           isOpen={authModalOpen}
           onClose={() => setAuthModalOpen(false)}
-          initialMode={authModalMode}
         />
       </>
     )
@@ -172,9 +163,9 @@ export function UserMenu() {
 
         {isOpen && (
           <div className="user-menu-dropdown">
-            {user.email && (
+            {(user.phoneNumber || user.email) && (
               <div className="user-menu-dropdown-header">
-                <div className="user-menu-dropdown-email">{user.email}</div>
+                <div className="user-menu-dropdown-email">{user.phoneNumber || user.email}</div>
               </div>
             )}
             <CreditBadge onClick={() => { setIsOpen(false); setShowPurchaseModal(true) }} />
@@ -200,7 +191,6 @@ export function UserMenu() {
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
-        initialMode={authModalMode}
       />
 
       <PurchaseCreditsModal

@@ -33,19 +33,12 @@ interface AuthContextType {
   loading: boolean
   isConfigured: boolean
   isOnline: boolean
-  signIn: (email: string, password: string) => Promise<AuthResult>
-  signUp: (email: string, password: string, displayName: string) => Promise<AuthResult>
-  signInWithGoogle: () => Promise<AuthResult>
   signInAnonymously: () => Promise<AuthResult>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendPhoneCode: (phone: string, verifier: any) => Promise<PhoneCodeResult>
   verifyPhoneCode: (verificationId: string, code: string) => Promise<AuthResult>
-  linkWithGoogle: () => Promise<AuthResult>
-  linkWithEmail: (email: string, password: string) => Promise<AuthResult>
   linkWithPhone: (verificationId: string, code: string) => Promise<AuthResult>
   updateDisplayName: (displayName: string) => Promise<AuthResult>
-  changePassword: (currentPassword: string, newPassword: string) => Promise<AuthResult>
-  sendPasswordResetEmail: (email: string) => Promise<AuthResult>
   signOut: () => Promise<void>
   getPlayerId: () => string
 }
@@ -55,18 +48,11 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isConfigured: false,
   isOnline: true,
-  signIn: async () => ({ success: false, error: 'Not configured' }),
-  signUp: async () => ({ success: false, error: 'Not configured' }),
-  signInWithGoogle: async () => ({ success: false, error: 'Not configured' }),
   signInAnonymously: async () => ({ success: false, error: 'Not configured' }),
   sendPhoneCode: async () => ({ success: false, error: 'Not configured' }),
   verifyPhoneCode: async () => ({ success: false, error: 'Not configured' }),
-  linkWithGoogle: async () => ({ success: false, error: 'Not configured' }),
-  linkWithEmail: async () => ({ success: false, error: 'Not configured' }),
   linkWithPhone: async () => ({ success: false, error: 'Not configured' }),
   updateDisplayName: async () => ({ success: false, error: 'Not configured' }),
-  changePassword: async () => ({ success: false, error: 'Not configured' }),
-  sendPasswordResetEmail: async () => ({ success: false, error: 'Not configured' }),
   signOut: async () => {},
   getPlayerId: () => ''
 })
@@ -130,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Sign in anonymously (called automatically if no user on load)
+  // Sign in anonymously
   const signInAnonymously = useCallback(async (): Promise<AuthResult> => {
     if (!firebaseReady) {
       return { success: false, error: 'Authentication not configured' }
@@ -149,7 +135,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Store the old local ID for potential data migration
       if (localPlayerId) {
         localStorage.setItem('plottwists_migrated_player_id', localPlayerId)
-        // Don't remove the old ID yet - keep as backup
       }
 
       return { success: true }
@@ -178,7 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       try {
         const firebaseAuth = await import('firebase/auth')
-        const { onAuthStateChanged, signInAnonymously: firebaseSignInAnonymously } = firebaseAuth
+        const { onAuthStateChanged } = firebaseAuth
         const auth = getFirebaseAuth()
 
         if (auth) {
@@ -217,56 +202,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (unsubscribe) unsubscribe()
     }
   }, [])
-
-  const signIn = useCallback(async (email: string, password: string): Promise<AuthResult> => {
-    if (!firebaseReady) {
-      return { success: false, error: 'Authentication not configured' }
-    }
-
-    try {
-      const firebaseAuth = await import('firebase/auth')
-      const { signInWithEmailAndPassword } = firebaseAuth
-      const auth = getFirebaseAuth()
-      await signInWithEmailAndPassword(auth as any, email, password)
-      return { success: true }
-    } catch (error: unknown) {
-      return { success: false, error: getFirebaseErrorMessage(error) }
-    }
-  }, [firebaseReady])
-
-  const signUp = useCallback(async (email: string, password: string, displayName: string): Promise<AuthResult> => {
-    if (!firebaseReady) {
-      return { success: false, error: 'Authentication not configured' }
-    }
-
-    try {
-      const firebaseAuth = await import('firebase/auth')
-      const { createUserWithEmailAndPassword, updateProfile } = firebaseAuth
-      const auth = getFirebaseAuth()
-      const result = await createUserWithEmailAndPassword(auth as any, email, password)
-      await updateProfile(result.user, { displayName })
-      return { success: true }
-    } catch (error: unknown) {
-      return { success: false, error: getFirebaseErrorMessage(error) }
-    }
-  }, [firebaseReady])
-
-  const signInWithGoogle = useCallback(async (): Promise<AuthResult> => {
-    if (!firebaseReady) {
-      return { success: false, error: 'Authentication not configured' }
-    }
-
-    try {
-      const firebaseAuth = await import('firebase/auth')
-      const { signInWithPopup, GoogleAuthProvider } = firebaseAuth
-      const auth = getFirebaseAuth()
-      const provider = new GoogleAuthProvider()
-      await signInWithPopup(auth as any, provider)
-      return { success: true }
-    } catch (error: unknown) {
-      return { success: false, error: getFirebaseErrorMessage(error) }
-    }
-  }, [firebaseReady])
 
   // Phone Auth: Send verification code
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -336,54 +271,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [firebaseReady])
 
-  // Account Linking: Link with Google
-  const linkWithGoogle = useCallback(async (): Promise<AuthResult> => {
-    if (!firebaseReady) {
-      return { success: false, error: 'Authentication not configured' }
-    }
-
-    try {
-      const firebaseAuth = await import('firebase/auth')
-      const { linkWithPopup, GoogleAuthProvider } = firebaseAuth
-      const auth = getFirebaseAuth()
-      const currentUser = auth?.currentUser
-
-      if (!currentUser) {
-        return { success: false, error: 'No user signed in' }
-      }
-
-      const provider = new GoogleAuthProvider()
-      await linkWithPopup(currentUser, provider)
-      return { success: true }
-    } catch (error: unknown) {
-      return { success: false, error: getFirebaseErrorMessage(error) }
-    }
-  }, [firebaseReady])
-
-  // Account Linking: Link with Email/Password
-  const linkWithEmail = useCallback(async (email: string, password: string): Promise<AuthResult> => {
-    if (!firebaseReady) {
-      return { success: false, error: 'Authentication not configured' }
-    }
-
-    try {
-      const firebaseAuth = await import('firebase/auth')
-      const { EmailAuthProvider, linkWithCredential } = firebaseAuth
-      const auth = getFirebaseAuth()
-      const currentUser = auth?.currentUser
-
-      if (!currentUser) {
-        return { success: false, error: 'No user signed in' }
-      }
-
-      const credential = EmailAuthProvider.credential(email, password)
-      await linkWithCredential(currentUser, credential)
-      return { success: true }
-    } catch (error: unknown) {
-      return { success: false, error: getFirebaseErrorMessage(error) }
-    }
-  }, [firebaseReady])
-
   // Account Linking: Link with Phone
   const linkWithPhone = useCallback(async (verificationId: string, code: string): Promise<AuthResult> => {
     if (!firebaseReady) {
@@ -435,56 +322,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [firebaseReady])
 
-  // Change password (requires reauthentication)
-  const changePassword = useCallback(async (currentPassword: string, newPassword: string): Promise<AuthResult> => {
-    if (!firebaseReady) {
-      return { success: false, error: 'Authentication not configured' }
-    }
-
-    try {
-      const firebaseAuth = await import('firebase/auth')
-      const { EmailAuthProvider, reauthenticateWithCredential, updatePassword } = firebaseAuth
-      const auth = getFirebaseAuth()
-      const currentUser = auth?.currentUser
-
-      if (!currentUser) {
-        return { success: false, error: 'No user signed in' }
-      }
-
-      if (!currentUser.email) {
-        return { success: false, error: 'No email associated with this account' }
-      }
-
-      // Reauthenticate the user first
-      const credential = EmailAuthProvider.credential(currentUser.email, currentPassword)
-      await reauthenticateWithCredential(currentUser, credential)
-
-      // Now update the password
-      await updatePassword(currentUser, newPassword)
-
-      return { success: true }
-    } catch (error: unknown) {
-      return { success: false, error: getFirebaseErrorMessage(error) }
-    }
-  }, [firebaseReady])
-
-  // Send password reset email
-  const sendPasswordResetEmail = useCallback(async (email: string): Promise<AuthResult> => {
-    if (!firebaseReady) {
-      return { success: false, error: 'Authentication not configured' }
-    }
-
-    try {
-      const firebaseAuth = await import('firebase/auth')
-      const { sendPasswordResetEmail: firebaseSendReset } = firebaseAuth
-      const auth = getFirebaseAuth()
-      await firebaseSendReset(auth as any, email)
-      return { success: true }
-    } catch (error: unknown) {
-      return { success: false, error: getFirebaseErrorMessage(error) }
-    }
-  }, [firebaseReady])
-
   const signOut = useCallback(async (): Promise<void> => {
     if (!firebaseReady) return
 
@@ -511,18 +348,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     isConfigured: isFirebaseConfigured && firebaseReady,
     isOnline,
-    signIn,
-    signUp,
-    signInWithGoogle,
     signInAnonymously,
     sendPhoneCode,
     verifyPhoneCode,
-    linkWithGoogle,
-    linkWithEmail,
     linkWithPhone,
     updateDisplayName,
-    changePassword,
-    sendPasswordResetEmail,
     signOut,
     getPlayerId
   }

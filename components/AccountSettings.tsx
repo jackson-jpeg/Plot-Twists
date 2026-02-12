@@ -34,14 +34,11 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
   const {
     user,
     updateDisplayName,
-    changePassword,
-    linkWithGoogle,
-    linkWithEmail,
     isConfigured
   } = useAuth()
 
   const [isExpanded, setIsExpanded] = useState(false)
-  const [activeSection, setActiveSection] = useState<'profile' | 'linked' | 'security' | 'preferences' | 'danger'>('profile')
+  const [activeSection, setActiveSection] = useState<'profile' | 'preferences' | 'danger'>('profile')
 
   // Profile editing state
   const [editingName, setEditingName] = useState(false)
@@ -49,24 +46,6 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
   const [nameLoading, setNameLoading] = useState(false)
   const [nameError, setNameError] = useState('')
   const [nameSuccess, setNameSuccess] = useState(false)
-
-  // Password change state
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [passwordLoading, setPasswordLoading] = useState(false)
-  const [passwordError, setPasswordError] = useState('')
-  const [passwordSuccess, setPasswordSuccess] = useState(false)
-
-  // Email linking state
-  const [linkEmail, setLinkEmail] = useState('')
-  const [linkEmailPassword, setLinkEmailPassword] = useState('')
-  const [emailLinkLoading, setEmailLinkLoading] = useState(false)
-  const [emailLinkError, setEmailLinkError] = useState('')
-
-  // Phone linking state (kept for potential future use)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_phoneLinkLoading, _setPhoneLinkLoading] = useState(false)
 
   // Preferences state
   const [preferences, setPreferences] = useState<UserPreferences>({
@@ -94,11 +73,6 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
     toggleAutoScroll: toggleTeleprompterAutoScroll
   } = useTeleprompterSettings()
 
-  // Linked accounts detection
-  const hasGoogleLinked = user?.email?.includes('@gmail.com') || false // Simplified detection
-  const hasEmailLinked = !!user?.email
-  const hasPhoneLinked = !!user?.phoneNumber
-
   // Load preferences on mount from localStorage
   useEffect(() => {
     const stored = getStoredPreferences()
@@ -125,65 +99,6 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
       setTimeout(() => setNameSuccess(false), 3000)
     } else {
       setNameError(result.error || 'Failed to update display name')
-    }
-  }
-
-  // Change password
-  const handleChangePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      setPasswordError('Passwords do not match')
-      return
-    }
-
-    if (newPassword.length < 6) {
-      setPasswordError('Password must be at least 6 characters')
-      return
-    }
-
-    setPasswordLoading(true)
-    setPasswordError('')
-    setPasswordSuccess(false)
-
-    const result = await changePassword(currentPassword, newPassword)
-
-    setPasswordLoading(false)
-    if (result.success) {
-      setPasswordSuccess(true)
-      setCurrentPassword('')
-      setNewPassword('')
-      setConfirmPassword('')
-      setTimeout(() => setPasswordSuccess(false), 3000)
-    } else {
-      setPasswordError(result.error || 'Failed to change password')
-    }
-  }
-
-  // Link Google account
-  const handleLinkGoogle = async () => {
-    const result = await linkWithGoogle()
-    if (!result.success) {
-      alert(result.error || 'Failed to link Google account')
-    }
-  }
-
-  // Link email account
-  const handleLinkEmail = async () => {
-    if (!linkEmail || !linkEmailPassword) {
-      setEmailLinkError('Please enter email and password')
-      return
-    }
-
-    setEmailLinkLoading(true)
-    setEmailLinkError('')
-
-    const result = await linkWithEmail(linkEmail, linkEmailPassword)
-
-    setEmailLinkLoading(false)
-    if (result.success) {
-      setLinkEmail('')
-      setLinkEmailPassword('')
-    } else {
-      setEmailLinkError(result.error || 'Failed to link email')
     }
   }
 
@@ -242,7 +157,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
               Account Settings
             </h3>
             <p className="text-sm text-[var(--color-text-tertiary)]">
-              Manage your profile, linked accounts, and preferences
+              Manage your profile and preferences
             </p>
           </div>
         </div>
@@ -268,8 +183,6 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
               <div className="flex border-b border-[var(--color-border)] overflow-x-auto">
                 {[
                   { key: 'profile', label: 'Profile', icon: '👤' },
-                  { key: 'linked', label: 'Linked', icon: '🔗' },
-                  { key: 'security', label: 'Security', icon: '🔒' },
                   { key: 'preferences', label: 'Prefs', icon: '🎛️' },
                   { key: 'danger', label: 'Danger', icon: '⚠️' }
                 ].map(tab => (
@@ -351,13 +264,6 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                       </div>
 
                       <div>
-                        <label className="label">Email</label>
-                        <p className="text-[var(--color-text-primary)]">
-                          {user?.email || 'No email linked'}
-                        </p>
-                      </div>
-
-                      <div>
                         <label className="label">Phone</label>
                         <p className="text-[var(--color-text-primary)]">
                           {user?.phoneNumber || 'No phone linked'}
@@ -370,176 +276,6 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                           {user?.isAnonymous ? 'Anonymous (Guest)' : 'Registered'}
                         </p>
                       </div>
-                    </motion.div>
-                  )}
-
-                  {/* Linked Accounts Section */}
-                  {activeSection === 'linked' && (
-                    <motion.div
-                      key="linked"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      className="space-y-4"
-                    >
-                      {/* Google */}
-                      <div className="flex items-center justify-between p-3 bg-[var(--color-surface-alt)] rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">🔵</span>
-                          <div>
-                            <p className="font-medium text-[var(--color-text-primary)]">Google</p>
-                            <p className="text-sm text-[var(--color-text-tertiary)]">
-                              {hasGoogleLinked ? 'Connected' : 'Not connected'}
-                            </p>
-                          </div>
-                        </div>
-                        {hasGoogleLinked ? (
-                          <span className="badge badge-success">Connected</span>
-                        ) : (
-                          <button
-                            onClick={handleLinkGoogle}
-                            className="btn btn-small btn-secondary"
-                          >
-                            Connect
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Email */}
-                      <div className="p-3 bg-[var(--color-surface-alt)] rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl">📧</span>
-                            <div>
-                              <p className="font-medium text-[var(--color-text-primary)]">Email</p>
-                              <p className="text-sm text-[var(--color-text-tertiary)]">
-                                {hasEmailLinked ? user?.email : 'Not connected'}
-                              </p>
-                            </div>
-                          </div>
-                          {hasEmailLinked && (
-                            <span className="badge badge-success">Connected</span>
-                          )}
-                        </div>
-                        {!hasEmailLinked && (
-                          <div className="space-y-2 mt-3 pt-3 border-t border-[var(--color-border)]">
-                            <input
-                              type="email"
-                              value={linkEmail}
-                              onChange={(e) => setLinkEmail(e.target.value)}
-                              className="input"
-                              placeholder="Email address"
-                            />
-                            <input
-                              type="password"
-                              value={linkEmailPassword}
-                              onChange={(e) => setLinkEmailPassword(e.target.value)}
-                              className="input"
-                              placeholder="Create password"
-                            />
-                            <button
-                              onClick={handleLinkEmail}
-                              disabled={emailLinkLoading}
-                              className="btn btn-primary w-full"
-                            >
-                              {emailLinkLoading ? 'Linking...' : 'Link Email'}
-                            </button>
-                            {emailLinkError && (
-                              <p className="error-text">{emailLinkError}</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Phone */}
-                      <div className="flex items-center justify-between p-3 bg-[var(--color-surface-alt)] rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">📱</span>
-                          <div>
-                            <p className="font-medium text-[var(--color-text-primary)]">Phone</p>
-                            <p className="text-sm text-[var(--color-text-tertiary)]">
-                              {hasPhoneLinked ? user?.phoneNumber : 'Not connected'}
-                            </p>
-                          </div>
-                        </div>
-                        {hasPhoneLinked ? (
-                          <span className="badge badge-success">Connected</span>
-                        ) : (
-                          <span className="text-sm text-[var(--color-text-tertiary)]">
-                            Use sign-in page
-                          </span>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Security Section */}
-                  {activeSection === 'security' && (
-                    <motion.div
-                      key="security"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 10 }}
-                      className="space-y-4"
-                    >
-                      {hasEmailLinked ? (
-                        <>
-                          <h4 className="font-semibold text-[var(--color-text-primary)]">
-                            Change Password
-                          </h4>
-                          <div className="space-y-3">
-                            <div>
-                              <label className="label">Current Password</label>
-                              <input
-                                type="password"
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                className="input"
-                                placeholder="Enter current password"
-                              />
-                            </div>
-                            <div>
-                              <label className="label">New Password</label>
-                              <input
-                                type="password"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                className="input"
-                                placeholder="Enter new password"
-                              />
-                            </div>
-                            <div>
-                              <label className="label">Confirm New Password</label>
-                              <input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="input"
-                                placeholder="Confirm new password"
-                              />
-                            </div>
-                            <button
-                              onClick={handleChangePassword}
-                              disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword}
-                              className="btn btn-primary w-full"
-                            >
-                              {passwordLoading ? 'Changing...' : 'Change Password'}
-                            </button>
-                            {passwordError && (
-                              <p className="error-text">{passwordError}</p>
-                            )}
-                            {passwordSuccess && (
-                              <p className="text-[var(--color-success)] text-sm">
-                                Password changed successfully!
-                              </p>
-                            )}
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-center py-8 text-[var(--color-text-secondary)]">
-                          <p>Link an email account to enable password management.</p>
-                        </div>
-                      )}
                     </motion.div>
                   )}
 

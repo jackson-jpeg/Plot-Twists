@@ -42,6 +42,7 @@ export function useJoinSocket({
   const [error, setError] = useState('')
 
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const previousSpeaker = useRef<string>('')
   const gameStateRef = useRef(gameState)
   gameStateRef.current = gameState
@@ -98,12 +99,14 @@ export function useJoinSocket({
       if (newState === 'PERFORMING' && gameStateRef.current !== 'PERFORMING') {
         setCountdown(3)
         let count = 3
-        const interval = setInterval(() => {
+        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+        countdownIntervalRef.current = setInterval(() => {
           count--
           if (count > 0) {
             setCountdown(count)
           } else {
-            clearInterval(interval)
+            clearInterval(countdownIntervalRef.current!)
+            countdownIntervalRef.current = null
             setCountdown(null)
             setGameState('PERFORMING')
           }
@@ -177,6 +180,10 @@ export function useJoinSocket({
       socket.off('new_game_started'); socket.off('latency_ping')
       socket.off('latency_pong_response')
       socket.off('player_left'); socket.off('plot_twist_injected')
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current)
+        countdownIntervalRef.current = null
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, isConnected])

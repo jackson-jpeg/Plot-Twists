@@ -95,10 +95,13 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
     if (!socket) { toast.error('Not connected to server'); return }
     setError(''); setIsJoining(true)
     const upperRoomCode = roomCode.toUpperCase()
-    const timeoutId = setTimeout(() => { setIsJoining(false); setError('Connection timed out. Please try again.'); toast.error('Connection timed out') }, 5000)
+    let timedOut = false
+    const timeoutId = setTimeout(() => { timedOut = true; setIsJoining(false); setError('Connection timed out. Please try again.'); toast.error('Connection timed out') }, 8000)
 
     socket.emit('join_room', upperRoomCode, nickname, (response) => {
-      clearTimeout(timeoutId); setIsJoining(false)
+      clearTimeout(timeoutId)
+      if (timedOut) return
+      setIsJoining(false)
       if (response.success) {
         const role = response.role || 'PLAYER'
         analytics.gameJoined(role === 'SPECTATOR' ? 'spectator' : 'player')

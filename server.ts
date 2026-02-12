@@ -494,9 +494,9 @@ app.prepare().then(async () => {
 
       io.to(roomCode).emit('players_update', Array.from(room.players.values()))
 
-      // Check if all players have voted
+      // Check if all players have voted (spectators can vote but don't block completion)
       const allVoted = Array.from(room.players.values())
-        .filter(p => p.role === 'SPECTATOR' || p.role === 'PLAYER')
+        .filter(p => p.role === 'PLAYER')
         .every(p => p.hasSubmittedVote)
 
       if (allVoted) {
@@ -819,8 +819,15 @@ app.prepare().then(async () => {
         logger.error('Sequel generation failed:', error)
         io.to(roomCode).emit('error', 'Failed to generate sequel. Please try again.')
 
-        // Reset to results state
+        // Reset to results state with clean vote/selection flags
         room.gameState = 'RESULTS'
+        room.votes.clear()
+        for (const player of room.players.values()) {
+          player.hasSubmittedVote = false
+        }
+        if (room.audienceInteraction) {
+          resetReactionCounts(room.audienceInteraction)
+        }
         roomService.updateRoom(room)
         io.to(roomCode).emit('game_state_change', 'RESULTS')
       }
@@ -1076,58 +1083,64 @@ app.prepare().then(async () => {
 
       // Set timeout to finalize and inject
       const timeout = setTimeout(async () => {
-        if (!room.audienceInteraction) return
+        try {
+          if (!room.audienceInteraction) return
 
-        const winningTwist = finalizePlotTwist(room.audienceInteraction)
-        if (winningTwist) {
-          // Emit reveal sound effect
-          io.to(roomCode).emit('play_sound_effect', 'plot_twist_reveal' as SoundEffectType)
-          io.to(roomCode).emit('plot_twist_result', winningTwist)
+          const winningTwist = finalizePlotTwist(room.audienceInteraction)
+          if (winningTwist) {
+            // Emit reveal sound effect
+            io.to(roomCode).emit('play_sound_effect', 'plot_twist_reveal' as SoundEffectType)
+            io.to(roomCode).emit('plot_twist_result', winningTwist)
 
-          // Get context for AI injection
-          const speakers = room.script?.lines.map(l => l.speaker).filter((v, i, a) => a.indexOf(v) === i) || []
-          const setting = room.setting || ''
-          const recentDialogue = room.script?.lines.slice(
-            Math.max(0, room.currentLineIndex - 5),
-            room.currentLineIndex + 1
-          ) || []
+            // Get context for AI injection
+            const speakers = room.script?.lines.map(l => l.speaker).filter((v, i, a) => a.indexOf(v) === i) || []
+            const setting = room.setting || ''
+            const recentDialogue = room.script?.lines.slice(
+              Math.max(0, room.currentLineIndex - 5),
+              room.currentLineIndex + 1
+            ) || []
 
-          // Generate AI-powered character reactions (with fallback)
-          const injectedLines = await generateAITwistInjection(
-            winningTwist,
-            speakers,
-            {
-              setting,
-              characters: speakers,
-              recentDialogue,
-              scriptPosition: room.currentLineIndex / (room.script?.lines.length || 1) < 0.33 ? 'early' :
-                room.currentLineIndex / (room.script?.lines.length || 1) < 0.66 ? 'mid' : 'late',
-              comedyStyle: room.scriptCustomization?.comedyStyle,
-              isMature: room.isMature
-            }
-          )
-
-          if (room.script && injectedLines.length > 0) {
-            // Insert lines after current position
-            const insertIndex = room.currentLineIndex + 1
-            room.script.lines.splice(insertIndex, 0, ...injectedLines)
-            io.to(roomCode).emit('plot_twist_injected', insertIndex, injectedLines)
-          }
-
-          // Regenerate twist options in background for next time
-          if (room.script) {
-            regenerateTwistsForRoom(
-              roomCode,
-              room.script as Script,
-              room.currentLineIndex,
-              setting,
-              room.isMature,
-              room.scriptCustomization?.comedyStyle
+            // Generate AI-powered character reactions (with fallback)
+            const injectedLines = await generateAITwistInjection(
+              winningTwist,
+              speakers,
+              {
+                setting,
+                characters: speakers,
+                recentDialogue,
+                scriptPosition: room.currentLineIndex / (room.script?.lines.length || 1) < 0.33 ? 'early' :
+                  room.currentLineIndex / (room.script?.lines.length || 1) < 0.66 ? 'mid' : 'late',
+                comedyStyle: room.scriptCustomization?.comedyStyle,
+                isMature: room.isMature
+              }
             )
-          }
-        }
 
-        roomService.clearPlotTwistTimeout(roomCode)
+            if (room.script && injectedLines.length > 0) {
+              // Insert lines after current position
+              const insertIndex = room.currentLineIndex + 1
+              room.script.lines.splice(insertIndex, 0, ...injectedLines)
+              io.to(roomCode).emit('plot_twist_injected', insertIndex, injectedLines)
+              roomService.updateRoom(room)
+            }
+
+            // Regenerate twist options in background for next time
+            if (room.script) {
+              regenerateTwistsForRoom(
+                roomCode,
+                room.script as Script,
+                room.currentLineIndex,
+                setting,
+                room.isMature,
+                room.scriptCustomization?.comedyStyle
+              )
+            }
+          }
+        } catch (error) {
+          logger.error(`Plot twist injection failed for room ${roomCode}:`, error)
+          io.to(roomCode).emit('error', 'Plot twist failed — the show goes on!')
+        } finally {
+          roomService.clearPlotTwistTimeout(roomCode)
+        }
       }, 15000)
 
       roomService.setPlotTwistTimeout(roomCode, timeout)
@@ -1173,35 +1186,41 @@ app.prepare().then(async () => {
 
     // Select a card pack for the room
     socket.on('select_card_pack', async (roomCode, packId, callback) => {
-      const room = roomService.getRoomFromCache(roomCode)
-      if (!room) {
-        callback({ success: false, error: 'Room not found' })
-        return
+      try {
+        const room = roomService.getRoomFromCache(roomCode)
+        if (!room) {
+          callback({ success: false, error: 'Room not found' })
+          return
+        }
+
+        // Only host can select packs
+        if (room.host.socketId !== socket.id) {
+          callback({ success: false, error: 'Only the host can select card packs' })
+          return
+        }
+
+        // Verify pack exists
+        if (packId !== STANDARD_PACK_ID && !(await getCardPack(packId))) {
+          callback({ success: false, error: 'Card pack not found' })
+          return
+        }
+
+        room.cardPackId = packId
+        room.lastActivity = Date.now()
+        roomService.updateRoom(room)
+
+        // Increment download count for custom packs
+        if (packId !== STANDARD_PACK_ID) {
+          await incrementDownloads(packId)
+        }
+
+        const pack = packId !== STANDARD_PACK_ID ? await getCardPack(packId) : null
+        io.to(roomCode).emit('card_pack_selected', packId, pack?.name || 'Standard Pack')
+        callback({ success: true })
+      } catch (error) {
+        logger.error('Error selecting card pack:', error)
+        callback({ success: false, error: 'Failed to select card pack' })
       }
-
-      // Only host can select packs
-      if (room.host.socketId !== socket.id) {
-        callback({ success: false, error: 'Only the host can select card packs' })
-        return
-      }
-
-      // Verify pack exists
-      if (packId !== STANDARD_PACK_ID && !(await getCardPack(packId))) {
-        callback({ success: false, error: 'Card pack not found' })
-        return
-      }
-
-      room.cardPackId = packId
-      room.lastActivity = Date.now()
-
-      // Increment download count for custom packs
-      if (packId !== STANDARD_PACK_ID) {
-        await incrementDownloads(packId)
-      }
-
-      const pack = packId !== STANDARD_PACK_ID ? await getCardPack(packId) : null
-      io.to(roomCode).emit('card_pack_selected', packId, pack?.name || 'Standard Pack')
-      callback({ success: true })
     })
 
     // Create a new card pack

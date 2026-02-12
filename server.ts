@@ -856,6 +856,9 @@ app.prepare().then(async () => {
         roomService.clearRoomTimeout(roomCode)
       }
 
+      // Clear any pending plot twist timeout
+      roomService.clearPlotTwistTimeout(roomCode)
+
       // Reset room state
       room.gameState = 'LOBBY'
       room.script = undefined
@@ -1084,20 +1087,23 @@ app.prepare().then(async () => {
       // Set timeout to finalize and inject
       const timeout = setTimeout(async () => {
         try {
-          if (!room.audienceInteraction) return
+          // Re-fetch room from cache to avoid stale closure data
+          const currentRoom = roomService.getRoomFromCache(roomCode)
+          if (!currentRoom?.audienceInteraction) return
+          if (currentRoom.gameState !== 'PERFORMING') return
 
-          const winningTwist = finalizePlotTwist(room.audienceInteraction)
+          const winningTwist = finalizePlotTwist(currentRoom.audienceInteraction)
           if (winningTwist) {
             // Emit reveal sound effect
             io.to(roomCode).emit('play_sound_effect', 'plot_twist_reveal' as SoundEffectType)
             io.to(roomCode).emit('plot_twist_result', winningTwist)
 
             // Get context for AI injection
-            const speakers = room.script?.lines.map(l => l.speaker).filter((v, i, a) => a.indexOf(v) === i) || []
-            const setting = room.setting || ''
-            const recentDialogue = room.script?.lines.slice(
-              Math.max(0, room.currentLineIndex - 5),
-              room.currentLineIndex + 1
+            const speakers = currentRoom.script?.lines.map(l => l.speaker).filter((v, i, a) => a.indexOf(v) === i) || []
+            const setting = currentRoom.setting || ''
+            const recentDialogue = currentRoom.script?.lines.slice(
+              Math.max(0, currentRoom.currentLineIndex - 5),
+              currentRoom.currentLineIndex + 1
             ) || []
 
             // Generate AI-powered character reactions (with fallback)
@@ -1108,30 +1114,29 @@ app.prepare().then(async () => {
                 setting,
                 characters: speakers,
                 recentDialogue,
-                scriptPosition: room.currentLineIndex / (room.script?.lines.length || 1) < 0.33 ? 'early' :
-                  room.currentLineIndex / (room.script?.lines.length || 1) < 0.66 ? 'mid' : 'late',
-                comedyStyle: room.scriptCustomization?.comedyStyle,
-                isMature: room.isMature
+                scriptPosition: currentRoom.currentLineIndex / (currentRoom.script?.lines.length || 1) < 0.33 ? 'early' :
+                  currentRoom.currentLineIndex / (currentRoom.script?.lines.length || 1) < 0.66 ? 'mid' : 'late',
+                comedyStyle: currentRoom.scriptCustomization?.comedyStyle,
+                isMature: currentRoom.isMature
               }
             )
 
-            if (room.script && injectedLines.length > 0) {
-              // Insert lines after current position
-              const insertIndex = room.currentLineIndex + 1
-              room.script.lines.splice(insertIndex, 0, ...injectedLines)
+            // Re-fetch again after async AI call to get latest state
+            const latestRoom = roomService.getRoomFromCache(roomCode)
+            if (latestRoom?.script && latestRoom.gameState === 'PERFORMING' && injectedLines.length > 0) {
+              const insertIndex = Math.min(latestRoom.currentLineIndex + 1, latestRoom.script.lines.length)
+              latestRoom.script.lines.splice(insertIndex, 0, ...injectedLines)
               io.to(roomCode).emit('plot_twist_injected', insertIndex, injectedLines)
-              roomService.updateRoom(room)
-            }
+              roomService.updateRoom(latestRoom)
 
-            // Regenerate twist options in background for next time
-            if (room.script) {
+              // Regenerate twist options in background for next time
               regenerateTwistsForRoom(
                 roomCode,
-                room.script as Script,
-                room.currentLineIndex,
+                latestRoom.script as Script,
+                latestRoom.currentLineIndex,
                 setting,
-                room.isMature,
-                room.scriptCustomization?.comedyStyle
+                latestRoom.isMature,
+                latestRoom.scriptCustomization?.comedyStyle
               )
             }
           }

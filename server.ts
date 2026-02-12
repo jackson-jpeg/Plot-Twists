@@ -728,6 +728,13 @@ app.prepare().then(async () => {
       // Save the current script as previous
       const previousScript = room.script
 
+      // Clear teleprompter timeout from previous round
+      const prevTimeout = roomService.getRoomTimeout(roomCode)
+      if (prevTimeout) {
+        clearTimeout(prevTimeout)
+        roomService.clearRoomTimeout(roomCode)
+      }
+
       // Reset votes for the new round (Phase 5 fix)
       room.votes.clear()
       for (const player of room.players.values()) {
@@ -1838,8 +1845,11 @@ app.prepare().then(async () => {
         if (userId && originalScripts > 0 && amountRefunded > 0) {
           await markStripeEventProcessed(event.id, event.type, userId)
 
-          // Proportional credit deduction
-          const creditsToDeduct = Math.ceil((amountRefunded / originalAmount) * originalScripts)
+          // Proportional credit deduction (round down to avoid over-deducting)
+          const creditsToDeduct = Math.min(
+            Math.round((amountRefunded / originalAmount) * originalScripts),
+            originalScripts
+          )
           await deductBankedCredits(userId, creditsToDeduct)
 
           await recordTransaction({

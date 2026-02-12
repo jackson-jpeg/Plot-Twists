@@ -93,6 +93,7 @@ import {
 } from './server/services/playerStats.service'
 import { generateTitleCard } from './server/services/image.service'
 import { checkAndDeductCredit, getCredits, addBankedCredits, deductBankedCredits } from './server/services/credit.service'
+import { getReferralInfo, redeemReferralCode } from './server/services/referral.service'
 import { recordTransaction, getUserTransactions } from './server/services/payment.service'
 import { createSocketAuthMiddleware } from './server/middleware/socketAuth'
 import { CREDIT_PACKAGES } from './lib/credits'
@@ -1495,6 +1496,40 @@ app.prepare().then(async () => {
       } catch (error) {
         logger.error('Error fetching credit balance:', error)
         callback({ success: false, error: 'Failed to load credits' })
+      }
+    })
+
+    // ============================================================
+    // Referral System
+    // ============================================================
+
+    socket.on('get_referral_info', async (callback) => {
+      try {
+        const uid = socket.data.uid
+        if (!uid) {
+          callback({ success: false, error: 'Not authenticated' })
+          return
+        }
+        const info = await getReferralInfo(uid)
+        callback({ success: true, ...info })
+      } catch (error) {
+        logger.error('Error fetching referral info:', error)
+        callback({ success: false, error: 'Failed to load referral info' })
+      }
+    })
+
+    socket.on('redeem_referral', async (code, callback) => {
+      try {
+        const uid = socket.data.uid
+        if (!uid) {
+          callback({ success: false, error: 'Not authenticated' })
+          return
+        }
+        const result = await redeemReferralCode(uid, code)
+        callback(result)
+      } catch (error) {
+        logger.error('Error redeeming referral:', error)
+        callback({ success: false, error: 'Failed to redeem referral code' })
       }
     })
 

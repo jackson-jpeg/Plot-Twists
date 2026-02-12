@@ -71,7 +71,8 @@ export const Collections = {
   ROOMS: 'rooms',
   MIGRATIONS: 'migrations',
   STRIPE_EVENTS: 'stripeEvents',
-  PAYMENT_TRANSACTIONS: 'paymentTransactions'
+  PAYMENT_TRANSACTIONS: 'paymentTransactions',
+  REFERRAL_EVENTS: 'referralEvents'
 } as const
 
 export type CollectionName = typeof Collections[keyof typeof Collections]

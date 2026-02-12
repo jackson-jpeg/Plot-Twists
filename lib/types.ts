@@ -410,6 +410,10 @@ export interface ClientToServerEvents {
 
   // Credit System Events
   get_credit_balance: (callback: (response: { success: boolean, balance?: { free: number, banked: number, total: number }, error?: string }) => void) => void
+
+  // Referral System Events
+  get_referral_info: (callback: (response: { success: boolean, referralCode?: string, referralCreditsEarned?: number, referralCount?: number, error?: string }) => void) => void
+  redeem_referral: (code: string, callback: (response: { success: boolean, error?: string }) => void) => void
 }
 
 // ============================================================
@@ -572,6 +576,9 @@ export interface UserProfile {
   credits: CreditBalance
   lifetimeSpend: number   // total $ spent (cents)
   stripeCustomerId?: string
+  referralCode?: string        // Unique 6-char invite code
+  referredBy?: string          // UID of referrer
+  referralCreditsEarned?: number // Total bonus credits earned from referrals
 }
 
 // ============================================================

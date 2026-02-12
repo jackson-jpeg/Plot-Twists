@@ -13,6 +13,7 @@ import { StatsSkeleton, Skeleton } from '@/components/EmptyState'
 import { AccountSettings } from '@/components/AccountSettings'
 import { CreditHeaderBadge, useCreditBalance } from '@/components/CreditBadge'
 import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
+import { ReferralCard } from '@/components/ReferralCard'
 import type { PaymentTransaction, PlayerStats } from '@/lib/types'
 import { getApiBaseUrl } from '@/lib/api'
 
@@ -324,6 +325,18 @@ export default function ProfilePage() {
             className="mt-6"
           >
             <AccountUpgradeCard />
+          </motion.div>
+        )}
+
+        {/* Referral Card */}
+        {user && !user.isAnonymous && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mt-6"
+          >
+            <ReferralCard />
           </motion.div>
         )}
 

@@ -10,6 +10,7 @@ import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistratio
 import { SystemStatus } from '@/components/SystemStatus'
 import { HomeJsonLd } from '@/components/JsonLd'
 import { InstallPrompt } from '@/components/InstallPrompt'
+import { NativeBootstrap } from '@/components/NativeBootstrap'
 
 const fredoka = Fredoka({
   subsets: ['latin'],
@@ -95,6 +96,7 @@ export default function RootLayout({
       <body>
         <HomeJsonLd />
         <ServiceWorkerRegistration />
+        <NativeBootstrap />
         <ThemeProvider>
           <AuthProvider>
             <SocketProvider>

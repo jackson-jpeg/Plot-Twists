@@ -4578,6 +4578,42 @@ html[data-standalone] .modal-overlay {
 }
 
 /* ==========================================================================
+   Capacitor Native Shell
+   ========================================================================== */
+
+html.capacitor-native {
+  overscroll-behavior: none;
+}
+
+html.capacitor-native body {
+  overscroll-behavior-y: contain;
+}
+
+html.capacitor-native button,
+html.capacitor-native a,
+html.capacitor-native [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+html.capacitor-native * {
+  -webkit-touch-callout: none;
+}
+
+html.capacitor-native img {
+  -webkit-user-drag: none;
+}
+
+html.capacitor-native .modal-overlay {
+  overscroll-behavior: contain;
+}
+
+html.capacitor-native .install-banner {
+  display: none !important;
+}
+
+/* ==========================================================================
    Install Prompt Banner
    ========================================================================== */
 

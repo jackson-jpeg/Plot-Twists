@@ -18,6 +18,7 @@ import { AchievementToast, useAchievementToasts } from '@/components/Achievement
 import { analytics } from '@/lib/analytics'
 import { useHostSocket } from '@/hooks/useHostSocket'
 import { useAudioPlayer } from '@/hooks/useAudioPlayer'
+import { successHaptic } from '@/hooks/useHaptics'
 
 import { HostLobby } from './components/HostLobby'
 import { HostSelection } from './components/HostSelection'
@@ -223,7 +224,8 @@ export default function HostPage() {
     setChaosCooldown(true)
     setChaosShaking(true)
     setTimeout(() => setChaosShaking(false), 500)
-    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200])
+    successHaptic() // native haptics on iOS; no-op on web
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]) // Android web fallback
     toast.info('CHAOS unleashed! Audience is voting on a plot twist...')
   }, [socket, roomCode, chaosCooldown, toast, setChaosCooldown])
 

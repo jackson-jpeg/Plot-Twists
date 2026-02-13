@@ -159,7 +159,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
     <div className="relative">
       {/* Floating reactions overlay (for host view) */}
       {isHost && (
-        <div className="fixed top-16 right-4 w-48 sm:w-64 h-48 pointer-events-none overflow-hidden" style={{ zIndex: 'var(--z-sticky)' }}>
+        <div className="fixed right-4 w-48 sm:w-64 h-48 pointer-events-none overflow-hidden" style={{ top: 'calc(64px + env(safe-area-inset-top, 0px))', zIndex: 'var(--z-sticky)' }}>
           <AnimatePresence>
             {floatingReactions.map(reaction => {
               const size = 32 + Math.random() * 24 // 32–56px
@@ -184,7 +184,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
 
       {/* Reaction counts (for host view) */}
       {isHost && (
-        <div className="fixed top-4 right-4 bg-black/80 backdrop-blur-sm rounded-xl p-2 sm:p-3 flex gap-1.5 sm:gap-3" style={{ zIndex: 'var(--z-sticky)' }}>
+        <div className="fixed right-4 bg-black/80 backdrop-blur-sm rounded-xl p-2 sm:p-3 flex gap-1.5 sm:gap-3" style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))', zIndex: 'var(--z-sticky)' }}>
           {(Object.keys(REACTION_EMOJIS) as AudienceReactionType[]).map(type => (
             <div key={type} className="flex flex-col items-center">
               <span className="text-xl sm:text-2xl">{REACTION_EMOJIS[type]}</span>

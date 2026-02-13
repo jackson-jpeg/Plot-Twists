@@ -38,8 +38,8 @@ export function SystemStatus() {
     <div
       style={{
         position: 'fixed',
-        bottom: '16px',
-        left: '16px',
+        bottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+        left: 'calc(16px + env(safe-area-inset-left, 0px))',
         zIndex: 9998,
         fontFamily: 'var(--font-ui)',
       }}

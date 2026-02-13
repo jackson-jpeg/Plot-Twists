@@ -33,11 +33,14 @@ export function SpectatorChat({ messages, onSendMessage, disabled }: SpectatorCh
     }
   }, [messages])
 
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const handleSend = (text: string, isPreset: boolean) => {
     if (cooldown || disabled || !text.trim()) return
     onSendMessage(text.trim(), isPreset)
     setCustomText('')
     setCooldown(true)
+    inputRef.current?.blur() // dismiss keyboard on iOS
     setTimeout(() => setCooldown(false), 5000)
   }
 
@@ -129,12 +132,14 @@ export function SpectatorChat({ messages, onSendMessage, disabled }: SpectatorCh
         padding: '0 8px 8px',
       }}>
         <input
+          ref={inputRef}
           type="text"
           value={customText}
           onChange={(e) => setCustomText(e.target.value.slice(0, 100))}
           onKeyDown={(e) => { if (e.key === 'Enter') handleSend(customText, false) }}
           placeholder={cooldown ? 'Wait 5s...' : 'Type a message...'}
           disabled={cooldown || disabled}
+          enterKeyHint="send"
           style={{
             flex: 1,
             padding: '6px 10px',
@@ -190,7 +195,7 @@ export function SpectatorTicker({ messages }: SpectatorTickerProps) {
       ref={tickerRef}
       style={{
         position: 'fixed',
-        bottom: '80px',
+        bottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
         right: '16px',
         width: '280px',
         maxHeight: '200px',

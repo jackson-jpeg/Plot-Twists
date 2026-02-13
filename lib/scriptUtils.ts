@@ -56,6 +56,25 @@ export function downloadScript(script: Script) {
   URL.revokeObjectURL(url)
 }
 
+/** Share script text via Web Share API (native iOS share sheet). Falls back to download. */
+export async function shareScriptText(script: Script): Promise<boolean> {
+  const text = formatScriptAsText(script)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: script.title,
+        text,
+      })
+      return true
+    } catch {
+      // User cancelled or share failed — fall through to download
+    }
+  }
+  // Fallback: trigger download
+  downloadScript(script)
+  return true
+}
+
 export async function copyScriptToClipboard(script: Script): Promise<boolean> {
   try {
     const text = formatScriptAsText(script)

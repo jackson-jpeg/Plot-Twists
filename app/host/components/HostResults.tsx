@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { Script, GameResults } from '@/lib/types'
-import { downloadScript, copyScriptToClipboard } from '@/lib/scriptUtils'
+import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { VARIANTS } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
@@ -40,7 +40,11 @@ export function HostResults({
     if (success) { successHaptic(); setCopySuccess(true); setTimeout(() => setCopySuccess(false), 2000) }
   }
 
-  const handleDownloadScript = () => { if (script) downloadScript(script) }
+  const handleDownloadScript = async () => {
+    if (!script) return
+    await shareScriptText(script)
+    successHaptic()
+  }
 
   const copyShareUrl = (url: string) => {
     navigator.clipboard.writeText(url).catch(() => {})
@@ -221,7 +225,7 @@ function ScriptSummary({ script, scriptImageUrl, copySuccess, onCopy, onDownload
         </>
       )}
       <div className="flex gap-3 flex-wrap">
-        <motion.button onClick={onDownload} className="btn btn-secondary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>💾</span><span>Download Script</span></motion.button>
+        <motion.button onClick={onDownload} className="btn btn-secondary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>{'share' in navigator ? '📤' : '💾'}</span><span>{'share' in navigator ? 'Share Script' : 'Download Script'}</span></motion.button>
         <motion.button onClick={onCopy} className="btn btn-ghost" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>{copySuccess ? '✓' : '📋'}</span><span>{copySuccess ? 'Copied!' : 'Copy to Clipboard'}</span></motion.button>
       </div>
     </motion.div>

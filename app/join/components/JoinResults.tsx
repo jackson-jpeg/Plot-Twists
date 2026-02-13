@@ -3,7 +3,8 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { Script, GameResults } from '@/lib/types'
-import { downloadScript, copyScriptToClipboard } from '@/lib/scriptUtils'
+import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
+import { successHaptic } from '@/hooks/useHaptics'
 import { Modal } from '@/components/Modal'
 import { VARIANTS } from '@/lib/animations'
 
@@ -25,7 +26,13 @@ export function JoinResults({
   const handleCopyScript = async () => {
     if (!script) return
     const success = await copyScriptToClipboard(script)
-    if (success) { setCopySuccess(true); setTimeout(() => setCopySuccess(false), 2000) }
+    if (success) { successHaptic(); setCopySuccess(true); setTimeout(() => setCopySuccess(false), 2000) }
+  }
+
+  const handleShareScript = async () => {
+    if (!script) return
+    await shareScriptText(script)
+    successHaptic()
   }
 
   return (
@@ -87,7 +94,7 @@ export function JoinResults({
         {script && (
           <motion.div className="mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}>
             <div className="flex gap-3 justify-center flex-wrap">
-              <motion.button onClick={() => script && downloadScript(script)} className="btn btn-secondary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>💾</span><span>Save Script</span></motion.button>
+              <motion.button onClick={handleShareScript} className="btn btn-secondary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>{'share' in navigator ? '📤' : '💾'}</span><span>{'share' in navigator ? 'Share Script' : 'Save Script'}</span></motion.button>
               <motion.button onClick={handleCopyScript} className="btn btn-ghost" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>{copySuccess ? '✓' : '📋'}</span><span>{copySuccess ? 'Copied!' : 'Copy Script'}</span></motion.button>
             </div>
           </motion.div>

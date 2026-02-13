@@ -94,7 +94,9 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '16px'
+          padding: '16px',
+          paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))',
+          paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
         }}
         className="modal-overlay"
         role="dialog"

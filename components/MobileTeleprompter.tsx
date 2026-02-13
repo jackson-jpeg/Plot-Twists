@@ -6,6 +6,8 @@ import { getMoodIndicator } from '@/lib/teleprompterUtils'
 import { MOTION } from '@/lib/animations'
 import { getCharactersInScene } from '@/lib/scriptUtils'
 import type { Script } from '@/lib/types'
+import { isCapacitorNative } from '@/lib/platform'
+import { tapHaptic } from '@/hooks/useHaptics'
 
 interface MobileTeleprompterProps {
   script: Script
@@ -138,7 +140,7 @@ export function MobileTeleprompter({
       </AnimatePresence>
 
       {/* Progress Bar */}
-      <div className="p-4" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
+      <div className="p-4 pt-safe" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
         <div className="flex items-center justify-between text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
           <span className="font-script">{script.title}</span>
           <div className="flex items-center gap-2">
@@ -159,15 +161,17 @@ export function MobileTeleprompter({
             >
               A+
             </button>
-            {/* Fullscreen button */}
-            <button
-              onClick={toggleFullscreen}
-              className="w-7 h-7 rounded flex items-center justify-center"
-              style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
-              aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-            >
-              {isFullscreen ? '⊟' : '⊞'}
-            </button>
+            {/* Fullscreen button — hidden in Capacitor where API is unsupported */}
+            {!isCapacitorNative() && (
+              <button
+                onClick={toggleFullscreen}
+                className="w-7 h-7 rounded flex items-center justify-center"
+                style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
+                aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+              >
+                {isFullscreen ? '⊟' : '⊞'}
+              </button>
+            )}
             <span className="font-script">{currentLineIndex + 1}/{script.lines.length}</span>
           </div>
         </div>
@@ -273,7 +277,7 @@ export function MobileTeleprompter({
       <div className="p-4 pb-safe" style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}>
         <div className="flex items-center justify-between max-w-md mx-auto">
           <motion.button
-            onClick={onPreviousLine}
+            onClick={() => { tapHaptic(); onPreviousLine() }}
             disabled={currentLineIndex === 0}
             className="btn btn-ghost"
             style={{
@@ -291,7 +295,7 @@ export function MobileTeleprompter({
           </span>
 
           <motion.button
-            onClick={onNextLine}
+            onClick={() => { tapHaptic(); onNextLine() }}
             disabled={currentLineIndex >= script.lines.length - 1}
             className="btn btn-ghost"
             style={{

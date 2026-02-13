@@ -2395,6 +2395,7 @@ app.prepare().then(async () => {
   // ============================================================
   // Server-side Phone Auth (for Capacitor WKWebView where reCAPTCHA won't work)
   // ============================================================
+  expressApp.use('/api/auth', express.json())
 
   // In-memory store for verification codes (short-lived, keyed by phone number)
   const pendingVerifications = new Map<string, { code: string; expiresAt: number; attempts: number }>()

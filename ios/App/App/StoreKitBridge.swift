@@ -21,15 +21,24 @@ class StoreKitBridge: NSObject, WKScriptMessageHandler {
         didReceive message: WKScriptMessage
     ) {
         guard let body = message.body as? [String: Any],
-              let action = body["action"] as? String,
-              action == "purchase",
-              let productId = body["productId"] as? String else {
+              let action = body["action"] as? String else {
             callbackError("Invalid message format")
             return
         }
 
-        Task {
-            await handlePurchase(productId: productId)
+        switch action {
+        case "purchase":
+            guard let productId = body["productId"] as? String else {
+                callbackError("Missing productId")
+                return
+            }
+            Task { await handlePurchase(productId: productId) }
+
+        case "restore":
+            Task { await handleRestore() }
+
+        default:
+            callbackError("Unknown action: \(action)")
         }
     }
 
@@ -75,6 +84,16 @@ class StoreKitBridge: NSObject, WKScriptMessageHandler {
             }
         } catch {
             callbackError(error.localizedDescription)
+        }
+    }
+
+    private func handleRestore() async {
+        do {
+            // Sync transactions with the App Store to restore any unfinished ones
+            try await AppStore.sync()
+            callbackSuccess(signedTransaction: "restored")
+        } catch {
+            callbackError("Restore failed: \(error.localizedDescription)")
         }
     }
 

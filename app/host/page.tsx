@@ -184,6 +184,10 @@ export default function HostPage() {
   }
 
   const toggleMature = () => {
+    if (!settings.isMature) {
+      // Confirm before enabling mature content
+      if (!window.confirm('Enable "After Dark" mode? This allows adult themes and mature humor. Only for players 17+.')) return
+    }
     const newSettings = { ...settings, isMature: !settings.isMature }
     setSettings(newSettings)
     socket?.emit('update_room_settings', roomCode, { isMature: newSettings.isMature })

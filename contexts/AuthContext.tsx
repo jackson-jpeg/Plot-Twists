@@ -11,13 +11,6 @@ interface AuthResult {
   error?: string
 }
 
-// Phone code result type
-interface PhoneCodeResult {
-  success: boolean
-  verificationId?: string
-  error?: string
-}
-
 // User type that matches Firebase User
 interface AuthUser {
   uid: string
@@ -34,10 +27,6 @@ interface AuthContextType {
   isConfigured: boolean
   isOnline: boolean
   signInAnonymously: () => Promise<AuthResult>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sendPhoneCode: (phone: string, verifier: any) => Promise<PhoneCodeResult>
-  verifyPhoneCode: (verificationId: string, code: string) => Promise<AuthResult>
-  linkWithPhone: (verificationId: string, code: string) => Promise<AuthResult>
   signInWithCustomToken: (token: string) => Promise<AuthResult>
   updateDisplayName: (displayName: string) => Promise<AuthResult>
   signOut: () => Promise<void>
@@ -50,9 +39,6 @@ const AuthContext = createContext<AuthContextType>({
   isConfigured: false,
   isOnline: true,
   signInAnonymously: async () => ({ success: false, error: 'Not configured' }),
-  sendPhoneCode: async () => ({ success: false, error: 'Not configured' }),
-  verifyPhoneCode: async () => ({ success: false, error: 'Not configured' }),
-  linkWithPhone: async () => ({ success: false, error: 'Not configured' }),
   signInWithCustomToken: async () => ({ success: false, error: 'Not configured' }),
   updateDisplayName: async () => ({ success: false, error: 'Not configured' }),
   signOut: async () => {},
@@ -205,76 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Phone Auth: Send verification code
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sendPhoneCode = useCallback(async (phone: string, verifier: any): Promise<PhoneCodeResult> => {
-    if (!firebaseReady) {
-      return { success: false, error: 'Authentication not configured' }
-    }
-
-    if (!verifier) {
-      return { success: false, error: 'reCAPTCHA not initialized. Please refresh the page and try again.' }
-    }
-
-    try {
-      const firebaseAuth = await import('firebase/auth')
-      const { signInWithPhoneNumber } = firebaseAuth
-      const auth = getFirebaseAuth()
-      const confirmationResult = await signInWithPhoneNumber(auth as any, phone, verifier)
-
-      if (!confirmationResult?.verificationId) {
-        return { success: false, error: 'Failed to send verification code. Please try again.' }
-      }
-
-      return { success: true, verificationId: confirmationResult.verificationId }
-    } catch (error: unknown) {
-      return { success: false, error: getFirebaseErrorMessage(error) }
-    }
-  }, [firebaseReady])
-
-  // Phone Auth: Verify code and sign in
-  const verifyPhoneCode = useCallback(async (verificationId: string, code: string): Promise<AuthResult> => {
-    if (!firebaseReady) {
-      return { success: false, error: 'Authentication not configured' }
-    }
-
-    try {
-      const firebaseAuth = await import('firebase/auth')
-      const { PhoneAuthProvider, signInWithCredential } = firebaseAuth
-      const auth = getFirebaseAuth()
-      const credential = PhoneAuthProvider.credential(verificationId, code)
-      await signInWithCredential(auth as any, credential)
-      return { success: true }
-    } catch (error: unknown) {
-      return { success: false, error: getFirebaseErrorMessage(error) }
-    }
-  }, [firebaseReady])
-
-  // Account Linking: Link with Phone
-  const linkWithPhone = useCallback(async (verificationId: string, code: string): Promise<AuthResult> => {
-    if (!firebaseReady) {
-      return { success: false, error: 'Authentication not configured' }
-    }
-
-    try {
-      const firebaseAuth = await import('firebase/auth')
-      const { PhoneAuthProvider, linkWithCredential } = firebaseAuth
-      const auth = getFirebaseAuth()
-      const currentUser = auth?.currentUser
-
-      if (!currentUser) {
-        return { success: false, error: 'No user signed in' }
-      }
-
-      const credential = PhoneAuthProvider.credential(verificationId, code)
-      await linkWithCredential(currentUser, credential)
-      return { success: true }
-    } catch (error: unknown) {
-      return { success: false, error: getFirebaseErrorMessage(error) }
-    }
-  }, [firebaseReady])
-
-  // Sign in with a custom token (used by server-side phone auth for Capacitor)
+  // Sign in with a custom token (used by server-side phone auth via Twilio)
   const signInWithCustomToken = useCallback(async (token: string): Promise<AuthResult> => {
     if (!firebaseReady) {
       return { success: false, error: 'Authentication not configured' }
@@ -345,9 +262,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isConfigured: isFirebaseConfigured && firebaseReady,
     isOnline,
     signInAnonymously,
-    sendPhoneCode,
-    verifyPhoneCode,
-    linkWithPhone,
     signInWithCustomToken,
     updateDisplayName,
     signOut,

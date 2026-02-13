@@ -2393,12 +2393,9 @@ app.prepare().then(async () => {
   })
 
   // ============================================================
-  // Server-side Phone Auth (for Capacitor WKWebView where reCAPTCHA won't work)
+  // Server-side Phone Auth via Twilio Verify
   // ============================================================
   expressApp.use('/api/auth', express.json())
-
-  // In-memory store for verification codes (short-lived, keyed by phone number)
-  const pendingVerifications = new Map<string, { code: string; expiresAt: number; attempts: number }>()
 
   expressApp.post('/api/auth/send-code', async (req, res) => {
     const { phoneNumber } = req.body
@@ -2407,147 +2404,92 @@ app.prepare().then(async () => {
       return
     }
 
-    // Rate limit: max 1 code per phone per 60 seconds
-    const existing = pendingVerifications.get(phoneNumber)
-    if (existing && existing.expiresAt > Date.now() && (existing.expiresAt - Date.now()) > 4 * 60 * 1000) {
-      res.status(429).json({ error: 'Please wait before requesting another code' })
+    const accountSid = process.env.TWILIO_ACCOUNT_SID
+    const authToken = process.env.TWILIO_AUTH_TOKEN
+    const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID
+
+    if (!accountSid || !authToken || !serviceSid) {
+      logger.error('[Auth] Twilio env vars not configured')
+      res.status(500).json({ error: 'SMS service not configured' })
       return
     }
 
-    // Generate 6-digit code
-    const code = String(Math.floor(100000 + Math.random() * 900000))
-
-    // Store with 5-minute expiry
-    pendingVerifications.set(phoneNumber, {
-      code,
-      expiresAt: Date.now() + 5 * 60 * 1000,
-      attempts: 0,
-    })
-
-    // Send via Firebase Admin SDK (uses the project's configured SMS provider)
     try {
-      const admin = await import('firebase-admin')
-      if (admin.apps.length === 0) {
-        res.status(500).json({ error: 'Firebase Admin not initialized' })
-        return
-      }
-
-      // Use Firebase's built-in phone auth to send SMS
-      // We'll create a temporary custom auth approach:
-      // The admin SDK doesn't directly send SMS, so we use the Firebase Auth REST API
-      const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY
-      if (!apiKey) {
-        res.status(500).json({ error: 'Firebase API key not configured' })
-        return
-      }
-
-      // Store the code and send via a simple SMS service
-      // For production, integrate Twilio or Firebase phone auth REST API
-      // For now, use Firebase's sendVerificationCode via REST
-      const response = await fetch(
-        `https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key=${apiKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phoneNumber,
-            recaptchaToken: 'CAPACITOR_BYPASS', // Server-side bypass
-          }),
-        }
-      )
-
-      if (response.ok) {
-        const data = await response.json()
-        // Firebase returns a sessionInfo token we can use to verify later
-        pendingVerifications.set(phoneNumber, {
-          code: data.sessionInfo, // Store sessionInfo instead of our code
-          expiresAt: Date.now() + 5 * 60 * 1000,
-          attempts: 0,
-        })
-        res.json({ success: true, sessionInfo: data.sessionInfo })
-      } else {
-        // Fallback: If Firebase REST fails, use admin SDK custom token flow
-        logger.warn('[Auth] Firebase REST sendVerificationCode failed, using custom token flow')
-        res.json({ success: true, useCustomFlow: true })
-      }
+      const twilio = await import('twilio')
+      const client = twilio.default(accountSid, authToken)
+      await client.verify.v2.services(serviceSid).verifications.create({
+        to: phoneNumber,
+        channel: 'sms',
+      })
+      res.json({ success: true })
     } catch (error) {
-      logger.error('[Auth] Send code error:', error)
+      logger.error('[Auth] Twilio send code error:', error)
       res.status(500).json({ error: 'Failed to send verification code' })
     }
   })
 
   expressApp.post('/api/auth/verify-code', async (req, res) => {
-    const { phoneNumber, code, sessionInfo } = req.body
+    const { phoneNumber, code, mode, idToken } = req.body
     if (!phoneNumber || !code) {
       res.status(400).json({ error: 'Missing phone number or code' })
       return
     }
 
+    const accountSid = process.env.TWILIO_ACCOUNT_SID
+    const authToken = process.env.TWILIO_AUTH_TOKEN
+    const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID
+
+    if (!accountSid || !authToken || !serviceSid) {
+      res.status(500).json({ error: 'SMS service not configured' })
+      return
+    }
+
     try {
+      const twilio = await import('twilio')
+      const client = twilio.default(accountSid, authToken)
+      const check = await client.verify.v2.services(serviceSid).verificationChecks.create({
+        to: phoneNumber,
+        code,
+      })
+
+      if (check.status !== 'approved') {
+        res.status(400).json({ error: 'Invalid code' })
+        return
+      }
+
       const admin = await import('firebase-admin')
       if (admin.apps.length === 0) {
         res.status(500).json({ error: 'Firebase Admin not initialized' })
         return
       }
 
-      if (sessionInfo) {
-        // Verify via Firebase REST API
-        const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY
-        const response = await fetch(
-          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPhoneNumber?key=${apiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionInfo, code }),
-          }
-        )
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          res.status(400).json({ error: errorData.error?.message || 'Invalid code' })
-          return
-        }
-
-        const data = await response.json()
-
-        // Create a custom token for the verified user
-        const customToken = await admin.auth().createCustomToken(data.localId)
-        res.json({ success: true, customToken })
-      } else {
-        // Fallback: verify against in-memory code
-        const pending = pendingVerifications.get(phoneNumber)
-        if (!pending || pending.expiresAt < Date.now()) {
-          res.status(400).json({ error: 'Code expired. Please request a new one.' })
-          return
-        }
-
-        pending.attempts += 1
-        if (pending.attempts > 5) {
-          pendingVerifications.delete(phoneNumber)
-          res.status(429).json({ error: 'Too many attempts. Please request a new code.' })
-          return
-        }
-
-        if (pending.code !== code) {
-          res.status(400).json({ error: 'Invalid code' })
-          return
-        }
-
-        pendingVerifications.delete(phoneNumber)
-
-        // Find or create the Firebase user for this phone number
-        let uid: string
+      // Link mode: attach phone to existing user
+      if (mode === 'link' && idToken) {
         try {
-          const userRecord = await admin.auth().getUserByPhoneNumber(phoneNumber)
-          uid = userRecord.uid
-        } catch {
-          const newUser = await admin.auth().createUser({ phoneNumber })
-          uid = newUser.uid
+          const decoded = await admin.auth().verifyIdToken(idToken)
+          await admin.auth().updateUser(decoded.uid, { phoneNumber })
+          const customToken = await admin.auth().createCustomToken(decoded.uid)
+          res.json({ success: true, customToken })
+          return
+        } catch (linkError) {
+          logger.error('[Auth] Link phone error:', linkError)
+          res.status(400).json({ error: 'Failed to link phone number' })
+          return
         }
-
-        const customToken = await admin.auth().createCustomToken(uid)
-        res.json({ success: true, customToken })
       }
+
+      // Sign-in mode: find or create Firebase user by phone
+      let uid: string
+      try {
+        const userRecord = await admin.auth().getUserByPhoneNumber(phoneNumber)
+        uid = userRecord.uid
+      } catch {
+        const newUser = await admin.auth().createUser({ phoneNumber })
+        uid = newUser.uid
+      }
+
+      const customToken = await admin.auth().createCustomToken(uid)
+      res.json({ success: true, customToken })
     } catch (error) {
       logger.error('[Auth] Verify code error:', error)
       res.status(500).json({ error: 'Verification failed' })

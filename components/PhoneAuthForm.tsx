@@ -1,12 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef, useId } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { OTPInput } from './OTPInput'
 import { useAuth } from '@/contexts/AuthContext'
-import { createRecaptchaVerifier } from '@/lib/firebase'
-import { getFirebaseErrorMessage } from '@/lib/authErrors'
-import { isCapacitorNative } from '@/lib/platform'
 import { getApiBaseUrl } from '@/lib/api'
 
 interface PhoneAuthFormProps {
@@ -16,34 +13,27 @@ interface PhoneAuthFormProps {
 
 // Common country codes
 const COUNTRY_CODES = [
-  { code: '+1', country: 'US/CA', flag: '🇺🇸' },
-  { code: '+44', country: 'UK', flag: '🇬🇧' },
-  { code: '+61', country: 'AU', flag: '🇦🇺' },
-  { code: '+49', country: 'DE', flag: '🇩🇪' },
-  { code: '+33', country: 'FR', flag: '🇫🇷' },
-  { code: '+81', country: 'JP', flag: '🇯🇵' },
-  { code: '+86', country: 'CN', flag: '🇨🇳' },
-  { code: '+91', country: 'IN', flag: '🇮🇳' },
-  { code: '+55', country: 'BR', flag: '🇧🇷' },
-  { code: '+52', country: 'MX', flag: '🇲🇽' },
+  { code: '+1', country: 'US/CA', flag: '\u{1F1FA}\u{1F1F8}' },
+  { code: '+44', country: 'UK', flag: '\u{1F1EC}\u{1F1E7}' },
+  { code: '+61', country: 'AU', flag: '\u{1F1E6}\u{1F1FA}' },
+  { code: '+49', country: 'DE', flag: '\u{1F1E9}\u{1F1EA}' },
+  { code: '+33', country: 'FR', flag: '\u{1F1EB}\u{1F1F7}' },
+  { code: '+81', country: 'JP', flag: '\u{1F1EF}\u{1F1F5}' },
+  { code: '+86', country: 'CN', flag: '\u{1F1E8}\u{1F1F3}' },
+  { code: '+91', country: 'IN', flag: '\u{1F1EE}\u{1F1F3}' },
+  { code: '+55', country: 'BR', flag: '\u{1F1E7}\u{1F1F7}' },
+  { code: '+52', country: 'MX', flag: '\u{1F1F2}\u{1F1FD}' },
 ]
 
 export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps) {
-  const { sendPhoneCode, verifyPhoneCode, linkWithPhone, signInWithCustomToken } = useAuth()
+  const { signInWithCustomToken, user } = useAuth()
   const [step, setStep] = useState<'phone' | 'code'>('phone')
   const [countryCode, setCountryCode] = useState('+1')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [verificationCode, setVerificationCode] = useState('')
-  const [verificationId, setVerificationId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [resendCountdown, setResendCountdown] = useState(0)
-  const [recaptchaReady, setRecaptchaReady] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recaptchaVerifierRef = useRef<any>(null)
-  // Use unique ID to avoid conflicts when multiple forms exist
-  const uniqueId = useId()
-  const recaptchaContainerId = `recaptcha-container-${uniqueId.replace(/:/g, '')}`
 
   // Countdown timer for resend
   useEffect(() => {
@@ -52,45 +42,6 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
       return () => clearTimeout(timer)
     }
   }, [resendCountdown])
-
-  // In Capacitor WKWebView, reCAPTCHA doesn't work — use server-side auth
-  const isNative = typeof window !== 'undefined' && isCapacitorNative()
-  const [serverSessionInfo, setServerSessionInfo] = useState<string | null>(null)
-
-  // Initialize reCAPTCHA verifier (skip in Capacitor)
-  useEffect(() => {
-    if (isNative) {
-      setRecaptchaReady(true) // No reCAPTCHA needed in native
-      return
-    }
-
-    let cancelled = false
-
-    const initRecaptcha = async () => {
-      if (step === 'phone' && !recaptchaVerifierRef.current) {
-        // Small delay to ensure DOM element exists after AnimatePresence renders
-        await new Promise(resolve => setTimeout(resolve, 100))
-        if (cancelled) return
-        const verifier = await createRecaptchaVerifier(recaptchaContainerId)
-        recaptchaVerifierRef.current = verifier
-        setRecaptchaReady(!!verifier)
-      }
-    }
-    initRecaptcha()
-
-    return () => {
-      cancelled = true
-      if (recaptchaVerifierRef.current) {
-        try {
-          recaptchaVerifierRef.current.clear()
-        } catch {
-          // Ignore cleanup errors
-        }
-        recaptchaVerifierRef.current = null
-        setRecaptchaReady(false)
-      }
-    }
-  }, [step, recaptchaContainerId, isNative])
 
   const formatPhoneNumber = (value: string) => {
     // Remove all non-digits
@@ -128,68 +79,22 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
 
     if (!validatePhoneNumber()) return
 
-    const fullPhone = getFullPhoneNumber()
-
-    // Capacitor native: use server-side SMS flow
-    if (isNative) {
-      setLoading(true)
-      try {
-        const res = await fetch(`${getApiBaseUrl()}/api/auth/send-code`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber: fullPhone }),
-        })
-        const data = await res.json()
-        if (res.ok && data.success) {
-          setServerSessionInfo(data.sessionInfo || null)
-          setVerificationId('server-side')
-          setStep('code')
-          setResendCountdown(60)
-        } else {
-          setError(data.error || 'Failed to send verification code')
-        }
-      } catch {
-        setError('Network error. Please try again.')
-      } finally {
-        setLoading(false)
-      }
-      return
-    }
-
-    // Web: standard reCAPTCHA flow
-    if (!recaptchaVerifierRef.current) {
-      // Try to re-initialize before giving up
-      const verifier = await createRecaptchaVerifier(recaptchaContainerId)
-      recaptchaVerifierRef.current = verifier
-      setRecaptchaReady(!!verifier)
-      if (!verifier) {
-        setError('reCAPTCHA failed to load. Check browser console for details, then refresh.')
-        return
-      }
-    }
-
     setLoading(true)
-
     try {
-      const result = await sendPhoneCode(fullPhone, recaptchaVerifierRef.current)
-
-      if (result.success && result.verificationId) {
-        setVerificationId(result.verificationId)
+      const res = await fetch(`${getApiBaseUrl()}/api/auth/send-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: getFullPhoneNumber() }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
         setStep('code')
         setResendCountdown(60)
       } else {
-        setError(result.error || 'Failed to send verification code')
-        // Recreate reCAPTCHA verifier after error
-        const verifier = await createRecaptchaVerifier(recaptchaContainerId)
-        recaptchaVerifierRef.current = verifier
-        setRecaptchaReady(!!verifier)
+        setError(data.error || 'Failed to send verification code')
       }
-    } catch (err) {
-      setError(getFirebaseErrorMessage(err))
-      // Recreate reCAPTCHA verifier after error
-      const verifier = await createRecaptchaVerifier(recaptchaContainerId)
-      recaptchaVerifierRef.current = verifier
-      setRecaptchaReady(!!verifier)
+    } catch {
+      setError('Network error. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -204,51 +109,43 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
       return
     }
 
-    if (!verificationId) {
-      setError('Verification session expired. Please request a new code.')
-      return
-    }
-
     setLoading(true)
 
     try {
-      // Capacitor native: verify via server, then sign in with custom token
-      if (isNative) {
-        const fullPhone = getFullPhoneNumber()
-        const res = await fetch(`${getApiBaseUrl()}/api/auth/verify-code`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phoneNumber: fullPhone,
-            code: codeToVerify,
-            sessionInfo: serverSessionInfo,
-          }),
-        })
-        const data = await res.json()
-        if (res.ok && data.success && data.customToken) {
-          const result = await signInWithCustomToken(data.customToken)
-          if (result.success) {
-            onSuccess()
-          } else {
-            setError(result.error || 'Sign-in failed')
-          }
-        } else {
-          setError(data.error || 'Verification failed')
+      const fullPhone = getFullPhoneNumber()
+
+      // For link mode, get the current user's ID token so the server can attach the phone
+      let idToken: string | undefined
+      if (mode === 'link' && user) {
+        const { getFirebaseAuth } = await import('@/lib/firebase')
+        const auth = getFirebaseAuth()
+        if (auth?.currentUser) {
+          idToken = await auth.currentUser.getIdToken()
         }
-        return
       }
 
-      // Web: standard Firebase verification
-      const verifyFn = mode === 'link' ? linkWithPhone : verifyPhoneCode
-      const result = await verifyFn(verificationId, codeToVerify)
-
-      if (result.success) {
-        onSuccess()
+      const res = await fetch(`${getApiBaseUrl()}/api/auth/verify-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: fullPhone,
+          code: codeToVerify,
+          ...(mode === 'link' && idToken ? { mode: 'link', idToken } : {}),
+        }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success && data.customToken) {
+        const result = await signInWithCustomToken(data.customToken)
+        if (result.success) {
+          onSuccess()
+        } else {
+          setError(result.error || 'Sign-in failed')
+        }
       } else {
-        setError(result.error || 'Verification failed')
+        setError(data.error || 'Verification failed')
       }
-    } catch (err) {
-      setError(getFirebaseErrorMessage(err))
+    } catch {
+      setError('Network error. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -258,54 +155,22 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
     if (resendCountdown > 0) return
 
     setError(null)
-
-    // Capacitor native: resend via server
-    if (isNative) {
-      setLoading(true)
-      try {
-        const res = await fetch(`${getApiBaseUrl()}/api/auth/send-code`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phoneNumber: getFullPhoneNumber() }),
-        })
-        const data = await res.json()
-        if (res.ok && data.success) {
-          setServerSessionInfo(data.sessionInfo || null)
-          setResendCountdown(60)
-          setVerificationCode('')
-        } else {
-          setError(data.error || 'Failed to resend code')
-        }
-      } catch {
-        setError('Network error. Please try again.')
-      } finally {
-        setLoading(false)
-      }
-      return
-    }
-
-    // Web: recreate reCAPTCHA verifier for resend
-    recaptchaVerifierRef.current = await createRecaptchaVerifier(recaptchaContainerId)
-
-    if (!recaptchaVerifierRef.current) {
-      setError('Failed to initialize reCAPTCHA. Please refresh the page.')
-      return
-    }
-
     setLoading(true)
-
     try {
-      const result = await sendPhoneCode(getFullPhoneNumber(), recaptchaVerifierRef.current)
-
-      if (result.success && result.verificationId) {
-        setVerificationId(result.verificationId)
+      const res = await fetch(`${getApiBaseUrl()}/api/auth/send-code`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: getFullPhoneNumber() }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
         setResendCountdown(60)
         setVerificationCode('')
       } else {
-        setError(result.error || 'Failed to resend code')
+        setError(data.error || 'Failed to resend code')
       }
-    } catch (err) {
-      setError(getFirebaseErrorMessage(err))
+    } catch {
+      setError('Network error. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -319,9 +184,6 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
 
   return (
     <div className="space-y-4">
-      {/* Hidden reCAPTCHA container - positioned off-screen for safer invisible placement (skipped in Capacitor) */}
-      {!isNative && <div id={recaptchaContainerId} style={{ position: 'absolute', left: '-9999px' }} />}
-
       {error && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -403,12 +265,6 @@ export function PhoneAuthForm({ onSuccess, mode = 'signin' }: PhoneAuthFormProps
             <p className="text-xs text-center text-[var(--color-text-disabled)]">
               We&apos;ll send a 6-digit code to verify your phone number
             </p>
-
-            {!recaptchaReady && !isNative && (
-              <p className="text-[10px] text-center text-[var(--color-text-disabled)]">
-                Initializing security check...
-              </p>
-            )}
           </motion.div>
         ) : (
           <motion.div

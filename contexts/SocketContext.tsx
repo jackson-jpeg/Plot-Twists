@@ -172,6 +172,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         })
       }
 
+      // Expose socket for NativeBootstrap app-lifecycle reconnect
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (typeof window !== 'undefined') (window as any).__plotTwistsSocket = globalSocket
+
       setSocket(globalSocket)
     }
 

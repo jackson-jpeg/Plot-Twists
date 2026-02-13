@@ -24,6 +24,15 @@ const config: CapacitorConfig = {
     preferredContentMode: 'mobile',
   },
 
+  plugins: {
+    SplashScreen: {
+      launchAutoHide: false,           // We call hide() manually in NativeBootstrap
+      launchFadeOutDuration: 300,
+      backgroundColor: '#FDFCFA',
+      showSpinner: false,
+    },
+  },
+
 }
 
 export default config

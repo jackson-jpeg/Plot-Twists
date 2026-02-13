@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { Player, PlayerRole, GameMode } from '@/lib/types'
 import { analytics } from '@/lib/analytics'
 import { successHaptic, errorHaptic } from '@/hooks/useHaptics'
+import { isCapacitorNative } from '@/lib/platform'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -108,6 +109,10 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
         const role = response.role || 'PLAYER'
         analytics.gameJoined(role === 'SPECTATOR' ? 'spectator' : 'player')
         successHaptic()
+        // Dismiss keyboard on iOS native after successful join
+        if (isCapacitorNative()) {
+          import('@capacitor/keyboard').then(({ Keyboard }) => Keyboard.hide().catch(() => {})).catch(() => {})
+        }
         if (role === 'SPECTATOR') toast.info('Room is full! You joined as a Spectator.')
         else toast.success(`Joined room ${upperRoomCode}!`)
 

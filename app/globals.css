@@ -4613,6 +4613,24 @@ html.capacitor-native .install-banner {
   display: none !important;
 }
 
+html.capacitor-native .back-button {
+  top: calc(var(--space-4) + env(safe-area-inset-top, 0px));
+  left: calc(var(--space-3) + env(safe-area-inset-left, 0px));
+}
+
+@media (max-width: 768px) {
+  html.capacitor-native .back-button {
+    top: calc(var(--space-3) + env(safe-area-inset-top, 0px));
+  }
+}
+
+@media (max-width: 480px) {
+  html.capacitor-native .back-button {
+    top: calc(var(--space-2) + env(safe-area-inset-top, 0px));
+    left: calc(var(--space-2) + env(safe-area-inset-left, 0px));
+  }
+}
+
 /* ==========================================================================
    Install Prompt Banner
    ========================================================================== */

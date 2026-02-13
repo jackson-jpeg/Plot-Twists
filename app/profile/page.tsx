@@ -79,7 +79,16 @@ export default function ProfilePage() {
       })
       const data = await res.json()
       if (data.url) {
-        window.open(data.url, '_blank')
+        if (isIOSNative()) {
+          // window.open() fails silently in WKWebView — use in-app browser
+          import('@capacitor/browser').then(({ Browser }) => {
+            Browser.open({ url: data.url })
+          }).catch(() => {
+            setPortalError('Visit plot-twists.com/profile to manage billing')
+          })
+        } else {
+          window.open(data.url, '_blank')
+        }
       }
     } catch {
       setPortalError('Could not open billing portal')

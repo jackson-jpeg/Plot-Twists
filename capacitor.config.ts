@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId: 'com.test.plottwists.app',
+  appId: 'com.plottwists.app',
   appName: 'Plot Twists',
   webDir: 'public',
 

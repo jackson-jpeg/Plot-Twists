@@ -70,6 +70,19 @@ export function NativeBootstrap() {
           }
         }
       })
+
+      // 7. Deep link handling — navigate when a universal link opens the app
+      App.addListener('appUrlOpen', ({ url }) => {
+        try {
+          const parsed = new URL(url)
+          const path = parsed.pathname + parsed.search
+          if (path && path !== '/') {
+            window.location.assign(path)
+          }
+        } catch {
+          // Invalid URL, ignore
+        }
+      })
     }).catch(() => {})
   }, [])
 

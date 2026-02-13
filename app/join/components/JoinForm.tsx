@@ -217,6 +217,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
               <label className="label">Your Name</label>
               <div className="input-wrapper">
                 <input ref={nicknameInputRef} type="text" value={nickname} onChange={(e) => handleNicknameChange(e.target.value)} onBlur={() => { setNicknameTouched(true); setNicknameError(validateNickname(nickname)) }}
+                  onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 300) }}
                   placeholder="Enter your name" maxLength={20} autoComplete="off" enterKeyHint="go"
                   className={`input text-lg ${nicknameTouched && nicknameError ? 'input-error' : ''} ${isNicknameValid ? 'input-valid' : ''}`}
                   style={{ paddingRight: isNicknameValid ? '44px' : '16px' }} />

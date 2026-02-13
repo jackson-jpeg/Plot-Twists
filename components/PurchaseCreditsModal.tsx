@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 import { useAuth } from '@/contexts/AuthContext'
@@ -10,6 +10,7 @@ import { stripePromise } from '@/lib/stripe'
 import { analytics } from '@/lib/analytics'
 import { isIOSNative } from '@/lib/platform'
 import { purchaseViaStoreKit } from '@/lib/purchases'
+import { successHaptic } from '@/hooks/useHaptics'
 
 interface PurchaseCreditsModalProps {
   isOpen: boolean
@@ -31,11 +32,21 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
   const [error, setError] = useState<string | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [selectedPkgId, setSelectedPkgId] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [restoringPurchases, setRestoringPurchases] = useState(false)
+  const successTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
+
+  const showSuccess = (message: string) => {
+    setSuccessMessage(message)
+    if (successTimerRef.current) clearTimeout(successTimerRef.current)
+    successTimerRef.current = setTimeout(() => setSuccessMessage(null), 3000)
+  }
 
   const handlePurchase = async (packageId: string) => {
     if (!user) return
     setLoading(packageId)
     setError(null)
+    setSuccessMessage(null)
     analytics.purchaseInitiated(packageId)
 
     // iOS native → StoreKit flow
@@ -43,7 +54,10 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
       try {
         const result = await purchaseViaStoreKit(packageId, user.uid)
         if (result.success) {
-          onClose()
+          successHaptic()
+          const pkg = CREDIT_PACKAGES.find(p => p.id === packageId)
+          showSuccess(`${pkg?.scripts ?? result.credits ?? ''} credits added!`)
+          setTimeout(() => onClose(), 1500)
         } else {
           setError(result.error || 'Purchase failed')
         }
@@ -88,6 +102,8 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
     setSelectedPkgId(null)
     setLoading(null)
     setError(null)
+    setSuccessMessage(null)
+    if (successTimerRef.current) clearTimeout(successTimerRef.current)
     onClose()
   }, [onClose])
 
@@ -180,6 +196,18 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                     <p className="purchase-subtitle">Buy once, use anytime. Credits never expire.</p>
                   </div>
 
+                  {/* Success */}
+                  {successMessage && (
+                    <motion.div
+                      className="purchase-error"
+                      style={{ background: 'var(--color-success)', color: 'white' }}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                    >
+                      {successMessage}
+                    </motion.div>
+                  )}
+
                   {/* Error */}
                   {error && (
                     <motion.div
@@ -243,6 +271,27 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                     <button onClick={handleClose} className="purchase-dismiss">
                       Maybe later
                     </button>
+                    {isIOSNative() && (
+                      <button
+                        onClick={async () => {
+                          setRestoringPurchases(true)
+                          setError(null)
+                          try {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            ;(window as any).webkit?.messageHandlers?.storeKit?.postMessage({ action: 'restore' })
+                            showSuccess('Purchases restored successfully')
+                          } catch {
+                            setError('Could not restore purchases')
+                          }
+                          setRestoringPurchases(false)
+                        }}
+                        disabled={restoringPurchases}
+                        className="purchase-dismiss"
+                        style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}
+                      >
+                        {restoringPurchases ? 'Restoring...' : 'Restore Purchases'}
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               )}

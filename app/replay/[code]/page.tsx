@@ -11,6 +11,7 @@ import { getVisibleLines } from '@/lib/teleprompterUtils'
 import React from 'react'
 import { ReplayJsonLd } from '@/components/JsonLd'
 import { analytics } from '@/lib/analytics'
+import { isIOSNative } from '@/lib/platform'
 
 // Share button configuration
 const SHARE_PLATFORMS = [
@@ -149,7 +150,14 @@ export default function ReplayPage() {
   const handleSocialShare = (platform: typeof SHARE_PLATFORMS[number]) => {
     if (!game) return
     const url = platform.getUrl(shareUrl, game.title)
-    window.open(url, '_blank', 'width=600,height=400')
+    // window.open() fails in WKWebView — use Capacitor Browser plugin on iOS
+    if (isIOSNative()) {
+      import('@capacitor/browser').then(({ Browser }) => {
+        Browser.open({ url })
+      }).catch(() => {})
+    } else {
+      window.open(url, '_blank', 'width=600,height=400')
+    }
     setShowShareMenu(false)
   }
 

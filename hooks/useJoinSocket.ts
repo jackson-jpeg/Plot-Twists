@@ -8,6 +8,7 @@ import type {
   CardSelection,
 } from '@/lib/types'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
+import { successHaptic } from '@/hooks/useHaptics'
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -79,6 +80,7 @@ export function useJoinSocket({
     if (!script || gameState !== 'PERFORMING') return
     const currentSpeaker = script.lines[currentLineIndex]?.speaker
     if (currentSpeaker === myCharacter && previousSpeaker.current !== myCharacter) {
+      successHaptic()
       if ('vibrate' in navigator) navigator.vibrate([200, 100, 200])
     }
     previousSpeaker.current = currentSpeaker

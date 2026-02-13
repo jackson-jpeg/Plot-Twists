@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import type { CardSelection, PlayerRole, AvailableCards } from '@/lib/types'
 import { VARIANTS } from '@/lib/animations'
+import { tapHaptic } from '@/hooks/useHaptics'
 
 const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false })
 
@@ -128,6 +129,7 @@ export function JoinSelection({
         setting: availableCards.settings[Math.floor(Math.random() * availableCards.settings.length)],
         circumstance: availableCards.circumstances[Math.floor(Math.random() * availableCards.circumstances.length)]
       })
+      tapHaptic()
       if ('vibrate' in navigator) navigator.vibrate([50, 50, 50])
     }
   }

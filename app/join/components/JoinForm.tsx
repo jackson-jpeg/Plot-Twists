@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Player, PlayerRole, GameMode } from '@/lib/types'
 import { analytics } from '@/lib/analytics'
+import { successHaptic, errorHaptic } from '@/hooks/useHaptics'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -90,6 +91,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
     setRoomCodeError(roomErr); setNicknameError(nickErr)
     if (roomErr || nickErr) {
       setShakeInvalid(true); setTimeout(() => setShakeInvalid(false), 500)
+      errorHaptic()
       toast.error('Please fix the errors above'); return
     }
     if (!socket) { toast.error('Not connected to server'); return }
@@ -105,6 +107,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
       if (response.success) {
         const role = response.role || 'PLAYER'
         analytics.gameJoined(role === 'SPECTATOR' ? 'spectator' : 'player')
+        successHaptic()
         if (role === 'SPECTATOR') toast.info('Room is full! You joined as a Spectator.')
         else toast.success(`Joined room ${upperRoomCode}!`)
 

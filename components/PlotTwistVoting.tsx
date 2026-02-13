@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { PlotTwistOption } from '@/lib/types'
+import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 
 interface PlotTwistVotingProps {
   roomCode: string
@@ -128,9 +129,8 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
 
   // Haptic feedback helper
   const triggerHaptic = useCallback((pattern: number[]) => {
-    if (navigator.vibrate) {
-      navigator.vibrate(pattern)
-    }
+    successHaptic()
+    if (navigator.vibrate) navigator.vibrate(pattern)
   }, [])
 
   useEffect(() => {

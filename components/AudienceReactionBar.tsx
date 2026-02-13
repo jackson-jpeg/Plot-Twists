@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { AudienceReactionType, AudienceReaction } from '@/lib/types'
+import { tapHaptic } from '@/hooks/useHaptics'
 
 interface AudienceReactionBarProps {
   roomCode: string
@@ -147,10 +148,9 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
     startCooldownSweep()
     setTimeout(() => setCooldown(false), COOLDOWN_DURATION)
 
-    // Haptic feedback on mobile
-    if (navigator.vibrate) {
-      navigator.vibrate(50)
-    }
+    // Haptic feedback
+    tapHaptic()
+    if (navigator.vibrate) navigator.vibrate(50)
   }, [socket, roomCode, cooldown, isPerforming, startCooldownSweep])
 
   if (!isPerforming) return null

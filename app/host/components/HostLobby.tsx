@@ -8,6 +8,7 @@ import { ScriptCustomizationPanel } from '@/components/ScriptCustomizationPanel'
 import { CardPackSelector } from '@/components/CardPackSelector'
 import { AudioSettingsPanel } from '@/components/AudioSettingsPanel'
 import { MOTION } from '@/lib/animations'
+import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -128,6 +129,7 @@ export function HostLobby({
                     onClick={async () => {
                       try {
                         await navigator.clipboard.writeText(joinUrl)
+                        successHaptic()
                         toast.success('Link copied!')
                       } catch { toast.error('Failed to copy') }
                     }}
@@ -400,7 +402,7 @@ export function HostLobby({
 
           {/* Start Game Button */}
           <motion.button
-            onClick={onStartGame}
+            onClick={() => { successHaptic(); onStartGame() }}
             disabled={!canStartGame}
             className="btn btn-primary btn-large w-full"
             initial={{ opacity: 0, y: 20 }}

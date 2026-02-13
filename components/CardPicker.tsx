@@ -6,6 +6,7 @@ import type { CardSelection, AvailableCards } from '@/lib/types'
 import { ContentItem, CATEGORIES } from '@/lib/content-types'
 import { getFilteredContentRich } from '@/lib/content'
 import { MOTION } from '@/lib/animations'
+import { tapHaptic } from '@/hooks/useHaptics'
 
 type TabKey = 'character' | 'setting' | 'circumstance'
 
@@ -140,6 +141,7 @@ export function CardPicker({
   const selectCard = useCallback((name: string) => {
     const newSelection = { ...selection, [activeTab]: name }
     setSelection(newSelection)
+    tapHaptic()
     if ('vibrate' in navigator) navigator.vibrate(50)
 
     // Auto-advance to next empty tab after a short delay

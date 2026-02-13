@@ -7,6 +7,7 @@ import { downloadScript, copyScriptToClipboard } from '@/lib/scriptUtils'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { VARIANTS } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
+import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -36,7 +37,7 @@ export function HostResults({
   const handleCopyScript = async () => {
     if (!script) return
     const success = await copyScriptToClipboard(script)
-    if (success) { setCopySuccess(true); setTimeout(() => setCopySuccess(false), 2000) }
+    if (success) { successHaptic(); setCopySuccess(true); setTimeout(() => setCopySuccess(false), 2000) }
   }
 
   const handleDownloadScript = () => { if (script) downloadScript(script) }

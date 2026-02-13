@@ -11,6 +11,7 @@ import { PlotTwistVoting } from '@/components/PlotTwistVoting'
 import { SpectatorTicker } from '@/components/SpectatorChat'
 import { MoviePosterFrame, MoviePosterSkeleton } from '@/components/MoviePosterFrame'
 import { VARIANTS, MOTION } from '@/lib/animations'
+import { tapHaptic } from '@/hooks/useHaptics'
 
 export interface HostPerformingProps {
   script: Script
@@ -153,9 +154,9 @@ export function HostPerforming({
       {/* Controls */}
       <motion.div className="card" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
         <div className="flex items-center justify-center gap-4 mb-3">
-          <motion.button onClick={onPreviousLine} disabled={currentLineIndex === 0} className="btn btn-ghost" style={{ opacity: currentLineIndex === 0 ? 0.5 : 1 }}
+          <motion.button onClick={() => { tapHaptic(); onPreviousLine() }} disabled={currentLineIndex === 0} className="btn btn-ghost" style={{ opacity: currentLineIndex === 0 ? 0.5 : 1 }}
             whileHover={{ scale: currentLineIndex === 0 ? 1 : 1.05, x: currentLineIndex === 0 ? 0 : -2 }} whileTap={{ scale: currentLineIndex === 0 ? 1 : 0.95 }}>← Previous</motion.button>
-          <motion.button onClick={onTogglePlayPause} className="btn btn-primary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>{isPlaying ? '⏸ Pause' : '▶ Play'}</motion.button>
+          <motion.button onClick={() => { tapHaptic(); onTogglePlayPause() }} className="btn btn-primary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>{isPlaying ? '⏸ Pause' : '▶ Play'}</motion.button>
           <motion.button
             onClick={onTriggerChaos} disabled={chaosCooldown}
             className={`btn relative overflow-hidden ${chaosShaking ? 'animate-chaos-shake' : ''}`}
@@ -177,7 +178,7 @@ export function HostPerforming({
               <div className="absolute bottom-0 left-0 h-1 rounded-full" style={{ width: `${(chaosCooldownRemaining / 30) * 100}%`, background: 'linear-gradient(90deg, #a855f7, #ec4899)', transition: 'width 0.1s linear' }} />
             )}
           </motion.button>
-          <motion.button onClick={onNextLine} disabled={currentLineIndex >= script.lines.length - 1} className="btn btn-ghost" style={{ opacity: currentLineIndex >= script.lines.length - 1 ? 0.5 : 1 }}
+          <motion.button onClick={() => { tapHaptic(); onNextLine() }} disabled={currentLineIndex >= script.lines.length - 1} className="btn btn-ghost" style={{ opacity: currentLineIndex >= script.lines.length - 1 ? 0.5 : 1 }}
             whileHover={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 1.05, x: currentLineIndex >= script.lines.length - 1 ? 0 : 2 }}
             whileTap={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 0.95 }}>Next →</motion.button>
         </div>

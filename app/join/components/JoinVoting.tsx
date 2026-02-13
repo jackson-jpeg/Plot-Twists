@@ -4,6 +4,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import type { Player } from '@/lib/types'
 import { VARIANTS } from '@/lib/animations'
+import { successHaptic } from '@/hooks/useHaptics'
 
 export interface JoinVotingProps {
   players: Player[]
@@ -29,7 +30,7 @@ export function JoinVoting({ players, myPlayerId, onVote }: JoinVotingProps) {
         ) : (
           <div className="stack-sm">
             {players.filter(p => p.role === 'PLAYER' && p.id !== myPlayerId).map((player) => (
-              <motion.button key={player.id} onClick={() => onVote(player.id)} className="btn btn-secondary w-full" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <motion.button key={player.id} onClick={() => { successHaptic(); onVote(player.id) }} className="btn btn-secondary w-full" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 {player.nickname}
               </motion.button>
             ))}

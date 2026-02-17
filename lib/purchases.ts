@@ -7,6 +7,7 @@
 
 import { getApiBaseUrl } from './api'
 import { isIOSNative } from './platform'
+import { getAuthHeaders } from './authHeaders'
 
 // Map internal package IDs to Apple product IDs
 const APPLE_PRODUCT_IDS: Record<string, string> = {
@@ -90,12 +91,12 @@ export async function purchaseViaStoreKit(packageId: string, userId: string): Pr
 
   // Step 2: Verify transaction on server and grant credits
   try {
+    const headers = await getAuthHeaders()
     const res = await fetch(`${getApiBaseUrl()}/api/apple/verify-transaction`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         signedTransaction: nativeResult.signedTransaction,
-        userId,
       }),
     })
 

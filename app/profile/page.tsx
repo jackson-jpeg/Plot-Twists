@@ -19,6 +19,7 @@ import type { PaymentTransaction, PlayerStats } from '@/lib/types'
 import { getApiBaseUrl } from '@/lib/api'
 import { isAdminUser } from '@/lib/admin'
 import { isIOSNative } from '@/lib/platform'
+import { getAuthHeaders } from '@/lib/authHeaders'
 
 type ProfileTab = 'profile' | 'leaderboard'
 
@@ -55,7 +56,8 @@ export default function ProfilePage() {
     setLoadingTransactions(true)
     setTransactionError(null)
     try {
-      const res = await fetch(`${getApiBaseUrl()}/api/stripe/transactions?userId=${user.uid}`)
+      const headers = await getAuthHeaders()
+      const res = await fetch(`${getApiBaseUrl()}/api/stripe/transactions`, { headers })
       const data = await res.json()
       if (data.transactions) setTransactions(data.transactions)
     } catch {
@@ -72,10 +74,11 @@ export default function ProfilePage() {
     if (!user) return
     setPortalLoading(true)
     try {
+      const headers = await getAuthHeaders()
       const res = await fetch(`${getApiBaseUrl()}/api/stripe/portal-session`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.uid })
+        headers,
+        body: JSON.stringify({})
       })
       const data = await res.json()
       if (data.url) {

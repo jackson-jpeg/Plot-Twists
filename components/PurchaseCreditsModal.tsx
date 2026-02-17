@@ -11,6 +11,7 @@ import { analytics } from '@/lib/analytics'
 import { isIOSNative } from '@/lib/platform'
 import { purchaseViaStoreKit } from '@/lib/purchases'
 import { successHaptic } from '@/hooks/useHaptics'
+import { getAuthHeaders } from '@/lib/authHeaders'
 
 interface PurchaseCreditsModalProps {
   isOpen: boolean
@@ -71,10 +72,11 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
 
     // Web → Stripe flow
     try {
+      const headers = await getAuthHeaders()
       const res = await fetch(`${getApiBaseUrl()}/api/stripe/create-checkout-session`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageId, userId: user.uid })
+        headers,
+        body: JSON.stringify({ packageId })
       })
 
       const data = await res.json()

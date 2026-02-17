@@ -98,6 +98,7 @@ import { generateTitleCard } from './server/services/image.service'
 import { checkAndDeductCredit, getCredits, addBankedCredits, deductBankedCredits } from './server/services/credit.service'
 import { getReferralInfo, redeemReferralCode } from './server/services/referral.service'
 import { deleteUser, verifyIdToken } from './server/services/user.service'
+import { authenticateRequest } from './server/middleware/auth'
 import { recordTransaction, getUserTransactions } from './server/services/payment.service'
 import { createSocketAuthMiddleware } from './server/middleware/socketAuth'
 import { isAdminUser } from './lib/admin'
@@ -2208,13 +2209,14 @@ app.prepare().then(async () => {
     return customer.id
   }
 
-  expressApp.post('/api/stripe/create-checkout-session', async (req, res) => {
+  expressApp.post('/api/stripe/create-checkout-session', authenticateRequest, async (req, res) => {
     logger.info('[Stripe] Checkout session request received')
-    const { packageId, userId } = req.body
+    const { packageId } = req.body
+    const userId = req.user!.uid
 
-    if (!packageId || !userId) {
-      logger.error('[Stripe] Missing packageId or userId in checkout request', { packageId: !!packageId, userId: !!userId, bodyKeys: Object.keys(req.body || {}) })
-      res.status(400).json({ error: 'Missing packageId or userId' })
+    if (!packageId) {
+      logger.error('[Stripe] Missing packageId in checkout request', { bodyKeys: Object.keys(req.body || {}) })
+      res.status(400).json({ error: 'Missing packageId' })
       return
     }
 
@@ -2278,12 +2280,8 @@ app.prepare().then(async () => {
   })
 
   // Payment transaction history
-  expressApp.get('/api/stripe/transactions', async (req, res) => {
-    const userId = req.query.userId as string
-    if (!userId) {
-      res.status(400).json({ error: 'Missing userId' })
-      return
-    }
+  expressApp.get('/api/stripe/transactions', authenticateRequest, async (req, res) => {
+    const userId = req.user!.uid
 
     try {
       const transactions = await getUserTransactions(userId)
@@ -2295,12 +2293,8 @@ app.prepare().then(async () => {
   })
 
   // Stripe Customer Portal session
-  expressApp.post('/api/stripe/portal-session', async (req, res) => {
-    const { userId } = req.body
-    if (!userId) {
-      res.status(400).json({ error: 'Missing userId' })
-      return
-    }
+  expressApp.post('/api/stripe/portal-session', authenticateRequest, async (req, res) => {
+    const userId = req.user!.uid
 
     try {
       const stripe = getStripe()
@@ -2500,10 +2494,11 @@ app.prepare().then(async () => {
   // Apple In-App Purchase
   // ============================================================
 
-  expressApp.post('/api/apple/verify-transaction', async (req, res) => {
-    const { signedTransaction, userId } = req.body
-    if (!signedTransaction || !userId) {
-      res.status(400).json({ error: 'Missing signedTransaction or userId' })
+  expressApp.post('/api/apple/verify-transaction', authenticateRequest, async (req, res) => {
+    const { signedTransaction } = req.body
+    const userId = req.user!.uid
+    if (!signedTransaction) {
+      res.status(400).json({ error: 'Missing signedTransaction' })
       return
     }
 
@@ -2583,22 +2578,9 @@ app.prepare().then(async () => {
   // Account Deletion
   // ============================================================
 
-  expressApp.post('/api/account/delete', async (req, res) => {
-    const authHeader = req.headers.authorization
-    if (!authHeader?.startsWith('Bearer ')) {
-      res.status(401).json({ error: 'Missing authorization token' })
-      return
-    }
-
-    const idToken = authHeader.slice(7)
-    const decoded = await verifyIdToken(idToken)
-    if (!decoded) {
-      res.status(401).json({ error: 'Invalid or expired token' })
-      return
-    }
-
+  expressApp.post('/api/account/delete', authenticateRequest, async (req, res) => {
     try {
-      const result = await deleteUser(decoded.uid)
+      const result = await deleteUser(req.user!.uid)
       if (!result.success) {
         res.status(404).json({ error: result.error })
         return

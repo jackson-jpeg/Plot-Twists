@@ -11,6 +11,7 @@ import { SystemStatus } from '@/components/SystemStatus'
 import { HomeJsonLd } from '@/components/JsonLd'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { NativeBootstrap } from '@/components/NativeBootstrap'
+import { ConnectionStatus } from '@/components/ConnectionStatus'
 
 const fredoka = Fredoka({
   subsets: ['latin'],
@@ -97,6 +98,7 @@ export default function RootLayout({
         <HomeJsonLd />
         <ServiceWorkerRegistration />
         <NativeBootstrap />
+        <ConnectionStatus />
         <ThemeProvider>
           <AuthProvider>
             <SocketProvider>

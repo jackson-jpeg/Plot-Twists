@@ -186,12 +186,19 @@ export async function createCardPack(
   return { success: true, packId }
 }
 
+// Allowed fields for card pack updates (prevents field injection)
+const ALLOWED_UPDATE_FIELDS = new Set([
+  'name', 'description', 'theme', 'isMature', 'isPublic',
+  'characters', 'settings', 'circumstances'
+])
+
 /**
  * Update an existing card pack
  */
 export async function updateCardPack(
   packId: string,
-  updates: Record<string, unknown>
+  updates: Record<string, unknown>,
+  requesterId?: string | null
 ): Promise<{ success: boolean, error?: string }> {
   const db = getDatabase()
   const pack = await db.get<CardPack>(Collections.CARD_PACKS, packId)
@@ -204,28 +211,41 @@ export async function updateCardPack(
     return { success: false, error: 'Cannot modify built-in packs' }
   }
 
+  // Authorization: only the author can update their pack
+  if (!requesterId || pack.authorId !== requesterId) {
+    return { success: false, error: 'Only the pack author can update this pack' }
+  }
+
+  // Whitelist allowed fields to prevent overwriting id, isBuiltIn, rating, authorId, etc.
+  const safeUpdates: Record<string, unknown> = {}
+  for (const key of Object.keys(updates)) {
+    if (ALLOWED_UPDATE_FIELDS.has(key)) {
+      safeUpdates[key] = updates[key]
+    }
+  }
+
   // Ensure cards have IDs
-  if (updates.characters && Array.isArray(updates.characters)) {
-    updates.characters = (updates.characters as Array<{id?: string, name: string, description?: string}>).map(c => ({
+  if (safeUpdates.characters && Array.isArray(safeUpdates.characters)) {
+    safeUpdates.characters = (safeUpdates.characters as Array<{id?: string, name: string, description?: string}>).map(c => ({
       ...c,
       id: c.id || uuidv4()
     }))
   }
-  if (updates.settings && Array.isArray(updates.settings)) {
-    updates.settings = (updates.settings as Array<{id?: string, name: string, description?: string}>).map(s => ({
+  if (safeUpdates.settings && Array.isArray(safeUpdates.settings)) {
+    safeUpdates.settings = (safeUpdates.settings as Array<{id?: string, name: string, description?: string}>).map(s => ({
       ...s,
       id: s.id || uuidv4()
     }))
   }
-  if (updates.circumstances && Array.isArray(updates.circumstances)) {
-    updates.circumstances = (updates.circumstances as Array<{id?: string, name: string, description?: string}>).map(c => ({
+  if (safeUpdates.circumstances && Array.isArray(safeUpdates.circumstances)) {
+    safeUpdates.circumstances = (safeUpdates.circumstances as Array<{id?: string, name: string, description?: string}>).map(c => ({
       ...c,
       id: c.id || uuidv4()
     }))
   }
 
-  // Apply updates
-  const updatedPack = { ...pack, ...updates, updatedAt: Date.now() }
+  // Apply only whitelisted updates
+  const updatedPack = { ...pack, ...safeUpdates, updatedAt: Date.now() }
   await db.set(Collections.CARD_PACKS, packId, updatedPack)
 
   return { success: true }
@@ -234,7 +254,10 @@ export async function updateCardPack(
 /**
  * Delete a card pack
  */
-export async function deleteCardPack(packId: string): Promise<{ success: boolean, error?: string }> {
+export async function deleteCardPack(
+  packId: string,
+  requesterId?: string | null
+): Promise<{ success: boolean, error?: string }> {
   const db = getDatabase()
   const pack = await db.get<CardPack>(Collections.CARD_PACKS, packId)
 
@@ -244,6 +267,11 @@ export async function deleteCardPack(packId: string): Promise<{ success: boolean
 
   if (pack.isBuiltIn) {
     return { success: false, error: 'Cannot delete built-in packs' }
+  }
+
+  // Authorization: only the author can delete their pack
+  if (!requesterId || pack.authorId !== requesterId) {
+    return { success: false, error: 'Only the pack author can delete this pack' }
   }
 
   await db.delete(Collections.CARD_PACKS, packId)

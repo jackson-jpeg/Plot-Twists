@@ -1260,6 +1260,8 @@ app.prepare().then(async () => {
       }
 
       try {
+        // Enforce authorId from authenticated user to prevent spoofing
+        packData.authorId = socket.data.uid || undefined
         const result = await createCardPack(packData)
         callback(result)
       } catch (error) {
@@ -1294,7 +1296,7 @@ app.prepare().then(async () => {
       }
 
       try {
-        const result = await updateCardPack(packId, updates)
+        const result = await updateCardPack(packId, updates, socket.data.uid)
         callback(result)
       } catch (error) {
         logger.error('Error updating card pack:', error)
@@ -1311,7 +1313,7 @@ app.prepare().then(async () => {
       }
 
       try {
-        const result = await deleteCardPack(packId)
+        const result = await deleteCardPack(packId, socket.data.uid)
         callback(result)
       } catch (error) {
         logger.error('Error deleting card pack:', error)

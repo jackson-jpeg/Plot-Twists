@@ -67,7 +67,7 @@ function getAnonymousPlayerId(): string {
 
   let id = localStorage.getItem('plottwists_player_id')
   if (!id) {
-    id = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    id = `anon_${crypto.randomUUID()}`
     localStorage.setItem('plottwists_player_id', id)
   }
   return id

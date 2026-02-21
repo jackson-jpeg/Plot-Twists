@@ -4,12 +4,22 @@
 
 import type { Express } from 'express'
 import express from 'express'
+import rateLimit from 'express-rate-limit'
 import { logger } from '../../lib/logger'
+
+// Rate limit SMS endpoints to prevent abuse (5 requests per 15 minutes per IP)
+const smsRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { error: 'Too many SMS requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})
 
 export function registerAuthRoutes(app: Express): void {
   app.use('/api/auth', express.json())
 
-  app.post('/api/auth/send-code', async (req, res) => {
+  app.post('/api/auth/send-code', smsRateLimiter, async (req, res) => {
     const { phoneNumber } = req.body
     if (!phoneNumber || typeof phoneNumber !== 'string') {
       res.status(400).json({ error: 'Missing phone number' })

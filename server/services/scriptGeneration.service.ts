@@ -160,7 +160,18 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
       }
     })
 
-    const finalMessage = await stream.finalMessage()
+    // Add timeout to prevent indefinite hangs if the API stalls
+    const STREAM_TIMEOUT_MS = 120_000 // 2 minutes
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      const timer = setTimeout(() => {
+        stream.abort()
+        reject(new Error('Script generation timed out after 2 minutes'))
+      }, STREAM_TIMEOUT_MS)
+      // Don't prevent process exit
+      timer.unref()
+    })
+
+    const finalMessage = await Promise.race([stream.finalMessage(), timeoutPromise])
 
     logger.info(`Script generated successfully!`)
 

@@ -1903,4 +1903,40 @@ app.prepare().then(async () => {
   server.listen(port, () => {
     logger.info(`> Ready on http://${hostname}:${port}`)
   })
+
+  // Graceful shutdown — persist room state and close connections cleanly
+  const shutdown = async (signal: string) => {
+    logger.info(`Received ${signal}, shutting down gracefully...`)
+
+    // Stop accepting new connections
+    server.close(() => {
+      logger.info('HTTP server closed')
+    })
+
+    // Notify all connected clients
+    io.emit('error', 'Server is restarting. Please reconnect in a moment.')
+
+    // Persist all rooms to Firestore before exiting
+    try {
+      const entries = Array.from(roomService.getRoomEntries())
+      for (const [, room] of entries) {
+        roomService.updateRoom(room)
+      }
+      logger.info(`Persisted ${entries.length} room(s) to database`)
+    } catch (err) {
+      logger.error('Failed to persist rooms during shutdown:', err)
+    }
+
+    // Close all socket connections
+    io.close()
+
+    // Give a moment for async writes to flush
+    setTimeout(() => {
+      logger.info('Shutdown complete')
+      process.exit(0)
+    }, 2000)
+  }
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'))
+  process.on('SIGINT', () => shutdown('SIGINT'))
 })

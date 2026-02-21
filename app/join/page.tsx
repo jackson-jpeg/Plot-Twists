@@ -4,7 +4,7 @@ import React, { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { CardSelection, PlayerRole } from '@/lib/types'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
 import { useConfetti } from '@/hooks/useConfetti'
@@ -12,7 +12,7 @@ import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
 import { Modal } from '@/components/Modal'
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
-import { MOTION } from '@/lib/animations'
+import { MOTION, getVariants } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
 import { useJoinSocket } from '@/hooks/useJoinSocket'
 import { useAudioPlayer } from '@/hooks/useAudioPlayer'
@@ -33,6 +33,8 @@ function JoinPageContent() {
   const toast = useToast()
   const achievementToasts = useAchievementToasts()
   const confetti = useConfetti()
+  const prefersReducedMotion = useReducedMotion()
+  const variants = getVariants(prefersReducedMotion)
   useWakeLock()
   useAudioPlayer({ socket, isConnected })
 
@@ -179,10 +181,10 @@ function JoinPageContent() {
       {/* Host Disconnected Overlay */}
       <AnimatePresence>
         {hostDisconnected && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          <motion.div {...variants.fade}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ background: 'rgba(0, 0, 0, 0.8)' }}>
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+            <motion.div {...variants.scaleIn}
               className="card max-w-md w-full text-center">
               <div className="text-6xl mb-4">😢</div>
               <h2 className="text-2xl font-display mb-4" style={{ color: 'var(--color-text-primary)' }}>Host Disconnected</h2>
@@ -203,13 +205,15 @@ function JoinPageContent() {
       {/* Pre-Performance Countdown */}
       <AnimatePresence>
         {countdown !== null && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          <motion.div {...variants.fade}
             className="fixed inset-0 z-50 flex items-center justify-center"
             style={{ background: 'rgba(0, 0, 0, 0.85)' }}>
             <AnimatePresence mode="wait">
               <motion.div key={countdown}
-                initial={{ scale: 0.3, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 2, opacity: 0 }} transition={MOTION.bouncy}
+                initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0.3, opacity: 0 }}
+                animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { scale: 2, opacity: 0 }}
+                transition={MOTION.bouncy}
                 className="text-center">
                 <div style={{ fontSize: '120px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1 }}>{countdown}</div>
                 <div style={{ fontSize: '18px', color: 'var(--color-text-tertiary)', marginTop: '16px' }}>Get ready to perform!</div>

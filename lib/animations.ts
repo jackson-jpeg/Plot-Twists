@@ -57,6 +57,14 @@ export const MOTION = {
   }
 }
 
+// Button microinteraction presets (centralized for consistency)
+export const BUTTON = {
+  hover: { scale: 1.05 },
+  tap: { scale: 0.95 },
+  ctaHover: { scale: 1.08 },
+  ctaTap: { scale: 0.92 },
+}
+
 // Stagger delay presets (in seconds)
 export const STAGGER = {
   fast: 0.05,

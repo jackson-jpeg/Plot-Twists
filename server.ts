@@ -417,11 +417,19 @@ app.prepare().then(async () => {
           return
         }
 
+        // Only allow submissions during SELECTION phase
+        if (room.gameState !== 'SELECTION') {
+          callback({ success: false, error: 'Card selection is not active' })
+          return
+        }
+
         // Find player by socket ID
         let playerId: string | undefined
+        let playerRole: string | undefined
         for (const [id, player] of room.players.entries()) {
           if (player.socketId === socket.id) {
             playerId = id
+            playerRole = player.role
             break
           }
         }
@@ -431,7 +439,20 @@ app.prepare().then(async () => {
           return
         }
 
-        room.selections.set(playerId, selections)
+        // Only players (not spectators) can submit card selections
+        if (playerRole === 'SPECTATOR') {
+          callback({ success: false, error: 'Spectators cannot submit card selections' })
+          return
+        }
+
+        // Sanitize card selections to prevent prompt injection
+        const sanitizedSelections = {
+          character: sanitizeUserInput(selections.character || '', 100),
+          setting: sanitizeUserInput(selections.setting || '', 100),
+          circumstance: sanitizeUserInput(selections.circumstance || '', 100),
+        }
+
+        room.selections.set(playerId, sanitizedSelections)
         const player = room.players.get(playerId)
         if (player) {
           player.hasSubmittedSelection = true
@@ -489,6 +510,9 @@ app.prepare().then(async () => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room) return
 
+      // Only allow voting during VOTING phase
+      if (room.gameState !== 'VOTING') return
+
       // Find voter by socket ID
       let voterId: string | undefined
       for (const [id, player] of room.players.entries()) {
@@ -499,6 +523,12 @@ app.prepare().then(async () => {
       }
 
       if (!voterId) return
+
+      // Prevent self-voting
+      if (voterId === targetPlayerId) return
+
+      // Validate target is an actual player in the room
+      if (!room.players.has(targetPlayerId)) return
 
       room.votes.set(voterId, targetPlayerId)
       const voter = room.players.get(voterId)
@@ -673,6 +703,19 @@ app.prepare().then(async () => {
     socket.on('player_jump_to_line', withErrorHandler(socket, 'player_jump_to_line', (roomCode, lineIndex) => {
       const room = validateRoom(roomCode, socket)
       if (!room || room.gameState !== 'PERFORMING' || !room.script) return
+      if (!requireRoomMember(room, socket)) return
+
+      // Only players (not spectators) can navigate the teleprompter
+      let isPlayer = requireHost(room, socket)
+      if (!isPlayer) {
+        for (const player of room.players.values()) {
+          if (player.socketId === socket.id && player.role === 'PLAYER') {
+            isPlayer = true
+            break
+          }
+        }
+      }
+      if (!isPlayer) return
 
       // Validate line index
       if (lineIndex < 0 || lineIndex >= room.script.lines.length) return
@@ -1260,6 +1303,8 @@ app.prepare().then(async () => {
       }
 
       try {
+        // Enforce authorId from authenticated user to prevent spoofing
+        packData.authorId = socket.data.uid || undefined
         const result = await createCardPack(packData)
         callback(result)
       } catch (error) {
@@ -1294,7 +1339,7 @@ app.prepare().then(async () => {
       }
 
       try {
-        const result = await updateCardPack(packId, updates)
+        const result = await updateCardPack(packId, updates, socket.data.uid)
         callback(result)
       } catch (error) {
         logger.error('Error updating card pack:', error)
@@ -1311,7 +1356,7 @@ app.prepare().then(async () => {
       }
 
       try {
-        const result = await deleteCardPack(packId)
+        const result = await deleteCardPack(packId, socket.data.uid)
         callback(result)
       } catch (error) {
         logger.error('Error deleting card pack:', error)
@@ -1814,6 +1859,12 @@ app.prepare().then(async () => {
 
   // Helper function to start script generation
   async function startScriptGeneration(room: Room, io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>) {
+    // Guard against double-invocation race condition (two players submitting final card simultaneously)
+    if (room.gameState === 'LOADING' || room.gameState === 'PERFORMING') {
+      logger.warn(`Script generation skipped: room ${room.code} already in ${room.gameState}`)
+      return
+    }
+
     // Rate limiting for script generation (use host socket ID)
     const hostSocketId = room.host.socketId
     if (!scriptGenerationLimiter.check(hostSocketId)) {

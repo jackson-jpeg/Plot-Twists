@@ -110,6 +110,7 @@ export interface CardPackInput {
   name: string
   description: string
   author: string
+  authorId?: string
   theme: string
   isMature: boolean
   isBuiltIn: boolean

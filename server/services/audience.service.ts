@@ -17,11 +17,21 @@ import type {
   SpectatorMessage
 } from '../../lib/types'
 import { logger } from '../../lib/logger'
+import { sanitizeInput } from '../utils/validation'
 
 // Initialize Anthropic client for AI-powered twists
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
+
+// Valid reaction types (runtime check since TypeScript types are erased)
+const VALID_REACTION_TYPES = new Set<AudienceReactionType>([
+  'laugh', 'cheer', 'gasp', 'boo', 'applause', 'cringe', 'love', 'mindblown'
+])
+
+export function isValidReactionType(type: string): type is AudienceReactionType {
+  return VALID_REACTION_TYPES.has(type as AudienceReactionType)
+}
 
 // Rate limiting for reactions (per user)
 const reactionCooldowns = new Map<string, number>()
@@ -102,6 +112,11 @@ export function recordReaction(
   senderId: string,
   senderName: string
 ): AudienceReaction | null {
+  // Runtime validation: prevent arbitrary key injection into reactionCounts
+  if (!isValidReactionType(type)) {
+    return null
+  }
+
   if (!canSendReaction(senderId)) {
     return null
   }
@@ -316,7 +331,7 @@ export function recordSpectatorMessage(
   if (!canSendSpectatorMessage(senderId)) return null
 
   // Sanitize and limit text length
-  const sanitized = text.trim().slice(0, 100)
+  const sanitized = sanitizeInput(text, 100)
   if (!sanitized) return null
 
   const message: SpectatorMessage = {
@@ -368,8 +383,9 @@ export function cleanupCooldowns(): void {
   }
 }
 
-// Run cleanup every 5 minutes
-setInterval(cleanupCooldowns, 5 * 60 * 1000)
+// Run cleanup every 5 minutes (unref so it doesn't prevent process exit)
+const cleanupInterval = setInterval(cleanupCooldowns, 5 * 60 * 1000)
+cleanupInterval.unref()
 
 // ============================================================
 // AI-Powered Plot Twist Generation

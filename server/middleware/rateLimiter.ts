@@ -50,8 +50,8 @@ export class SocketRateLimiter {
   ) {
     this.attempts = new Map()
 
-    // Cleanup old entries every minute
-    setInterval(() => {
+    // Cleanup old entries every minute (unref so it doesn't prevent process exit)
+    const cleanup = setInterval(() => {
       const now = Date.now()
       for (const [key, value] of this.attempts.entries()) {
         if (now > value.resetTime) {
@@ -59,6 +59,7 @@ export class SocketRateLimiter {
         }
       }
     }, 60000)
+    cleanup.unref()
   }
 
   /**

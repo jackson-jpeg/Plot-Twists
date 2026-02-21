@@ -8,6 +8,11 @@ import { FREE_WEEKLY_LIMIT, ONE_WEEK_MS } from '../../../../lib/credits'
 import type { UserProfile, CreditBalance } from '../../../../lib/types'
 
 // Mock the database module
+const mockTxn = {
+  get: jest.fn(),
+  update: jest.fn(),
+}
+
 const mockDb = {
   get: jest.fn(),
   set: jest.fn(),
@@ -21,6 +26,7 @@ const mockDb = {
   batchDelete: jest.fn(),
   getAll: jest.fn(),
   count: jest.fn(),
+  runTransaction: jest.fn((fn: (txn: typeof mockTxn) => Promise<unknown>) => fn(mockTxn)),
 }
 
 jest.mock('../../../../server/db', () => ({
@@ -56,15 +62,17 @@ beforeEach(() => {
 describe('checkAndDeductCredit', () => {
   it('should deduct from free credits first', async () => {
     const user = makeUser()
+    // ensureCreditsExist uses mockDb.get; transaction uses mockTxn.get
     mockDb.get.mockResolvedValue(user)
-    mockDb.update.mockResolvedValue(undefined)
+    mockTxn.get.mockResolvedValue(makeUser())
+    mockTxn.update.mockResolvedValue(undefined)
 
     const result = await checkAndDeductCredit('user-1')
 
     expect(result.success).toBe(true)
     expect(result.source).toBe('free')
     expect(result.remaining).toBeDefined()
-    expect(mockDb.update).toHaveBeenCalledWith('users', 'user-1', expect.objectContaining({
+    expect(mockTxn.update).toHaveBeenCalledWith('users', 'user-1', expect.objectContaining({
       credits: expect.objectContaining({
         free: expect.objectContaining({ used: 1 })
       })
@@ -72,32 +80,30 @@ describe('checkAndDeductCredit', () => {
   })
 
   it('should deduct from banked credits when free are exhausted', async () => {
-    const user = makeUser({
-      credits: {
-        free: { used: FREE_WEEKLY_LIMIT, limit: FREE_WEEKLY_LIMIT, lastResetDate: new Date().toISOString() },
-        banked: 10
-      }
-    })
-    mockDb.get.mockResolvedValue(user)
-    mockDb.update.mockResolvedValue(undefined)
+    const credits = {
+      free: { used: FREE_WEEKLY_LIMIT, limit: FREE_WEEKLY_LIMIT, lastResetDate: new Date().toISOString() },
+      banked: 10
+    }
+    mockDb.get.mockResolvedValue(makeUser({ credits }))
+    mockTxn.get.mockResolvedValue(makeUser({ credits: { ...credits, banked: 10 } }))
+    mockTxn.update.mockResolvedValue(undefined)
 
     const result = await checkAndDeductCredit('user-1')
 
     expect(result.success).toBe(true)
     expect(result.source).toBe('banked')
-    expect(mockDb.update).toHaveBeenCalledWith('users', 'user-1', expect.objectContaining({
+    expect(mockTxn.update).toHaveBeenCalledWith('users', 'user-1', expect.objectContaining({
       credits: expect.objectContaining({ banked: 9 })
     }))
   })
 
   it('should fail when both buckets are empty', async () => {
-    const user = makeUser({
-      credits: {
-        free: { used: FREE_WEEKLY_LIMIT, limit: FREE_WEEKLY_LIMIT, lastResetDate: new Date().toISOString() },
-        banked: 0
-      }
-    })
-    mockDb.get.mockResolvedValue(user)
+    const credits = {
+      free: { used: FREE_WEEKLY_LIMIT, limit: FREE_WEEKLY_LIMIT, lastResetDate: new Date().toISOString() },
+      banked: 0
+    }
+    mockDb.get.mockResolvedValue(makeUser({ credits }))
+    mockTxn.get.mockResolvedValue(makeUser({ credits: { ...credits } }))
 
     const result = await checkAndDeductCredit('user-1')
 
@@ -108,14 +114,13 @@ describe('checkAndDeductCredit', () => {
 
   it('should apply lazy weekly reset before deducting', async () => {
     const weekAgo = new Date(Date.now() - ONE_WEEK_MS - 1000).toISOString()
-    const user = makeUser({
-      credits: {
-        free: { used: FREE_WEEKLY_LIMIT, limit: FREE_WEEKLY_LIMIT, lastResetDate: weekAgo },
-        banked: 0
-      }
-    })
-    mockDb.get.mockResolvedValue(user)
-    mockDb.update.mockResolvedValue(undefined)
+    const credits = {
+      free: { used: FREE_WEEKLY_LIMIT, limit: FREE_WEEKLY_LIMIT, lastResetDate: weekAgo },
+      banked: 0
+    }
+    mockDb.get.mockResolvedValue(makeUser({ credits }))
+    mockTxn.get.mockResolvedValue(makeUser({ credits: { ...credits } }))
+    mockTxn.update.mockResolvedValue(undefined)
 
     const result = await checkAndDeductCredit('user-1')
 
@@ -162,26 +167,29 @@ describe('getCredits', () => {
 
 describe('addBankedCredits', () => {
   it('should add credits to banked bucket', async () => {
-    const user = makeUser({ credits: { free: { used: 0, limit: 5, lastResetDate: new Date().toISOString() }, banked: 5 } })
-    mockDb.get.mockResolvedValue(user)
-    mockDb.update.mockResolvedValue(undefined)
+    const credits = { free: { used: 0, limit: 5, lastResetDate: new Date().toISOString() }, banked: 5 }
+    // ensureCreditsExist uses mockDb.get; transaction uses mockTxn.get
+    mockDb.get.mockResolvedValue(makeUser({ credits }))
+    mockTxn.get.mockResolvedValue(makeUser({ credits: { ...credits, banked: 5 } }))
+    mockTxn.update.mockResolvedValue(undefined)
 
     await addBankedCredits('user-1', 20, 1000)
 
-    expect(mockDb.update).toHaveBeenCalledWith('users', 'user-1', expect.objectContaining({
+    expect(mockTxn.update).toHaveBeenCalledWith('users', 'user-1', expect.objectContaining({
       credits: expect.objectContaining({ banked: 25 }),
       lifetimeSpend: 1000
     }))
   })
 
   it('should accumulate lifetime spend', async () => {
-    const user = makeUser({ lifetimeSpend: 500, credits: { free: { used: 0, limit: 5, lastResetDate: new Date().toISOString() }, banked: 0 } })
-    mockDb.get.mockResolvedValue(user)
-    mockDb.update.mockResolvedValue(undefined)
+    const credits = { free: { used: 0, limit: 5, lastResetDate: new Date().toISOString() }, banked: 0 }
+    mockDb.get.mockResolvedValue(makeUser({ lifetimeSpend: 500, credits }))
+    mockTxn.get.mockResolvedValue(makeUser({ lifetimeSpend: 500, credits: { ...credits } }))
+    mockTxn.update.mockResolvedValue(undefined)
 
     await addBankedCredits('user-1', 10, 1000)
 
-    expect(mockDb.update).toHaveBeenCalledWith('users', 'user-1', expect.objectContaining({
+    expect(mockTxn.update).toHaveBeenCalledWith('users', 'user-1', expect.objectContaining({
       lifetimeSpend: 1500
     }))
   })

@@ -6,6 +6,7 @@
 import type { Server as SocketIOServer } from 'socket.io'
 import type { Room } from '../../lib/types'
 import { calculateLineDisplayTime } from '../utils/timing'
+import { VOTING_TIMEOUT } from '../utils/constants'
 import * as roomService from './room.service'
 import { logger } from '../../lib/logger'
 
@@ -32,6 +33,19 @@ export function startTeleprompterSync(room: Room, io: SocketIOServer): void {
       if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
         room.gameState = 'VOTING'
         io.to(room.code).emit('game_state_change', 'VOTING')
+
+        // Set voting timeout — auto-calculate results if not all players vote in time
+        // This prevents the game from getting stuck if a player disconnects mid-vote
+        const votingTimeout = setTimeout(() => {
+          if (room.gameState !== 'VOTING') return // Already resolved
+          logger.info(`Voting timeout reached for room ${room.code}, auto-calculating results`)
+          // Dynamic import to avoid circular dependency
+          import('./voting.service').then(({ calculateResults }) => {
+            calculateResults(room, io)
+          }).catch(err => logger.error(`Voting timeout error for room ${room.code}:`, err))
+        }, VOTING_TIMEOUT)
+        votingTimeout.unref()
+        roomService.setRoomTimeout(room.code, votingTimeout)
       } else {
         room.gameState = 'RESULTS'
         io.to(room.code).emit('game_state_change', 'RESULTS')

@@ -381,6 +381,19 @@ export function cleanupCooldowns(): void {
       reactionCooldowns.delete(userId)
     }
   }
+
+  for (const [userId, timestamp] of spectatorMessageCooldowns.entries()) {
+    if (now - timestamp > expiry) {
+      spectatorMessageCooldowns.delete(userId)
+    }
+  }
+}
+
+/**
+ * Clean up pre-generated twists for a specific room (call when room is deleted)
+ */
+export function cleanupRoomTwists(roomCode: string): void {
+  preGeneratedTwists.delete(roomCode)
 }
 
 // Run cleanup every 5 minutes (unref so it doesn't prevent process exit)

@@ -81,7 +81,6 @@ export function useJoinSocket({
     const currentSpeaker = script.lines[currentLineIndex]?.speaker
     if (currentSpeaker === myCharacter && previousSpeaker.current !== myCharacter) {
       successHaptic()
-      if ('vibrate' in navigator) navigator.vibrate([200, 100, 200])
     }
     previousSpeaker.current = currentSpeaker
   }, [currentLineIndex, script, myCharacter, gameState])
@@ -99,6 +98,8 @@ export function useJoinSocket({
 
     socket.on('game_state_change', (newState: GameState) => {
       if (newState === 'PERFORMING' && gameStateRef.current !== 'PERFORMING') {
+        // Mark immediately to prevent duplicate countdown from rapid reconnect events
+        gameStateRef.current = 'PERFORMING'
         setCountdown(3)
         let count = 3
         if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)

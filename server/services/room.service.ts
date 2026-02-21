@@ -13,6 +13,7 @@ import { ROOM_CODE_LENGTH, ROOM_CODE_CHARS, ROOM_CLEANUP_INTERVAL, ROOM_INACTIVI
 import { roomToFirestore, firestoreToRoom, type FirestoreRoom } from '../utils/roomSerializer'
 import { getDatabase, Collections } from '../db'
 import { logger } from '../../lib/logger'
+import { cleanupRoomTwists } from './audience.service'
 
 // ── Hot cache ──────────────────────────────────────────────
 
@@ -157,6 +158,8 @@ export async function deleteRoom(code: string): Promise<void> {
     clearTimeout(deb)
     debouncedWrites.delete(code)
   }
+  // Clean up pre-generated twist cache for this room
+  cleanupRoomTwists(code)
   await deleteFromFirestore(code)
 }
 
@@ -308,6 +311,7 @@ export function startRoomCleanup(): void {
       if (now - room.lastActivity > ROOM_INACTIVITY_TIMEOUT) {
         logger.info(`Cleaning up inactive room: ${code}`)
         clearAllRoomTimeouts(code)
+        cleanupRoomTwists(code)
         rooms.delete(code)
         deleteFromFirestore(code)
         cleanedCount++

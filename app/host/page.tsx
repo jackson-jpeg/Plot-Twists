@@ -4,7 +4,8 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { RoomSettings, ScriptCustomization, AudioSettings, CardSelection, GameMode } from '@/lib/types'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { VARIANTS, MOTION, BUTTON, getVariants, getTransition } from '@/lib/animations'
 import { useConfetti } from '@/hooks/useConfetti'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
@@ -32,6 +33,8 @@ export default function HostPage() {
   const { user, loading: authLoading } = useAuth()
   const { socket, isConnected } = useSocket()
   const confetti = useConfetti()
+  const prefersReducedMotion = useReducedMotion()
+  const variants = getVariants(prefersReducedMotion)
   useWakeLock()
   useAudioPlayer({ socket, isConnected })
   const toast = useToast()
@@ -268,8 +271,8 @@ export default function HostPage() {
   if (!isConnected) {
     return (
       <div className="page-container items-center justify-center">
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
-          <motion.div className="text-6xl mb-6" animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>⚡</motion.div>
+        <motion.div {...variants.scaleIn} className="text-center">
+          <motion.div className="text-6xl mb-6" animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>⚡</motion.div>
           <p className="text-xl font-display" style={{ color: 'var(--color-text-secondary)' }}>Connecting...</p>
         </motion.div>
       </div>
@@ -284,10 +287,10 @@ export default function HostPage() {
       {/* Insufficient Credits Modal */}
       <AnimatePresence>
         {showInsufficientCredits && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          <motion.div {...variants.fade}
             onClick={() => setShowInsufficientCredits(false)}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+            <motion.div {...variants.scaleIn}
               onClick={e => e.stopPropagation()}
               style={{ background: 'var(--color-surface)', border: '2px solid var(--color-border)', borderRadius: '1rem', padding: '2rem', maxWidth: '380px', width: '100%', textAlign: 'center' }}>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🎬</div>

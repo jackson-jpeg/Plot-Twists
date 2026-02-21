@@ -21,6 +21,14 @@ const config = {
       statements: 20,
     },
   },
+  // Transform ESM-only modules so Jest can handle them
+  transformIgnorePatterns: [
+    '/node_modules/(?!(uuid)/)',
+  ],
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+    'node_modules/uuid/.+\\.js$': 'ts-jest',
+  },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },

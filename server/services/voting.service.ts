@@ -15,7 +15,9 @@ import { logger } from '../../lib/logger'
  */
 export async function calculateResults(room: Room, io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>): Promise<void> {
   // Guard against double-execution from race conditions
+  // Set state immediately to prevent concurrent calls from passing the guard
   if (room.gameState === 'RESULTS') return
+  room.gameState = 'RESULTS'
 
   const voteCounts = new Map<string, number>()
 
@@ -48,7 +50,6 @@ export async function calculateResults(room: Room, io: SocketIOServer<ClientToSe
     if (chatCount > 0) highlights.push({ label: 'Chat Messages', value: `${chatCount}`, icon: '💬' })
   }
 
-  room.gameState = 'RESULTS'
   roomService.updateRoom(room)
   io.to(room.code).emit('game_over', {
     winner,

@@ -1004,7 +1004,7 @@ app.prepare().then(async () => {
       }
     }))
 
-    // Start a plot twist vote
+    // Start a plot twist vote (or auto-apply in solo mode)
     socket.on('start_plot_twist', withErrorHandler(socket, 'start_plot_twist', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.audienceInteraction) return
@@ -1023,6 +1023,59 @@ app.prepare().then(async () => {
       // Emit dramatic sound effect when twist starts
       io.to(roomCode).emit('play_sound_effect', 'plot_twist_trigger' as SoundEffectType)
 
+      // --- SOLO MODE: skip voting, pick a random twist and inject immediately ---
+      if (room.gameMode === 'SOLO') {
+        const winningTwist = finalizePlotTwist(room.audienceInteraction)
+        if (winningTwist) {
+          io.to(roomCode).emit('play_sound_effect', 'plot_twist_reveal' as SoundEffectType)
+          io.to(roomCode).emit('plot_twist_result', winningTwist)
+
+          const speakers = room.script?.lines.map(l => l.speaker).filter((v, i, a) => a.indexOf(v) === i) || []
+          const setting = room.setting || ''
+          const recentDialogue = room.script?.lines.slice(
+            Math.max(0, room.currentLineIndex - 5),
+            room.currentLineIndex + 1
+          ) || []
+
+          // Generate AI injection in background (don't block)
+          generateAITwistInjection(
+            winningTwist,
+            speakers,
+            {
+              setting,
+              characters: speakers,
+              recentDialogue,
+              scriptPosition: room.currentLineIndex / (room.script?.lines.length || 1) < 0.33 ? 'early' :
+                room.currentLineIndex / (room.script?.lines.length || 1) < 0.66 ? 'mid' : 'late',
+              comedyStyle: room.scriptCustomization?.comedyStyle,
+              isMature: room.isMature
+            }
+          ).then(injectedLines => {
+            const latestRoom = roomService.getRoomFromCache(roomCode)
+            if (latestRoom?.script && latestRoom.gameState === 'PERFORMING' && injectedLines.length > 0) {
+              const insertIndex = Math.min(latestRoom.currentLineIndex + 1, latestRoom.script.lines.length)
+              latestRoom.script.lines.splice(insertIndex, 0, ...injectedLines)
+              io.to(roomCode).emit('plot_twist_injected', insertIndex, injectedLines)
+              roomService.updateRoom(latestRoom)
+
+              regenerateTwistsForRoom(
+                roomCode,
+                latestRoom.script as Script,
+                latestRoom.currentLineIndex,
+                setting,
+                latestRoom.isMature,
+                latestRoom.scriptCustomization?.comedyStyle
+              )
+            }
+          }).catch(error => {
+            logger.error(`Solo plot twist injection failed for room ${roomCode}:`, error)
+            io.to(roomCode).emit('error', 'Plot twist failed — the show goes on!')
+          })
+        }
+        return
+      }
+
+      // --- MULTIPLAYER: broadcast vote to audience, finalize after timeout ---
       io.to(roomCode).emit('plot_twist_started', twist)
 
       // Set timeout to finalize and inject

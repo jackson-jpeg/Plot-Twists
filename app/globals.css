@@ -1389,86 +1389,7 @@ p {
   }
 }
 
-/* Audience Reaction Buttons */
-.reaction-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  cursor: pointer;
-  border: none;
-  position: relative;
-  overflow: hidden;
-  transition: transform var(--duration-fast) var(--easing-spring);
-}
-
-.reaction-btn:active {
-  transform: scale(0.9);
-}
-
-.reaction-btn-laugh {
-  background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500);
-}
-
-.reaction-btn-cheer {
-  background: radial-gradient(circle at 30% 30%, #FF69B4, #FF1493);
-}
-
-.reaction-btn-gasp {
-  background: radial-gradient(circle at 30% 30%, #87CEEB, #4169E1);
-}
-
-.reaction-btn-boo {
-  background: radial-gradient(circle at 30% 30%, #9370DB, #6A0DAD);
-}
-
-.reaction-btn-applause {
-  background: radial-gradient(circle at 30% 30%, #50C878, #228B22);
-}
-
-.reaction-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity var(--duration-fast);
-}
-
-.reaction-btn:hover::after {
-  background: rgba(255, 255, 255, 0.15);
-  opacity: 1;
-}
-
-@keyframes ring-burst {
-  0% {
-    box-shadow: 0 0 0 0 currentColor;
-    opacity: 0.6;
-  }
-  100% {
-    box-shadow: 0 0 0 20px transparent;
-    opacity: 0;
-  }
-}
-
-.reaction-btn-burst {
-  animation: ring-burst 0.4s var(--easing-out) forwards;
-}
-
-.reaction-cooldown-sweep {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: conic-gradient(
-    transparent var(--sweep-progress, 0%),
-    rgba(0, 0, 0, 0.4) var(--sweep-progress, 0%)
-  );
-  pointer-events: none;
-}
-
+/* Audience Reaction - Host Count Badges */
 .reaction-count-badge {
   font-size: 12px;
   font-weight: 600;
@@ -1484,14 +1405,6 @@ p {
 
 .reaction-count-bounce {
   animation: count-bounce 0.3s var(--easing-spring);
-}
-
-@media (min-width: 640px) {
-  .reaction-btn {
-    width: 56px;
-    height: 56px;
-    font-size: 28px;
-  }
 }
 
 /* Settings Panel */
@@ -4054,114 +3967,6 @@ textarea:focus-visible {
   .leaderboard-tab {
     padding: 0.4rem 0.6rem;
     font-size: 0.7rem;
-  }
-}
-
-/* ==========================================================================
-   Audience Reaction Buttons
-   ========================================================================== */
-
-.reaction-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  cursor: pointer;
-  border: none;
-  position: relative;
-  overflow: hidden;
-  transition: transform var(--duration-fast) var(--easing-spring);
-}
-
-.reaction-btn:active {
-  transform: scale(0.9);
-}
-
-.reaction-btn-laugh {
-  background: radial-gradient(circle at 30% 30%, #FFD700, #FFA500);
-}
-
-.reaction-btn-cheer {
-  background: radial-gradient(circle at 30% 30%, #FF69B4, #FF1493);
-}
-
-.reaction-btn-gasp {
-  background: radial-gradient(circle at 30% 30%, #87CEEB, #4169E1);
-}
-
-.reaction-btn-boo {
-  background: radial-gradient(circle at 30% 30%, #9370DB, #6A0DAD);
-}
-
-.reaction-btn-applause {
-  background: radial-gradient(circle at 30% 30%, #50C878, #228B22);
-}
-
-.reaction-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  opacity: 0;
-  transition: opacity var(--duration-fast);
-}
-
-.reaction-btn:hover::after {
-  background: rgba(255, 255, 255, 0.15);
-  opacity: 1;
-}
-
-@keyframes ring-burst {
-  0% {
-    box-shadow: 0 0 0 0 currentColor;
-    opacity: 0.6;
-  }
-  100% {
-    box-shadow: 0 0 0 20px transparent;
-    opacity: 0;
-  }
-}
-
-.reaction-btn-burst {
-  animation: ring-burst 0.4s var(--easing-out) forwards;
-}
-
-.reaction-cooldown-sweep {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: conic-gradient(
-    transparent var(--sweep-progress, 0%),
-    rgba(0, 0, 0, 0.4) var(--sweep-progress, 0%)
-  );
-  pointer-events: none;
-}
-
-.reaction-count-badge {
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
-  min-width: 20px;
-  text-align: center;
-}
-
-@keyframes count-bounce {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-}
-
-.reaction-count-bounce {
-  animation: count-bounce 0.3s var(--easing-spring);
-}
-
-@media (min-width: 640px) {
-  .reaction-btn {
-    width: 56px;
-    height: 56px;
-    font-size: 28px;
   }
 }
 

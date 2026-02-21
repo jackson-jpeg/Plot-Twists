@@ -233,7 +233,7 @@ export default function HostPage() {
     setTimeout(() => setChaosShaking(false), 500)
     successHaptic() // native haptics on iOS; no-op on web
     if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]) // Android web fallback
-    toast.info('CHAOS unleashed! Audience is voting on a plot twist...')
+    toast.info(settings.gameMode === 'SOLO' ? 'PLOT TWIST incoming!' : 'CHAOS unleashed! Audience is voting on a plot twist...')
   }, [socket, roomCode, chaosCooldown, toast, setChaosCooldown])
 
   const handleSetupModeChange = (mode: 'quick' | 'custom') => {
@@ -379,6 +379,7 @@ export default function HostPage() {
             chaosCooldown={chaosCooldown}
             chaosCooldownRemaining={chaosCooldownRemaining}
             chaosShaking={chaosShaking}
+            isSoloMode={settings.gameMode === 'SOLO'}
             teleprompterSettings={teleprompterSettings}
             teleprompterSettingsLoading={teleprompterSettingsLoading}
             onNextLine={nextLine} onPreviousLine={previousLine}

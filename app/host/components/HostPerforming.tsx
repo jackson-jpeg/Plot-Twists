@@ -25,6 +25,7 @@ export interface HostPerformingProps {
   chaosCooldown: boolean
   chaosCooldownRemaining: number
   chaosShaking: boolean
+  isSoloMode?: boolean
   teleprompterSettings: TeleprompterSettingsType
   teleprompterSettingsLoading: boolean
   onNextLine: () => void
@@ -40,7 +41,7 @@ export interface HostPerformingProps {
 export function HostPerforming({
   script, currentLineIndex, isPlaying, roomCode,
   networkLatency, spectatorMessages, scriptImageUrl, isGeneratingImage,
-  chaosCooldown, chaosCooldownRemaining, chaosShaking,
+  chaosCooldown, chaosCooldownRemaining, chaosShaking, isSoloMode = false,
   teleprompterSettings, teleprompterSettingsLoading,
   onNextLine, onPreviousLine, onTogglePlayPause, onTriggerChaos,
   onSetTeleprompterPreset, onSetTeleprompterCustom, onToggleTeleprompterAutoScroll,
@@ -69,8 +70,8 @@ export function HostPerforming({
   return (
     <motion.div key="performing" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-5xl">
       <SpectatorTicker messages={spectatorMessages} />
-      <AudienceReactionBar roomCode={roomCode} isPerforming={true} isHost={true} />
-      <PlotTwistVoting roomCode={roomCode} isHost={true} />
+      {!isSoloMode && <AudienceReactionBar roomCode={roomCode} isPerforming={true} isHost={true} />}
+      {!isSoloMode && <PlotTwistVoting roomCode={roomCode} isHost={true} />}
 
       {/* Poster */}
       <AnimatePresence mode="wait">
@@ -172,7 +173,7 @@ export function HostPerforming({
             {chaosCooldown ? (
               <span className="flex items-center gap-2">🌀 {Math.ceil(chaosCooldownRemaining)}s</span>
             ) : (
-              <span className="flex items-center gap-2"><motion.span animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}>🌀</motion.span>CHAOS</span>
+              <span className="flex items-center gap-2"><motion.span animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}>🌀</motion.span>{isSoloMode ? 'TWIST' : 'CHAOS'}</span>
             )}
             {chaosCooldown && (
               <div className="absolute bottom-0 left-0 h-1 rounded-full" style={{ width: `${(chaosCooldownRemaining / 30) * 100}%`, background: 'linear-gradient(90deg, #a855f7, #ec4899)', transition: 'width 0.1s linear' }} />

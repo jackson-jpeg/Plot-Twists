@@ -9,14 +9,15 @@ import { jsonAdapter } from './json'
 import { logger } from '../../lib/logger'
 
 // Determine which adapter to use based on environment
-const useFirestore = Boolean(
+// This is mutable so we can fall back to JSON if Firestore fails
+let useFirestore = Boolean(
   process.env.FIREBASE_SERVICE_ACCOUNT_KEY &&
   process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID
 )
 
 /**
  * Get the configured database adapter
- * Falls back to JSON adapter if Firestore is not configured
+ * Falls back to JSON adapter if Firestore is not configured or failed to connect
  */
 export function getDatabase(): DatabaseAdapter {
   return useFirestore ? firestoreAdapter : jsonAdapter
@@ -35,6 +36,7 @@ export async function initializeDatabase(): Promise<void> {
     } catch (error) {
       if (useFirestore) {
         logger.warn('Firestore connection failed, falling back to JSON adapter')
+        useFirestore = false // Update so getDatabase() returns jsonAdapter
         await jsonAdapter.connect()
       } else {
         throw error

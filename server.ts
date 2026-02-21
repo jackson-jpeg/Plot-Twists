@@ -25,6 +25,7 @@ import type {
   UserProfile
 } from './lib/types'
 import { calculateLineDisplayTime } from './server/utils/timing'
+import { DISCONNECT_GRACE_PERIOD, MAX_PLAYERS } from './server/utils/constants'
 import { getFilteredContent, getGreenRoomQuestion } from './lib/content'
 import { v4 as uuidv4 } from 'uuid'
 import { configureSecurityMiddleware, validateEnvironment } from './server/middleware/security'
@@ -359,7 +360,7 @@ app.prepare().then(async () => {
 
         // Check player limits based on game mode
         const currentPlayerCount = Array.from(room.players.values()).filter(p => p.role === 'PLAYER').length
-        const maxPlayers = room.gameMode === 'SOLO' ? 1 : room.gameMode === 'HEAD_TO_HEAD' ? 2 : 6
+        const maxPlayers = MAX_PLAYERS[room.gameMode]
         const isRoomFull = currentPlayerCount >= maxPlayers
 
         // Check for duplicate nicknames
@@ -980,7 +981,7 @@ app.prepare().then(async () => {
         const activePlayers = Array.from(room.players.values()).filter(p =>
           room.gameMode === 'SOLO' ? p.isHost : (p.role === 'PLAYER' && !p.isHost)
         )
-        const maxPlayers = room.gameMode === 'SOLO' ? 1 : room.gameMode === 'HEAD_TO_HEAD' ? 2 : 6
+        const maxPlayers = MAX_PLAYERS[room.gameMode]
 
         callback({
           success: true,
@@ -1853,7 +1854,7 @@ app.prepare().then(async () => {
             }
           }
         }
-      }, 3000) // 3 second grace period
+      }, DISCONNECT_GRACE_PERIOD)
     }))
   })
 

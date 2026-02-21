@@ -15,13 +15,9 @@ import type {
   Script,
   ScriptLine,
   AudienceReactionType,
-  ScriptCustomization,
-  AudioSettings,
-  CardPack,
   SoundEffectType,
   NewGameOptions,
   AdminRoomInfo,
-  AdminRoomPlayer,
   UserProfile
 } from './lib/types'
 import { calculateLineDisplayTime } from './server/utils/timing'
@@ -32,7 +28,6 @@ import { configureSecurityMiddleware, validateEnvironment } from './server/middl
 import { generateScript } from './server/services/scriptGeneration.service'
 import { startTeleprompterSync } from './server/services/teleprompter.service'
 import { calculateResults } from './server/services/voting.service'
-import { extractJSON } from './server/utils/jsonExtractor'
 import { SocketRateLimiter } from './server/middleware/rateLimiter'
 import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname } from './server/utils/validation'
 import { withErrorHandler } from './server/middleware/socketErrorHandler'
@@ -96,15 +91,19 @@ import {
   getLeaderboard
 } from './server/services/playerStats.service'
 import { generateTitleCard } from './server/services/image.service'
-import { checkAndDeductCredit, getCredits, addBankedCredits, deductBankedCredits } from './server/services/credit.service'
+import { getCredits, addBankedCredits } from './server/services/credit.service'
 import { getReferralInfo, redeemReferralCode } from './server/services/referral.service'
-import { deleteUser, verifyIdToken } from './server/services/user.service'
-import { authenticateRequest } from './server/middleware/auth'
-import { recordTransaction, getUserTransactions } from './server/services/payment.service'
 import { createSocketAuthMiddleware } from './server/middleware/socketAuth'
-import { isAdminUser } from './lib/admin'
-import { CREDIT_PACKAGES } from './lib/credits'
 import { logger } from './lib/logger'
+import {
+  validateRoom,
+  requireRoomMember,
+  requireHost,
+  isAdminSocket,
+  findPlayerEntryBySocketId,
+  deductCreditOrReject,
+} from './server/socket/helpers'
+import { registerRoutes } from './server/routes'
 
 // Validate environment on startup
 validateEnvironment()
@@ -130,41 +129,6 @@ const cardPackLimiter = new SocketRateLimiter(5, 60 * 1000) // 5 pack operations
 // Sanitize user input (use enhanced version from utils)
 function sanitizeInput(input: string): string {
   return sanitizeUserInput(input, 50)
-}
-
-// Validate room exists and return it, or emit error and return null
-function validateRoom(roomCode: string, socket: { emit: (event: 'error', message: string) => void }): Room | null {
-  if (!roomCode || !isValidRoomCode(roomCode)) {
-    socket.emit('error', 'Invalid room code')
-    return null
-  }
-  const room = roomService.getRoomFromCache(roomCode.toUpperCase())
-  if (!room) {
-    socket.emit('error', 'Room not found')
-    return null
-  }
-  return room
-}
-
-/** Verify socket is a member of the room (player or host) */
-function requireRoomMember(room: Room, socket: { id: string }): boolean {
-  if (room.host.socketId === socket.id) return true
-  for (const player of room.players.values()) {
-    if (player.socketId === socket.id) return true
-  }
-  return false
-}
-
-/** Verify socket is the host */
-function requireHost(room: Room, socket: { id: string }): boolean {
-  return room.host.socketId === socket.id
-}
-
-/** Check if socket belongs to an admin user */
-function isAdminSocket(socket: { data: Record<string, unknown> }): boolean {
-  const email = socket.data.email as string | null | undefined
-  const phone = socket.data.phoneNumber as string | null | undefined
-  return isAdminUser({ email, phoneNumber: phone })
 }
 
 // Room cleanup is now handled by roomService.startRoomCleanup()
@@ -593,42 +557,8 @@ app.prepare().then(async () => {
 
       logger.debug(`Script resumed for room ${roomCode}`)
 
-      // Restart teleprompter from current line using smart timing
-      const advanceLine = (lineIndex: number) => {
-        if (room.isPaused) return
-
-        if (!room.script || lineIndex >= room.script.lines.length - 1) {
-          roomService.clearRoomTimeout(room.code)
-          if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
-            room.gameState = 'VOTING'
-            io.to(room.code).emit('game_state_change', 'VOTING')
-          } else {
-            room.gameState = 'RESULTS'
-            io.to(room.code).emit('game_state_change', 'RESULTS')
-          }
-          return
-        }
-
-        const currentLine = room.script.lines[lineIndex]
-        const readingTimeMs = calculateLineDisplayTime(currentLine)
-
-        const timeout = setTimeout(() => {
-          if (!room.script) return
-          room.currentLineIndex++
-          io.to(room.code).emit('sync_teleprompter', {
-            lineIndex: room.currentLineIndex,
-            serverTimestamp: Date.now(),
-            expectedDuration: room.script.lines[room.currentLineIndex]
-              ? calculateLineDisplayTime(room.script.lines[room.currentLineIndex])
-              : undefined
-          })
-          advanceLine(room.currentLineIndex)
-        }, readingTimeMs)
-
-        roomService.setRoomTimeout(room.code, timeout)
-      }
-
-      advanceLine(room.currentLineIndex)
+      // Restart teleprompter from current line using the service
+      startTeleprompterSync(room, io)
     }))
 
     // Jump to specific line (host control)
@@ -660,43 +590,9 @@ app.prepare().then(async () => {
 
       logger.debug(`Jumped to line ${lineIndex} in room ${roomCode}`)
 
-      // If not paused, restart timer for new line using smart timing
+      // If not paused, restart timer for new line using the teleprompter service
       if (!room.isPaused) {
-        const advanceLine = (currentLineIndex: number) => {
-          if (room.isPaused) return
-
-          if (!room.script || currentLineIndex >= room.script.lines.length - 1) {
-            roomService.clearRoomTimeout(room.code)
-            if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
-              room.gameState = 'VOTING'
-              io.to(room.code).emit('game_state_change', 'VOTING')
-            } else {
-              room.gameState = 'RESULTS'
-              io.to(room.code).emit('game_state_change', 'RESULTS')
-            }
-            return
-          }
-
-          const currentLine = room.script.lines[currentLineIndex]
-          const readingTimeMs = calculateLineDisplayTime(currentLine)
-
-          const newTimeout = setTimeout(() => {
-            if (!room.script) return
-            room.currentLineIndex++
-            io.to(room.code).emit('sync_teleprompter', {
-              lineIndex: room.currentLineIndex,
-              serverTimestamp: Date.now(),
-              expectedDuration: room.script.lines[room.currentLineIndex]
-                ? calculateLineDisplayTime(room.script.lines[room.currentLineIndex])
-                : undefined
-            })
-            advanceLine(room.currentLineIndex)
-          }, readingTimeMs)
-
-          roomService.setRoomTimeout(room.code, newTimeout)
-        }
-
-        advanceLine(lineIndex)
+        startTeleprompterSync(room, io)
       }
     }))
 
@@ -760,30 +656,8 @@ app.prepare().then(async () => {
       logger.info(`Sequel requested for room ${roomCode}`)
 
       // Credit gate: deduct 1 credit from host before generating sequel
-      if (room.hostUid) {
-        try {
-          const creditResult = await checkAndDeductCredit(room.hostUid)
-          if (!creditResult.success) {
-            logger.info(`Insufficient credits for sequel: host ${room.hostUid} in room ${roomCode}`)
-            io.to(roomCode).emit('insufficient_credits', { needed: 1, available: 0 })
-            return
-          }
-          // Emit updated balance to host
-          const balance = await getCredits(room.hostUid)
-          const hostSocket = io.sockets.sockets.get(room.host.socketId)
-          if (hostSocket) {
-            hostSocket.emit('credit_balance', balance)
-          }
-        } catch (creditError) {
-          logger.error(`Credit check failed for sequel host ${room.hostUid}:`, creditError)
-          io.to(roomCode).emit('error', 'Failed to verify credits. Please try again.')
-          return
-        }
-      } else if (!dev) {
-        logger.warn(`Sequel blocked: no hostUid for room ${roomCode}`)
-        io.to(roomCode).emit('error', 'Authentication required to generate scripts.')
-        return
-      }
+      const creditOk = await deductCreditOrReject(room, io)
+      if (!creditOk) return
 
       // Save the current script as previous
       const previousScript = room.script
@@ -1877,33 +1751,8 @@ app.prepare().then(async () => {
     }
 
     // Credit gate: deduct 1 credit from host before generating
-    if (room.hostUid) {
-      try {
-        const creditResult = await checkAndDeductCredit(room.hostUid)
-        if (!creditResult.success) {
-          logger.info(`Insufficient credits for host ${room.hostUid} in room ${room.code}`)
-          io.to(room.code).emit('insufficient_credits', { needed: 1, available: 0 })
-          room.gameState = 'SELECTION'
-          io.to(room.code).emit('game_state_change', 'SELECTION')
-          return
-        }
-        // Emit updated balance to host
-        const balance = await getCredits(room.hostUid)
-        const hostSocket = io.sockets.sockets.get(room.host.socketId)
-        if (hostSocket) {
-          hostSocket.emit('credit_balance', balance)
-        }
-      } catch (creditError) {
-        logger.error(`Credit check failed for host ${room.hostUid}:`, creditError)
-        io.to(room.code).emit('error', 'Failed to verify credits. Please try again.')
-        room.gameState = 'SELECTION'
-        io.to(room.code).emit('game_state_change', 'SELECTION')
-        return
-      }
-    } else if (!dev) {
-      // In production, require authenticated host
-      logger.warn(`Script generation blocked: no hostUid for room ${room.code}`)
-      io.to(room.code).emit('error', 'Authentication required to generate scripts.')
+    const creditOk = await deductCreditOrReject(room, io)
+    if (!creditOk) {
       room.gameState = 'SELECTION'
       io.to(room.code).emit('game_state_change', 'SELECTION')
       return
@@ -2042,609 +1891,10 @@ app.prepare().then(async () => {
   }
 
 
-  // ============================================================
-  // Stripe Routes (must be before Next.js catch-all)
-  // ============================================================
+  // Register all HTTP routes (Stripe, Auth, Apple, API)
+  await registerRoutes(expressApp, io, port)
 
-  // Lazy-initialized Stripe client (shared across webhook + checkout routes)
-  const Stripe = (await import('stripe')).default
-  let stripeClient: InstanceType<typeof Stripe> | null = null
-  function getStripe(): InstanceType<typeof Stripe> | null {
-    if (stripeClient) return stripeClient
-    const key = process.env.STRIPE_SECRET_KEY
-    if (!key) return null
-    stripeClient = new Stripe(key)
-    return stripeClient
-  }
-
-  // Log Stripe configuration status on startup
-  if (process.env.STRIPE_SECRET_KEY) {
-    logger.info('[Stripe] Secret key configured')
-    if (process.env.STRIPE_WEBHOOK_SECRET) {
-      logger.info('[Stripe] Webhook secret configured')
-    } else {
-      logger.warn('[Stripe] STRIPE_WEBHOOK_SECRET not set — webhooks will fail')
-    }
-  } else {
-    logger.warn('[Stripe] STRIPE_SECRET_KEY not set — payments disabled')
-  }
-
-  // Persistent idempotency: check DB instead of in-memory Set
-  const db = getDatabase()
-  async function isStripeEventProcessed(eventId: string): Promise<boolean> {
-    const existing = await db.get(Collections.STRIPE_EVENTS, eventId)
-    return existing !== null
-  }
-  async function markStripeEventProcessed(eventId: string, eventType: string, userId?: string): Promise<void> {
-    await db.set(Collections.STRIPE_EVENTS, eventId, {
-      eventId,
-      eventType,
-      userId: userId || null,
-      processedAt: new Date().toISOString()
-    })
-  }
-
-  // Stripe webhook needs raw body — must be registered before express.json()
-  expressApp.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-    const sig = req.headers['stripe-signature'] as string
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-
-    if (!webhookSecret) {
-      logger.error('[Stripe] STRIPE_WEBHOOK_SECRET not configured')
-      res.status(500).json({ error: 'Webhook not configured' })
-      return
-    }
-
-    try {
-      const stripe = getStripe()
-      if (!stripe) {
-        res.status(500).json({ error: 'Stripe not configured' })
-        return
-      }
-      const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret)
-
-      // Idempotency: skip already-processed events (Stripe retries on timeout)
-      if (await isStripeEventProcessed(event.id)) {
-        logger.info(`[Stripe] Skipping duplicate event ${event.id}`)
-        res.json({ received: true })
-        return
-      }
-
-      if (event.type === 'checkout.session.completed') {
-        const session = event.data.object as { metadata?: Record<string, string>; amount_total?: number | null; payment_intent?: string }
-        const userId = session.metadata?.userId
-        const scripts = parseInt(session.metadata?.scripts || '0', 10)
-        const packageId = session.metadata?.packageId || ''
-        const amountTotal = session.amount_total || 0
-
-        if (userId && scripts > 0) {
-          await markStripeEventProcessed(event.id, event.type, userId)
-          await addBankedCredits(userId, scripts, amountTotal)
-
-          // Record purchase transaction
-          const pkg = CREDIT_PACKAGES.find(p => p.id === packageId)
-          await recordTransaction({
-            userId,
-            type: 'purchase',
-            stripeEventId: event.id,
-            packageId,
-            packageLabel: pkg?.label || packageId,
-            creditsAdded: scripts,
-            amountCents: amountTotal,
-            status: 'completed'
-          })
-
-          // Emit updated balance to user's connected socket (if online)
-          const balance = await getCredits(userId)
-          for (const [, s] of io.sockets.sockets) {
-            if (s.data.uid === userId) {
-              s.emit('credit_balance', balance)
-              break
-            }
-          }
-
-          logger.info(`[Stripe] Fulfilled ${scripts} credits for user ${userId}`)
-        }
-      } else if (event.type === 'charge.refunded') {
-        const charge = event.data.object as { metadata?: Record<string, string>; amount_refunded?: number; amount?: number; payment_intent?: string }
-        const userId = charge.metadata?.userId
-        const originalScripts = parseInt(charge.metadata?.scripts || '0', 10)
-        const amountRefunded = charge.amount_refunded || 0
-        const originalAmount = charge.amount || 1
-
-        if (userId && originalScripts > 0 && amountRefunded > 0) {
-          await markStripeEventProcessed(event.id, event.type, userId)
-
-          // Proportional credit deduction (round down to avoid over-deducting)
-          const creditsToDeduct = Math.min(
-            Math.round((amountRefunded / originalAmount) * originalScripts),
-            originalScripts
-          )
-          await deductBankedCredits(userId, creditsToDeduct)
-
-          await recordTransaction({
-            userId,
-            type: 'refund',
-            stripeEventId: event.id,
-            packageId: charge.metadata?.packageId || '',
-            packageLabel: 'Refund',
-            creditsAdded: -creditsToDeduct,
-            amountCents: -amountRefunded,
-            status: 'completed'
-          })
-
-          // Emit updated balance
-          const balance = await getCredits(userId)
-          for (const [, s] of io.sockets.sockets) {
-            if (s.data.uid === userId) {
-              s.emit('credit_balance', balance)
-              break
-            }
-          }
-
-          logger.info(`[Stripe] Refund: deducted ${creditsToDeduct} credits from user ${userId}`)
-        }
-      } else if (event.type === 'checkout.session.expired') {
-        const session = event.data.object as { metadata?: Record<string, string> }
-        const userId = session.metadata?.userId
-        await markStripeEventProcessed(event.id, event.type, userId)
-
-        if (userId) {
-          await recordTransaction({
-            userId,
-            type: 'expired',
-            stripeEventId: event.id,
-            packageId: session.metadata?.packageId || '',
-            packageLabel: session.metadata?.packageId || 'Unknown',
-            creditsAdded: 0,
-            amountCents: 0,
-            status: 'expired'
-          })
-
-          // Notify connected user
-          for (const [, s] of io.sockets.sockets) {
-            if (s.data.uid === userId) {
-              s.emit('error', 'Your checkout session expired. No charges were made.')
-              break
-            }
-          }
-        }
-      } else if (event.type === 'payment_intent.payment_failed') {
-        const intent = event.data.object as { metadata?: Record<string, string>; last_payment_error?: { message?: string } }
-        const userId = intent.metadata?.userId
-        await markStripeEventProcessed(event.id, event.type, userId)
-
-        if (userId) {
-          await recordTransaction({
-            userId,
-            type: 'failed',
-            stripeEventId: event.id,
-            packageId: intent.metadata?.packageId || '',
-            packageLabel: intent.metadata?.packageId || 'Unknown',
-            creditsAdded: 0,
-            amountCents: 0,
-            status: 'failed'
-          })
-
-          // Notify connected user
-          for (const [, s] of io.sockets.sockets) {
-            if (s.data.uid === userId) {
-              s.emit('error', 'Payment failed. Please try again or use a different payment method.')
-              break
-            }
-          }
-        }
-      }
-
-      res.json({ received: true })
-    } catch (error) {
-      logger.error('[Stripe] Webhook error:', error)
-      res.status(400).json({ error: 'Webhook signature verification failed' })
-    }
-  })
-
-  // JSON body parser for other Stripe routes
-  expressApp.use('/api/stripe', express.json())
-
-  // Helper: get or create Stripe customer for a user
-  async function getOrCreateStripeCustomer(stripe: InstanceType<typeof Stripe>, userId: string): Promise<string> {
-    const user = await db.get<import('./lib/types').UserProfile>(Collections.USERS, userId)
-    if (user?.stripeCustomerId) return user.stripeCustomerId
-
-    const customer = await stripe.customers.create({
-      metadata: { userId },
-      email: user?.email || undefined,
-      name: user?.displayName || undefined
-    })
-
-    await db.update(Collections.USERS, userId, { stripeCustomerId: customer.id })
-    return customer.id
-  }
-
-  expressApp.post('/api/stripe/create-checkout-session', authenticateRequest, async (req, res) => {
-    logger.info('[Stripe] Checkout session request received')
-    const { packageId } = req.body
-    const userId = req.user!.uid
-
-    if (!packageId) {
-      logger.error('[Stripe] Missing packageId in checkout request', { bodyKeys: Object.keys(req.body || {}) })
-      res.status(400).json({ error: 'Missing packageId' })
-      return
-    }
-
-    const pkg = CREDIT_PACKAGES.find(p => p.id === packageId)
-    if (!pkg) {
-      logger.error(`[Stripe] Invalid packageId: ${packageId}`)
-      res.status(400).json({ error: 'Invalid package' })
-      return
-    }
-
-    try {
-      const stripe = getStripe()
-      if (!stripe) {
-        logger.error('[Stripe] STRIPE_SECRET_KEY not set — cannot create checkout session')
-        res.status(500).json({ error: 'Stripe not configured' })
-        return
-      }
-
-      // Determine base URL for redirects
-      const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || `http://localhost:${port}`
-
-      // Get or create Stripe customer
-      const customerId = await getOrCreateStripeCustomer(stripe, userId)
-
-      const session = await stripe.checkout.sessions.create({
-        mode: 'payment',
-        ui_mode: 'embedded',
-        customer: customerId,
-        line_items: [{
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `${pkg.label}`,
-              description: `${pkg.scripts} script credits — use anytime, never expire`,
-              images: ['https://plot-twists.com/icon.svg']
-            },
-            unit_amount: pkg.price
-          },
-          quantity: 1
-        }],
-        metadata: {
-          userId,
-          packageId: pkg.id,
-          scripts: String(pkg.scripts)
-        },
-        payment_intent_data: {
-          metadata: {
-            userId,
-            packageId: pkg.id,
-            scripts: String(pkg.scripts)
-          }
-        },
-        return_url: `${origin}/purchase/success?session_id={CHECKOUT_SESSION_ID}`
-      })
-
-      res.json({ clientSecret: session.client_secret })
-    } catch (error) {
-      logger.error('[Stripe] Create checkout session error:', error)
-      res.status(500).json({ error: 'Failed to create checkout session' })
-    }
-  })
-
-  // Payment transaction history
-  expressApp.get('/api/stripe/transactions', authenticateRequest, async (req, res) => {
-    const userId = req.user!.uid
-
-    try {
-      const transactions = await getUserTransactions(userId)
-      res.json({ transactions })
-    } catch (error) {
-      logger.error('[Stripe] Get transactions error:', error)
-      res.status(500).json({ error: 'Failed to get transactions' })
-    }
-  })
-
-  // Stripe Customer Portal session
-  expressApp.post('/api/stripe/portal-session', authenticateRequest, async (req, res) => {
-    const userId = req.user!.uid
-
-    try {
-      const stripe = getStripe()
-      if (!stripe) {
-        logger.error('[Stripe] STRIPE_SECRET_KEY not set — cannot create portal session')
-        res.status(500).json({ error: 'Stripe not configured' })
-        return
-      }
-
-      const user = await db.get<import('./lib/types').UserProfile>(Collections.USERS, userId)
-      if (!user?.stripeCustomerId) {
-        res.status(400).json({ error: 'No Stripe customer found. Make a purchase first.' })
-        return
-      }
-
-      const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || `http://localhost:${port}`
-
-      const portalSession = await stripe.billingPortal.sessions.create({
-        customer: user.stripeCustomerId,
-        return_url: `${origin}/profile`
-      })
-
-      res.json({ url: portalSession.url })
-    } catch (error) {
-      logger.error('[Stripe] Portal session error:', error)
-      res.status(500).json({ error: 'Failed to create portal session' })
-    }
-  })
-
-  // Checkout session status (for success page)
-  expressApp.get('/api/stripe/session-status', async (req, res) => {
-    const sessionId = req.query.session_id as string
-    if (!sessionId) {
-      res.status(400).json({ error: 'Missing session_id' })
-      return
-    }
-
-    try {
-      const stripe = getStripe()
-      if (!stripe) {
-        res.status(500).json({ error: 'Stripe not configured' })
-        return
-      }
-
-      const session = await stripe.checkout.sessions.retrieve(sessionId)
-      res.json({
-        status: session.status,
-        paymentStatus: session.payment_status,
-        packageId: session.metadata?.packageId,
-        scripts: session.metadata?.scripts,
-        amountTotal: session.amount_total
-      })
-    } catch (error) {
-      logger.error('[Stripe] Session status error:', error)
-      res.status(500).json({ error: 'Failed to get session status' })
-    }
-  })
-
-  // Game metadata API (used by Next.js generateMetadata for dynamic OG images)
-  expressApp.get('/api/game/:shareCode', async (req, res) => {
-    try {
-      const { shareCode } = req.params
-      let game = await getGameByShareCode(shareCode)
-      if (!game) {
-        game = await getGame(shareCode)
-      }
-      if (!game) {
-        res.status(404).json({ error: 'Game not found' })
-        return
-      }
-      res.json({
-        title: game.title,
-        synopsis: game.synopsis,
-        gameMode: game.gameMode,
-        players: game.players.map(p => ({
-          nickname: p.nickname,
-          character: p.character,
-          isWinner: p.isWinner
-        })),
-        winner: game.winner,
-        setting: game.setting,
-        circumstance: game.circumstance,
-        playedAt: game.playedAt,
-        comedyStyle: game.comedyStyle
-      })
-    } catch (error) {
-      logger.error('Error fetching game metadata:', error)
-      res.status(500).json({ error: 'Failed to load game' })
-    }
-  })
-
-  // ============================================================
-  // Server-side Phone Auth via Twilio Verify
-  // ============================================================
-  expressApp.use('/api/auth', express.json())
-
-  expressApp.post('/api/auth/send-code', async (req, res) => {
-    const { phoneNumber } = req.body
-    if (!phoneNumber || typeof phoneNumber !== 'string') {
-      res.status(400).json({ error: 'Missing phone number' })
-      return
-    }
-
-    const accountSid = process.env.TWILIO_ACCOUNT_SID
-    const authToken = process.env.TWILIO_AUTH_TOKEN
-    const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID
-
-    if (!accountSid || !authToken || !serviceSid) {
-      logger.error('[Auth] Twilio env vars not configured')
-      res.status(500).json({ error: 'SMS service not configured' })
-      return
-    }
-
-    try {
-      const twilio = await import('twilio')
-      const client = twilio.default(accountSid, authToken)
-      await client.verify.v2.services(serviceSid).verifications.create({
-        to: phoneNumber,
-        channel: 'sms',
-      })
-      res.json({ success: true })
-    } catch (error) {
-      logger.error('[Auth] Twilio send code error:', error)
-      res.status(500).json({ error: 'Failed to send verification code' })
-    }
-  })
-
-  expressApp.post('/api/auth/verify-code', async (req, res) => {
-    const { phoneNumber, code, mode, idToken } = req.body
-    if (!phoneNumber || !code) {
-      res.status(400).json({ error: 'Missing phone number or code' })
-      return
-    }
-
-    const accountSid = process.env.TWILIO_ACCOUNT_SID
-    const authToken = process.env.TWILIO_AUTH_TOKEN
-    const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID
-
-    if (!accountSid || !authToken || !serviceSid) {
-      res.status(500).json({ error: 'SMS service not configured' })
-      return
-    }
-
-    try {
-      const twilio = await import('twilio')
-      const client = twilio.default(accountSid, authToken)
-      const check = await client.verify.v2.services(serviceSid).verificationChecks.create({
-        to: phoneNumber,
-        code,
-      })
-
-      if (check.status !== 'approved') {
-        res.status(400).json({ error: 'Invalid code' })
-        return
-      }
-
-      const admin = await import('firebase-admin')
-      if (admin.apps.length === 0) {
-        res.status(500).json({ error: 'Firebase Admin not initialized' })
-        return
-      }
-
-      // Link mode: attach phone to existing user
-      if (mode === 'link' && idToken) {
-        try {
-          const decoded = await admin.auth().verifyIdToken(idToken)
-          await admin.auth().updateUser(decoded.uid, { phoneNumber })
-          const customToken = await admin.auth().createCustomToken(decoded.uid)
-          res.json({ success: true, customToken })
-          return
-        } catch (linkError) {
-          logger.error('[Auth] Link phone error:', linkError)
-          res.status(400).json({ error: 'Failed to link phone number' })
-          return
-        }
-      }
-
-      // Sign-in mode: find or create Firebase user by phone
-      let uid: string
-      try {
-        const userRecord = await admin.auth().getUserByPhoneNumber(phoneNumber)
-        uid = userRecord.uid
-      } catch {
-        const newUser = await admin.auth().createUser({ phoneNumber })
-        uid = newUser.uid
-      }
-
-      const customToken = await admin.auth().createCustomToken(uid)
-      res.json({ success: true, customToken })
-    } catch (error) {
-      logger.error('[Auth] Verify code error:', error)
-      res.status(500).json({ error: 'Verification failed' })
-    }
-  })
-
-  // ============================================================
-  // Apple In-App Purchase
-  // ============================================================
-
-  expressApp.post('/api/apple/verify-transaction', authenticateRequest, async (req, res) => {
-    const { signedTransaction } = req.body
-    const userId = req.user!.uid
-    if (!signedTransaction) {
-      res.status(400).json({ error: 'Missing signedTransaction' })
-      return
-    }
-
-    try {
-      const { verifyTransaction } = await import('./server/services/apple.service')
-      const result = await verifyTransaction(signedTransaction)
-
-      if (!result.success || !result.credits || !result.transactionId) {
-        res.status(400).json({ error: result.error || 'Verification failed' })
-        return
-      }
-
-      // Check for duplicate transaction
-      const existingTxn = await db.get(Collections.PAYMENT_TRANSACTIONS, `apple_${result.transactionId}`)
-      if (existingTxn) {
-        res.json({ success: true, credits: result.credits, alreadyProcessed: true })
-        return
-      }
-
-      // Grant credits (spendCents=0 because Apple handles pricing)
-      await addBankedCredits(userId, result.credits, 0)
-
-      // Record transaction
-      const appleModule = await import('./server/services/apple.service')
-      await recordTransaction({
-        userId,
-        type: 'purchase',
-        stripeEventId: `apple_${result.transactionId}`,
-        amountCents: 0, // Apple handles pricing
-        creditsAdded: result.credits,
-        packageId: result.productId || '',
-        packageLabel: result.productId ? appleModule.APPLE_PRODUCTS[result.productId]?.label || '' : '',
-        status: 'completed',
-      })
-
-      // Store transaction ID to prevent duplicates
-      await db.set(Collections.PAYMENT_TRANSACTIONS, `apple_${result.transactionId}`, {
-        userId,
-        transactionId: result.transactionId,
-        productId: result.productId,
-        credits: result.credits,
-        processedAt: Date.now(),
-      })
-
-      logger.info(`[Apple] Granted ${result.credits} credits to user ${userId}`)
-      res.json({ success: true, credits: result.credits })
-    } catch (error) {
-      logger.error('[Apple] Verify transaction error:', error)
-      res.status(500).json({ error: 'Failed to verify transaction' })
-    }
-  })
-
-  expressApp.post('/api/apple/webhook', async (req, res) => {
-    const { signedPayload } = req.body
-    if (!signedPayload) {
-      res.status(400).json({ error: 'Missing signedPayload' })
-      return
-    }
-
-    try {
-      const { handleServerNotification } = await import('./server/services/apple.service')
-      const result = await handleServerNotification(signedPayload)
-
-      if (result.type === 'REFUND' || result.type === 'REVOKE') {
-        // Handle refund/revocation — could deduct credits if needed
-        logger.warn(`[Apple] ${result.type} notification for transaction ${result.transactionId}`)
-      }
-
-      res.json({ success: true })
-    } catch (error) {
-      logger.error('[Apple] Webhook error:', error)
-      res.status(500).json({ error: 'Webhook processing failed' })
-    }
-  })
-
-  // ============================================================
-  // Account Deletion
-  // ============================================================
-
-  expressApp.post('/api/account/delete', authenticateRequest, async (req, res) => {
-    try {
-      const result = await deleteUser(req.user!.uid)
-      if (!result.success) {
-        res.status(404).json({ error: result.error })
-        return
-      }
-      res.json({ success: true })
-    } catch (error) {
-      logger.error('[Account] Delete error:', error)
-      res.status(500).json({ error: 'Failed to delete account' })
-    }
-  })
-
-  // Handle Next.js requests
+  // Handle Next.js requests (catch-all, must be last)
   expressApp.use((req, res) => {
     const parsedUrl = parse(req.url!, true)
     return handle(req, res, parsedUrl)

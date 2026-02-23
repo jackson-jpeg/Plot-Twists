@@ -1,170 +1,217 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, ChevronRight, X } from 'lucide-react';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { LoadingSpinner } from './LoadingSpinner';
+import { analytics } from '../server/utils/analytics';
 
 interface BookRecommendation {
   id: string;
   title: string;
+  subtitle?: string;
   author: string;
-  genre: string;
   description: string;
-  coverUrl?: string;
-  plotSummary: string;
-  comedyPotential: string;
-  suggestedCharacters: string[];
-  suggestedSettings: string[];
-  audience: 'all' | 'after-dark';
+  rating: number;
+  imageUrl?: string;
   tags: string[];
+  links?: {
+    amazon?: string;
+  };
 }
 
 interface BookRecommendationsWidgetProps {
-  onUseIdea?: (characters: string[], settings: string[]) => void;
-  gameMode?: 'family' | 'after-dark';
+  userId?: string;
+  maxRecommendations?: number;
+  onBookClick?: (bookId: string) => void;
 }
 
-export const BookRecommendationsWidget: React.FC<BookRecommendationsWidgetProps> = ({ 
-  onUseIdea,
-  gameMode = 'family' 
-}) => {
+export function BookRecommendationsWidget({ 
+  userId, 
+  maxRecommendations = 3,
+  onBookClick 
+}: BookRecommendationsWidgetProps) {
   const [recommendations, setRecommendations] = useState<BookRecommendation[]>([]);
-  const [selectedBook, setSelectedBook] = useState<BookRecommendation | null>(null);
-  const [isVisible, setIsVisible] = useState(true);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [abTest] = useState(Math.random() < 0.5); // 50% for A/B testing
 
   useEffect(() => {
     fetchRecommendations();
-  }, [gameMode]);
+    // Track widget view for A/B testing
+    analytics.track('widget_view', {
+      component: 'book_recommendations',
+      ab_test: abTest ? 'enabled' : 'control',
+      user_id: userId
+    });
+  }, [maxRecommendations, abTest]);
 
   const fetchRecommendations = async () => {
     try {
-      const audience = gameMode === 'after-dark' ? 'after-dark' : 'all';
-      const response = await fetch(`/api/recommendations?audience=${audience}&limit=3`);
+      const response = await fetch(`/api/recommendations?limit=${maxRecommendations}`, {
+        headers: {
+          'x-api-key': 'public'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch recommendations');
+      
       const data = await response.json();
-      setRecommendations(data);
-    } catch (error) {
-      console.error('Failed to fetch recommendations:', error);
+      setRecommendations(data.recommendations);
+    } catch (err) {
+      setError('Unable to load recommendations');
+      console.error('Error fetching recommendations:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleUseIdea = () => {
-    if (!selectedBook || !onUseIdea) return;
+  const handleBookClick = async (book: BookRecommendation, isAffiliate: boolean = false) => {
+    const clickData = {
+      book_id: book.id,
+      book_title: book.title,
+      book_author: book.author,
+      affiliate_click: isAffiliate,
+      source: 'plot-twists-litdocket',
+      user_id: userId,
+      ab_test: abTest ? 'enabled' : 'control'
+    };
     
-    const randomCharacters = selectedBook.suggestedCharacters
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3);
-    
-    const randomSettings = selectedBook.suggestedSettings
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 2);
-    
-    onUseIdea(randomCharacters, randomSettings);
-    setIsExpanded(false);
+    try {
+      // Track click for analytics
+      analytics.track('book_click', clickData);
+      
+      // Send to backend for deeper tracking
+      await fetch(`/api/recommendations/${book.id}/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      
+      onBookClick?.(book.id);
+      
+      // Open affiliate link if available
+      if (isAffiliate && book.links?.amazon) {
+        window.open(book.links.amazon, '_blank');
+      }
+    } catch (err) {
+      console.error('Error tracking click:', err);
+    }
   };
 
-  if (!isVisible) return null;
+  if (!abTest) {
+    // Return empty for control group in A/B test
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg p-6 shadow-sm border">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Recommended Reading
+        </h3>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex space-x-3">
+              <div className="w-16 h-24 bg-gray-200 animate-pulse rounded" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-3/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg p-6 shadow-sm border border-yellow-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          Recommended Reading
+        </h3>
+        <p className="text-sm text-gray-600">{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="fixed top-4 right-4 z-50">
-      <AnimatePresence>
-        {!isExpanded && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8, x: 100 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.8, x: 100 }}
-            onClick={() => setIsExpanded(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg"
-          >
-            <BookOpen size={20} />
-            <span className="text-sm font-medium">Book Ideas</span>
-          </motion.button>
-        )}
-      </AnimatePresence>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-lg p-6 shadow-sm border"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">
+          Recommended Reading
+        </h3>
+        <span className="text-xs text-gray-500">Powered by Plot-Twists</span>
+      </div>
 
-      <AnimatePresence>
-        {isExpanded && (
+      <div className="space-y-4">
+        {recommendations.map((book) => (
           <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-80 max-h-[500px] overflow-y-auto"
+            key={book.id}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="group cursor-pointer"
+            onClick={() => handleBookClick(book, !!book.links?.amazon)}
           >
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Story Inspirations
-                </h3>
-                <button
-                  onClick={() => setIsExpanded(false)}
-                  className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Legal & literary classics with comedic twists
-              </p>
-            </div>
-
-            <div className="p-4 space-y-4">
-              {recommendations.map((book) => (
-                <motion.div
-                  key={book.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:border-purple-600 transition-colors cursor-pointer"
-                  onClick={() => setSelectedBook(book)}
-                >
-                  <h4 className="font-semibold text-sm text-gray-900 dark:text-white">
-                    {book.title}
-                  </h4>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    {book.description}
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 rounded">
-                      {book.genre}
-                    </span>
-                    {book.audience === 'after-dark' && (
-                      <span className="text-xs px-2 py-1 bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded">
-                        After Dark
-                      </span>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {selectedBook && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="border-t border-gray-200 dark:border-gray-700 p-4"
-              >
-                <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-2">
-                  {selectedBook.title}
+            <div className="flex space-x-3">
+              {book.imageUrl && (
+                <div className="relative w-16 h-24 flex-shrink-0">
+                  <Image
+                    src={book.imageUrl}
+                    alt={book.title}
+                    fill
+                    className="rounded object-cover"
+                    sizes="64px"
+                  />
+                </div>
+              )}
+              
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                  {book.title}
                 </h4>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                  {selectedBook.comedyPotential}
+                <p className="text-sm text-gray-600">by {book.author}</p>
+                <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                  {book.description}
                 </p>
                 
-                {onUseIdea && (
-                  <button
-                    onClick={handleUseIdea}
-                    className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm px-3 py-2 rounded flex items-center justify-center gap-1"
-                  >
-                    Use These Ideas
-                    <ChevronRight size={16} />
-                  </button>
-                )}
-                
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-                  Powered by Plot-Twists Literary Analysis
-                </p>
-              </motion.div>
-            )}
+                <div className="flex items-center mt-2 space-x-2">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <svg
+                        key={i}
+                        className={`w-3 h-3 ${i < Math.floor(book.rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                    <span className="ml-1 text-xs text-gray-500">
+                      {book.rating.toFixed(1)}
+                    </span>
+                  </div>
+                  
+                  {book.links?.amazon && (
+                    <span className="text-xs text-blue-600 group-hover:text-blue-700">
+                      Buy on Amazon →
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
           </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+        ))}
+      </div>
+
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <p className="text-xs text-gray-500 text-center">
+          From our legal reading collection at Plot-Twists
+        </p>
+      </div>
+    </motion.div>
   );
-};
+}

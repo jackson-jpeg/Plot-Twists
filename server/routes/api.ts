@@ -1,22 +1,32 @@
 import express from 'express';
+import { validateApiKey } from '../middleware/security';
 import { recommendationService } from '../services/recommendation.service';
 
 const router = express.Router();
 
-// Add recommendation routes
-router.get('/recommendations', async (req, res) => {
+// Public API endpoint for book recommendations
+router.get('/recommendations', validateApiKey, (req, res) => {
   try {
-    const { audience, limit, tags } = req.query;
-    const recommendations = await recommendationService.getRecommendations({
-      audience: audience as any,
-      limit: limit ? parseInt(limit as string) : undefined,
-      tags: tags ? (tags as string).split(',') : undefined
+    const limit = Math.min(parseInt(req.query.limit as string) || 3, 5);
+    const recommendations = recommendationService.getLegalRecommendations(limit);
+    
+    res.json({
+      recommendations,
+      source: 'plot-twists-litdocket-integration',
+      timestamp: new Date().toISOString()
     });
-    res.json(recommendations);
   } catch (error) {
-    console.error('Failed to fetch recommendations:', error);
     res.status(500).json({ error: 'Failed to fetch recommendations' });
   }
+});
+
+// Track recommendation clicks for analytics
+router.post('/recommendations/:bookId/track', (req, res) => {
+  const { bookId } = req.params;
+  const { userId } = req.body;
+  
+  recommendationService.trackBookClick(bookId, userId);
+  res.json({ success: true });
 });
 
 export default router;

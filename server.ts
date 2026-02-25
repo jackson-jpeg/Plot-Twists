@@ -31,6 +31,7 @@ import { calculateResults } from './server/services/voting.service'
 import { SocketRateLimiter } from './server/middleware/rateLimiter'
 import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname } from './server/utils/validation'
 import { withErrorHandler } from './server/middleware/socketErrorHandler'
+import { sendPushToUser } from './server/services/push.service'
 
 // Room Service (write-through Firestore cache)
 import * as roomService from './server/services/room.service'
@@ -745,6 +746,7 @@ app.prepare().then(async () => {
         // Broadcast new script to all clients
         io.to(roomCode).emit('script_ready', finalScript)
         io.to(roomCode).emit('game_state_change', 'PERFORMING')
+        pushOnStateChange(room, 'PERFORMING')
 
         // Start ambience if enabled
         if (room.audioSettings?.ambienceEnabled) {
@@ -1743,6 +1745,44 @@ app.prepare().then(async () => {
       socket.emit('latency_pong_response', { latency })
     }))
 
+    // ============================================================
+    // Resync after reconnection
+    // ============================================================
+
+    socket.on('request_resync', withErrorHandler(socket, 'request_resync', (roomCode: string, playerId: string, callback: (response: { success: boolean; gameState?: string; players?: Player[]; script?: any; currentLineIndex?: number; error?: string }) => void) => {
+      try {
+        const upperCode = roomCode.toUpperCase()
+        const room = roomService.getRoomFromCache(upperCode)
+        if (!room) {
+          callback({ success: false, error: 'Room not found' })
+          return
+        }
+
+        // Find the player by persistent playerId
+        const player = room.players.get(playerId)
+        if (!player) {
+          callback({ success: false, error: 'Player not found in room' })
+          return
+        }
+
+        // Update the player's socket ID and re-join the Socket.IO room
+        player.socketId = socket.id
+        socket.join(upperCode)
+        logger.info(`[Resync] Player ${player.nickname} (${playerId}) reconnected to room ${upperCode} with new socket ${socket.id}`)
+
+        callback({
+          success: true,
+          gameState: room.gameState,
+          players: Array.from(room.players.values()),
+          script: room.script || undefined,
+          currentLineIndex: room.currentLineIndex ?? 0,
+        })
+      } catch (error) {
+        logger.error('[Resync] Error:', error)
+        callback({ success: false, error: 'Resync failed' })
+      }
+    }))
+
     // Handle disconnect
     socket.on('disconnect', withErrorHandler(socket, 'disconnect', (reason) => {
       logger.info('Client disconnected:', socket.id, 'Reason:', reason)
@@ -1781,9 +1821,26 @@ app.prepare().then(async () => {
             }
           }
         }
-      }, DISCONNECT_GRACE_PERIOD)
+      }, 15000) // 15 second grace period — brief network blips shouldn't remove players mid-performance
     }))
   })
+
+  // Helper: fire-and-forget push notifications on key state transitions
+  // Currently sends to host only (players don't store UIDs on Player model yet)
+  function pushOnStateChange(room: Room, newState: string) {
+    if (!room.hostUid) return
+
+    const messages: Record<string, { title: string; body: string }> = {
+      PERFORMING: { title: 'Showtime!', body: 'The script is ready — get on stage.' },
+      VOTING: { title: 'Vote for MVP!', body: 'Who stole the show?' },
+      RESULTS: { title: 'Results are in!', body: 'See who won this round.' },
+    }
+
+    const msg = messages[newState]
+    if (!msg) return
+
+    sendPushToUser(room.hostUid, msg.title, msg.body, { roomCode: room.code }).catch(() => {})
+  }
 
   // Helper function to start script generation
   async function startScriptGeneration(room: Room, io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>) {

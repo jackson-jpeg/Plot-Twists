@@ -1,0 +1,96 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { registerPushNotifications } from '@/lib/pushNotifications'
+
+const DISMISSED_KEY = 'pt-push-prompt-dismissed'
+
+export function PushPermissionPrompt() {
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    // Don't show if already dismissed, already granted, or not supported
+    if (localStorage.getItem(DISMISSED_KEY)) return
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') return
+    if (typeof Notification !== 'undefined' && Notification.permission === 'denied') return
+
+    // Show after a short delay so it doesn't compete with initial load
+    const timer = setTimeout(() => setShow(true), 3000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const handleEnable = async () => {
+    setShow(false)
+    localStorage.setItem(DISMISSED_KEY, '1')
+    await registerPushNotifications()
+  }
+
+  const handleDismiss = () => {
+    setShow(false)
+    localStorage.setItem(DISMISSED_KEY, '1')
+  }
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          style={{
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: '12px',
+            padding: '16px',
+            marginTop: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+          }}
+        >
+          <span style={{ fontSize: '1.5rem' }}>🔔</span>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text)', margin: 0 }}>
+              Get notified when it&apos;s your turn?
+            </p>
+            <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>
+              We&apos;ll ping you when the game needs you.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+            <button
+              onClick={handleDismiss}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--color-text-secondary)',
+                fontSize: '13px',
+                cursor: 'pointer',
+                padding: '6px 10px',
+              }}
+            >
+              Not now
+            </button>
+            <button
+              onClick={handleEnable}
+              style={{
+                background: 'var(--color-accent)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                padding: '6px 14px',
+              }}
+            >
+              Enable
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}

@@ -1,7 +1,16 @@
 'use client'
 
 import { useCallback, useEffect, useRef } from 'react'
-import confetti from 'canvas-confetti'
+
+// Lazy-load canvas-confetti on first use
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let confettiModule: any = null
+async function getConfetti(): Promise<(opts?: import('canvas-confetti').Options) => void> {
+  if (!confettiModule) {
+    confettiModule = (await import('canvas-confetti')).default
+  }
+  return confettiModule
+}
 
 export function useConfetti() {
   const intervalsRef = useRef<NodeJS.Timeout[]>([])
@@ -13,14 +22,15 @@ export function useConfetti() {
       intervalsRef.current = []
     }
   }, [])
-  const fireConfetti = useCallback(() => {
+  const fireConfetti = useCallback(async () => {
+    const confetti = await getConfetti()
     const count = 200
     const defaults = {
       origin: { y: 0.7 },
       zIndex: 10000
     }
 
-    function fire(particleRatio: number, opts: confetti.Options) {
+    function fire(particleRatio: number, opts: import('canvas-confetti').Options) {
       confetti({
         ...defaults,
         ...opts,
@@ -56,7 +66,8 @@ export function useConfetti() {
     })
   }, [])
 
-  const fireWinnerConfetti = useCallback(() => {
+  const fireWinnerConfetti = useCallback(async () => {
+    const confetti = await getConfetti()
     const duration = 3 * 1000
     const animationEnd = Date.now() + duration
     const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 10000 }
@@ -93,7 +104,8 @@ export function useConfetti() {
     intervalsRef.current.push(interval)
   }, [])
 
-  const fireCelebration = useCallback(() => {
+  const fireCelebration = useCallback(async () => {
+    const confetti = await getConfetti()
     confetti({
       particleCount: 100,
       spread: 70,

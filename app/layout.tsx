@@ -98,10 +98,10 @@ export default function RootLayout({
         <HomeJsonLd />
         <ServiceWorkerRegistration />
         <NativeBootstrap />
-        <ConnectionStatus />
         <ThemeProvider>
           <AuthProvider>
             <SocketProvider>
+              <ConnectionStatus />
               {children}
             </SocketProvider>
           </AuthProvider>

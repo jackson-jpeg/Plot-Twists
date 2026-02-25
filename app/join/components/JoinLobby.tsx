@@ -4,6 +4,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import type { Player, PlayerRole } from '@/lib/types'
 import { VARIANTS } from '@/lib/animations'
+import { PushPermissionPrompt } from '@/components/PushPermissionPrompt'
 
 export interface JoinLobbyProps {
   players: Player[]
@@ -44,6 +45,7 @@ export function JoinLobby({ players, myRole, selectedPackName }: JoinLobbyProps)
             </div>
           ))}
         </div>
+        <PushPermissionPrompt />
       </div>
     </motion.div>
   )

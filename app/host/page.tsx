@@ -14,7 +14,8 @@ import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
 import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
 import { useAuth } from '@/contexts/AuthContext'
-import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
+import dynamic from 'next/dynamic'
+const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false })
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
 import { analytics } from '@/lib/analytics'
 import { useHostSocket } from '@/hooks/useHostSocket'
@@ -94,7 +95,7 @@ export default function HostPage() {
     spectatorMessages,
     selection, setSelection,
     hasSubmittedSelection, setHasSubmittedSelection,
-  } = useHostSocket({ socket, isConnected, settings, toast, achievementToasts })
+  } = useHostSocket({ socket, isConnected, settings, roomCode, playerId: user?.uid || '', toast, achievementToasts })
 
   // Auth guard
   useEffect(() => {

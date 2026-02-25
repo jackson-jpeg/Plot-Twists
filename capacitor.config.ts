@@ -24,6 +24,10 @@ const config: CapacitorConfig = {
     preferredContentMode: 'mobile',
   },
 
+  android: {
+    backgroundColor: '#FDFCFA',
+  },
+
   plugins: {
     SplashScreen: {
       launchAutoHide: false,           // We call hide() manually in NativeBootstrap

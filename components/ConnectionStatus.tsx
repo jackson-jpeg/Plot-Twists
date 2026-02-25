@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSocket } from '@/contexts/SocketContext'
 
 export function ConnectionStatus() {
   const [isOnline, setIsOnline] = useState(true)
+  const { connectionState, reconnectAttempt } = useSocket()
 
   useEffect(() => {
     // Set initial state (avoid SSR mismatch by defaulting to true)
@@ -22,9 +24,19 @@ export function ConnectionStatus() {
     }
   }, [])
 
+  const showBanner = !isOnline || connectionState === 'reconnecting' || (connectionState === 'disconnected' && reconnectAttempt > 0)
+  const isFullyLost = connectionState === 'disconnected' && reconnectAttempt > 0
+
+  let message = 'No internet connection'
+  if (isOnline && connectionState === 'reconnecting') {
+    message = `Reconnecting... (attempt ${reconnectAttempt})`
+  } else if (isOnline && isFullyLost) {
+    message = 'Connection lost'
+  }
+
   return (
     <AnimatePresence>
-      {!isOnline && (
+      {showBanner && (
         <motion.div
           initial={{ opacity: 0, y: -40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -59,7 +71,25 @@ export function ConnectionStatus() {
             <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
             <line x1="12" y1="20" x2="12.01" y2="20" />
           </svg>
-          No internet connection
+          {message}
+          {isFullyLost && (
+            <button
+              onClick={() => window.location.reload()}
+              style={{
+                marginLeft: '8px',
+                padding: '4px 12px',
+                background: 'rgba(255,255,255,0.2)',
+                border: '1px solid rgba(255,255,255,0.4)',
+                borderRadius: '6px',
+                color: '#fff',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Refresh
+            </button>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

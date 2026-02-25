@@ -6,7 +6,7 @@ import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe
 import { useAuth } from '@/contexts/AuthContext'
 import { CREDIT_PACKAGES } from '@/lib/credits'
 import { getApiBaseUrl } from '@/lib/api'
-import { stripePromise } from '@/lib/stripe'
+import { getStripePromise } from '@/lib/stripe'
 import { analytics } from '@/lib/analytics'
 import { isIOSNative } from '@/lib/platform'
 import { purchaseViaStoreKit } from '@/lib/purchases'
@@ -165,7 +165,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   {/* Embedded Stripe checkout */}
                   <div className="purchase-checkout-body">
                     <EmbeddedCheckoutProvider
-                      stripe={stripePromise}
+                      stripe={getStripePromise()}
                       options={{ clientSecret }}
                     >
                       <EmbeddedCheckout />

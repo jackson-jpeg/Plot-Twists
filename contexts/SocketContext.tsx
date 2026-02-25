@@ -1,10 +1,11 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react'
 import { io, Socket } from 'socket.io-client'
 import type { ServerToClientEvents, ClientToServerEvents } from '@/lib/types'
 import { getFirebaseAuth, initializeFirebase } from '@/lib/firebase'
 import { logger } from '@/lib/logger'
+import { SocketActionQueue } from '@/lib/socketQueue'
 
 type SocketType = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -14,12 +15,16 @@ interface SocketContextType {
   socket: SocketType | null
   isConnected: boolean
   connectionState: ConnectionState
+  reconnectAttempt: number
+  socketEmit: <E extends keyof ClientToServerEvents>(event: E, ...args: Parameters<ClientToServerEvents[E]>) => void
 }
 
 const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
-  connectionState: 'disconnected'
+  connectionState: 'disconnected',
+  reconnectAttempt: 0,
+  socketEmit: () => {},
 })
 
 export function useSocket() {
@@ -28,6 +33,7 @@ export function useSocket() {
 
 // Singleton socket instance to prevent multiple connections
 let globalSocket: SocketType | null = null
+const actionQueue = new SocketActionQueue()
 
 /**
  * Get the current user's Firebase ID token for socket auth.
@@ -67,7 +73,17 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<SocketType | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected')
+  const [reconnectAttempt, setReconnectAttempt] = useState(0)
   const initRef = useRef(false)
+
+  const socketEmit = useCallback(<E extends keyof ClientToServerEvents>(event: E, ...args: Parameters<ClientToServerEvents[E]>) => {
+    if (globalSocket?.connected) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (globalSocket as any).emit(event, ...args)
+    } else {
+      actionQueue.enqueue(event as string, ...args)
+    }
+  }, [])
 
   useEffect(() => {
     // Prevent double initialization in strict mode
@@ -113,9 +129,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         globalSocket = io(socketUrl, {
           path: '/socket.io',
           reconnection: true,
-          reconnectionDelay: 1000,
-          reconnectionDelayMax: 5000,
-          reconnectionAttempts: 10,
+          reconnectionDelay: 500,
+          reconnectionDelayMax: 15000,
+          reconnectionAttempts: 50,
           transports: ['polling', 'websocket'],
           upgrade: true,
           timeout: 20000,
@@ -133,6 +149,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           logger.info('Socket connected:', globalSocket?.id)
           setIsConnected(true)
           setConnectionState('connected')
+          setReconnectAttempt(0)
         })
 
         globalSocket.on('disconnect', (reason) => {
@@ -155,9 +172,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           }
         })
 
-        globalSocket.io.on('reconnect_attempt', async () => {
-          logger.info('Socket reconnecting...')
+        globalSocket.io.on('reconnect_attempt', async (attempt) => {
+          logger.info('Socket reconnecting... attempt', attempt)
           setConnectionState('reconnecting')
+          setReconnectAttempt(attempt)
 
           // Refresh token on reconnect
           const freshToken = await getIdToken()
@@ -169,6 +187,14 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         globalSocket.io.on('reconnect', () => {
           logger.info('Socket reconnected')
           setConnectionState('connected')
+          setReconnectAttempt(0)
+          // Flush any queued actions
+          if (globalSocket) actionQueue.flush(globalSocket)
+        })
+
+        globalSocket.io.on('reconnect_failed', () => {
+          logger.error('Socket reconnection failed after all attempts')
+          setConnectionState('disconnected')
         })
       }
 
@@ -232,13 +258,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected, connectionState }}>
+    <SocketContext.Provider value={{ socket, isConnected, connectionState, reconnectAttempt, socketEmit }}>
       {children}
     </SocketContext.Provider>
   )
 }
 
-// Connection Status Component
+// Connection Status Component (legacy - used in HostLobby etc.)
 export function ConnectionStatus({ showLabel = true }: { showLabel?: boolean }) {
   const { connectionState } = useSocket()
 

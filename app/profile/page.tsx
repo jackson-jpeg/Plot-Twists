@@ -11,9 +11,10 @@ import { AuthModal } from '@/components/AuthModal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 import { StatsSkeleton, Skeleton } from '@/components/EmptyState'
-import { AccountSettings } from '@/components/AccountSettings'
 import { CreditHeaderBadge, useCreditBalance } from '@/components/CreditBadge'
-import { PurchaseCreditsModal } from '@/components/PurchaseCreditsModal'
+import dynamic from 'next/dynamic'
+const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false })
+const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false })
 import { ReferralCard } from '@/components/ReferralCard'
 import type { PaymentTransaction, PlayerStats } from '@/lib/types'
 import { getApiBaseUrl } from '@/lib/api'

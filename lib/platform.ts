@@ -1,13 +1,13 @@
 /**
- * Platform detection for Capacitor / iOS native shell.
+ * Platform detection for Capacitor native shells (iOS + Android).
  *
  * WKWebView UA contains "AppleWebKit" but NOT "Safari/" — that's the key
  * signal that distinguishes the Capacitor shell from mobile Safari.
  */
 
-export type Platform = 'ios-native' | 'web-ios' | 'web-android' | 'web-desktop'
+export type Platform = 'ios-native' | 'android-native' | 'web-ios' | 'web-android' | 'web-desktop'
 
-/** True when running inside the Capacitor WKWebView shell */
+/** True when running inside the Capacitor native shell (iOS or Android) */
 export function isCapacitorNative(): boolean {
   if (typeof window === 'undefined') return false
   // Capacitor injects this on the window object
@@ -24,10 +24,17 @@ export function isIOSNative(): boolean {
   return /iPhone|iPad|iPod/.test(navigator.userAgent)
 }
 
+/** True when running inside the Android Capacitor shell specifically */
+export function isAndroidNative(): boolean {
+  if (!isCapacitorNative()) return false
+  return /Android/.test(navigator.userAgent)
+}
+
 /** Categorized platform for branching logic */
 export function getPlatform(): Platform {
   if (typeof window === 'undefined') return 'web-desktop'
   if (isIOSNative()) return 'ios-native'
+  if (isAndroidNative()) return 'android-native'
   const ua = navigator.userAgent
   if (/iPhone|iPad|iPod/.test(ua)) return 'web-ios'
   if (/Android/.test(ua)) return 'web-android'

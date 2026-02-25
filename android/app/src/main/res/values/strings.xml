@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Plot Twists</string>
+    <string name="title_activity_main">Plot Twists</string>
+    <string name="package_name">com.plottwists.app</string>
+    <string name="custom_url_scheme">com.plottwists.app</string>
+</resources>

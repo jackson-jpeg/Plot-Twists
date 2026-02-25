@@ -470,6 +470,9 @@ export interface ClientToServerEvents {
   // Referral System Events
   get_referral_info: (callback: (response: { success: boolean, referralCode?: string, referralCreditsEarned?: number, referralCount?: number, error?: string }) => void) => void
   redeem_referral: (code: string, callback: (response: { success: boolean, error?: string }) => void) => void
+
+  // Resync after reconnection
+  request_resync: (roomCode: string, playerId: string, callback: (response: { success: boolean, gameState?: string, players?: Player[], script?: Script, currentLineIndex?: number, error?: string }) => void) => void
 }
 
 // ============================================================

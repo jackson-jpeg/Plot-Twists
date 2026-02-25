@@ -46,6 +46,23 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
   if (url.protocol === 'ws:' || url.protocol === 'wss:') return
   if (url.pathname.startsWith('/api/')) return
+
+  // Cache-first for content-hashed static assets (immutable)
+  if (url.pathname.startsWith('/_next/static/')) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached
+        return fetch(event.request).then((response) => {
+          const clone = response.clone()
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          return response
+        })
+      })
+    )
+    return
+  }
+
+  // Skip other _next paths (e.g. _next/data)
   if (url.pathname.startsWith('/_next/')) return
 
   event.respondWith(
@@ -74,5 +91,44 @@ self.addEventListener('fetch', (event) => {
           }
         })
       })
+  )
+})
+
+// Push notifications
+self.addEventListener('push', (event) => {
+  if (!event.data) return
+  try {
+    const data = event.data.json()
+    const options = {
+      body: data.body || '',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: data.data || {},
+      vibrate: [200, 100, 200],
+    }
+    event.waitUntil(self.registration.showNotification(data.title || 'Plot Twists', options))
+  } catch {
+    // Invalid push payload
+  }
+})
+
+// Notification click — open/focus the app
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const roomCode = event.notification.data?.roomCode
+  const urlPath = roomCode ? `/join?code=${roomCode}` : '/'
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      // Focus existing window if available
+      for (const client of clients) {
+        if (new URL(client.url).origin === self.location.origin && 'focus' in client) {
+          client.navigate(urlPath)
+          return client.focus()
+        }
+      }
+      // Otherwise open a new window
+      return self.clients.openWindow(urlPath)
+    })
   )
 })

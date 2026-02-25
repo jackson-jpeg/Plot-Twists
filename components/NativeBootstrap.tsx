@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { isCapacitorNative } from '@/lib/platform'
+import { setupPushListeners } from '@/lib/pushNotifications'
 
 /**
  * Runs once on mount inside Capacitor to make the WebView feel native.
@@ -71,7 +72,16 @@ export function NativeBootstrap() {
         }
       })
 
-      // 7. Deep link handling — navigate when a universal link opens the app
+      // 7. Android back button — navigate back or minimize
+      App.addListener('backButton', ({ canGoBack }) => {
+        if (canGoBack) {
+          window.history.back()
+        } else {
+          App.minimizeApp()
+        }
+      })
+
+      // 8. Deep link handling — navigate when a universal link opens the app
       App.addListener('appUrlOpen', ({ url }) => {
         try {
           const parsed = new URL(url)
@@ -84,6 +94,9 @@ export function NativeBootstrap() {
         }
       })
     }).catch(() => {})
+
+    // 9. Set up push notification tap handlers
+    setupPushListeners()
   }, [])
 
   return null

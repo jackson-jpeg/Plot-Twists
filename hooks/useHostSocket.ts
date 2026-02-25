@@ -15,12 +15,14 @@ export interface UseHostSocketOptions {
   socket: AppSocket | null
   isConnected: boolean
   settings: RoomSettings
+  roomCode: string
+  playerId: string
   toast: { success: (m: string) => void; error: (m: string) => void; info: (m: string) => void }
   achievementToasts: { addAchievement: (a: Achievement) => void }
 }
 
 export function useHostSocket({
-  socket, isConnected, settings, toast, achievementToasts,
+  socket, isConnected, settings, roomCode, playerId, toast, achievementToasts,
 }: UseHostSocketOptions) {
   const [gameState, setGameState] = useState<GameState>('LOBBY')
   const [players, setPlayers] = useState<Player[]>([])
@@ -55,6 +57,32 @@ export function useHostSocket({
   gameStateRef.current = gameState
   const playersRef = useRef(players)
   playersRef.current = players
+  const roomCodeRef = useRef(roomCode)
+  roomCodeRef.current = roomCode
+  const playerIdRef = useRef(playerId)
+  playerIdRef.current = playerId
+
+  // Resync on reconnect
+  useEffect(() => {
+    if (!socket || !isConnected) return
+    const code = roomCodeRef.current
+    const pid = playerIdRef.current
+    if (!code || !pid) return
+    // Only resync if we were past LOBBY (i.e. had a game in progress)
+    if (gameStateRef.current === 'LOBBY') return
+
+    socket.emit('request_resync', code, pid, (response) => {
+      if (response.success) {
+        if (response.gameState) setGameState(response.gameState as GameState)
+        if (response.players) setPlayers(response.players)
+        if (response.script) {
+          setScript(response.script)
+          setScriptImageUrl(response.script.imageUrl || null)
+        }
+        if (response.currentLineIndex !== undefined) setCurrentLineIndex(response.currentLineIndex)
+      }
+    })
+  }, [socket, isConnected])
 
   // Socket listeners
   useEffect(() => {

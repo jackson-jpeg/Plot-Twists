@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { useAuth, getMissingFirebaseConfig } from '@/contexts/AuthContext'
 import { AuthModal } from './AuthModal'
 import { CreditBadge, CreditHeaderBadge } from './CreditBadge'
-import { PurchaseCreditsModal } from './PurchaseCreditsModal'
+import dynamic from 'next/dynamic'
+const PurchaseCreditsModal = dynamic(() => import('./PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false })
 
 export function UserMenu() {
   const { user, loading, signOut, isConfigured } = useAuth()

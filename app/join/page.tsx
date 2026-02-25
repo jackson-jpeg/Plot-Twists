@@ -71,6 +71,7 @@ function JoinPageContent() {
   } = useJoinSocket({
     socket, isConnected, myPlayerId, myRole,
     selectionCharacter: selection.character,
+    roomCode,
     toast, achievementToasts,
   })
 

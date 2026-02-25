@@ -18,12 +18,13 @@ export interface UseJoinSocketOptions {
   myPlayerId: string
   myRole: PlayerRole
   selectionCharacter: string
+  roomCode: string
   toast: { success: (m: string) => void; error: (m: string) => void; info: (m: string) => void }
   achievementToasts: { addAchievement: (a: Achievement) => void }
 }
 
 export function useJoinSocket({
-  socket, isConnected, myPlayerId, myRole, selectionCharacter, toast, achievementToasts,
+  socket, isConnected, myPlayerId, myRole, selectionCharacter, roomCode, toast, achievementToasts,
 }: UseJoinSocketOptions) {
   const [gameState, setGameState] = useState<GameState>('LOBBY')
   const [players, setPlayers] = useState<Player[]>([])
@@ -55,6 +56,29 @@ export function useJoinSocket({
   myRoleRef.current = myRole
   const playersRef = useRef(players)
   playersRef.current = players
+  const roomCodeRef = useRef(roomCode)
+  roomCodeRef.current = roomCode
+
+  // Resync on reconnect
+  useEffect(() => {
+    if (!socket || !isConnected) return
+    const code = roomCodeRef.current
+    const pid = myPlayerIdRef.current
+    if (!code || !pid) return
+    if (gameStateRef.current === 'LOBBY') return
+
+    socket.emit('request_resync', code, pid, (response) => {
+      if (response.success) {
+        if (response.gameState) setGameState(response.gameState as GameState)
+        if (response.players) setPlayers(response.players)
+        if (response.script) {
+          setScript(response.script)
+          setScriptImageUrl(response.script.imageUrl || null)
+        }
+        if (response.currentLineIndex !== undefined) setCurrentLineIndex(response.currentLineIndex)
+      }
+    })
+  }, [socket, isConnected])
 
   // Loading progress animation
   useEffect(() => {

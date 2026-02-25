@@ -1,4 +1,4 @@
-import { sanitizeInput, isValidRoomCode, isValidNickname, isValidUUID } from '../../../../server/utils/validation'
+import { sanitizeInput, isValidRoomCode, isValidNickname, isValidUUID, validateCardSelection, isValidGameMode, isValidPhoneNumber } from '../../../../server/utils/validation'
 
 describe('Validation Utils', () => {
   describe('sanitizeInput', () => {
@@ -145,6 +145,80 @@ describe('Validation Utils', () => {
       expect(isValidUUID(null as any)).toBe(false)
       expect(isValidUUID(undefined as any)).toBe(false)
       expect(isValidUUID(123 as any)).toBe(false)
+    })
+  })
+
+  describe('validateCardSelection', () => {
+    it('should accept valid selections', () => {
+      const result = validateCardSelection({ character: 'Detective', setting: 'Library', circumstance: 'During a storm' })
+      expect(result).toEqual({ character: 'Detective', setting: 'Library', circumstance: 'During a storm' })
+    })
+
+    it('should reject non-object inputs', () => {
+      expect(validateCardSelection(null)).toBeNull()
+      expect(validateCardSelection(undefined)).toBeNull()
+      expect(validateCardSelection('string')).toBeNull()
+      expect(validateCardSelection(123)).toBeNull()
+    })
+
+    it('should reject missing fields', () => {
+      expect(validateCardSelection({ character: 'A' })).toBeNull()
+      expect(validateCardSelection({ character: 'A', setting: 'B' })).toBeNull()
+    })
+
+    it('should sanitize XSS in card fields', () => {
+      const result = validateCardSelection({
+        character: '<script>alert(1)</script>Detective',
+        setting: 'Library',
+        circumstance: 'Storm'
+      })
+      expect(result).not.toBeNull()
+      expect(result!.character).not.toContain('<')
+    })
+
+    it('should reject fields that sanitize to empty', () => {
+      expect(validateCardSelection({ character: '<>', setting: 'B', circumstance: 'C' })).toBeNull()
+    })
+
+    it('should truncate overly long fields', () => {
+      const result = validateCardSelection({
+        character: 'A'.repeat(500),
+        setting: 'B',
+        circumstance: 'C'
+      })
+      expect(result).not.toBeNull()
+      expect(result!.character.length).toBeLessThanOrEqual(200)
+    })
+  })
+
+  describe('isValidGameMode', () => {
+    it('should accept valid game modes', () => {
+      expect(isValidGameMode('SOLO')).toBe(true)
+      expect(isValidGameMode('HEAD_TO_HEAD')).toBe(true)
+      expect(isValidGameMode('ENSEMBLE')).toBe(true)
+    })
+
+    it('should reject invalid game modes', () => {
+      expect(isValidGameMode('INVALID')).toBe(false)
+      expect(isValidGameMode('')).toBe(false)
+      expect(isValidGameMode(null)).toBe(false)
+      expect(isValidGameMode(123)).toBe(false)
+    })
+  })
+
+  describe('isValidPhoneNumber', () => {
+    it('should accept valid E.164 phone numbers', () => {
+      expect(isValidPhoneNumber('+14155551234')).toBe(true)
+      expect(isValidPhoneNumber('+442071234567')).toBe(true)
+      expect(isValidPhoneNumber('+8613800138000')).toBe(true)
+    })
+
+    it('should reject invalid phone numbers', () => {
+      expect(isValidPhoneNumber('4155551234')).toBe(false) // Missing +
+      expect(isValidPhoneNumber('+0123456789')).toBe(false) // Starts with 0
+      expect(isValidPhoneNumber('+')).toBe(false)
+      expect(isValidPhoneNumber('')).toBe(false)
+      expect(isValidPhoneNumber('+1')).toBe(false) // Too short
     })
   })
 })

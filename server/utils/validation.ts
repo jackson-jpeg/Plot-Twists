@@ -1,4 +1,5 @@
 import { MAX_NICKNAME_LENGTH } from './constants'
+import type { CardSelection } from '../../lib/types'
 
 /**
  * Sanitize user input to prevent XSS and injection attacks
@@ -56,4 +57,42 @@ export function isValidUUID(id: string): boolean {
   }
 
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+}
+
+const MAX_CARD_FIELD_LENGTH = 200
+const VALID_GAME_MODES = ['SOLO', 'HEAD_TO_HEAD', 'ENSEMBLE'] as const
+
+/**
+ * Validate and sanitize a CardSelection object from the client.
+ * Returns sanitized selection or null if invalid.
+ */
+export function validateCardSelection(selections: unknown): CardSelection | null {
+  if (!selections || typeof selections !== 'object') return null
+
+  const sel = selections as Record<string, unknown>
+  if (typeof sel.character !== 'string' || typeof sel.setting !== 'string' || typeof sel.circumstance !== 'string') {
+    return null
+  }
+
+  const character = sanitizeInput(sel.character, MAX_CARD_FIELD_LENGTH)
+  const setting = sanitizeInput(sel.setting, MAX_CARD_FIELD_LENGTH)
+  const circumstance = sanitizeInput(sel.circumstance, MAX_CARD_FIELD_LENGTH)
+
+  if (!character || !setting || !circumstance) return null
+
+  return { character, setting, circumstance }
+}
+
+/**
+ * Validate a game mode string.
+ */
+export function isValidGameMode(mode: unknown): mode is typeof VALID_GAME_MODES[number] {
+  return typeof mode === 'string' && (VALID_GAME_MODES as readonly string[]).includes(mode)
+}
+
+/**
+ * Validate phone number format (E.164).
+ */
+export function isValidPhoneNumber(phone: string): boolean {
+  return typeof phone === 'string' && /^\+[1-9]\d{1,14}$/.test(phone)
 }

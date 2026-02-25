@@ -29,8 +29,8 @@ import { generateScript } from './server/services/scriptGeneration.service'
 import { startTeleprompterSync } from './server/services/teleprompter.service'
 import { calculateResults } from './server/services/voting.service'
 import { extractJSON } from './server/utils/jsonExtractor'
-import { SocketRateLimiter, sendCodeLimiter, verifyCodeLimiter } from './server/middleware/rateLimiter'
-import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname } from './server/utils/validation'
+import { SocketRateLimiter, sendCodeLimiter, verifyCodeLimiter, gameMetadataLimiter } from './server/middleware/rateLimiter'
+import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname, validateCardSelection, isValidGameMode, isValidPhoneNumber } from './server/utils/validation'
 import { withErrorHandler } from './server/middleware/socketErrorHandler'
 import { sendPushToUser } from './server/services/push.service'
 
@@ -219,7 +219,7 @@ app.prepare().then(async () => {
     logger.info('Client connected:', socket.id)
 
     // Create room
-    socket.on('create_room', (settings, callback) => {
+    socket.on('create_room', withErrorHandler(socket, 'create_room', (settings, callback) => {
       // Rate limiting
       if (!roomCreationLimiter.check(socket.id)) {
         logger.warn(`Rate limit exceeded for room creation: ${socket.id}`)
@@ -274,10 +274,10 @@ app.prepare().then(async () => {
         logger.error('Error creating room:', error)
         callback({ success: false, error: 'Failed to create room' })
       }
-    })
+    }))
 
     // Join room
-    socket.on('join_room', (roomCode, nickname, callback) => {
+    socket.on('join_room', withErrorHandler(socket, 'join_room', (roomCode, nickname, callback) => {
       // Rate limiting
       if (!joinRoomLimiter.check(socket.id)) {
         logger.warn(`Rate limit exceeded for join room: ${socket.id}`)
@@ -373,10 +373,10 @@ app.prepare().then(async () => {
         logger.error('Error joining room:', error)
         callback({ success: false, error: 'Failed to join room' })
       }
-    })
+    }))
 
     // Submit card selections
-    socket.on('submit_cards', (roomCode, selections, callback) => {
+    socket.on('submit_cards', withErrorHandler(socket, 'submit_cards', (roomCode, selections, callback) => {
       try {
         const room = roomService.getRoomFromCache(roomCode)
         if (!room) {
@@ -387,6 +387,13 @@ app.prepare().then(async () => {
         // Only allow submissions during SELECTION phase
         if (room.gameState !== 'SELECTION') {
           callback({ success: false, error: 'Card selection is not active' })
+          return
+        }
+
+        // Validate and sanitize card selections
+        const validatedSelections = validateCardSelection(selections)
+        if (!validatedSelections) {
+          callback({ success: false, error: 'Invalid card selections' })
           return
         }
 
@@ -412,14 +419,7 @@ app.prepare().then(async () => {
           return
         }
 
-        // Sanitize card selections to prevent prompt injection
-        const sanitizedSelections = {
-          character: sanitizeUserInput(selections.character || '', 100),
-          setting: sanitizeUserInput(selections.setting || '', 100),
-          circumstance: sanitizeUserInput(selections.circumstance || '', 100),
-        }
-
-        room.selections.set(playerId, sanitizedSelections)
+        room.selections.set(playerId, validatedSelections)
         const player = room.players.get(playerId)
         if (player) {
           player.hasSubmittedSelection = true
@@ -454,7 +454,7 @@ app.prepare().then(async () => {
         logger.error('Error submitting cards:', error)
         callback({ success: false, error: 'Failed to submit selections' })
       }
-    })
+    }))
 
     // Start game
     socket.on('start_game', withErrorHandler(socket, 'start_game', (roomCode) => {
@@ -647,7 +647,7 @@ app.prepare().then(async () => {
     }))
 
     // Request sequel
-    socket.on('request_sequel', async (roomCode) => {
+    socket.on('request_sequel', withErrorHandler(socket, 'request_sequel', async (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) {
         logger.info(`Cannot generate sequel: room or script not found for ${roomCode}`)
@@ -775,7 +775,7 @@ app.prepare().then(async () => {
         roomService.updateRoom(room)
         io.to(roomCode).emit('game_state_change', 'RESULTS')
       }
-    })
+    }))
 
     // Request new game (keeps players in room, no page reload)
     socket.on('request_new_game', withErrorHandler(socket, 'request_new_game', (roomCode, options?: NewGameOptions) => {
@@ -841,7 +841,7 @@ app.prepare().then(async () => {
     }))
 
     // Get room preview (for join page)
-    socket.on('get_room_preview', (roomCode, callback) => {
+    socket.on('get_room_preview', withErrorHandler(socket, 'get_room_preview', (roomCode, callback) => {
       try {
         if (!isValidRoomCode(roomCode)) {
           callback({ success: false, error: 'Invalid room code format' })
@@ -874,7 +874,7 @@ app.prepare().then(async () => {
         logger.error('Error getting room preview:', error)
         callback({ success: false, error: 'Failed to get room info' })
       }
-    })
+    }))
 
     // Update room settings
     socket.on('update_room_settings', withErrorHandler(socket, 'update_room_settings', (roomCode, settings) => {
@@ -883,9 +883,9 @@ app.prepare().then(async () => {
       if (!requireHost(room, socket)) return
 
       if (settings.isMature !== undefined) {
-        room.isMature = settings.isMature
+        room.isMature = Boolean(settings.isMature)
       }
-      if (settings.gameMode !== undefined) {
+      if (settings.gameMode !== undefined && isValidGameMode(settings.gameMode)) {
         room.gameMode = settings.gameMode
         // Update host role when switching to/from Solo mode
         if (settings.gameMode === 'SOLO') {
@@ -1176,7 +1176,7 @@ app.prepare().then(async () => {
     // ============================================================
 
     // List available card packs
-    socket.on('list_card_packs', async (callback) => {
+    socket.on('list_card_packs', withErrorHandler(socket, 'list_card_packs', async (callback) => {
       try {
         const packs = await listCardPacks()
         callback({ success: true, packs })
@@ -1184,10 +1184,10 @@ app.prepare().then(async () => {
         logger.error('Error listing card packs:', error)
         callback({ success: false, error: 'Failed to list card packs' })
       }
-    })
+    }))
 
     // Select a card pack for the room
-    socket.on('select_card_pack', async (roomCode, packId, callback) => {
+    socket.on('select_card_pack', withErrorHandler(socket, 'select_card_pack', async (roomCode, packId, callback) => {
       try {
         const room = roomService.getRoomFromCache(roomCode)
         if (!room) {
@@ -1223,10 +1223,10 @@ app.prepare().then(async () => {
         logger.error('Error selecting card pack:', error)
         callback({ success: false, error: 'Failed to select card pack' })
       }
-    })
+    }))
 
     // Create a new card pack
-    socket.on('create_card_pack', async (packData, callback) => {
+    socket.on('create_card_pack', withErrorHandler(socket, 'create_card_pack', async (packData, callback) => {
       // Rate limiting
       if (!cardPackLimiter.check(socket.id)) {
         callback({ success: false, error: 'Too many requests. Please wait a moment.' })
@@ -1242,10 +1242,10 @@ app.prepare().then(async () => {
         logger.error('Error creating card pack:', error)
         callback({ success: false, error: 'Failed to create card pack' })
       }
-    })
+    }))
 
     // Rate a card pack
-    socket.on('rate_card_pack', async (packId, rating, callback) => {
+    socket.on('rate_card_pack', withErrorHandler(socket, 'rate_card_pack', async (packId, rating, callback) => {
       // Rate limiting
       if (!cardPackLimiter.check(socket.id)) {
         callback({ success: false, error: 'Too many requests. Please wait a moment.' })
@@ -1259,10 +1259,10 @@ app.prepare().then(async () => {
         logger.error('Error rating card pack:', error)
         callback({ success: false, error: 'Failed to rate card pack' })
       }
-    })
+    }))
 
     // Update a card pack
-    socket.on('update_card_pack', async (packId, updates, callback) => {
+    socket.on('update_card_pack', withErrorHandler(socket, 'update_card_pack', async (packId, updates, callback) => {
       // Rate limiting
       if (!cardPackLimiter.check(socket.id)) {
         callback({ success: false, error: 'Too many requests. Please wait a moment.' })
@@ -1276,10 +1276,10 @@ app.prepare().then(async () => {
         logger.error('Error updating card pack:', error)
         callback({ success: false, error: 'Failed to update card pack' })
       }
-    })
+    }))
 
     // Delete a card pack
-    socket.on('delete_card_pack', async (packId, callback) => {
+    socket.on('delete_card_pack', withErrorHandler(socket, 'delete_card_pack', async (packId, callback) => {
       // Rate limiting
       if (!cardPackLimiter.check(socket.id)) {
         callback({ success: false, error: 'Too many requests. Please wait a moment.' })
@@ -1293,10 +1293,10 @@ app.prepare().then(async () => {
         logger.error('Error deleting card pack:', error)
         callback({ success: false, error: 'Failed to delete card pack' })
       }
-    })
+    }))
 
     // Search card packs
-    socket.on('search_card_packs', async (query, callback) => {
+    socket.on('search_card_packs', withErrorHandler(socket, 'search_card_packs', async (query, callback) => {
       try {
         const packs = await searchCardPacks(query)
         callback({ success: true, packs })
@@ -1304,10 +1304,10 @@ app.prepare().then(async () => {
         logger.error('Error searching card packs:', error)
         callback({ success: false, error: 'Failed to search card packs' })
       }
-    })
+    }))
 
     // Get featured packs
-    socket.on('get_featured_packs', async (limit, callback) => {
+    socket.on('get_featured_packs', withErrorHandler(socket, 'get_featured_packs', async (limit, callback) => {
       try {
         const packs = await getFeaturedPacks(limit)
         callback({ success: true, packs })
@@ -1315,10 +1315,10 @@ app.prepare().then(async () => {
         logger.error('Error getting featured packs:', error)
         callback({ success: false, error: 'Failed to get featured packs' })
       }
-    })
+    }))
 
     // Get a specific card pack
-    socket.on('get_card_pack', async (packId, callback) => {
+    socket.on('get_card_pack', withErrorHandler(socket, 'get_card_pack', async (packId, callback) => {
       try {
         const pack = await getCardPack(packId)
         if (pack) {
@@ -1330,7 +1330,7 @@ app.prepare().then(async () => {
         logger.error('Error getting card pack:', error)
         callback({ success: false, error: 'Failed to get card pack' })
       }
-    })
+    }))
 
     // ============================================================
     // FEATURE 4: Audio Events
@@ -1397,7 +1397,7 @@ app.prepare().then(async () => {
     // ============================================================
 
     // Get game history for a player
-    socket.on('get_game_history', async (playerId, limit, callback) => {
+    socket.on('get_game_history', withErrorHandler(socket, 'get_game_history', async (playerId, limit, callback) => {
       try {
         const games = await getPlayerGames(playerId, limit)
         callback({ success: true, games })
@@ -1405,10 +1405,10 @@ app.prepare().then(async () => {
         logger.error('Error fetching game history:', error)
         callback({ success: false, error: 'Failed to load game history' })
       }
-    })
+    }))
 
     // Get specific game details (supports both share codes and UUIDs)
-    socket.on('get_game_details', async (gameId, callback) => {
+    socket.on('get_game_details', withErrorHandler(socket, 'get_game_details', async (gameId, callback) => {
       try {
         // Try share code lookup first (8-char alphanumeric), then fall back to UUID
         let game = await getGameByShareCode(gameId)
@@ -1424,10 +1424,10 @@ app.prepare().then(async () => {
         logger.error('Error fetching game details:', error)
         callback({ success: false, error: 'Failed to load game' })
       }
-    })
+    }))
 
     // Share a game
-    socket.on('share_game', async (gameId, callback) => {
+    socket.on('share_game', withErrorHandler(socket, 'share_game', async (gameId, callback) => {
       try {
         const result = await shareGame(gameId)
         if (result.success && result.shareCode) {
@@ -1443,14 +1443,14 @@ app.prepare().then(async () => {
         logger.error('Error sharing game:', error)
         callback({ success: false, error: 'Failed to share game' })
       }
-    })
+    }))
 
     // ============================================================
     // FEATURE 6: Player Stats Events
     // ============================================================
 
     // Get player stats
-    socket.on('get_player_stats', async (playerId, callback) => {
+    socket.on('get_player_stats', withErrorHandler(socket, 'get_player_stats', async (playerId, callback) => {
       try {
         const stats = await getPlayerStats(playerId)
         callback({ success: true, stats })
@@ -1458,10 +1458,10 @@ app.prepare().then(async () => {
         logger.error('Error fetching player stats:', error)
         callback({ success: false, error: 'Failed to load stats' })
       }
-    })
+    }))
 
     // Get leaderboard
-    socket.on('get_leaderboard', async (category, limit, callback) => {
+    socket.on('get_leaderboard', withErrorHandler(socket, 'get_leaderboard', async (category, limit, callback) => {
       try {
         const entries = await getLeaderboard(category, limit)
         callback({ success: true, entries })
@@ -1469,13 +1469,13 @@ app.prepare().then(async () => {
         logger.error('Error fetching leaderboard:', error)
         callback({ success: false, error: 'Failed to load leaderboard' })
       }
-    })
+    }))
 
     // ============================================================
     // Credit System
     // ============================================================
 
-    socket.on('get_credit_balance', async (callback) => {
+    socket.on('get_credit_balance', withErrorHandler(socket, 'get_credit_balance', async (callback) => {
       try {
         const uid = socket.data.uid
         if (!uid) {
@@ -1488,13 +1488,13 @@ app.prepare().then(async () => {
         logger.error('Error fetching credit balance:', error)
         callback({ success: false, error: 'Failed to load credits' })
       }
-    })
+    }))
 
     // ============================================================
     // Referral System
     // ============================================================
 
-    socket.on('get_referral_info', async (callback) => {
+    socket.on('get_referral_info', withErrorHandler(socket, 'get_referral_info', async (callback) => {
       try {
         const uid = socket.data.uid
         if (!uid) {
@@ -1507,9 +1507,9 @@ app.prepare().then(async () => {
         logger.error('Error fetching referral info:', error)
         callback({ success: false, error: 'Failed to load referral info' })
       }
-    })
+    }))
 
-    socket.on('redeem_referral', async (code, callback) => {
+    socket.on('redeem_referral', withErrorHandler(socket, 'redeem_referral', async (code, callback) => {
       try {
         const uid = socket.data.uid
         if (!uid) {
@@ -1522,17 +1522,17 @@ app.prepare().then(async () => {
         logger.error('Error redeeming referral:', error)
         callback({ success: false, error: 'Failed to redeem referral code' })
       }
-    })
+    }))
 
     // ============================================================
     // Admin Dashboard Events
     // ============================================================
 
-    socket.on('check_admin', (callback) => {
+    socket.on('check_admin', withErrorHandler(socket, 'check_admin', (callback) => {
       callback({ isAdmin: isAdminSocket(socket) })
-    })
+    }))
 
-    socket.on('admin_get_rooms', (callback) => {
+    socket.on('admin_get_rooms', withErrorHandler(socket, 'admin_get_rooms', (callback) => {
       if (!isAdminSocket(socket)) {
         callback({ success: false, rooms: [] })
         return
@@ -1558,9 +1558,9 @@ app.prepare().then(async () => {
         })
       }
       callback({ success: true, rooms })
-    })
+    }))
 
-    socket.on('admin_get_users', async (query, callback) => {
+    socket.on('admin_get_users', withErrorHandler(socket, 'admin_get_users', async (query, callback) => {
       if (!isAdminSocket(socket)) {
         callback({ success: false, users: [], total: 0 })
         return
@@ -1603,9 +1603,9 @@ app.prepare().then(async () => {
         logger.error('[Admin] Error fetching users:', error)
         callback({ success: false, users: [], total: 0 })
       }
-    })
+    }))
 
-    socket.on('admin_get_stats', async (callback) => {
+    socket.on('admin_get_stats', withErrorHandler(socket, 'admin_get_stats', async (callback) => {
       if (!isAdminSocket(socket)) {
         callback({ success: false, stats: { activeRooms: 0, connectedSockets: 0, totalUsersInRooms: 0, gamesPlayedToday: 0, recentGameModes: {}, totalRegisteredUsers: 0 } })
         return
@@ -1650,9 +1650,9 @@ app.prepare().then(async () => {
         logger.error('[Admin] Error fetching stats:', error)
         callback({ success: false, stats: { activeRooms: 0, connectedSockets: 0, totalUsersInRooms: 0, gamesPlayedToday: 0, recentGameModes: {}, totalRegisteredUsers: 0 } })
       }
-    })
+    }))
 
-    socket.on('admin_kick_player', (roomCode, playerId, callback) => {
+    socket.on('admin_kick_player', withErrorHandler(socket, 'admin_kick_player', (roomCode, playerId, callback) => {
       if (!isAdminSocket(socket)) {
         callback({ success: false, error: 'Unauthorized' })
         return
@@ -1678,9 +1678,9 @@ app.prepare().then(async () => {
       io.to(roomCode).emit('players_update', Array.from(room.players.values()))
       logger.info(`[Admin] Kicked player ${player.nickname} (${playerId}) from room ${roomCode}`)
       callback({ success: true })
-    })
+    }))
 
-    socket.on('admin_close_room', async (roomCode, callback) => {
+    socket.on('admin_close_room', withErrorHandler(socket, 'admin_close_room', async (roomCode, callback) => {
       if (!isAdminSocket(socket)) {
         callback({ success: false, error: 'Unauthorized' })
         return
@@ -1703,9 +1703,9 @@ app.prepare().then(async () => {
       await roomService.deleteRoom(roomCode)
       logger.info(`[Admin] Closed room ${roomCode} (${room.players.size} players disconnected)`)
       callback({ success: true })
-    })
+    }))
 
-    socket.on('admin_add_credits', async (uid, amount, callback) => {
+    socket.on('admin_add_credits', withErrorHandler(socket, 'admin_add_credits', async (uid, amount, callback) => {
       if (!isAdminSocket(socket)) {
         callback({ success: false, error: 'Unauthorized' })
         return
@@ -1730,7 +1730,7 @@ app.prepare().then(async () => {
         logger.error('[Admin] Error adding credits:', error)
         callback({ success: false, error: 'Failed to add credits' })
       }
-    })
+    }))
 
     // ============================================================
     // Latency Measurement
@@ -2005,45 +2005,55 @@ app.prepare().then(async () => {
   // Register all HTTP routes (Stripe, Auth, Apple, API)
   await registerRoutes(expressApp, io, port)
 
-  // Handle Next.js requests (catch-all, must be last)
 
   server.listen(port, () => {
     logger.info(`> Ready on http://${hostname}:${port}`)
   })
 
-  // Graceful shutdown — persist room state and close connections cleanly
-  const shutdown = async (signal: string) => {
-    logger.info(`Received ${signal}, shutting down gracefully...`)
+
+  // ── Graceful Shutdown ──────────────────────────────────────
+  let shuttingDown = false
+
+  async function gracefulShutdown(signal: string) {
+    if (shuttingDown) return
+    shuttingDown = true
+    logger.info(`[Shutdown] Received ${signal}, shutting down gracefully...`)
+
+    // Notify all connected clients
+    io.emit('error', 'Server is restarting. You will be reconnected shortly.')
 
     // Stop accepting new connections
     server.close(() => {
-      logger.info('HTTP server closed')
+      logger.info('[Shutdown] HTTP server closed')
     })
 
-    // Notify all connected clients
-    io.emit('error', 'Server is restarting. Please reconnect in a moment.')
-
-    // Persist all rooms to Firestore before exiting
+    // Persist any dirty room state
     try {
-      const entries = Array.from(roomService.getRoomEntries())
-      for (const [, room] of entries) {
-        roomService.updateRoom(room)
+      const rooms = roomService.getActiveRooms()
+      for (const room of rooms) {
+        await roomService.persistRoom(room)
       }
-      logger.info(`Persisted ${entries.length} room(s) to database`)
+      logger.info(`[Shutdown] Persisted ${rooms.length} room(s) to database`)
     } catch (err) {
-      logger.error('Failed to persist rooms during shutdown:', err)
+      logger.error('[Shutdown] Error persisting rooms:', err)
     }
 
-    // Close all socket connections
-    io.close()
+    // Stop room cleanup timers
+    roomService.stopRoomCleanup()
 
-    // Give a moment for async writes to flush
-    setTimeout(() => {
-      logger.info('Shutdown complete')
+    // Close Socket.IO (disconnects all sockets)
+    io.close(() => {
+      logger.info('[Shutdown] Socket.IO server closed')
+    })
+
+    // Allow a drain period for in-flight requests
+    const drainTimeout = setTimeout(() => {
+      logger.warn('[Shutdown] Drain timeout reached, forcing exit')
       process.exit(0)
-    }, 2000)
+    }, 10000)
+    drainTimeout.unref()
   }
 
-  process.on('SIGTERM', () => shutdown('SIGTERM'))
-  process.on('SIGINT', () => shutdown('SIGINT'))
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'))
 })

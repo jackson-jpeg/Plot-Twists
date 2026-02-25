@@ -62,6 +62,18 @@ export const verifyCodeLimiter = rateLimit({
 })
 
 /**
+ * Rate limiter for public game metadata endpoint
+ * Prevents scraping of game data (30 req/min per IP)
+ */
+export const gameMetadataLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 30,
+  message: 'Too many requests. Please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
+/**
  * Socket.io rate limiter
  * In-memory tracking of socket events per connection
  */

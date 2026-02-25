@@ -28,7 +28,7 @@ const PACKAGE_META: Record<string, { icon: string; tagline: string }> = {
 }
 
 export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalProps) {
-  const { user } = useAuth()
+  const { user, getToken } = useAuth()
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -53,7 +53,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
     // iOS native → StoreKit flow
     if (isIOSNative()) {
       try {
-        const result = await purchaseViaStoreKit(packageId, user.uid)
+        const result = await purchaseViaStoreKit(packageId, user!.uid, getToken)
         if (result.success) {
           successHaptic()
           const pkg = CREDIT_PACKAGES.find(p => p.id === packageId)
@@ -75,7 +75,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
 
     // Web → Stripe flow
     try {
-      const headers = await getAuthHeaders()
+      const headers = await getAuthHeaders(getToken)
       const res = await fetch(`${getApiBaseUrl()}/api/stripe/create-checkout-session`, {
         method: 'POST',
         headers,

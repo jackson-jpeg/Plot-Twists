@@ -29,7 +29,7 @@ import { generateScript } from './server/services/scriptGeneration.service'
 import { startTeleprompterSync } from './server/services/teleprompter.service'
 import { calculateResults } from './server/services/voting.service'
 import { extractJSON } from './server/utils/jsonExtractor'
-import { SocketRateLimiter, sendCodeLimiter, verifyCodeLimiter, gameMetadataLimiter } from './server/middleware/rateLimiter'
+import { SocketRateLimiter, gameMetadataLimiter } from './server/middleware/rateLimiter'
 import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname, validateCardSelection, isValidGameMode, isValidPhoneNumber } from './server/utils/validation'
 import { withErrorHandler } from './server/middleware/socketErrorHandler'
 import { sendPushToUser } from './server/services/push.service'
@@ -96,6 +96,7 @@ import { generateTitleCard } from './server/services/image.service'
 import { getCredits, addBankedCredits } from './server/services/credit.service'
 import { getReferralInfo, redeemReferralCode } from './server/services/referral.service'
 import { createSocketAuthMiddleware } from './server/middleware/socketAuth'
+import * as matchmakingService from './server/services/matchmaking.service'
 import { logger } from './lib/logger'
 import {
   validateRoom,
@@ -264,10 +265,22 @@ app.prepare().then(async () => {
         // Store Firebase UID of host for credit deduction
         room.hostUid = socket.data.uid ?? undefined
 
+        // Public games
+        if (settings.isPublic) {
+          room.isPublic = true
+          room.publicTitle = settings.publicTitle || undefined
+          room.autoStart = true
+        }
+
         roomService.createRoom(room)
         socket.join(code)
 
-        logger.info(`Room created: ${code} (host: ${room.hostUid || 'unknown'})`)
+        // Broadcast to public room watchers
+        if (room.isPublic) {
+          matchmakingService.broadcastPublicRooms(io)
+        }
+
+        logger.info(`Room created: ${code} (host: ${room.hostUid || 'unknown'})${room.isPublic ? ' [PUBLIC]' : ''}`)
         callback({ success: true, code })
         socket.emit('room_created', code)
       } catch (error) {
@@ -369,6 +382,12 @@ app.prepare().then(async () => {
           settings: roomSettings,
           role: player.role
         })
+
+        // Check auto-start for public rooms
+        if (room.isPublic) {
+          matchmakingService.checkAutoStart(room, io)
+          matchmakingService.broadcastPublicRooms(io)
+        }
       } catch (error) {
         logger.error('Error joining room:', error)
         callback({ success: false, error: 'Failed to join room' })
@@ -920,6 +939,17 @@ app.prepare().then(async () => {
           room.audienceInteraction = undefined
         }
       }
+      // Feature 8: Public Games
+      if (settings.isPublic !== undefined) {
+        room.isPublic = settings.isPublic
+        room.autoStart = settings.isPublic
+        if (!settings.isPublic) {
+          matchmakingService.cancelAutoCountdown(roomCode)
+        }
+      }
+      if (settings.publicTitle !== undefined) {
+        room.publicTitle = settings.publicTitle
+      }
       room.lastActivity = Date.now()
       roomService.updateRoom(room)
 
@@ -929,9 +959,16 @@ app.prepare().then(async () => {
         scriptCustomization: room.scriptCustomization,
         cardPackId: room.cardPackId,
         audioSettings: room.audioSettings,
-        audienceInteractionEnabled: !!room.audienceInteraction
+        audienceInteractionEnabled: !!room.audienceInteraction,
+        isPublic: room.isPublic,
+        publicTitle: room.publicTitle,
       }
       io.to(roomCode).emit('room_settings_update', roomSettings)
+
+      // Broadcast to public room watchers
+      if (room.isPublic !== undefined) {
+        matchmakingService.broadcastPublicRooms(io)
+      }
     }))
 
     // ============================================================
@@ -1521,6 +1558,191 @@ app.prepare().then(async () => {
       } catch (error) {
         logger.error('Error redeeming referral:', error)
         callback({ success: false, error: 'Failed to redeem referral code' })
+      }
+    }))
+
+    // ============================================================
+    // Feature 7: Progression System Events
+    // ============================================================
+
+    socket.on('get_progression', withErrorHandler(socket, 'get_progression', async (playerId, callback) => {
+      try {
+        const { getProgression, getLevelInfo } = await import('./server/services/progression.service')
+        const progression = await getProgression(playerId)
+        const levelInfo = getLevelInfo(progression.totalXP)
+        callback({ success: true, progression, levelInfo })
+      } catch (error) {
+        logger.error('Error fetching progression:', error)
+        callback({ success: false, error: 'Failed to load progression' })
+      }
+    }))
+
+    socket.on('get_weekly_challenges', withErrorHandler(socket, 'get_weekly_challenges', async (callback) => {
+      try {
+        const uid = socket.data.uid
+        if (!uid) {
+          callback({ success: false, error: 'Not authenticated' })
+          return
+        }
+        const { getProgression } = await import('./server/services/progression.service')
+        const progression = await getProgression(uid)
+        callback({ success: true, challenges: progression.weeklyChallenges })
+      } catch (error) {
+        logger.error('Error fetching weekly challenges:', error)
+        callback({ success: false, error: 'Failed to load challenges' })
+      }
+    }))
+
+    socket.on('claim_level_reward', withErrorHandler(socket, 'claim_level_reward', async (level, callback) => {
+      try {
+        const uid = socket.data.uid
+        if (!uid) {
+          callback({ success: false, error: 'Not authenticated' })
+          return
+        }
+        const { claimLevelReward } = await import('./server/services/progression.service')
+        const reward = await claimLevelReward(uid, level)
+        if (!reward) {
+          callback({ success: false, error: 'Reward not available' })
+          return
+        }
+        // If reward is credits, add them
+        if (reward.type === 'credits' && typeof reward.value === 'number') {
+          await addBankedCredits(uid, reward.value, 0)
+        }
+        callback({ success: true, reward })
+      } catch (error) {
+        logger.error('Error claiming level reward:', error)
+        callback({ success: false, error: 'Failed to claim reward' })
+      }
+    }))
+
+    // ============================================================
+    // Feature 8: Public Games / Quick Play Events
+    // ============================================================
+
+    socket.on('list_public_rooms', withErrorHandler(socket, 'list_public_rooms', (filters, callback) => {
+      try {
+        const rooms = matchmakingService.getPublicRooms(filters || undefined)
+        callback({ success: true, rooms })
+      } catch (error) {
+        logger.error('Error listing public rooms:', error)
+        callback({ success: false, error: 'Failed to list rooms' })
+      }
+    }))
+
+    socket.on('subscribe_public_rooms', withErrorHandler(socket, 'subscribe_public_rooms', () => {
+      matchmakingService.subscribeToPublicRooms(socket)
+    }))
+
+    socket.on('unsubscribe_public_rooms', withErrorHandler(socket, 'unsubscribe_public_rooms', () => {
+      matchmakingService.unsubscribeFromPublicRooms(socket)
+    }))
+
+    socket.on('quick_play', withErrorHandler(socket, 'quick_play', (request, callback) => {
+      try {
+        // Auth required for public games
+        if (!socket.data.uid) {
+          callback({ success: false, error: 'Sign in to join public games' })
+          return
+        }
+
+        const gameMode = request.gameMode || 'ENSEMBLE'
+        const isMature = request.isMature || false
+
+        // Try to find an existing matching room
+        const existingRoom = matchmakingService.findMatchingRoom(gameMode, isMature)
+        if (existingRoom) {
+          callback({ success: true, code: existingRoom.code })
+          return
+        }
+
+        // Create a new public room
+        const code = roomService.generateRoomCode()
+        const hostPlayer: Player = {
+          id: uuidv4(),
+          nickname: 'Host',
+          role: 'HOST',
+          isHost: true,
+          socketId: socket.id,
+        }
+
+        const newRoom: Room = {
+          code,
+          host: hostPlayer,
+          players: new Map([[hostPlayer.id, hostPlayer]]),
+          gameState: 'LOBBY',
+          gameMode,
+          isMature,
+          selections: new Map(),
+          currentLineIndex: 0,
+          isPaused: false,
+          votes: new Map(),
+          createdAt: Date.now(),
+          lastActivity: Date.now(),
+          hostUid: socket.data.uid ?? undefined,
+          isPublic: true,
+          autoStart: true,
+          publicTitle: `Quick Play ${gameMode}`,
+        }
+
+        roomService.createRoom(newRoom)
+        socket.join(code)
+
+        // Broadcast update to public room watchers
+        matchmakingService.broadcastPublicRooms(io)
+
+        callback({ success: true, code })
+      } catch (error) {
+        logger.error('Error in quick_play:', error)
+        callback({ success: false, error: 'Failed to start quick play' })
+      }
+    }))
+
+    socket.on('cancel_quick_play', withErrorHandler(socket, 'cancel_quick_play', () => {
+      // No-op for now; room cleanup handles abandoned rooms
+    }))
+
+    socket.on('host_kick_player', withErrorHandler(socket, 'host_kick_player', (roomCode, playerId, callback) => {
+      try {
+        const room = roomService.getRoomFromCache(roomCode)
+        if (!room) {
+          callback({ success: false, error: 'Room not found' })
+          return
+        }
+        if (!requireHost(room, socket)) {
+          callback({ success: false, error: 'Only the host can kick players' })
+          return
+        }
+        const player = room.players.get(playerId)
+        if (!player) {
+          callback({ success: false, error: 'Player not found' })
+          return
+        }
+        if (player.isHost) {
+          callback({ success: false, error: 'Cannot kick the host' })
+          return
+        }
+
+        // Notify the kicked player
+        const kickedSocket = io.sockets.sockets.get(player.socketId)
+        if (kickedSocket) {
+          kickedSocket.emit('kicked', { reason: 'You were removed by the host' })
+          kickedSocket.leave(roomCode)
+        }
+
+        roomService.removePlayer(room, playerId)
+        io.to(roomCode).emit('players_update', Array.from(room.players.values()))
+
+        // Update public room listings
+        if (room.isPublic) {
+          matchmakingService.broadcastPublicRooms(io)
+        }
+
+        callback({ success: true })
+      } catch (error) {
+        logger.error('Error kicking player:', error)
+        callback({ success: false, error: 'Failed to kick player' })
       }
     }))
 

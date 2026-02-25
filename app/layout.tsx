@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { Fredoka, DM_Sans, Courier_Prime, Permanent_Marker } from 'next/font/google'
+import { ClerkProvider } from '@clerk/nextjs'
 import { SocketProvider } from '@/contexts/SocketContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { Analytics } from '@vercel/analytics/react'
@@ -86,31 +87,39 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${fredoka.variable} ${dmSans.variable} ${courierPrime.variable} ${permanentMarker.variable}`} suppressHydrationWarning>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('plot-twists-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`,
-          }}
-        />
-      </head>
-      <body>
-        <HomeJsonLd />
-        <ServiceWorkerRegistration />
-        <NativeBootstrap />
-        <ThemeProvider>
-          <AuthProvider>
-            <SocketProvider>
-              <ConnectionStatus />
-              {children}
-            </SocketProvider>
-          </AuthProvider>
-          <SystemStatus />
-          <InstallPrompt />
-        </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
-      </body>
-    </html>
+    <ClerkProvider
+      appearance={{
+        elements: {
+          formButtonPrimary: 'bg-[var(--color-purple)] hover:bg-[var(--color-purple-hover)]',
+        },
+      }}
+    >
+      <html lang="en" className={`${fredoka.variable} ${dmSans.variable} ${courierPrime.variable} ${permanentMarker.variable}`} suppressHydrationWarning>
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){try{var t=localStorage.getItem('plot-twists-theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`,
+            }}
+          />
+        </head>
+        <body>
+          <HomeJsonLd />
+          <ServiceWorkerRegistration />
+          <NativeBootstrap />
+          <ThemeProvider>
+            <AuthProvider>
+              <SocketProvider>
+                <ConnectionStatus />
+                {children}
+              </SocketProvider>
+            </AuthProvider>
+            <SystemStatus />
+            <InstallPrompt />
+          </ThemeProvider>
+          <Analytics />
+          <SpeedInsights />
+        </body>
+      </html>
+    </ClerkProvider>
   )
 }

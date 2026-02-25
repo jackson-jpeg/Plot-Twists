@@ -8,8 +8,9 @@ import type { Server as SocketIOServer } from 'socket.io'
 import express from 'express'
 import type { ClientToServerEvents, ServerToClientEvents } from '../../lib/types'
 import { authenticateRequest } from '../middleware/auth'
-import { addBankedCredits, getCredits, deductBankedCredits } from '../services/credit.service'
+import { addBankedCredits, getCredits, deductBankedCredits, ensureCreditsExist } from '../services/credit.service'
 import { recordTransaction, getUserTransactions } from '../services/payment.service'
+import { upsertUser, getUser } from '../services/user.service'
 import { getDatabase, Collections } from '../db'
 import { CREDIT_PACKAGES } from '../../lib/credits'
 import { logger } from '../../lib/logger'
@@ -95,13 +96,26 @@ export async function registerStripeRoutes(
       }
 
       if (event.type === 'checkout.session.completed') {
-        const session = event.data.object as { metadata?: Record<string, string>; amount_total?: number | null }
+        const session = event.data.object as { metadata?: Record<string, string>; amount_total?: number | null; customer_details?: { email?: string; name?: string } }
         const userId = session.metadata?.userId
         const scripts = parseInt(session.metadata?.scripts || '0', 10)
         const packageId = session.metadata?.packageId || ''
         const amountTotal = session.amount_total || 0
 
         if (userId && scripts > 0) {
+          // Ensure user document exists before crediting — prevents lost purchases
+          // if the user doc was somehow deleted or not yet created
+          const existingUser = await getUser(userId)
+          if (!existingUser) {
+            logger.warn(`[Stripe] User ${userId} not found in DB, creating from checkout data`)
+            await upsertUser(userId, {
+              email: session.customer_details?.email,
+              displayName: session.customer_details?.name,
+            })
+          } else {
+            await ensureCreditsExist(userId)
+          }
+
           await markStripeEventProcessed(event.id, event.type, userId)
           await addBankedCredits(userId, scripts, amountTotal)
 
@@ -129,6 +143,15 @@ export async function registerStripeRoutes(
         const originalAmount = charge.amount || 1
 
         if (userId && originalScripts > 0 && amountRefunded > 0) {
+          // Ensure user exists before deducting
+          const refundUser = await getUser(userId)
+          if (!refundUser) {
+            logger.warn(`[Stripe] Refund for unknown user ${userId}, skipping deduction`)
+            await markStripeEventProcessed(event.id, event.type, userId)
+            res.json({ received: true })
+            return
+          }
+
           await markStripeEventProcessed(event.id, event.type, userId)
           const creditsToDeduct = Math.min(
             Math.round((amountRefunded / originalAmount) * originalScripts),
@@ -248,6 +271,10 @@ export async function registerStripeRoutes(
         res.status(500).json({ error: 'Stripe not configured' })
         return
       }
+
+      // Ensure user document with credits exists before checkout —
+      // the webhook will need this user doc to credit scripts
+      await ensureCreditsExist(userId)
 
       const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, '') || `http://localhost:${port}`
       const customerId = await getOrCreateStripeCustomer(stripe, userId)

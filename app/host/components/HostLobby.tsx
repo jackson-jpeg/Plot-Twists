@@ -400,6 +400,43 @@ export function HostLobby({
             </>
           )}
 
+          {/* Make Public Toggle */}
+          {settings.gameMode !== 'SOLO' && (
+            <motion.div
+              className="card"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{settings.isPublic ? '🌐' : '🔒'}</span>
+                  <div>
+                    <h3 className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>
+                      {settings.isPublic ? 'Public Game' : 'Private Game'}
+                    </h3>
+                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                      {settings.isPublic ? 'Anyone can join from Quick Play' : 'Invite only via room code'}
+                    </p>
+                  </div>
+                </div>
+                <motion.button
+                  onClick={() => {
+                    const newPublic = !settings.isPublic
+                    onSetSettings(prev => ({ ...prev, isPublic: newPublic }))
+                    socket?.emit('update_room_settings', roomCode, { isPublic: newPublic })
+                    tapHaptic()
+                  }}
+                  className="btn btn-secondary"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {settings.isPublic ? 'Make Private' : 'Make Public'}
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
           {/* Start Game Button */}
           <motion.button
             onClick={() => { successHaptic(); onStartGame() }}

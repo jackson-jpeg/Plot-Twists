@@ -8,6 +8,13 @@ import type { Room, Script, ClientToServerEvents, ServerToClientEvents } from '.
 import * as roomService from './room.service'
 import { saveGame } from './gameHistory.service'
 import { recordGameResult } from './playerStats.service'
+import {
+  awardXP,
+  computeGameXPEvents,
+  isFirstGameToday,
+  markDailyBonus,
+  updateChallengeProgress,
+} from './progression.service'
 import { logger } from '../../lib/logger'
 
 /**
@@ -114,11 +121,62 @@ export async function calculateResults(room: Room, io: SocketIOServer<ClientToSe
         if (newAchievements.length > 0) {
           const playerSocket = io.sockets.sockets.get(player.socketId)
           if (playerSocket) {
-            // Emit achievement unlocked events (client can show toast)
             newAchievements.forEach(achievement => {
               playerSocket.emit('achievement_unlocked', achievement)
             })
           }
+        }
+
+        // Award XP via progression system
+        try {
+          const playerIsWinner = winner?.playerId === player.id
+          const firstGame = await isFirstGameToday(player.id)
+          const stats = await import('./playerStats.service').then(m => m.getPlayerStats(player.id))
+
+          const xpEvents = computeGameXPEvents(
+            playerIsWinner,
+            voteResult?.votes || 0,
+            Math.floor(reactionCount / players.length),
+            stats.currentWinStreak,
+            firstGame,
+            !!room.isPublic,
+            player.isHost,
+            newAchievements
+          )
+
+          if (firstGame) await markDailyBonus(player.id)
+
+          const xpResult = await awardXP(player.id, xpEvents)
+
+          // Emit XP gained to player
+          const playerSocket = io.sockets.sockets.get(player.socketId)
+          if (playerSocket) {
+            playerSocket.emit('xp_gained', {
+              events: xpResult.xpEvents,
+              totalXP: xpResult.totalXP,
+              level: xpResult.newLevel,
+              title: xpResult.title,
+            })
+
+            // Level up notification
+            if (xpResult.newLevel > xpResult.oldLevel) {
+              playerSocket.emit('level_up', {
+                newLevel: xpResult.newLevel,
+                title: xpResult.title,
+              })
+            }
+          }
+
+          // Update weekly challenges
+          await updateChallengeProgress(player.id, {
+            gameMode: room.gameMode,
+            isWinner: playerIsWinner,
+            reactionsReceived: Math.floor(reactionCount / players.length),
+            currentWinStreak: stats.currentWinStreak,
+            isPublicGame: !!room.isPublic,
+          })
+        } catch (xpError) {
+          logger.error(`Error awarding XP to player ${player.id}:`, xpError)
         }
       }
     }

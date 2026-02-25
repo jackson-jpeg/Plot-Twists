@@ -5,14 +5,16 @@ import { motion } from 'framer-motion'
 import type { Player, PlayerRole } from '@/lib/types'
 import { VARIANTS } from '@/lib/animations'
 import { PushPermissionPrompt } from '@/components/PushPermissionPrompt'
+import { AutoStartCountdown } from '@/app/play/components/AutoStartCountdown'
 
 export interface JoinLobbyProps {
   players: Player[]
   myRole: PlayerRole
   selectedPackName: string | null
+  autoStartCountdown?: number | null
 }
 
-export function JoinLobby({ players, myRole, selectedPackName }: JoinLobbyProps) {
+export function JoinLobby({ players, myRole, selectedPackName, autoStartCountdown }: JoinLobbyProps) {
   return (
     <motion.div key="lobby" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-lg text-center">
       <div className="card">
@@ -45,6 +47,11 @@ export function JoinLobby({ players, myRole, selectedPackName }: JoinLobbyProps)
             </div>
           ))}
         </div>
+        {autoStartCountdown != null && autoStartCountdown > 0 && (
+          <div className="mt-4 flex justify-center">
+            <AutoStartCountdown seconds={autoStartCountdown} />
+          </div>
+        )}
         <PushPermissionPrompt />
       </div>
     </motion.div>

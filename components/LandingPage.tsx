@@ -1,8 +1,7 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { AuthModal } from './AuthModal'
+import { SignInButton } from '@clerk/nextjs'
 import { analytics } from '@/lib/analytics'
 
 const sceneExamples = [
@@ -18,26 +17,14 @@ const socialBadges = [
 ]
 
 export function LandingPage() {
-  const [showAuthModal, setShowAuthModal] = useState(false)
-
-  const openAuth = () => {
-    setShowAuthModal(true)
-    analytics.landingCtaClicked('phone')
-  }
-
   return (
     <main className="page-container items-center justify-center home-nostalgic">
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
-
       <div className="container max-w-3xl">
         {/* Hero header */}
         <motion.div
           initial={{ y: -60, opacity: 0, scale: 0.9 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 100, damping: 15 }} // Intentionally dreamy for hero entrance
+          transition={{ type: 'spring', stiffness: 100, damping: 15 }}
           className="bulletin-board-header"
         >
           <div className="header-polaroid">
@@ -54,7 +41,7 @@ export function LandingPage() {
           </div>
         </motion.div>
 
-        {/* Scene Preview — staggered polaroid cards with floating animation */}
+        {/* Scene Preview */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -87,7 +74,7 @@ export function LandingPage() {
           ))}
         </motion.div>
 
-        {/* CTA section — note card pinned at an angle */}
+        {/* CTA section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -106,21 +93,23 @@ export function LandingPage() {
               Sign in to get 5 free scripts
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-              No credit card required. Just your phone number to start hosting games.
+              No credit card required. Sign in with Apple, Google, email, or phone to start hosting games.
             </p>
 
-            <motion.button
-              onClick={openAuth}
-              className="btn btn-primary w-full py-3 text-lg font-semibold"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Sign In with Phone
-            </motion.button>
+            <SignInButton mode="redirect">
+              <motion.button
+                onClick={() => analytics.landingCtaClicked('clerk')}
+                className="btn btn-primary w-full py-3 text-lg font-semibold"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Get Started
+              </motion.button>
+            </SignInButton>
           </motion.div>
         </motion.div>
 
-        {/* Social proof badges — staggered entrance */}
+        {/* Social proof badges */}
         <div className="flex justify-center gap-3 mt-5 flex-wrap">
           {socialBadges.map((badge, i) => (
             <motion.span

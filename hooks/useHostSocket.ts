@@ -5,7 +5,7 @@ import type { Socket } from 'socket.io-client'
 import type {
   Player, Script, ScriptLine, GameState, GameResults, RoomSettings,
   TeleprompterSyncData, AvailableCards, Achievement, SpectatorMessage,
-  CardSelection,
+  CardSelection, XPEvent, LevelReward,
 } from '@/lib/types'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -43,6 +43,8 @@ export function useHostSocket({
   const [creditBalance, setCreditBalance] = useState<{ free: number; banked: number; total: number } | null>(null)
   const [showInsufficientCredits, setShowInsufficientCredits] = useState(false)
   const [spectatorMessages, setSpectatorMessages] = useState<SpectatorMessage[]>([])
+  const [xpEvents, setXpEvents] = useState<XPEvent[]>([])
+  const [levelUpData, setLevelUpData] = useState<{ level: number; title: string; reward?: LevelReward } | null>(null)
 
   // Solo card selection state
   const [selection, setSelection] = useState<CardSelection>({ character: '', setting: '', circumstance: '' })
@@ -173,6 +175,8 @@ export function useHostSocket({
     socket.on('credit_balance', setCreditBalance)
     socket.on('insufficient_credits', () => setShowInsufficientCredits(true))
     socket.on('achievement_unlocked', (a: Achievement) => achievementToasts.addAchievement(a))
+    socket.on('xp_gained', (data) => setXpEvents(data.events))
+    socket.on('level_up', (data) => setLevelUpData({ level: data.newLevel, title: data.title, reward: data.reward }))
     socket.on('spectator_message_received', (msg: SpectatorMessage) => {
       setSpectatorMessages(prev => [...prev.slice(-49), msg])
     })
@@ -203,6 +207,7 @@ export function useHostSocket({
       socket.off('plot_twist_started'); socket.off('credit_balance')
       socket.off('insufficient_credits')
       socket.off('achievement_unlocked')
+      socket.off('xp_gained'); socket.off('level_up')
       socket.off('spectator_message_received'); socket.off('error')
       socket.off('player_left'); socket.off('plot_twist_injected')
       if (scriptGenerationTimeoutRef.current) {
@@ -241,5 +246,7 @@ export function useHostSocket({
     hasSubmittedSelection, setHasSubmittedSelection,
     scriptGenerationTimeoutRef,
     loadingIntervalRef,
+    xpEvents,
+    levelUpData, setLevelUpData,
   }
 }

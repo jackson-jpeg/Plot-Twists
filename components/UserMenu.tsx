@@ -2,17 +2,15 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { useAuth, getMissingFirebaseConfig } from '@/contexts/AuthContext'
-import { AuthModal } from './AuthModal'
+import { useAuth } from '@/contexts/AuthContext'
+import { SignInButton } from '@clerk/nextjs'
 import { CreditBadge, CreditHeaderBadge } from './CreditBadge'
 import dynamic from 'next/dynamic'
 const PurchaseCreditsModal = dynamic(() => import('./PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false })
 
 export function UserMenu() {
-  const { user, loading, signOut, isConfigured } = useAuth()
+  const { user, loading, signOut } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
-  const [authModalOpen, setAuthModalOpen] = useState(false)
-  const [showDebugInfo, setShowDebugInfo] = useState(false)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -45,10 +43,6 @@ export function UserMenu() {
     await signOut()
   }
 
-  const openAuthModal = () => {
-    setAuthModalOpen(true)
-  }
-
   // Get user initials for avatar fallback
   const getInitials = () => {
     if (user?.displayName) {
@@ -74,65 +68,16 @@ export function UserMenu() {
     )
   }
 
-  // Not configured - hide debug UI in production, show in development only
-  if (!isConfigured) {
-    // In production, just return null to hide the debug UI entirely
-    if (process.env.NODE_ENV === 'production') {
-      return null
-    }
-
-    const missingVars = getMissingFirebaseConfig()
-    return (
-      <div className="user-menu" ref={dropdownRef}>
-        <button
-          onClick={() => setShowDebugInfo(!showDebugInfo)}
-          className="user-menu-btn bg-[var(--color-warning)] text-black px-4 py-2 rounded-lg text-xs font-semibold"
-          title="Firebase auth not configured - click for details"
-        >
-          Setup Incomplete
-        </button>
-        {showDebugInfo && (
-          <div className="user-menu-dropdown absolute top-full right-0 mt-2 bg-[var(--color-surface-elevated)] border border-[var(--color-border)] rounded-lg p-4 min-w-[280px] z-50">
-            <div className="text-[var(--color-warning)] font-semibold mb-2">
-              Missing Environment Variables:
-            </div>
-            {missingVars.length > 0 ? (
-              <ul className="m-0 pl-5 text-[var(--color-text-tertiary)] text-xs">
-                {missingVars.map((v) => (
-                  <li key={v} className="mb-1">{v}</li>
-                ))}
-              </ul>
-            ) : (
-              <div className="text-[var(--color-text-tertiary)] text-xs">
-                All env vars present but Firebase failed to initialize. Check console for errors.
-              </div>
-            )}
-            <div className="mt-3 text-[var(--color-text-disabled)] text-[10px]">
-              Add these to .env.local and restart the dev server.
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
   // Guest/Anonymous user - show sign in button
-  if (!user || user.isAnonymous) {
+  if (!user) {
     return (
-      <>
-        <div className="user-menu">
-          <button
-            onClick={openAuthModal}
-            className="user-menu-btn user-menu-btn-primary"
-          >
+      <div className="user-menu">
+        <SignInButton mode="redirect">
+          <button className="user-menu-btn user-menu-btn-primary">
             Sign In
           </button>
-        </div>
-        <AuthModal
-          isOpen={authModalOpen}
-          onClose={() => setAuthModalOpen(false)}
-        />
-      </>
+        </SignInButton>
+      </div>
     )
   }
 
@@ -166,7 +111,7 @@ export function UserMenu() {
           <div className="user-menu-dropdown">
             {(user.phoneNumber || user.email) && (
               <div className="user-menu-dropdown-header">
-                <div className="user-menu-dropdown-email">{user.phoneNumber || user.email}</div>
+                <div className="user-menu-dropdown-email">{user.email || user.phoneNumber}</div>
               </div>
             )}
             <CreditBadge onClick={() => { setIsOpen(false); setShowPurchaseModal(true) }} />
@@ -188,11 +133,6 @@ export function UserMenu() {
           </div>
         )}
       </div>
-
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-      />
 
       <PurchaseCreditsModal
         isOpen={showPurchaseModal}

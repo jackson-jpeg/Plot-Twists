@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react'
 import { io, Socket } from 'socket.io-client'
 import type { ServerToClientEvents, ClientToServerEvents } from '@/lib/types'
-import { getFirebaseAuth, initializeFirebase } from '@/lib/firebase'
+import { useAuth as useClerkAuth } from '@clerk/nextjs'
 import { logger } from '@/lib/logger'
 import { SocketActionQueue } from '@/lib/socketQueue'
 
@@ -35,46 +35,13 @@ export function useSocket() {
 let globalSocket: SocketType | null = null
 const actionQueue = new SocketActionQueue()
 
-/**
- * Get the current user's Firebase ID token for socket auth.
- * Returns null if no user is signed in.
- */
-async function getIdToken(): Promise<string | null> {
-  try {
-    const auth = getFirebaseAuth()
-    const currentUser = auth?.currentUser
-    if (currentUser) {
-      return await currentUser.getIdToken()
-    }
-  } catch (error) {
-    logger.warn('[SocketContext] Failed to get ID token:', error)
-  }
-  return null
-}
-
-/**
- * Wait for Firebase auth to fully restore its session from IndexedDB.
- * This prevents the race condition where socket connects before auth is ready.
- */
-async function waitForAuthReady(): Promise<void> {
-  try {
-    const ready = await initializeFirebase()
-    if (!ready) return
-    const auth = getFirebaseAuth()
-    if (auth?.authStateReady) {
-      await auth.authStateReady()
-    }
-  } catch (error) {
-    logger.warn('[SocketContext] Failed to wait for auth ready:', error)
-  }
-}
-
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<SocketType | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [connectionState, setConnectionState] = useState<ConnectionState>('disconnected')
   const [reconnectAttempt, setReconnectAttempt] = useState(0)
   const initRef = useRef(false)
+  const { getToken, userId, isLoaded } = useClerkAuth()
 
   const socketEmit = useCallback(<E extends keyof ClientToServerEvents>(event: E, ...args: Parameters<ClientToServerEvents[E]>) => {
     if (globalSocket?.connected) {
@@ -86,6 +53,8 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
+    // Wait for Clerk to load before initializing socket
+    if (!isLoaded) return
     // Prevent double initialization in strict mode
     if (initRef.current) return
     initRef.current = true
@@ -93,34 +62,34 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     async function initSocket() {
       // Reuse existing socket or create new one
       if (!globalSocket) {
-        // Wait for Firebase auth to restore session before getting token
-        await waitForAuthReady()
-        const token = await getIdToken()
+        // Get Clerk session token if signed in
+        let token: string | null = null
+        if (userId) {
+          try {
+            token = await getToken()
+          } catch (error) {
+            logger.warn('[SocketContext] Failed to get Clerk token:', error)
+          }
+        }
         logger.debug(`[SocketContext] initSocket: token ${token ? 'present' : 'absent'}`)
 
         // Determine socket URL based on environment
         let socketUrl: string
 
         if (typeof window !== 'undefined') {
-          // Client-side: check if we're on localhost
           const isLocalhost = window.location.hostname === 'localhost' ||
                              window.location.hostname === '127.0.0.1'
 
           if (isLocalhost) {
-            // Local development
             socketUrl = 'http://localhost:3000'
           } else if (process.env.NEXT_PUBLIC_WS_URL) {
-            // Production: Use Railway backend
-            // Strip any existing protocol, then add https://
             const wsUrl = process.env.NEXT_PUBLIC_WS_URL
             const cleanUrl = wsUrl.replace(/^(wss?|https?):\/\//, '')
             socketUrl = `https://${cleanUrl}`
           } else {
-            // Fallback to same origin
             socketUrl = window.location.origin
           }
         } else {
-          // Server-side fallback
           const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'localhost:3000'
           const cleanUrl = wsUrl.replace(/^(wss?|https?):\/\//, '')
           socketUrl = `https://${cleanUrl}`
@@ -142,7 +111,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           auth: token ? { token } : undefined
         })
 
-        // Set initial connecting state
         setConnectionState('connecting')
 
         globalSocket.on('connect', () => {
@@ -164,10 +132,14 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
           // If auth error, try refreshing token and reconnecting
           if (error.message === 'Invalid authentication token' || error.message === 'Authentication required') {
-            const freshToken = await getIdToken()
-            if (freshToken && globalSocket) {
-              globalSocket.auth = { token: freshToken }
-              globalSocket.connect()
+            try {
+              const freshToken = await getToken()
+              if (freshToken && globalSocket) {
+                globalSocket.auth = { token: freshToken }
+                globalSocket.connect()
+              }
+            } catch {
+              // Token refresh failed
             }
           }
         })
@@ -178,9 +150,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           setReconnectAttempt(attempt)
 
           // Refresh token on reconnect
-          const freshToken = await getIdToken()
-          if (freshToken && globalSocket) {
-            globalSocket.auth = { token: freshToken }
+          try {
+            const freshToken = await getToken()
+            if (freshToken && globalSocket) {
+              globalSocket.auth = { token: freshToken }
+            }
+          } catch {
+            // Token refresh failed
           }
         })
 
@@ -188,7 +164,6 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           logger.info('Socket reconnected')
           setConnectionState('connected')
           setReconnectAttempt(0)
-          // Flush any queued actions
           if (globalSocket) actionQueue.flush(globalSocket)
         })
 
@@ -202,9 +177,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     }
 
     initSocket()
-
-    // Don't disconnect on unmount to prevent issues with strict mode
-  }, [])
+  }, [isLoaded]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Disconnect socket when the page actually unloads
   useEffect(() => {
@@ -218,44 +191,35 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   // Reconnect socket with fresh token when auth state changes (sign in / sign out)
+  const prevUserIdRef = useRef<string | null | undefined>(undefined)
   useEffect(() => {
-    let unsubscribe: (() => void) | null = null
-    let prevUid: string | null = null
+    if (!isLoaded) return
+    // Skip initial render
+    if (prevUserIdRef.current === undefined) {
+      prevUserIdRef.current = userId
+      return
+    }
+    // Only reconnect if userId actually changed
+    if (userId === prevUserIdRef.current) return
+    prevUserIdRef.current = userId
 
-    async function watchAuth() {
-      const ready = await initializeFirebase()
-      if (!ready) return
-
-      try {
-        const firebaseAuth = await import('firebase/auth')
-        const auth = getFirebaseAuth()
-        if (!auth) return
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        unsubscribe = firebaseAuth.onAuthStateChanged(auth as any, async (user: any) => {
-          const newUid: string | null = user?.uid ?? null
-          if (newUid === prevUid) return
-          prevUid = newUid
-
-          if (globalSocket) {
-            const freshToken = user ? await user.getIdToken() : null
-            // Check if the socket already has the correct token (e.g. from initSocket)
-            const currentToken = (globalSocket.auth as { token?: string })?.token ?? null
-            if (freshToken && currentToken === freshToken) return
-
-            globalSocket.auth = freshToken ? { token: freshToken } : {}
-            globalSocket.disconnect().connect()
-            logger.info(`[SocketContext] Auth changed (uid: ${newUid ?? 'null'}), reconnecting socket`)
-          }
-        })
-      } catch {
-        // Firebase not available
+    async function reconnectWithNewAuth() {
+      if (!globalSocket) return
+      let freshToken: string | null = null
+      if (userId) {
+        try {
+          freshToken = await getToken()
+        } catch {
+          // No token available
+        }
       }
+      globalSocket.auth = freshToken ? { token: freshToken } : {}
+      globalSocket.disconnect().connect()
+      logger.info(`[SocketContext] Auth changed (userId: ${userId ?? 'null'}), reconnecting socket`)
     }
 
-    watchAuth()
-    return () => { unsubscribe?.() }
-  }, [])
+    reconnectWithNewAuth()
+  }, [userId, isLoaded, getToken])
 
   return (
     <SocketContext.Provider value={{ socket, isConnected, connectionState, reconnectAttempt, socketEmit }}>

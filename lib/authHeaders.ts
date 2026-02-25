@@ -1,23 +1,25 @@
 /**
- * Helper to get Authorization headers with Firebase ID token
+ * Helper to get Authorization headers with Clerk session token
  * for authenticated API requests.
  */
 
-import { getFirebaseAuth } from './firebase'
-
 /**
  * Returns headers object with Bearer token for authenticated API calls.
- * Throws if no user is signed in.
+ * Must be called from a component/hook context where Clerk is available.
+ *
+ * Usage: Pass `getToken` from Clerk's `useAuth()` hook:
+ *   const { getToken } = useAuth()
+ *   const headers = await getAuthHeaders(getToken)
  */
-export async function getAuthHeaders(): Promise<Record<string, string>> {
-  const auth = getFirebaseAuth()
-  const user = auth?.currentUser
-  if (!user) {
+export async function getAuthHeaders(
+  getToken: () => Promise<string | null>
+): Promise<Record<string, string>> {
+  const token = await getToken()
+  if (!token) {
     throw new Error('Not authenticated')
   }
-  const idToken = await user.getIdToken()
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${idToken}`,
+    'Authorization': `Bearer ${token}`,
   }
 }

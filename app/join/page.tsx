@@ -68,6 +68,7 @@ function JoinPageContent() {
     spectatorMessages,
     loadingProgress,
     error,
+    autoStartCountdown,
   } = useJoinSocket({
     socket, isConnected, myPlayerId, myRole,
     selectionCharacter: selection.character,
@@ -236,7 +237,7 @@ function JoinPageContent() {
 
       <AnimatePresence mode="wait">
         {gameState === 'LOBBY' && (
-          <JoinLobby key="lobby" players={players} myRole={myRole} selectedPackName={selectedPackName} />
+          <JoinLobby key="lobby" players={players} myRole={myRole} selectedPackName={selectedPackName} autoStartCountdown={autoStartCountdown} />
         )}
 
         {gameState === 'SELECTION' && (

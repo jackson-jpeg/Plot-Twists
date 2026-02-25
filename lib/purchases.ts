@@ -73,7 +73,7 @@ function requestNativePurchase(productId: string): Promise<StoreKitResult> {
  * 2. Receives signed transaction from native layer
  * 3. Verifies transaction on server and grants credits
  */
-export async function purchaseViaStoreKit(packageId: string, userId: string): Promise<PurchaseResult> {
+export async function purchaseViaStoreKit(packageId: string, userId: string, getToken?: () => Promise<string | null>): Promise<PurchaseResult> {
   if (!isIOSNative()) {
     return { success: false, error: 'StoreKit is only available on iOS' }
   }
@@ -91,7 +91,8 @@ export async function purchaseViaStoreKit(packageId: string, userId: string): Pr
 
   // Step 2: Verify transaction on server and grant credits
   try {
-    const headers = await getAuthHeaders()
+    if (!getToken) return { success: false, error: 'Authentication required' }
+    const headers = await getAuthHeaders(getToken)
     const res = await fetch(`${getApiBaseUrl()}/api/apple/verify-transaction`, {
       method: 'POST',
       headers,

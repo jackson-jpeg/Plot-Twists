@@ -224,6 +224,8 @@ export interface Player {
   hasSubmittedVote?: boolean
   assignedCharacter?: string
   score?: number
+  level?: number
+  title?: string
 }
 
 export interface CardSelection {
@@ -276,6 +278,10 @@ export interface Room {
   audioSettings?: AudioSettings
   // Credit System: Firebase UID of host for credit deduction
   hostUid?: string
+  // Feature 8: Public Games
+  isPublic?: boolean
+  publicTitle?: string
+  autoStart?: boolean
 }
 
 export interface RoomSettings {
@@ -289,6 +295,9 @@ export interface RoomSettings {
   audioSettings?: AudioSettings
   // Feature 1: Audience Interaction
   audienceInteractionEnabled?: boolean
+  // Feature 8: Public Games
+  isPublic?: boolean
+  publicTitle?: string
 }
 
 export interface VoteResult {
@@ -402,6 +411,14 @@ export interface ServerToClientEvents {
   new_game_started: (options: NewGameOptions) => void
   latency_ping: (serverTimestamp: number) => void
   latency_pong_response: (data: { latency: number }) => void
+
+  // Feature 7: Progression Events
+  xp_gained: (data: { events: XPEvent[], totalXP: number, level: number, title: string }) => void
+  level_up: (data: { newLevel: number, title: string, reward?: LevelReward }) => void
+
+  // Feature 8: Public Games Events
+  public_rooms_update: (rooms: PublicRoomListing[]) => void
+  auto_start_countdown: (seconds: number) => void
 }
 
 export interface ClientToServerEvents {
@@ -473,6 +490,19 @@ export interface ClientToServerEvents {
 
   // Resync after reconnection
   request_resync: (roomCode: string, playerId: string, callback: (response: { success: boolean, gameState?: string, players?: Player[], script?: Script, currentLineIndex?: number, error?: string }) => void) => void
+
+  // Feature 7: Progression Events
+  get_progression: (playerId: string, callback: (response: { success: boolean, progression?: Progression, levelInfo?: LevelInfo, error?: string }) => void) => void
+  get_weekly_challenges: (callback: (response: { success: boolean, challenges?: WeeklyChallenge[], error?: string }) => void) => void
+  claim_level_reward: (level: number, callback: (response: { success: boolean, reward?: LevelReward, error?: string }) => void) => void
+
+  // Feature 8: Public Games Events
+  list_public_rooms: (filters: { gameMode?: GameMode, isMature?: boolean } | undefined, callback: (response: { success: boolean, rooms?: PublicRoomListing[], error?: string }) => void) => void
+  subscribe_public_rooms: () => void
+  unsubscribe_public_rooms: () => void
+  quick_play: (request: { gameMode: GameMode, isMature?: boolean }, callback: (response: { success: boolean, code?: string, error?: string }) => void) => void
+  cancel_quick_play: () => void
+  host_kick_player: (roomCode: string, playerId: string, callback: (response: { success: boolean, error?: string }) => void) => void
 }
 
 // ============================================================
@@ -579,6 +609,10 @@ export interface PlayerStats {
   recentGames: string[] // Game IDs
   joinedAt: number
   lastPlayedAt: number
+  // Progression
+  totalXP?: number
+  level?: number
+  title?: string
 }
 
 export type LeaderboardCategory = 'wins' | 'games' | 'winRate' | 'reactions' | 'streak'
@@ -700,4 +734,81 @@ export interface UserMigrationData {
   migratedAt: number
   statsTransferred: boolean
   historyTransferred: boolean
+}
+
+// ============================================================
+// FEATURE 7: Progression System (XP, Levels, Rewards)
+// ============================================================
+
+export type XPSource =
+  | 'game_completed'
+  | 'game_won'
+  | 'votes_received'
+  | 'reactions_received'
+  | 'achievement_unlocked'
+  | 'win_streak'
+  | 'daily_first_game'
+  | 'weekly_challenge'
+  | 'public_game_hosted'
+
+export interface XPEvent {
+  source: XPSource
+  amount: number
+  description: string
+  timestamp: number
+}
+
+export interface LevelInfo {
+  level: number
+  currentXP: number
+  xpForNextLevel: number
+  progressPercent: number
+  title: string
+}
+
+export interface LevelReward {
+  level: number
+  type: 'credits' | 'title' | 'badge'
+  value: string | number
+  description: string
+  claimed: boolean
+}
+
+export interface WeeklyChallenge {
+  id: string
+  title: string
+  description: string
+  target: number
+  progress: number
+  xpReward: number
+  expiresAt: number
+  completed: boolean
+}
+
+export interface Progression {
+  playerId: string
+  totalXP: number
+  level: number
+  title: string
+  xpHistory: XPEvent[]
+  levelRewardsClaimed: number[]
+  weeklyChallenges: WeeklyChallenge[]
+  lastDailyBonusDate?: string
+  weeklyChallengeSeed?: string
+}
+
+// ============================================================
+// FEATURE 8: Public Games / Quick Play
+// ============================================================
+
+export interface PublicRoomListing {
+  code: string
+  hostNickname: string
+  gameMode: GameMode
+  playerCount: number
+  maxPlayers: number
+  isMature: boolean
+  publicTitle?: string
+  cardPackName?: string
+  createdAt: number
 }

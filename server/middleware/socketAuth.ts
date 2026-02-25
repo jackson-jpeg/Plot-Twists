@@ -1,6 +1,6 @@
 /**
  * Socket.io Authentication Middleware
- * Verifies Firebase ID tokens on socket connection.
+ * Verifies Clerk session tokens on socket connection.
  */
 
 import type { Socket } from 'socket.io'
@@ -8,26 +8,28 @@ import { upsertUser } from '../services/user.service'
 import { logger } from '../../lib/logger'
 
 /**
- * Get the Firebase Admin auth instance.
- * Uses dynamic import to reuse the already-initialized admin app.
+ * Verify a Clerk session token and return the user ID.
  */
-async function getAdminAuth() {
+async function verifyClerkToken(token: string): Promise<{ sub: string; email?: string; phone_number?: string } | null> {
   try {
-    const admin = (await import('firebase-admin')).default
-    if (admin.apps.length === 0) {
+    const { verifyToken } = await import('@clerk/backend')
+    const secretKey = process.env.CLERK_SECRET_KEY
+    if (!secretKey) {
+      logger.warn('[SocketAuth] CLERK_SECRET_KEY not set')
       return null
     }
-    return admin.auth()
+    const decoded = await verifyToken(token, { secretKey })
+    return decoded as unknown as { sub: string; email?: string; phone_number?: string }
   } catch {
     return null
   }
 }
 
 /**
- * Socket.io middleware that verifies Firebase ID tokens.
- * Sets socket.data.uid on success.
- * Allows unauthenticated connections (uid will be null) so the app
- * works for guests; credit operations check uid themselves.
+ * Socket.io middleware that verifies Clerk session tokens.
+ * Sets socket.data.userId on success.
+ * Allows unauthenticated connections (userId will be null) so the app
+ * works for guests; credit operations check userId themselves.
  */
 export function createSocketAuthMiddleware() {
   return async (socket: Socket, next: (err?: Error) => void) => {
@@ -36,39 +38,43 @@ export function createSocketAuthMiddleware() {
     if (!token) {
       // Allow connection without auth — guests can still play,
       // but credit/purchase features will require sign-in.
+      socket.data.userId = null
       socket.data.uid = null
       return next()
     }
 
     try {
-      const auth = await getAdminAuth()
-      if (!auth) {
-        // Firebase Admin not configured — allow connection in dev/fallback mode
-        logger.warn('[SocketAuth] Firebase Admin not available, allowing connection without verification')
+      const decoded = await verifyClerkToken(token)
+      if (!decoded) {
+        // Clerk not configured or token invalid — allow connection in fallback mode
+        logger.warn('[SocketAuth] Token verification failed, allowing connection without auth')
+        socket.data.userId = null
         socket.data.uid = null
         return next()
       }
 
-      const decodedToken = await auth.verifyIdToken(token)
-      socket.data.uid = decodedToken.uid
-      socket.data.email = decodedToken.email || null
-      socket.data.phoneNumber = decodedToken.phone_number || null
+      const userId = decoded.sub
+      socket.data.userId = userId
+      socket.data.uid = userId // backward compat
+      socket.data.email = decoded.email || null
+      socket.data.phoneNumber = decoded.phone_number || null
 
       try {
-        await upsertUser(decodedToken.uid, {
-          displayName: decodedToken.name || decodedToken.email?.split('@')[0],
-          email: decodedToken.email,
-          phoneNumber: decodedToken.phone_number,
+        await upsertUser(userId, {
+          displayName: decoded.email?.split('@')[0],
+          email: decoded.email,
+          phoneNumber: decoded.phone_number,
         })
       } catch (profileError) {
-        logger.warn(`[SocketAuth] Failed to upsert user profile for ${decodedToken.uid}:`, profileError)
+        logger.warn(`[SocketAuth] Failed to upsert user profile for ${userId}:`, profileError)
       }
 
-      logger.info(`[SocketAuth] Authenticated socket ${socket.id} as user ${decodedToken.uid}`)
+      logger.info(`[SocketAuth] Authenticated socket ${socket.id} as user ${userId}`)
       next()
     } catch (error) {
       logger.warn(`[SocketAuth] Token verification failed for ${socket.id}:`, error)
-      // Still allow connection but without uid — don't block the whole app
+      // Still allow connection but without userId
+      socket.data.userId = null
       socket.data.uid = null
       next()
     }

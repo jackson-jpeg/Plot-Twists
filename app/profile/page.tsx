@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { PlayerProfile, Leaderboard } from '@/components/PlayerProfile'
-import { AuthModal } from '@/components/AuthModal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 import { StatsSkeleton, Skeleton } from '@/components/EmptyState'
@@ -16,20 +15,22 @@ import dynamic from 'next/dynamic'
 const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false })
 const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false })
 import { ReferralCard } from '@/components/ReferralCard'
-import type { PaymentTransaction, PlayerStats } from '@/lib/types'
+import { XPBar } from '@/components/XPBar'
+import { WeeklyChallenges } from '@/components/WeeklyChallenges'
+import type { PaymentTransaction, PlayerStats, Progression, LevelInfo, WeeklyChallenge as WeeklyChallengeType } from '@/lib/types'
 import { getApiBaseUrl } from '@/lib/api'
 import { isAdminUser } from '@/lib/admin'
 import { isIOSNative } from '@/lib/platform'
 import { getAuthHeaders } from '@/lib/authHeaders'
+import { SignInButton } from '@clerk/nextjs'
 
 type ProfileTab = 'profile' | 'leaderboard'
 
 export default function ProfilePage() {
   const router = useRouter()
   const { socket, isConnected } = useSocket()
-  const { user, loading: authLoading, signOut, getPlayerId, isConfigured } = useAuth()
+  const { user, loading: authLoading, signOut, getPlayerId, isConfigured, getToken } = useAuth()
   const [activeTab, setActiveTab] = useState<ProfileTab>('profile')
-  const [showAuthModal, setShowAuthModal] = useState(false)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([])
   const [loadingTransactions, setLoadingTransactions] = useState(false)
@@ -38,6 +39,8 @@ export default function ProfilePage() {
   const [portalError, setPortalError] = useState<string | null>(null)
   const [accountExpanded, setAccountExpanded] = useState(false)
   const [stats, setStats] = useState<PlayerStats | null>(null)
+  const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
+  const [weeklyChallenges, setWeeklyChallenges] = useState<WeeklyChallengeType[]>([])
   const creditBalance = useCreditBalance()
 
   const playerId = getPlayerId()
@@ -50,6 +53,16 @@ export default function ProfilePage() {
         setStats(response.stats)
       }
     })
+    socket.emit('get_progression', playerId, (response) => {
+      if (response.success && response.levelInfo) {
+        setLevelInfo(response.levelInfo)
+      }
+    })
+    socket.emit('get_weekly_challenges', (response) => {
+      if (response.success && response.challenges) {
+        setWeeklyChallenges(response.challenges)
+      }
+    })
   }, [socket, isConnected, playerId])
 
   const fetchTransactions = useCallback(async () => {
@@ -57,7 +70,7 @@ export default function ProfilePage() {
     setLoadingTransactions(true)
     setTransactionError(null)
     try {
-      const headers = await getAuthHeaders()
+      const headers = await getAuthHeaders(getToken)
       const res = await fetch(`${getApiBaseUrl()}/api/stripe/transactions`, { headers })
       const data = await res.json()
       if (data.transactions) setTransactions(data.transactions)
@@ -75,7 +88,7 @@ export default function ProfilePage() {
     if (!user) return
     setPortalLoading(true)
     try {
-      const headers = await getAuthHeaders()
+      const headers = await getAuthHeaders(getToken)
       const res = await fetch(`${getApiBaseUrl()}/api/stripe/portal-session`, {
         method: 'POST',
         headers,
@@ -136,12 +149,6 @@ export default function ProfilePage() {
 
   return (
     <main className="page-container home-nostalgic">
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
-
       {/* Purchase Credits Modal */}
       <PurchaseCreditsModal
         isOpen={showPurchaseModal}
@@ -277,6 +284,28 @@ export default function ProfilePage() {
                 </motion.div>
               ))}
             </div>
+
+            {/* XP Progress */}
+            {levelInfo && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <XPBar levelInfo={levelInfo} />
+              </motion.div>
+            )}
+
+            {/* Weekly Challenges */}
+            {weeklyChallenges.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <WeeklyChallenges challenges={weeklyChallenges} />
+              </motion.div>
+            )}
           </motion.div>
         ) : (
           /* Fallback header when no stats */
@@ -573,7 +602,7 @@ export default function ProfilePage() {
         )}
 
         {/* Guest sign-in prompt */}
-        {!user && isConfigured && (
+        {!user && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -586,14 +615,15 @@ export default function ProfilePage() {
             <p className="text-sm text-[var(--color-text-secondary)] mb-4">
               Save your stats, compete on leaderboards, and sync across devices.
             </p>
-            <motion.button
-              onClick={() => setShowAuthModal(true)}
-              className="btn btn-primary w-full py-3 font-semibold"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Create Free Account
-            </motion.button>
+            <SignInButton mode="redirect">
+              <motion.button
+                className="btn btn-primary w-full py-3 font-semibold"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                Create Free Account
+              </motion.button>
+            </SignInButton>
           </motion.div>
         )}
       </div>

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { MOTION } from '@/lib/animations'
 import { CREDIT_PACKAGES } from '@/lib/credits'
 import { getApiBaseUrl } from '@/lib/api'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface SessionStatus {
   status: string
@@ -19,6 +20,7 @@ function PurchaseSuccessContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
+  const { getToken } = useAuth()
   const [session, setSession] = useState<SessionStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,12 +34,10 @@ function PurchaseSuccessContent() {
 
     async function fetchSession() {
       try {
-        const { getFirebaseAuth } = await import('@/lib/firebase')
-        const auth = getFirebaseAuth()
-        const idToken = await auth?.currentUser?.getIdToken()
+        const token = await getToken()
         const headers: Record<string, string> = {}
-        if (idToken) {
-          headers['Authorization'] = `Bearer ${idToken}`
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`
         }
         const res = await fetch(`${getApiBaseUrl()}/api/stripe/session-status?session_id=${sessionId}`, { headers })
         const data = await res.json()
@@ -53,7 +53,7 @@ function PurchaseSuccessContent() {
       }
     }
     fetchSession()
-  }, [sessionId])
+  }, [sessionId, getToken])
 
   const pkg = session?.packageId
     ? CREDIT_PACKAGES.find(p => p.id === session.packageId)
@@ -99,7 +99,6 @@ function PurchaseSuccessContent() {
             animate={{ scale: 1, opacity: 1 }}
             transition={MOTION.gentle}
           >
-            {/* Confetti burst emoji */}
             <motion.div
               className="text-7xl mb-6"
               initial={{ scale: 0 }}

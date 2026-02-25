@@ -1,6 +1,8 @@
 /**
  * User Service
- * Handles user creation, lookup, and anonymous-to-authenticated migration
+ * Handles user creation, lookup, and account management.
+ * Auth is handled by Clerk — this service manages game data (credits, stats)
+ * keyed by Clerk userId.
  */
 
 import type { UserProfile, UserMigrationData, UserPreferences } from '../../lib/types'
@@ -165,7 +167,6 @@ export async function updatePreferences(
 
 /**
  * Migrate data from anonymous user to authenticated user
- * This should be called when a user links their account
  */
 export async function migrateAnonymousUser(
   oldAnonymousId: string,
@@ -173,7 +174,6 @@ export async function migrateAnonymousUser(
 ): Promise<{ success: boolean; error?: string }> {
   const db = getDatabase()
 
-  // Check if already migrated
   const existingMigration = await db.get<UserMigrationData>(Collections.MIGRATIONS, oldAnonymousId)
   if (existingMigration) {
     return { success: false, error: 'User data already migrated' }
@@ -181,7 +181,6 @@ export async function migrateAnonymousUser(
 
   const now = Date.now()
 
-  // Create migration record
   const migrationData: UserMigrationData = {
     oldPlayerId: oldAnonymousId,
     newUserId: newAuthenticatedId,
@@ -191,39 +190,31 @@ export async function migrateAnonymousUser(
   }
 
   try {
-    // Import player stats service dynamically to avoid circular deps
     const { getPlayerStats } = await import('./playerStats.service')
 
-    // Get old player stats if they exist
     const oldStats = await getPlayerStats(oldAnonymousId)
 
     if (oldStats && oldStats.gamesPlayed > 0) {
-      // Get or create new user stats
       const newStats = await getPlayerStats(newAuthenticatedId)
 
-      // Merge stats (add old stats to new)
       newStats.gamesPlayed += oldStats.gamesPlayed
       newStats.gamesWon += oldStats.gamesWon
       newStats.totalVotesReceived += oldStats.totalVotesReceived
       newStats.totalReactionsReceived += oldStats.totalReactionsReceived
 
-      // Merge character counts
       for (const [character, count] of Object.entries(oldStats.characterCounts)) {
         newStats.characterCounts[character] = (newStats.characterCounts[character] || 0) + count
       }
 
-      // Merge game mode stats
       for (const mode of ['solo', 'headToHead', 'ensemble'] as const) {
         newStats.gameModeStats[mode].played += oldStats.gameModeStats[mode].played
         newStats.gameModeStats[mode].won += oldStats.gameModeStats[mode].won
       }
 
-      // Keep the better streak
       if (oldStats.bestWinStreak > newStats.bestWinStreak) {
         newStats.bestWinStreak = oldStats.bestWinStreak
       }
 
-      // Merge achievements (don't duplicate)
       const existingAchievementIds = new Set(newStats.achievements.map(a => a.id))
       for (const achievement of oldStats.achievements) {
         if (!existingAchievementIds.has(achievement.id)) {
@@ -231,24 +222,20 @@ export async function migrateAnonymousUser(
         }
       }
 
-      // Recalculate win rate
       newStats.winRate = newStats.gamesPlayed > 0
         ? (newStats.gamesWon / newStats.gamesPlayed) * 100
         : 0
 
-      // Use earlier join date
       if (oldStats.joinedAt < newStats.joinedAt) {
         newStats.joinedAt = oldStats.joinedAt
       }
 
-      // Save the merged stats to database
       await db.set(Collections.PLAYER_STATS, newAuthenticatedId, newStats)
 
       migrationData.statsTransferred = true
       logger.info(`Migrated stats from ${oldAnonymousId} to ${newAuthenticatedId}`)
     }
 
-    // Migrate game history - update player IDs in saved games
     const allGames = await db.getAll<{ id: string; players: Array<{ id: string }> }>(Collections.GAME_HISTORY)
     const gamesToUpdate = allGames.filter(game =>
       game.players.some(p => p.id === oldAnonymousId)
@@ -265,7 +252,6 @@ export async function migrateAnonymousUser(
       logger.info(`Migrated ${gamesToUpdate.length} games from ${oldAnonymousId} to ${newAuthenticatedId}`)
     }
 
-    // Update user profile with migration info
     const user = await db.get<UserProfile>(Collections.USERS, newAuthenticatedId)
     if (user) {
       await db.update(Collections.USERS, newAuthenticatedId, {
@@ -274,7 +260,6 @@ export async function migrateAnonymousUser(
       })
     }
 
-    // Save migration record
     await db.set(Collections.MIGRATIONS, oldAnonymousId, migrationData)
 
     return { success: true }
@@ -310,7 +295,7 @@ export async function getUserCount(): Promise<number> {
 
 /**
  * Delete a user and all associated data (cascade delete).
- * Removes: user profile, player stats, game history, Stripe customer, Firebase Auth user.
+ * Removes: user profile, player stats, game history, Stripe customer.
  */
 export async function deleteUser(uid: string): Promise<{ success: boolean; error?: string }> {
   const db = getDatabase()
@@ -370,17 +355,7 @@ export async function deleteUser(uid: string): Promise<{ success: boolean; error
     }
   }
 
-  // 5. Delete Firebase Auth user via admin SDK
-  try {
-    const admin = await import('firebase-admin')
-    if (admin.apps.length > 0) {
-      await admin.auth().deleteUser(uid)
-    }
-  } catch (e) {
-    logger.warn('[deleteUser] Failed to delete Firebase Auth user:', e)
-  }
-
-  // 6. Delete user profile (last, so partial failures don't orphan the account)
+  // 5. Delete user profile (last, so partial failures don't orphan the account)
   await db.delete(Collections.USERS, uid)
 
   logger.info(`[deleteUser] Successfully deleted user ${uid} and associated data`)
@@ -388,22 +363,16 @@ export async function deleteUser(uid: string): Promise<{ success: boolean; error
 }
 
 /**
- * Verify a Firebase ID token (placeholder - implement with firebase-admin)
+ * Verify a Clerk session token server-side.
+ * Used by HTTP middleware for authenticated API routes.
  */
-export async function verifyIdToken(idToken: string): Promise<{ uid: string } | null> {
+export async function verifyIdToken(token: string): Promise<{ uid: string } | null> {
   try {
-    // This would use firebase-admin to verify the token
-    // Dynamic import to avoid issues if firebase-admin is not installed
-    const adminModule = await import('firebase-admin').catch(() => null)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const admin: any = adminModule
-
-    if (!admin || admin.apps.length === 0) {
-      return null
-    }
-
-    const decodedToken = await admin.auth().verifyIdToken(idToken)
-    return { uid: decodedToken.uid }
+    const { verifyToken } = await import('@clerk/backend')
+    const secretKey = process.env.CLERK_SECRET_KEY
+    if (!secretKey) return null
+    const decoded = await verifyToken(token, { secretKey })
+    return { uid: (decoded as unknown as { sub: string }).sub }
   } catch {
     return null
   }

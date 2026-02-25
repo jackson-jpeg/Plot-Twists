@@ -7,7 +7,6 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { UserMenu } from '@/components/UserMenu'
 import { LandingPage } from '@/components/LandingPage'
-import { UpgradeModal } from '@/components/UpgradeModal'
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false)
@@ -56,11 +55,6 @@ export default function Home() {
   // Unauthenticated users see the landing page
   if (!user) {
     return <LandingPage />
-  }
-
-  // Anonymous users see the upgrade modal
-  if (user.isAnonymous) {
-    return <UpgradeModal />
   }
 
   return (
@@ -178,20 +172,34 @@ export default function Home() {
           </motion.button>
         </div>
 
-        {/* Explore Packs */}
-        <motion.button
-          onClick={() => router.push('/explore')}
-          className="mx-auto mt-4 flex items-center gap-3 px-5 py-2.5 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm cursor-pointer"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, type: 'spring', stiffness: 100, damping: 15 }}
-          whileHover={canHover ? { y: -3, scale: 1.03, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } : undefined}
-          whileTap={{ scale: 0.97 }}
-        >
-          <span className="text-xl">🎴</span>
-          <span className="text-sm font-medium text-[var(--color-text-primary)]">Explore Packs</span>
-          <span className="text-[var(--color-text-disabled)]">›</span>
-        </motion.button>
+        {/* Quick Play & Explore buttons */}
+        <div className="flex justify-center gap-3 mt-4">
+          <motion.button
+            onClick={() => router.push('/play')}
+            className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-[var(--color-purple)] text-white shadow-sm cursor-pointer"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, type: 'spring', stiffness: 100, damping: 15 }}
+            whileHover={canHover ? { y: -3, scale: 1.03 } : undefined}
+            whileTap={{ scale: 0.97 }}
+          >
+            <span className="text-lg">⚡</span>
+            <span className="text-sm font-semibold">Quick Play</span>
+          </motion.button>
+
+          <motion.button
+            onClick={() => router.push('/explore')}
+            className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm cursor-pointer"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, type: 'spring', stiffness: 100, damping: 15 }}
+            whileHover={canHover ? { y: -3, scale: 1.03, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } : undefined}
+            whileTap={{ scale: 0.97 }}
+          >
+            <span className="text-lg">🎴</span>
+            <span className="text-sm font-medium text-[var(--color-text-primary)]">Explore Packs</span>
+          </motion.button>
+        </div>
 
         {/* How it works */}
         <motion.div

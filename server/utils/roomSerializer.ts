@@ -41,6 +41,9 @@ export interface FirestoreRoom {
   cardPackId?: string
   audioSettings?: AudioSettings
   hostUid?: string
+  isPublic?: boolean
+  publicTitle?: string
+  autoStart?: boolean
 }
 
 /** Strip socketId from a Player for Firestore storage */
@@ -87,7 +90,10 @@ export function roomToFirestore(room: Room): FirestoreRoom {
     scriptCustomization: room.scriptCustomization,
     cardPackId: room.cardPackId,
     audioSettings: room.audioSettings,
-    hostUid: room.hostUid
+    hostUid: room.hostUid,
+    isPublic: room.isPublic,
+    publicTitle: room.publicTitle,
+    autoStart: room.autoStart,
   })) as FirestoreRoom
 }
 
@@ -127,6 +133,9 @@ export function firestoreToRoom(doc: FirestoreRoom): Room {
     scriptCustomization: doc.scriptCustomization,
     cardPackId: doc.cardPackId,
     audioSettings: doc.audioSettings,
-    hostUid: doc.hostUid
+    hostUid: doc.hostUid,
+    isPublic: doc.isPublic,
+    publicTitle: doc.publicTitle,
+    autoStart: doc.autoStart,
   }
 }

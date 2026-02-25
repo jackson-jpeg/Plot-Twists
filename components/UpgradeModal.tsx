@@ -1,23 +1,15 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { AuthModal } from './AuthModal'
+import { SignInButton } from '@clerk/nextjs'
 
 /**
  * Full-page component shown to returning anonymous users.
  * Prompts them to create a real account to continue playing.
  */
 export function UpgradeModal() {
-  const [showAuthModal, setShowAuthModal] = useState(false)
-
   return (
     <main className="page-container items-center justify-center home-nostalgic">
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-      />
-
       <div className="container max-w-3xl">
         <motion.div
           initial={{ y: -40, opacity: 0, scale: 0.95 }}
@@ -60,7 +52,7 @@ export function UpgradeModal() {
               color: 'var(--color-text)',
               marginBottom: '0.5rem'
             }}>
-              We&apos;ve updated!
+              Sign in to play
             </div>
             <div style={{
               fontSize: '0.95rem',
@@ -68,22 +60,22 @@ export function UpgradeModal() {
               marginBottom: '1.5rem',
               lineHeight: 1.5
             }}>
-              Sign in with your phone number to save your stats and get <strong>5 free scripts</strong> every week.
-              Your previous game history will be transferred.
+              Create an account to save your stats and get <strong>5 free scripts</strong> every week.
             </div>
 
-            <button
-              onClick={() => setShowAuthModal(true)}
-              className="user-menu-btn user-menu-btn-primary"
-              style={{
-                width: '100%',
-                padding: '0.75rem 1.5rem',
-                fontSize: '1.1rem',
-                borderRadius: '0.5rem'
-              }}
-            >
-              Sign In with Phone
-            </button>
+            <SignInButton mode="redirect">
+              <button
+                className="user-menu-btn user-menu-btn-primary"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem 1.5rem',
+                  fontSize: '1.1rem',
+                  borderRadius: '0.5rem'
+                }}
+              >
+                Sign In
+              </button>
+            </SignInButton>
           </div>
         </motion.div>
       </div>

@@ -34,9 +34,9 @@ function setStoredPreferences(prefs: UserPreferences): void {
 export function AccountSettings({ onClose }: AccountSettingsProps) {
   const {
     user,
-    updateDisplayName,
     signOut,
-    isConfigured
+    isConfigured,
+    getToken
   } = useAuth()
 
   const [isExpanded, setIsExpanded] = useState(false)
@@ -81,7 +81,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
     setPreferences(prev => ({ ...prev, ...stored }))
   }, [])
 
-  // Update display name
+  // Update display name via Clerk
   const handleUpdateDisplayName = async () => {
     if (!newDisplayName.trim()) {
       setNameError('Display name cannot be empty')
@@ -92,16 +92,36 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
     setNameError('')
     setNameSuccess(false)
 
-    const result = await updateDisplayName(newDisplayName.trim())
+    try {
+      // Use Clerk's user update API
+      const { useUser } = await import('@clerk/nextjs')
+      // Since we can't call hooks here, use fetch to Clerk's API
+      const token = await getToken()
+      if (!token) throw new Error('Not authenticated')
+
+      // Update via our server which can use Clerk Backend SDK
+      const res = await fetch(`${(await import('@/lib/api')).getApiBaseUrl()}/api/account/update-name`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ displayName: newDisplayName.trim() }),
+      })
+
+      if (res.ok) {
+        setNameSuccess(true)
+        setEditingName(false)
+        setTimeout(() => setNameSuccess(false), 3000)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setNameError(data.error || 'Failed to update display name')
+      }
+    } catch {
+      setNameError('Failed to update display name')
+    }
 
     setNameLoading(false)
-    if (result.success) {
-      setNameSuccess(true)
-      setEditingName(false)
-      setTimeout(() => setNameSuccess(false), 3000)
-    } else {
-      setNameError(result.error || 'Failed to update display name')
-    }
   }
 
   // Save preferences to localStorage
@@ -126,11 +146,9 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
     setDeleteLoading(true)
 
     try {
-      const { getFirebaseAuth } = await import('@/lib/firebase')
-      const auth = getFirebaseAuth()
-      const idToken = await auth?.currentUser?.getIdToken()
+      const token = await getToken()
 
-      if (!idToken) {
+      if (!token) {
         alert('Unable to verify your identity. Please sign in again and retry.')
         setDeleteLoading(false)
         return
@@ -140,7 +158,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${idToken}`
+          'Authorization': `Bearer ${token}`
         }
       })
 

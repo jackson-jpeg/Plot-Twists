@@ -5,7 +5,7 @@ import type { Socket } from 'socket.io-client'
 import type {
   Player, Script, ScriptLine, GameState, GameResults, PlayerRole,
   TeleprompterSyncData, AvailableCards, Achievement, SpectatorMessage,
-  CardSelection,
+  CardSelection, XPEvent, LevelReward,
 } from '@/lib/types'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 import { successHaptic } from '@/hooks/useHaptics'
@@ -42,6 +42,9 @@ export function useJoinSocket({
   const [spectatorMessages, setSpectatorMessages] = useState<SpectatorMessage[]>([])
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [error, setError] = useState('')
+  const [xpEvents, setXpEvents] = useState<XPEvent[]>([])
+  const [levelUpData, setLevelUpData] = useState<{ level: number; title: string; reward?: LevelReward } | null>(null)
+  const [autoStartCountdown, setAutoStartCountdown] = useState<number | null>(null)
 
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -161,6 +164,9 @@ export function useJoinSocket({
     })
     socket.on('game_over', setGameResults)
     socket.on('achievement_unlocked', (a: Achievement) => achievementToasts.addAchievement(a))
+    socket.on('xp_gained', (data) => setXpEvents(data.events))
+    socket.on('level_up', (data) => setLevelUpData({ level: data.newLevel, title: data.title, reward: data.reward }))
+    socket.on('auto_start_countdown', (seconds) => setAutoStartCountdown(seconds))
     socket.on('spectator_message_received', (msg: SpectatorMessage) => {
       setSpectatorMessages(prev => [...prev.slice(-49), msg])
     })
@@ -209,6 +215,8 @@ export function useJoinSocket({
       socket.off('green_room_prompt'); socket.off('script_ready')
       socket.off('script_image_update'); socket.off('sync_teleprompter')
       socket.off('game_over'); socket.off('achievement_unlocked')
+      socket.off('xp_gained'); socket.off('level_up')
+      socket.off('auto_start_countdown')
       socket.off('spectator_message_received'); socket.off('error')
       socket.off('host_disconnected'); socket.off('card_pack_selected')
       socket.off('new_game_started'); socket.off('latency_ping')
@@ -239,5 +247,8 @@ export function useJoinSocket({
     spectatorMessages,
     loadingProgress,
     error, setError,
+    xpEvents,
+    levelUpData, setLevelUpData,
+    autoStartCountdown,
   }
 }

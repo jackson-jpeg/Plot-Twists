@@ -8,7 +8,6 @@ import type { Server as SocketIOServer } from 'socket.io'
 import type { ClientToServerEvents, ServerToClientEvents } from '../../lib/types'
 import express from 'express'
 import { registerStripeRoutes } from './stripe'
-import { registerAuthRoutes } from './auth'
 import { registerAppleRoutes } from './apple'
 import { registerApiRoutes } from './api'
 
@@ -22,8 +21,7 @@ export async function registerRoutes(
   // Stripe routes must be registered first (webhook needs raw body before express.json)
   await registerStripeRoutes(app, io, port)
 
-  // Auth routes (Twilio)
-  registerAuthRoutes(app)
+  // Auth routes removed — Clerk handles all auth client-side
 
   // Apple IAP routes (need express.json)
   app.use('/api/apple', express.json())

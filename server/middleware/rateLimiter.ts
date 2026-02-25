@@ -38,30 +38,6 @@ export const scriptGenerationLimiter = rateLimit({
 })
 
 /**
- * Rate limiter for SMS send-code endpoint
- * Prevents Twilio bill abuse (5 req/min per IP)
- */
-export const sendCodeLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 5,
-  message: 'Too many verification attempts. Please wait a minute before trying again.',
-  standardHeaders: true,
-  legacyHeaders: false,
-})
-
-/**
- * Rate limiter for SMS verify-code endpoint
- * Prevents brute-force code guessing (10 req/min per IP)
- */
-export const verifyCodeLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 10,
-  message: 'Too many verification attempts. Please wait a minute before trying again.',
-  standardHeaders: true,
-  legacyHeaders: false,
-})
-
-/**
  * Rate limiter for public game metadata endpoint
  * Prevents scraping of game data (30 req/min per IP)
  */

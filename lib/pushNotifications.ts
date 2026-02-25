@@ -3,11 +3,16 @@ import { getApiBaseUrl } from '@/lib/api'
 import { getAuthHeaders } from '@/lib/authHeaders'
 import { logger } from '@/lib/logger'
 
+// Module-level reference to auth getToken, set by registerPushNotifications
+let _getAuthToken: (() => Promise<string | null>) | null = null
+
 /**
  * Register for push notifications (native or web).
  * Returns the FCM token or null on failure/denial.
+ * @param getAuthToken - Clerk's getToken() function for authenticated API calls
  */
-export async function registerPushNotifications(): Promise<string | null> {
+export async function registerPushNotifications(getAuthToken?: () => Promise<string | null>): Promise<string | null> {
+  if (getAuthToken) _getAuthToken = getAuthToken
   try {
     if (isCapacitorNative()) {
       return await registerNativePush()
@@ -92,7 +97,11 @@ async function registerWebPush(): Promise<string | null> {
 /** Send the push token to the server for storage */
 async function saveTokenToServer(token: string): Promise<void> {
   try {
-    const headers = await getAuthHeaders()
+    if (!_getAuthToken) {
+      logger.warn('[Push] No auth token available, skipping server registration')
+      return
+    }
+    const headers = await getAuthHeaders(_getAuthToken)
     await fetch(`${getApiBaseUrl()}/api/push/register`, {
       method: 'POST',
       headers,

@@ -97,9 +97,9 @@ export default function HostPage() {
     hasSubmittedSelection, setHasSubmittedSelection,
   } = useHostSocket({ socket, isConnected, settings, roomCode, playerId: user?.uid || '', toast, achievementToasts })
 
-  // Auth guard
+  // Auth guard — require signed-in user
   useEffect(() => {
-    if (!authLoading && (!user || user.isAnonymous)) router.push('/')
+    if (!authLoading && !user) router.push('/')
   }, [user, authLoading, router])
 
   // Read pack ID from localStorage
@@ -112,7 +112,7 @@ export default function HostPage() {
 
   // Create room
   useEffect(() => {
-    if (authLoading || !user || user.isAnonymous) return
+    if (authLoading || !user) return
     if (!socket || !isConnected || roomCreatedRef.current) return
     roomCreatedRef.current = true
     socket.emit('create_room', settings, (response) => {
@@ -258,7 +258,7 @@ export default function HostPage() {
   const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join?code=${roomCode}` : ''
 
   // Auth loading / unauthenticated
-  if (authLoading || !user || user.isAnonymous) {
+  if (authLoading || !user) {
     return (
       <div className="page-container items-center justify-center">
         <div className="text-center">

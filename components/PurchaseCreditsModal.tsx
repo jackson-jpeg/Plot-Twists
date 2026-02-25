@@ -60,10 +60,13 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
           showSuccess(`${pkg?.scripts ?? result.credits ?? ''} credits added!`)
           setTimeout(() => onClose(), 1500)
         } else {
-          setError(result.error || 'Purchase failed')
+          const msg = result.error || 'Purchase failed'
+          setError(msg)
+          analytics.purchaseFailed(packageId, msg)
         }
       } catch {
         setError('Something went wrong. Please try again.')
+        analytics.purchaseFailed(packageId, 'storekit_exception')
       } finally {
         setLoading(null)
       }
@@ -85,11 +88,14 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
         setClientSecret(data.clientSecret)
         setLoading(null)
       } else {
-        setError(data.error || 'Failed to start checkout')
+        const msg = data.error || 'Failed to start checkout'
+        setError(msg)
+        analytics.purchaseFailed(packageId, msg)
         setLoading(null)
       }
     } catch {
       setError('Something went wrong. Please try again.')
+      analytics.purchaseFailed(packageId, 'checkout_exception')
       setLoading(null)
     }
   }

@@ -39,4 +39,29 @@ export const analytics = {
   landingCtaClicked: (action: string) => {
     track('landing_cta_clicked', { action })
   },
+
+  /** Script generation failed */
+  scriptGenerationFailed: (mode: string, error: string) => {
+    track('script_generation_failed', { mode, error: error.slice(0, 100) })
+  },
+
+  /** Purchase completed successfully */
+  purchaseCompleted: (packageId: string, credits: number) => {
+    track('purchase_completed', { packageId, credits })
+  },
+
+  /** Purchase failed */
+  purchaseFailed: (packageId: string, error: string) => {
+    track('purchase_failed', { packageId, error: error.slice(0, 100) })
+  },
+
+  /** Player failed to join a game */
+  joinFailed: (reason: string) => {
+    track('join_failed', { reason })
+  },
+
+  /** User tried to generate but had insufficient credits */
+  creditInsufficient: () => {
+    track('credit_insufficient', {})
+  },
 }

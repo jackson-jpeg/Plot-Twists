@@ -28,7 +28,8 @@ import { configureSecurityMiddleware, validateEnvironment } from './server/middl
 import { generateScript } from './server/services/scriptGeneration.service'
 import { startTeleprompterSync } from './server/services/teleprompter.service'
 import { calculateResults } from './server/services/voting.service'
-import { SocketRateLimiter } from './server/middleware/rateLimiter'
+import { extractJSON } from './server/utils/jsonExtractor'
+import { SocketRateLimiter, sendCodeLimiter, verifyCodeLimiter } from './server/middleware/rateLimiter'
 import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname } from './server/utils/validation'
 import { withErrorHandler } from './server/middleware/socketErrorHandler'
 import { sendPushToUser } from './server/services/push.service'
@@ -2005,10 +2006,6 @@ app.prepare().then(async () => {
   await registerRoutes(expressApp, io, port)
 
   // Handle Next.js requests (catch-all, must be last)
-  expressApp.use((req, res) => {
-    const parsedUrl = parse(req.url!, true)
-    return handle(req, res, parsedUrl)
-  })
 
   server.listen(port, () => {
     logger.info(`> Ready on http://${hostname}:${port}`)

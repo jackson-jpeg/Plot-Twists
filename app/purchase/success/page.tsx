@@ -30,20 +30,29 @@ function PurchaseSuccessContent() {
       return
     }
 
-    fetch(`${getApiBaseUrl()}/api/stripe/session-status?session_id=${sessionId}`)
-      .then(res => res.json())
-      .then(data => {
+    async function fetchSession() {
+      try {
+        const { getFirebaseAuth } = await import('@/lib/firebase')
+        const auth = getFirebaseAuth()
+        const idToken = await auth?.currentUser?.getIdToken()
+        const headers: Record<string, string> = {}
+        if (idToken) {
+          headers['Authorization'] = `Bearer ${idToken}`
+        }
+        const res = await fetch(`${getApiBaseUrl()}/api/stripe/session-status?session_id=${sessionId}`, { headers })
+        const data = await res.json()
         if (data.error) {
           setError(data.error)
         } else {
           setSession(data)
         }
-        setLoading(false)
-      })
-      .catch(() => {
+      } catch {
         setError('Failed to verify purchase')
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+    fetchSession()
   }, [sessionId])
 
   const pkg = session?.packageId

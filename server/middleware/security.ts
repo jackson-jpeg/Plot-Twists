@@ -57,5 +57,20 @@ export function validateEnvironment(): void {
     process.exit(1)
   }
 
+  // Warn on missing optional env vars (don't crash — partial config is OK)
+  const optional = [
+    'STRIPE_SECRET_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'TWILIO_ACCOUNT_SID',
+    'TWILIO_AUTH_TOKEN',
+    'TWILIO_VERIFY_SERVICE_SID',
+    'FIREBASE_SERVICE_ACCOUNT_KEY',
+  ]
+  const missingOptional = optional.filter(key => !process.env[key])
+  if (missingOptional.length > 0) {
+    logger.warn('Missing optional environment variables (features may be disabled):')
+    missingOptional.forEach((key) => logger.warn(`   - ${key}`))
+  }
+
   logger.info('Environment variables validated')
 }

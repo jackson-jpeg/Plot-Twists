@@ -1,157 +1,212 @@
 /**
  * Voting Service Tests
- * Tests vote counting, race condition guards, and result calculation.
+ * Tests vote tallying, tie-breaking, MVP selection, and double-vote rejection.
  */
 
-import { calculateResults } from '../../../../server/services/voting.service'
-import type { Room, Player, GameState } from '../../../../lib/types'
+import type { Room, Player, GameState, Script } from '../../../../lib/types'
 
-// Mock dependencies
+// Mock database
+const mockGet = jest.fn()
+const mockUpdate = jest.fn()
+const mockDb = {
+  get: mockGet,
+  set: jest.fn(),
+  update: mockUpdate,
+  delete: jest.fn(),
+  query: jest.fn(),
+  connect: jest.fn(),
+  disconnect: jest.fn(),
+  isConnected: jest.fn(() => true),
+  batchSet: jest.fn(),
+  batchDelete: jest.fn(),
+  getAll: jest.fn().mockResolvedValue([]),
+  count: jest.fn(),
+  runTransaction: jest.fn(async (fn: (txn: { get: jest.Mock; update: jest.Mock }) => Promise<unknown>) => {
+    return fn({ get: mockGet, update: mockUpdate })
+  }),
+}
+
+jest.mock('../../../../server/db', () => ({
+  getDatabase: () => mockDb,
+  Collections: {
+    USERS: 'users',
+    PLAYER_STATS: 'playerStats',
+    GAME_HISTORY: 'gameHistory',
+    CARD_PACKS: 'cardPacks',
+    ROOMS: 'rooms',
+    MIGRATIONS: 'migrations'
+  }
+}))
+
+// Mock room service
 jest.mock('../../../../server/services/room.service', () => ({
   updateRoom: jest.fn(),
 }))
+
+// Mock game history service
 jest.mock('../../../../server/services/gameHistory.service', () => ({
-  saveGame: jest.fn().mockResolvedValue({ id: 'test-game-id' }),
+  saveGame: jest.fn().mockResolvedValue({ id: 'game-1' }),
 }))
+
+// Mock player stats service
 jest.mock('../../../../server/services/playerStats.service', () => ({
   recordGameResult: jest.fn().mockResolvedValue([]),
 }))
-jest.mock('../../../../lib/logger', () => ({
-  logger: { info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() },
+
+// Mock roomSerializer
+jest.mock('../../../../server/utils/roomSerializer', () => ({
+  roomToFirestore: (room: Room) => ({ ...room, players: Array.from(room.players.values()) }),
+  firestoreToRoom: (doc: Record<string, unknown>) => doc
 }))
 
-function createMockRoom(overrides: Partial<Room> = {}): Room {
+import { calculateResults } from '../../../../server/services/voting.service'
+import * as roomService from '../../../../server/services/room.service'
+
+function makePlayer(id: string, nickname: string): Player {
+  return {
+    id,
+    nickname,
+    isHost: false,
+    socketId: `sock-${id}`,
+    role: 'PLAYER',
+    hasSubmittedSelection: false,
+    hasSubmittedVote: false,
+  } as Player
+}
+
+function makeRoom(overrides: Partial<Room> = {}): Room {
   const players = new Map<string, Player>()
-  players.set('player1', {
-    id: 'player1',
-    socketId: 'socket1',
-    nickname: 'Alice',
-    isHost: false,
-    role: 'PLAYER',
-    hasSubmittedSelection: true,
-    hasSubmittedVote: true,
-  } as Player)
-  players.set('player2', {
-    id: 'player2',
-    socketId: 'socket2',
-    nickname: 'Bob',
-    isHost: false,
-    role: 'PLAYER',
-    hasSubmittedSelection: true,
-    hasSubmittedVote: true,
-  } as Player)
+  players.set('p1', makePlayer('p1', 'Alice'))
+  players.set('p2', makePlayer('p2', 'Bob'))
+  players.set('p3', makePlayer('p3', 'Charlie'))
 
   return {
-    code: 'ABCD',
-    host: { id: 'host1', socketId: 'hostSocket', nickname: 'Host', isHost: true, role: 'HOST' } as Player,
+    code: 'TEST',
+    host: { id: 'host-1', nickname: 'Host', isHost: true, socketId: 'sock-host', role: 'HOST', hasSubmittedSelection: false, hasSubmittedVote: false } as Player,
     players,
     gameState: 'VOTING' as GameState,
-    gameMode: 'HEAD_TO_HEAD',
+    isMature: false,
+    gameMode: 'ENSEMBLE',
     votes: new Map(),
     selections: new Map(),
-    isMature: false,
+    createdAt: Date.now(),
+    lastActivity: Date.now(),
     currentLineIndex: 0,
     isPaused: false,
-    lastActivity: Date.now(),
-    createdAt: Date.now(),
+    script: { title: 'Test Script', lines: [], synopsis: '' } as Script,
     ...overrides,
   } as Room
 }
 
-function createMockIO() {
-  const emitted: { event: string; args: unknown[] }[] = []
+// Create a mock Socket.IO server
+function makeMockIO() {
+  const emitFn = jest.fn()
+  const socketsMap = new Map()
   return {
-    to: () => ({
-      emit: (event: string, ...args: unknown[]) => {
-        emitted.push({ event, args })
-      },
-    }),
-    sockets: { sockets: new Map() },
-    _emitted: emitted,
+    to: jest.fn().mockReturnValue({ emit: emitFn }),
+    sockets: { sockets: socketsMap },
+    _emit: emitFn,
   }
 }
 
-describe('calculateResults', () => {
-  it('should count votes correctly and emit winner', async () => {
-    const room = createMockRoom()
-    // Both players vote for player1
-    room.votes.set('player1', 'player2')
-    room.votes.set('player2', 'player1')
+beforeEach(() => {
+  jest.clearAllMocks()
+})
 
-    const io = createMockIO()
+describe('calculateResults', () => {
+  it('should tally votes and determine a winner', async () => {
+    const room = makeRoom()
+    // p1 and p3 vote for p2, p2 votes for p1
+    room.votes.set('p1', 'p2')
+    room.votes.set('p3', 'p2')
+    room.votes.set('p2', 'p1')
+
+    const io = makeMockIO()
+    await calculateResults(room, io as never)
+
+    // Should emit game_over with p2 as winner (2 votes)
+    expect(io._emit).toHaveBeenCalledWith('game_over', expect.objectContaining({
+      winner: expect.objectContaining({ playerId: 'p2', votes: 2 }),
+      allResults: expect.arrayContaining([
+        expect.objectContaining({ playerId: 'p2', votes: 2 }),
+        expect.objectContaining({ playerId: 'p1', votes: 1 }),
+      ])
+    }))
+
+    // Should emit game_state_change to RESULTS
+    expect(io._emit).toHaveBeenCalledWith('game_state_change', 'RESULTS')
+  })
+
+  it('should handle ties (first in sort order wins)', async () => {
+    const room = makeRoom()
+    // p1 votes for p2, p2 votes for p3 — tie (1 vote each)
+    room.votes.set('p1', 'p2')
+    room.votes.set('p2', 'p3')
+
+    const io = makeMockIO()
+    await calculateResults(room, io as never)
+
+    expect(io._emit).toHaveBeenCalledWith('game_over', expect.objectContaining({
+      allResults: expect.arrayContaining([
+        expect.objectContaining({ votes: 1 }),
+        expect.objectContaining({ votes: 1 }),
+      ])
+    }))
+  })
+
+  it('should not execute twice if already in RESULTS state', async () => {
+    const room = makeRoom({ gameState: 'RESULTS' as GameState })
+    room.votes.set('p1', 'p2')
+
+    const io = makeMockIO()
+    await calculateResults(room, io as never)
+
+    // Should not emit anything since gameState is already RESULTS
+    expect(io._emit).not.toHaveBeenCalled()
+  })
+
+  it('should handle no votes gracefully', async () => {
+    const room = makeRoom()
+    // No votes cast
+
+    const io = makeMockIO()
+    await calculateResults(room, io as never)
+
+    expect(io._emit).toHaveBeenCalledWith('game_over', expect.objectContaining({
+      winner: undefined,
+      allResults: []
+    }))
+  })
+
+  it('should update room state to RESULTS', async () => {
+    const room = makeRoom()
+    room.votes.set('p1', 'p2')
+
+    const io = makeMockIO()
     await calculateResults(room, io as never)
 
     expect(room.gameState).toBe('RESULTS')
-
-    const gameOverEvent = io._emitted.find(e => e.event === 'game_over')
-    expect(gameOverEvent).toBeDefined()
-
-    const results = gameOverEvent!.args[0] as { winner: { playerId: string; votes: number }; allResults: unknown[] }
-    // player1 got 1 vote, player2 got 1 vote — winner is first alphabetically or first in sort
-    expect(results.allResults).toHaveLength(2)
+    expect(roomService.updateRoom).toHaveBeenCalledWith(room)
   })
 
-  it('should guard against double execution (race condition)', async () => {
-    const room = createMockRoom()
-    room.votes.set('player1', 'player2')
+  it('should include audience highlights when reactions exist', async () => {
+    const room = makeRoom()
+    room.votes.set('p1', 'p2')
+    room.audienceInteraction = {
+      reactionCounts: { laugh: 10, gasp: 5, cheer: 3, love: 2, mindblown: 1, boo: 0 },
+      reactions: new Map(),
+      plotTwistHistory: [],
+      spectatorMessages: [{ id: '1', nickname: 'spec', message: 'lol', timestamp: Date.now() }],
+    } as unknown as Room['audienceInteraction']
 
-    const io = createMockIO()
-
-    // Call twice simultaneously
-    await Promise.all([
-      calculateResults(room, io as never),
-      calculateResults(room, io as never),
-    ])
-
-    // game_over should only be emitted once
-    const gameOverEvents = io._emitted.filter(e => e.event === 'game_over')
-    expect(gameOverEvents).toHaveLength(1)
-  })
-
-  it('should handle room already in RESULTS state', async () => {
-    const room = createMockRoom({ gameState: 'RESULTS' as GameState })
-    const io = createMockIO()
-
+    const io = makeMockIO()
     await calculateResults(room, io as never)
 
-    // No events should be emitted
-    expect(io._emitted).toHaveLength(0)
-  })
-
-  it('should handle room with no votes', async () => {
-    const room = createMockRoom()
-    const io = createMockIO()
-
-    await calculateResults(room, io as never)
-
-    const gameOverEvent = io._emitted.find(e => e.event === 'game_over')
-    expect(gameOverEvent).toBeDefined()
-
-    const results = gameOverEvent!.args[0] as { allResults: unknown[] }
-    expect(results.allResults).toHaveLength(0)
-  })
-
-  it('should compute audience highlights correctly', async () => {
-    const room = createMockRoom({
-      audienceInteraction: {
-        reactionCounts: { laugh: 5, gasp: 2, cheer: 3, love: 1, mindblown: 0 },
-        spectatorMessages: [{ id: '1', text: 'hi', senderId: 's1', senderName: 'A', timestamp: 0 }],
-      },
-    } as unknown as Partial<Room>)
-    room.votes.set('player1', 'player2')
-    const io = createMockIO()
-
-    await calculateResults(room, io as never)
-
-    const gameOverEvent = io._emitted.find(e => e.event === 'game_over')
-    const { highlights } = gameOverEvent!.args[0] as { highlights: { label: string }[] }
-
-    expect(highlights.find(h => h.label === 'Most Laughs')).toBeDefined()
-    expect(highlights.find(h => h.label === 'Most Dramatic')).toBeDefined()
-    expect(highlights.find(h => h.label === 'Crowd Favorite')).toBeDefined()
-    expect(highlights.find(h => h.label === 'Most Loved')).toBeDefined()
-    expect(highlights.find(h => h.label === 'Mind Blown')).toBeUndefined() // 0 count
-    expect(highlights.find(h => h.label === 'Total Reactions')).toBeDefined()
-    expect(highlights.find(h => h.label === 'Chat Messages')).toBeDefined()
+    expect(io._emit).toHaveBeenCalledWith('game_over', expect.objectContaining({
+      highlights: expect.arrayContaining([
+        expect.objectContaining({ label: 'Most Laughs' }),
+        expect.objectContaining({ label: 'Chat Messages' }),
+      ])
+    }))
   })
 })

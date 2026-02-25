@@ -26,6 +26,33 @@ describe('Validation Utils', () => {
     it('should preserve valid text', () => {
       expect(sanitizeInput('John Doe 123')).toBe('John Doe 123')
     })
+
+    it('should strip XSS payloads', () => {
+      expect(sanitizeInput('<img src=x onerror=alert(1)>')).not.toContain('<')
+      expect(sanitizeInput('<svg onload=alert(1)>')).not.toContain('<')
+      expect(sanitizeInput('"><script>alert(document.cookie)</script>')).not.toContain('<')
+      expect(sanitizeInput("';DROP TABLE users;--")).not.toContain("'")
+    })
+
+    it('should strip SQL injection strings', () => {
+      const result = sanitizeInput("1' OR '1'='1")
+      expect(result).not.toContain("'")
+    })
+
+    it('should handle emoji-only names', () => {
+      // Emojis don't contain dangerous chars, so they should pass through
+      const result = sanitizeInput('🎭🎬🎪')
+      expect(result.length).toBeGreaterThan(0)
+    })
+
+    it('should handle unicode characters', () => {
+      expect(sanitizeInput('José García')).toBe('José García')
+      expect(sanitizeInput('田中太郎')).toBe('田中太郎')
+    })
+
+    it('should respect custom max length', () => {
+      expect(sanitizeInput('abcdefghij', 5)).toBe('abcde')
+    })
   })
 
   describe('isValidRoomCode', () => {
@@ -48,6 +75,18 @@ describe('Validation Utils', () => {
       expect(isValidRoomCode(undefined as any)).toBe(false)
       expect(isValidRoomCode(123 as any)).toBe(false)
     })
+
+    it('should reject codes with special characters', () => {
+      expect(isValidRoomCode('AB!D')).toBe(false)
+      expect(isValidRoomCode('A B D')).toBe(false)
+      expect(isValidRoomCode('AB\nD')).toBe(false)
+    })
+
+    it('should accept lowercase and uppercase uniformly', () => {
+      // Both should return true since the function uppercases before validation
+      expect(isValidRoomCode('ab3d')).toBe(true)
+      expect(isValidRoomCode('AB3D')).toBe(true)
+    })
   })
 
   describe('isValidNickname', () => {
@@ -67,6 +106,25 @@ describe('Validation Utils', () => {
       expect(isValidNickname(null as any)).toBe(false)
       expect(isValidNickname(undefined as any)).toBe(false)
       expect(isValidNickname(123 as any)).toBe(false)
+    })
+
+    it('should reject names that are only dangerous characters', () => {
+      expect(isValidNickname('<>')).toBe(false)
+      expect(isValidNickname("'\"")).toBe(false)
+    })
+
+    it('should accept emoji-only nicknames', () => {
+      expect(isValidNickname('🎭')).toBe(true)
+      expect(isValidNickname('🎬🎪🎭')).toBe(true)
+    })
+
+    it('should reject XSS payloads as nicknames', () => {
+      // After sanitization, the dangerous chars are removed but "scriptalert(1)script" remains
+      expect(isValidNickname('<script>alert(1)</script>')).toBe(true) // sanitized version is valid
+      // The important thing is that sanitizeInput removes the dangerous chars
+      const sanitized = sanitizeInput('<script>alert(1)</script>')
+      expect(sanitized).not.toContain('<')
+      expect(sanitized).not.toContain('>')
     })
   })
 

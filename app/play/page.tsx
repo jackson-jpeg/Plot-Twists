@@ -125,7 +125,7 @@ export default function PlayPage() {
             mode="ENSEMBLE"
             label="Ensemble"
             emoji="👥"
-            description="3-6 players"
+            description="3-6 performers"
             isMatching={isMatching}
             onPlay={() => handleQuickPlay('ENSEMBLE')}
           />
@@ -133,10 +133,34 @@ export default function PlayPage() {
             mode="HEAD_TO_HEAD"
             label="Head-to-Head"
             emoji="⚔️"
-            description="1v1 battle"
+            description="2-player duel"
             isMatching={isMatching}
             onPlay={() => handleQuickPlay('HEAD_TO_HEAD')}
           />
+        </motion.div>
+
+        <p className="text-center text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
+          Auto-joins an open game or creates one
+        </p>
+
+        {/* Host a Public Game */}
+        <motion.div
+          className="flex justify-center mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <button
+            onClick={() => router.push('/host?public=true')}
+            className="px-4 py-2 rounded-full text-sm font-medium transition-colors cursor-pointer"
+            style={{
+              border: '1px solid var(--color-purple)',
+              color: 'var(--color-purple)',
+              background: 'transparent',
+            }}
+          >
+            🌐 Host a Public Game
+          </button>
         </motion.div>
 
         {/* Error */}
@@ -155,7 +179,10 @@ export default function PlayPage() {
 
         {/* Filters */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-[var(--color-text-tertiary)] mr-1">Filter:</span>
+          <span className="flex items-center gap-1 text-xs text-[var(--color-text-tertiary)] mr-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)] animate-pulse inline-block" />
+            Live
+          </span>
           {(['ALL', 'ENSEMBLE', 'HEAD_TO_HEAD'] as FilterMode[]).map(mode => (
             <button
               key={mode}
@@ -185,13 +212,20 @@ export default function PlayPage() {
         <div className="flex flex-col gap-3">
           {filteredRooms.length === 0 ? (
             <motion.div
-              className="text-center py-12 text-[var(--color-text-tertiary)]"
+              className="text-center py-12"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
               <div className="text-4xl mb-3">🎭</div>
-              <p className="text-sm">No public games right now</p>
-              <p className="text-xs mt-1">Start one with Quick Play above!</p>
+              <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No public games right now</p>
+              <p className="text-xs mt-1 mb-4" style={{ color: 'var(--color-text-tertiary)' }}>Be the first to start one!</p>
+              <button
+                onClick={() => router.push('/host?public=true')}
+                className="px-5 py-2.5 rounded-full text-sm font-semibold cursor-pointer"
+                style={{ background: 'var(--color-purple)', color: 'white' }}
+              >
+                🌐 Host Public Game
+              </button>
             </motion.div>
           ) : (
             filteredRooms.map((room, i) => (

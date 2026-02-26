@@ -94,13 +94,13 @@ export function UserMenu() {
         >
           <div className="user-menu-avatar">
             {user.photoURL ? (
-              <img src={user.photoURL} alt={user.displayName || 'User'} />
+              <img src={user.photoURL} alt={user.displayName || user.email?.split('@')[0] || 'Player'} />
             ) : (
               getInitials()
             )}
           </div>
           <span className="user-menu-name">
-            {user.displayName || 'User'}
+            {user.displayName || user.email?.split('@')[0] || 'Player'}
           </span>
           <span className={`user-menu-chevron ${isOpen ? 'user-menu-chevron-open' : ''}`}>
             ▼

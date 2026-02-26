@@ -268,7 +268,7 @@ function JoinPageContent() {
         )}
 
         {gameState === 'VOTING' && (
-          <JoinVoting key="voting" players={players} myPlayerId={myPlayerId} onVote={handleVote} />
+          <JoinVoting key="voting" players={players} myPlayerId={myPlayerId} script={script} myCharacter={myCharacter} onVote={handleVote} />
         )}
 
         {gameState === 'RESULTS' && (

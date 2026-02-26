@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useEffect, useState, useCallback, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { RoomSettings, ScriptCustomization, AudioSettings, CardSelection, GameMode } from '@/lib/types'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
@@ -29,8 +29,9 @@ import { HostPerforming } from './components/HostPerforming'
 import { HostVoting } from './components/HostVoting'
 import { HostResults } from './components/HostResults'
 
-export default function HostPage() {
+function HostPageContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
   const { socket, isConnected } = useSocket()
   const confetti = useConfetti()
@@ -111,6 +112,13 @@ export default function HostPage() {
       if (savedPack) { setSelectedPackId(savedPack); localStorage.removeItem('plottwists_selected_pack') }
     } catch { /* ignore */ }
   }, [])
+
+  // Initialize public game from URL param
+  useEffect(() => {
+    if (searchParams.get('public') === 'true') {
+      setSettings(prev => ({ ...prev, isPublic: true }))
+    }
+  }, [searchParams])
 
   // Create room
   useEffect(() => {
@@ -351,6 +359,7 @@ export default function HostPage() {
             hasSubmittedSelection={hasSubmittedSelection}
             isSubmittingCards={isSubmittingCards}
             availableCards={availableCards}
+            greenRoomQuestion={greenRoomQuestion}
             onSubmitSoloCards={handleSubmitSoloCards}
             onBackToLobby={() => setGameState('LOBBY')}
             toast={toast}
@@ -396,7 +405,7 @@ export default function HostPage() {
         )}
 
         {gameState === 'VOTING' && (
-          <HostVoting key="voting" players={players} />
+          <HostVoting key="voting" players={players} script={script} />
         )}
 
         {gameState === 'RESULTS' && (
@@ -419,5 +428,20 @@ export default function HostPage() {
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       <AchievementToast achievements={achievementToasts.achievements} onDismiss={achievementToasts.dismissAchievement} />
     </div>
+  )
+}
+
+export default function HostPage() {
+  return (
+    <Suspense fallback={
+      <div className="page-container items-center justify-center">
+        <div className="text-center">
+          <div className="skeleton skeleton-heading" style={{ margin: '0 auto' }} />
+          <div className="skeleton skeleton-text" style={{ width: '60%', margin: '1rem auto' }} />
+        </div>
+      </div>
+    }>
+      <HostPageContent />
+    </Suspense>
   )
 }

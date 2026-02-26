@@ -1,10 +1,19 @@
 'use client'
 
-import React from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Player, RoomSettings, CardSelection, AvailableCards } from '@/lib/types'
 import { CardPicker } from '@/components/CardPicker'
 import { VARIANTS } from '@/lib/animations'
+
+const IMPROV_TIPS = [
+  { emoji: '🎭', tip: '"Yes, and..." — always build on what your scene partner gives you.' },
+  { emoji: '🎤', tip: 'Commit fully to your character. Go big or go home!' },
+  { emoji: '👀', tip: 'Listen more than you talk. The best comedy comes from reacting.' },
+  { emoji: '🤸', tip: 'Don\'t be afraid to move! Physicality makes scenes pop.' },
+  { emoji: '💡', tip: 'Make your scene partner look good — it makes the whole scene better.' },
+  { emoji: '🎪', tip: 'Play at the top of your intelligence. Dumb characters can be smart about being dumb.' },
+]
 
 export interface HostSelectionProps {
   settings: RoomSettings
@@ -14,6 +23,7 @@ export interface HostSelectionProps {
   hasSubmittedSelection: boolean
   isSubmittingCards: boolean
   availableCards: AvailableCards
+  greenRoomQuestion: string | null
   onSubmitSoloCards: () => void
   onBackToLobby: () => void
   toast: { success: (m: string, opts?: { duration?: number }) => void }
@@ -22,10 +32,22 @@ export interface HostSelectionProps {
 export function HostSelection({
   settings, players, selection, setSelection,
   hasSubmittedSelection, isSubmittingCards, availableCards,
+  greenRoomQuestion,
   onSubmitSoloCards, onBackToLobby, toast,
 }: HostSelectionProps) {
   const pageTransitionVariants = VARIANTS.pageTransition
   const nonHostPlayers = players.filter(p => !p.isHost)
+  const readyCount = nonHostPlayers.filter(p => p.hasSubmittedSelection).length
+  const [tipIndex, setTipIndex] = useState(0)
+
+  // Cycle through improv tips
+  useEffect(() => {
+    if (settings.gameMode === 'SOLO') return
+    const interval = setInterval(() => {
+      setTipIndex(prev => (prev + 1) % IMPROV_TIPS.length)
+    }, 6000)
+    return () => clearInterval(interval)
+  }, [settings.gameMode])
 
   // Solo mode - submitted waiting view
   if (settings.gameMode === 'SOLO' && hasSubmittedSelection) {
@@ -105,15 +127,50 @@ export function HostSelection({
     )
   }
 
-  // Ensemble/H2H - player ready status
+  // Ensemble/H2H - enriched waiting screen
+  const currentTip = IMPROV_TIPS[tipIndex]
+
   return (
     <motion.div key="selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-2xl text-center">
-      <motion.h1 className="hero-title mb-12" initial={{ y: -20 }} animate={{ y: 0 }}>🎴 Selecting Cards</motion.h1>
-      <div className="card">
+      <motion.h1 className="hero-title mb-6" initial={{ y: -20 }} animate={{ y: 0 }}>🎴 Selecting Cards</motion.h1>
+
+      {/* Progress bar */}
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>Players ready</span>
+          <span className="text-sm font-bold" style={{ color: readyCount === nonHostPlayers.length ? 'var(--color-success)' : 'var(--color-text-primary)' }}>
+            {readyCount}/{nonHostPlayers.length}
+          </span>
+        </div>
+        <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'var(--color-surface-alt)' }}>
+          <motion.div
+            className="h-full rounded-full"
+            style={{
+              background: readyCount === nonHostPlayers.length
+                ? 'var(--color-success)'
+                : 'linear-gradient(90deg, var(--color-purple), var(--color-pink))'
+            }}
+            initial={{ width: '0%' }}
+            animate={{ width: nonHostPlayers.length > 0 ? `${(readyCount / nonHostPlayers.length) * 100}%` : '0%' }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+          />
+        </div>
+      </motion.div>
+
+      {/* Player list */}
+      <div className="card mb-4">
         <div className="stack-sm">
           {nonHostPlayers.map((player, i) => (
             <motion.div key={player.id} className="split p-4 rounded-lg" style={{ background: 'var(--color-surface-alt)' }} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
-              <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
+              <div className="flex items-center gap-2">
+                <div className="player-avatar" style={{ width: '32px', height: '32px', fontSize: '13px' }}>{player.nickname[0]?.toUpperCase()}</div>
+                <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
+              </div>
               <motion.span className={`text-sm font-medium badge ${player.hasSubmittedSelection ? 'badge-success' : 'badge-warning'}`} animate={player.hasSubmittedSelection ? {} : { scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
                 {player.hasSubmittedSelection ? '✓ Ready' : '⏳ Selecting'}
               </motion.span>
@@ -121,6 +178,70 @@ export function HostSelection({
           ))}
         </div>
       </div>
+
+      {/* Deck stats */}
+      {availableCards.characters.length > 0 && (
+        <motion.div
+          className="flex justify-center gap-3 mb-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          {[
+            { count: availableCards.characters.length, label: 'characters' },
+            { count: availableCards.settings.length, label: 'settings' },
+            { count: availableCards.circumstances.length, label: 'twists' },
+          ].map(({ count, label }) => (
+            <div key={label} className="text-center px-3 py-1.5 rounded-lg" style={{ background: 'var(--color-surface-alt)' }}>
+              <div className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>{count}</div>
+              <div className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>{label}</div>
+            </div>
+          ))}
+        </motion.div>
+      )}
+
+      {/* Green room question */}
+      {greenRoomQuestion && (
+        <motion.div
+          className="card mb-4 text-left"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          style={{ background: 'var(--color-highlight)', border: '1px solid var(--color-accent)' }}
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">💬</span>
+            <div>
+              <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-text-tertiary)' }}>GREEN ROOM</p>
+              <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>{greenRoomQuestion}</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Cycling improv tips */}
+      <motion.div
+        className="p-4 rounded-xl"
+        style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+      >
+        <p className="text-[10px] font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Improv Tip</p>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={tipIndex}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3 }}
+            className="flex items-start gap-2"
+          >
+            <span className="text-lg">{currentTip.emoji}</span>
+            <p className="text-sm text-left" style={{ color: 'var(--color-text-secondary)' }}>{currentTip.tip}</p>
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
     </motion.div>
   )
 }

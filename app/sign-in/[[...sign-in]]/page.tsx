@@ -50,16 +50,6 @@ export default function SignInPage() {
                   rootBox: 'w-full',
                   cardBox: 'w-full shadow-none',
                   card: 'bg-transparent shadow-none p-0',
-                  headerTitle: 'font-display text-[var(--color-text-primary)]',
-                  headerSubtitle: 'text-[var(--color-text-secondary)]',
-                  socialButtonsBlockButton: 'border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-alt)]',
-                  formButtonPrimary: 'bg-[var(--color-purple)] hover:bg-[var(--color-purple-hover)]',
-                  formFieldInput: 'bg-[var(--color-surface-alt)] border-[var(--color-border)] text-[var(--color-text-primary)]',
-                  formFieldLabel: 'text-[var(--color-text-secondary)]',
-                  footerActionLink: 'text-[var(--color-accent)]',
-                  identityPreviewEditButton: 'text-[var(--color-accent)]',
-                  dividerLine: 'bg-[var(--color-border)]',
-                  dividerText: 'text-[var(--color-text-tertiary)]',
                 },
               }}
             />

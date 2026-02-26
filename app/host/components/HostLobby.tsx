@@ -307,10 +307,10 @@ export function HostLobby({
             <h3 className="font-display text-lg mb-4" style={{ color: 'var(--color-text-primary)' }}>🎮 Game Mode</h3>
             <div className="grid gap-3 md:grid-cols-3">
               {([
-                { mode: 'SOLO' as const, icon: '🎤', label: 'Solo', desc: '1 player vs AI' },
-                { mode: 'HEAD_TO_HEAD' as const, icon: '⚔️', label: 'Head-to-Head', desc: '2 players compete' },
-                { mode: 'ENSEMBLE' as const, icon: '🎭', label: 'Ensemble', desc: '3-6 players' },
-              ]).map(({ mode, icon, label, desc }) => (
+                { mode: 'SOLO' as const, icon: '🎤', label: 'Solo', desc: '1 player vs AI', sublabel: '' },
+                { mode: 'HEAD_TO_HEAD' as const, icon: '⚔️', label: 'Head-to-Head', desc: '2 performers + host', sublabel: 'Host runs the teleprompter' },
+                { mode: 'ENSEMBLE' as const, icon: '🎭', label: 'Ensemble', desc: '3-6 performers + host', sublabel: 'Host runs the teleprompter' },
+              ]).map(({ mode, icon, label, desc, sublabel }) => (
                 <motion.button
                   key={mode}
                   onClick={() => onUpdateGameMode(mode)}
@@ -329,6 +329,7 @@ export function HostLobby({
                   <div className="text-2xl mb-2">{icon}</div>
                   <div className="font-display font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>{label}</div>
                   <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{desc}</div>
+                  {sublabel && <div className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>{sublabel}</div>}
                 </motion.button>
               ))}
             </div>
@@ -340,6 +341,28 @@ export function HostLobby({
                     <div>
                       <p className="font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>How Solo Mode Works</p>
                       <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>You'll pick cards and the AI will create a scene with you as the star. AI characters from the setting will join your performance!</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+              {settings.gameMode === 'HEAD_TO_HEAD' && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-4 p-4 rounded-lg" style={{ background: 'var(--color-highlight-blue)', border: '1px solid var(--color-accent-2)' }}>
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">⚔️</span>
+                    <div>
+                      <p className="font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>How Head-to-Head Works</p>
+                      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Two performers go head-to-head with the same setup but different twists. Host controls the teleprompter while they compete for MVP.</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+              {settings.gameMode === 'ENSEMBLE' && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="mt-4 p-4 rounded-lg" style={{ background: 'var(--color-highlight-blue)', border: '1px solid var(--color-accent-2)' }}>
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">🎭</span>
+                    <div>
+                      <p className="font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>How Ensemble Works</p>
+                      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>The whole group picks characters and performs together. Host keeps the show running on the big screen.</p>
                     </div>
                   </div>
                 </motion.div>

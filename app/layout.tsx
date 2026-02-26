@@ -88,9 +88,39 @@ export default function RootLayout({
 }) {
   return (
     <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignOutUrl="/"
       appearance={{
+        variables: {
+          colorPrimary: '#A855F7',
+          colorText: 'var(--color-text-primary)',
+          colorTextSecondary: 'var(--color-text-secondary)',
+          colorBackground: 'var(--color-surface)',
+          colorInputBackground: 'var(--color-surface-alt)',
+          borderRadius: '0.75rem',
+          fontFamily: 'var(--font-fredoka), var(--font-dm-sans), sans-serif',
+        },
         elements: {
+          card: 'bg-[var(--color-surface)] shadow-none',
+          cardBox: 'shadow-none',
+          headerTitle: 'font-display text-[var(--color-text-primary)]',
+          headerSubtitle: 'text-[var(--color-text-secondary)]',
+          socialButtonsBlockButton: 'border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-alt)]',
           formButtonPrimary: 'bg-[var(--color-purple)] hover:bg-[var(--color-purple-hover)]',
+          formFieldInput: 'bg-[var(--color-surface-alt)] border-[var(--color-border)] text-[var(--color-text-primary)]',
+          formFieldLabel: 'text-[var(--color-text-secondary)]',
+          formFieldErrorText: 'text-[var(--color-danger,#f87171)]',
+          footerActionLink: 'text-[var(--color-accent)]',
+          identityPreviewEditButton: 'text-[var(--color-accent)]',
+          dividerLine: 'bg-[var(--color-border)]',
+          dividerText: 'text-[var(--color-text-tertiary)]',
+          otpCodeFieldInput: 'border-[var(--color-border)] bg-[var(--color-surface-alt)] text-[var(--color-text-primary)]',
+          alertText: 'text-[var(--color-text-secondary)]',
+          userButtonPopoverCard: 'bg-[var(--color-surface)] border border-[var(--color-border)]',
+          userButtonPopoverActionButton: 'text-[var(--color-text-primary)] hover:bg-[var(--color-surface-alt)]',
+          userPreviewMainIdentifier: 'text-[var(--color-text-primary)]',
+          userPreviewSecondaryIdentifier: 'text-[var(--color-text-secondary)]',
         },
       }}
     >

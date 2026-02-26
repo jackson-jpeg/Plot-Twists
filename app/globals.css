@@ -1601,6 +1601,16 @@ textarea:focus-visible {
 .mt-safe { margin-top: env(safe-area-inset-top, 0px); }
 .mb-safe { margin-bottom: env(safe-area-inset-bottom, 0px); }
 
+/* Thin scrollbar — cross-browser */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--color-text-tertiary); }
+
 /* ==========================================================================
    Page-Specific Styles
    ========================================================================== */

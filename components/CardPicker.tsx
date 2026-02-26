@@ -157,7 +157,7 @@ export function CardPicker({
         }
       }
       // All filled — stay on current tab
-    }, 250)
+    }, 400)
   }, [selection, setSelection, activeTab])
 
   // Shuffle current tab's card
@@ -431,8 +431,8 @@ export function CardPicker({
                 </span>
                 <button
                   onClick={toggleCustom}
-                  className="text-xs flex items-center gap-1 py-1"
-                  style={{ color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
+                  className="text-xs flex items-center gap-1 px-2 py-1 rounded-md transition-colors"
+                  style={{ color: 'var(--color-text-secondary)', background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
                 >
                   ✎ Write your own
                 </button>
@@ -441,8 +441,8 @@ export function CardPicker({
               {/* Card Grid — viewport-relative height */}
               <div
                 ref={gridRef}
-                className="overflow-y-auto"
-                style={{ maxHeight: 'clamp(200px, 38vh, 360px)', scrollbarWidth: 'thin' }}
+                className="overflow-y-auto scrollbar-thin"
+                style={{ maxHeight: 'clamp(200px, 38vh, 360px)' }}
               >
                 {filteredItems.length === 0 ? (
                   <div className="text-center py-8">

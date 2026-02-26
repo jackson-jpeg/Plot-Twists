@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { isCapacitorNative } from '@/lib/platform'
 import { setupPushListeners } from '@/lib/pushNotifications'
 
@@ -9,6 +9,8 @@ import { setupPushListeners } from '@/lib/pushNotifications'
  * No-ops silently on regular web browsers.
  */
 export function NativeBootstrap() {
+  const observerRef = useRef<MutationObserver | null>(null)
+
   useEffect(() => {
     if (!isCapacitorNative()) return
 
@@ -46,6 +48,7 @@ export function NativeBootstrap() {
         StatusBar.setBackgroundColor({ color: nowDark ? '#0f0f23' : '#FDFCFA' }).catch(() => {})
       })
       observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+      observerRef.current = observer
     }).catch(() => {})
 
     // 4. Configure Keyboard
@@ -97,6 +100,10 @@ export function NativeBootstrap() {
 
     // 9. Set up push notification tap handlers
     setupPushListeners()
+
+    return () => {
+      observerRef.current?.disconnect()
+    }
   }, [])
 
   return null

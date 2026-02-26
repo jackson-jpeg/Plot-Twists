@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
+import { tapHaptic } from '@/hooks/useHaptics'
 
 const TABS = [
   { href: '/', label: 'Home', icon: '🏠' },
@@ -46,38 +47,40 @@ export function BottomTabBar() {
             : pathname.startsWith(tab.href)
 
           return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              role="tab"
-              aria-selected={isActive}
-              aria-label={tab.label}
-              className="flex flex-col items-center justify-center py-2 px-3 min-w-[64px] min-h-[48px] relative"
-              style={{
-                color: isActive ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="tab-indicator"
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
-                  style={{ background: 'var(--color-accent)' }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="text-xl leading-none" aria-hidden="true">
-                {tab.icon}
-              </span>
-              <span
-                className="text-[11px] mt-0.5 font-medium"
+            <motion.div key={tab.href} whileTap={{ scale: 0.9 }} transition={{ duration: 0.1 }}>
+              <Link
+                href={tab.href}
+                role="tab"
+                aria-selected={isActive}
+                aria-label={tab.label}
+                onClick={() => { if (!isActive) tapHaptic() }}
+                className="flex flex-col items-center justify-center py-2 px-3 min-w-[64px] min-h-[48px] relative"
                 style={{
-                  color: isActive ? 'var(--color-accent)' : 'var(--color-text-disabled)',
+                  color: isActive ? 'var(--color-accent)' : 'var(--color-text-tertiary)',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
               >
-                {tab.label}
-              </span>
-            </Link>
+                {isActive && (
+                  <motion.div
+                    layoutId="tab-indicator"
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
+                    style={{ background: 'var(--color-accent)' }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span className="text-xl leading-none" aria-hidden="true">
+                  {tab.icon}
+                </span>
+                <span
+                  className="text-[11px] mt-0.5 font-medium"
+                  style={{
+                    color: isActive ? 'var(--color-accent)' : 'var(--color-text-disabled)',
+                  }}
+                >
+                  {tab.label}
+                </span>
+              </Link>
+            </motion.div>
           )
         })}
       </div>

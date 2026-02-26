@@ -53,6 +53,7 @@ export function StarRating({
             <motion.span
               key={index}
               className="relative"
+              style={interactive && !disabled ? { padding: '4px', margin: '-4px' } : undefined}
               whileHover={interactive && !disabled ? { scale: 1.2 } : {}}
               whileTap={interactive && !disabled ? { scale: 0.9 } : {}}
               onClick={() => handleClick(index)}

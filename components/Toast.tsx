@@ -144,7 +144,7 @@ export function Toast({
       }}
     >
       {/* Progress bar — only on longer toasts */}
-      {showProgress && duration > 3000 && (
+      {showProgress && duration > 2500 && (
         <motion.div
           className="absolute top-0 left-0 h-0.5"
           style={{ background: colors.progress }}

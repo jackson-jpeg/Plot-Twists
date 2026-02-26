@@ -181,6 +181,7 @@ export function OnboardingModal({ isOpen, onClose, mode = 'join' }: OnboardingMo
               opacity: step > 0 ? 1 : 0,
               transition: 'all 0.2s',
               fontSize: '14px',
+              minHeight: '44px',
             }}
             disabled={step === 0}
           >
@@ -198,8 +199,9 @@ export function OnboardingModal({ isOpen, onClose, mode = 'join' }: OnboardingMo
               color: 'white',
               fontWeight: 600,
               cursor: 'pointer',
-              fontSize: '14px',
+              fontSize: '16px',
               transition: 'all 0.2s',
+              minHeight: '44px',
             }}
           >
             {step === STEPS.length - 1 ? "Let's Play!" : 'Next'}

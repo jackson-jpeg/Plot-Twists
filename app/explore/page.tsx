@@ -227,7 +227,9 @@ export default function ExplorePage() {
   const handleSelectPack = (pack: CardPackMetadata) => {
     if (!socket) return
     setLoadingPack(true)
+    const timeout = setTimeout(() => setLoadingPack(false), 10000)
     socket.emit('get_card_pack', pack.id, (response) => {
+      clearTimeout(timeout)
       setLoadingPack(false)
       if (response.success && response.pack) {
         setSelectedPackFull(response.pack)
@@ -321,7 +323,7 @@ export default function ExplorePage() {
         {/* Pack grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-            <CardSkeleton count={4} />
+            <CardSkeleton count={6} />
           </div>
         ) : currentPacks.length === 0 ? (
           activeTab === 'search' ? (

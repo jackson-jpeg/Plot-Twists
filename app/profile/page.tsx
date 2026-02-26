@@ -345,7 +345,7 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25 }}
+              transition={{ duration: 0.15 }}
               className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm"
             >
               <div className="p-6">
@@ -364,7 +364,7 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.25 }}
+              transition={{ duration: 0.15 }}
               className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm"
             >
               <div className="p-6">

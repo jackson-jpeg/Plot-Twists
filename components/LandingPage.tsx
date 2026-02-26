@@ -5,9 +5,9 @@ import { SignInButton } from '@clerk/nextjs'
 import { analytics } from '@/lib/analytics'
 
 const sceneExamples = [
-  { emoji: '🦹', scenario: 'Darth Vader at a job interview', rotation: -3 },
-  { emoji: '📝', scenario: 'Shakespeare at a yoga class', rotation: 2 },
-  { emoji: '🕵️', scenario: 'A detective who only speaks in rhymes', rotation: -1.5 },
+  { emoji: '🧟', scenario: '3 coworkers survive a zombie apocalypse', rotation: -3 },
+  { emoji: '👨‍🍳', scenario: 'A cooking show where nobody can cook', rotation: 2 },
+  { emoji: '🕵️', scenario: 'Detectives who keep accusing each other', rotation: -1.5 },
 ]
 
 const socialBadges = [
@@ -57,10 +57,10 @@ export function LandingPage() {
             <div className="tape-piece tape-top-right" />
 
             <h2 className="text-2xl font-bold text-[var(--color-text-primary)] font-display mb-2">
-              Sign in to get 5 free scripts
+              Ready to perform?
             </h2>
             <p className="text-sm text-[var(--color-text-secondary)] mb-6">
-              No credit card required. Sign in with Apple, Google, email, or phone to start hosting games.
+              5 free scripts to start — no credit card needed. Sign in with Apple, Google, email, or phone.
             </p>
 
             <SignInButton mode="redirect">

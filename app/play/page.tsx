@@ -68,8 +68,22 @@ export default function PlayPage() {
 
   if (authLoading) {
     return (
-      <main className="page-container items-center justify-center">
-        <div className="skeleton skeleton-heading" />
+      <main className="page-container has-tab-bar items-center justify-center">
+        <div className="container max-w-2xl pt-4 pb-8">
+          <div className="text-center mb-6">
+            <div className="skeleton mx-auto" style={{ width: 48, height: 48, borderRadius: '50%' }} />
+            <div className="skeleton mx-auto mt-3" style={{ width: 180, height: 28, borderRadius: 8 }} />
+            <div className="skeleton mx-auto mt-2" style={{ width: 260, height: 16, borderRadius: 6 }} />
+          </div>
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="skeleton" style={{ height: 100, borderRadius: 16 }} />
+            <div className="skeleton" style={{ height: 100, borderRadius: 16 }} />
+          </div>
+          <div className="flex flex-col gap-3">
+            <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
+            <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
+          </div>
+        </div>
       </main>
     )
   }
@@ -128,7 +142,7 @@ export default function PlayPage() {
         </motion.div>
 
         <p className="text-center text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
-          Auto-joins an open game or creates one
+          Joins a game starting now — or creates one if none available
         </p>
 
         {/* Host a Public Game */}
@@ -205,8 +219,8 @@ export default function PlayPage() {
               animate={{ opacity: 1 }}
             >
               <div className="text-4xl mb-3">🎭</div>
-              <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No public games right now</p>
-              <p className="text-xs mt-1 mb-4" style={{ color: 'var(--color-text-tertiary)' }}>Be the first to start one!</p>
+              <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>No public games right now</p>
+              <p className="text-xs mt-1 mb-4" style={{ color: 'var(--color-text-tertiary)' }}>Create the first game and invite friends!</p>
               <button
                 onClick={() => router.push('/host?public=true')}
                 className="px-5 py-2.5 rounded-full text-sm font-semibold cursor-pointer"

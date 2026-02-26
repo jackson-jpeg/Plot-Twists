@@ -101,8 +101,9 @@ export function HostPerforming({
               }}
               initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 0.8, scale: 1 }}
               title={`Network latency: ${networkLatency}ms`}
+              aria-label={`Network latency: ${networkLatency}ms, ${networkLatency < 100 ? 'good' : networkLatency < 300 ? 'moderate' : 'poor'}`}
             >
-              <span>{networkLatency < 100 ? '🟢' : networkLatency < 300 ? '🟡' : '🔴'}</span>
+              <span aria-hidden="true">{networkLatency < 100 ? '🟢' : networkLatency < 300 ? '🟡' : '🔴'}</span>
               <span>{networkLatency}ms</span>
             </motion.div>
           )}
@@ -142,7 +143,7 @@ export function HostPerforming({
                       style={{ background: `${moodIndicator.color}20`, border: `1px solid ${moodIndicator.color}60`, color: moodIndicator.color }}
                       initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={MOTION.spring}
                     >
-                      <span className="text-base">{moodIndicator.emoji}</span>
+                      <span className="text-base" aria-hidden="true">{moodIndicator.emoji}</span>
                       <span>{moodIndicator.label}</span>
                     </motion.div>
                   )}
@@ -158,8 +159,8 @@ export function HostPerforming({
       <motion.div className="card" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
         <div className="flex items-center justify-center gap-4 mb-3">
           <motion.button onClick={() => { tapHaptic(); onPreviousLine() }} disabled={currentLineIndex === 0} className="btn btn-ghost" style={{ opacity: currentLineIndex === 0 ? 0.5 : 1 }}
-            whileHover={{ scale: currentLineIndex === 0 ? 1 : 1.05, x: currentLineIndex === 0 ? 0 : -2 }} whileTap={{ scale: currentLineIndex === 0 ? 1 : 0.95 }}>← Previous</motion.button>
-          <motion.button onClick={() => { tapHaptic(); onTogglePlayPause() }} className="btn btn-primary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>{isPlaying ? '⏸ Pause' : '▶ Play'}</motion.button>
+            whileHover={{ scale: currentLineIndex === 0 ? 1 : 1.05, x: currentLineIndex === 0 ? 0 : -2 }} whileTap={{ scale: currentLineIndex === 0 ? 1 : 0.95 }} aria-label="Previous line">← Previous</motion.button>
+          <motion.button onClick={() => { tapHaptic(); onTogglePlayPause() }} className="btn btn-primary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} aria-label={isPlaying ? 'Pause teleprompter' : 'Play teleprompter'}>{isPlaying ? '⏸ Pause' : '▶ Play'}</motion.button>
           <motion.button
             onClick={onTriggerChaos} disabled={chaosCooldown}
             className={`btn relative overflow-hidden ${chaosShaking ? 'animate-chaos-shake' : ''}`}

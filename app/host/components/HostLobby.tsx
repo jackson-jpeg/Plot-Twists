@@ -120,7 +120,7 @@ export function HostLobby({
                 <div className="flex items-center justify-center gap-3 mb-2">
                   <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Share this code with players:</p>
                   <div className={`connection-indicator ${isConnected ? 'connection-indicator-connected' : 'connection-indicator-disconnected'}`}>
-                    <span>{isConnected ? '🟢 Room Active' : '🔴 Reconnecting...'}</span>
+                    <span aria-label={isConnected ? 'Connected: Room Active' : 'Disconnected: Reconnecting'}>{isConnected ? '🟢 Room Active' : '🔴 Reconnecting...'}</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-center gap-3">

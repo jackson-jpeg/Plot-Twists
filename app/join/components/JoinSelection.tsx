@@ -69,7 +69,7 @@ export function JoinSelection({
             initial={{ scale: 0 }} animate={{ scale: 1 }}
             transition={{ type: 'spring', bounce: 0.5 }}
           >
-            ✓
+            ✅
           </motion.div>
           <motion.h1
             className="text-3xl font-display mb-2"

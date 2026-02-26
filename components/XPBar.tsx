@@ -18,9 +18,13 @@ export function XPBar({ levelInfo, compact }: XPBarProps) {
           <span className="text-xs font-bold text-[var(--color-purple)]">Lv.{level}</span>
           <span className="text-xs text-[var(--color-text-secondary)]">{title}</span>
         </div>
-        <div className="flex-1 h-1.5 rounded-full bg-[var(--color-surface-alt)] overflow-hidden">
+        <div className="flex-1 h-2 rounded-full bg-[var(--color-surface-alt)] overflow-hidden">
           <motion.div
-            className="h-full rounded-full bg-[var(--color-purple)]"
+            className="h-full rounded-full"
+            style={{
+              background: 'linear-gradient(90deg, var(--color-purple), var(--color-pink))',
+              boxShadow: progressPercent >= 90 ? '0 0 8px var(--color-purple)' : undefined,
+            }}
             initial={{ width: 0 }}
             animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 0.8, ease: 'easeOut' }}

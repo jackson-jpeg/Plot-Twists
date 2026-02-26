@@ -251,7 +251,7 @@ function JoinPageContent() {
 
       <AnimatePresence mode="wait">
         {gameState === 'LOBBY' && (
-          <JoinLobby key="lobby" players={players} myRole={myRole} selectedPackName={selectedPackName} autoStartCountdown={autoStartCountdown} />
+          <JoinLobby key="lobby" players={players} myPlayerId={myPlayerId} myRole={myRole} selectedPackName={selectedPackName} autoStartCountdown={autoStartCountdown} />
         )}
 
         {gameState === 'SELECTION' && (

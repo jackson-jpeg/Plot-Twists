@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect } from 'react'
 import { successHaptic } from '@/hooks/useHaptics'
+import { useConfetti } from '@/hooks/useConfetti'
 
 interface LevelUpCelebrationProps {
   show: boolean
@@ -12,13 +13,16 @@ interface LevelUpCelebrationProps {
 }
 
 export function LevelUpCelebration({ show, level, title, onClose }: LevelUpCelebrationProps) {
+  const { fireConfetti } = useConfetti()
+
   useEffect(() => {
     if (show) {
       successHaptic()
+      fireConfetti()
       const timer = setTimeout(onClose, 4000)
       return () => clearTimeout(timer)
     }
-  }, [show, onClose])
+  }, [show, onClose, fireConfetti])
 
   return (
     <AnimatePresence>

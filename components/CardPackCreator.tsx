@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 
@@ -41,27 +41,31 @@ export function CardPackCreator({ isOpen, onClose, onCreated }: CardPackCreatorP
   const [isMature, setIsMature] = useState(false)
   const [isPublic, setIsPublic] = useState(true)
 
+  // Card key counter for stable React keys
+  const cardKeyRef = useRef(20)
+  const nextKey = () => String(cardKeyRef.current++)
+
   // Cards
   const [characters, setCharacters] = useState<Card[]>([
-    { name: '', description: '' },
-    { name: '', description: '' },
-    { name: '', description: '' },
-    { name: '', description: '' },
-    { name: '', description: '' }
+    { id: '1', name: '', description: '' },
+    { id: '2', name: '', description: '' },
+    { id: '3', name: '', description: '' },
+    { id: '4', name: '', description: '' },
+    { id: '5', name: '', description: '' }
   ])
   const [settings, setSettings] = useState<Card[]>([
-    { name: '', description: '' },
-    { name: '', description: '' },
-    { name: '', description: '' }
+    { id: '6', name: '', description: '' },
+    { id: '7', name: '', description: '' },
+    { id: '8', name: '', description: '' }
   ])
   const [circumstances, setCircumstances] = useState<Card[]>([
-    { name: '', description: '' },
-    { name: '', description: '' },
-    { name: '', description: '' }
+    { id: '9', name: '', description: '' },
+    { id: '10', name: '', description: '' },
+    { id: '11', name: '', description: '' }
   ])
 
   const addCard = (type: 'characters' | 'settings' | 'circumstances') => {
-    const newCard = { name: '', description: '' }
+    const newCard = { id: nextKey(), name: '', description: '' }
     if (type === 'characters') setCharacters([...characters, newCard])
     else if (type === 'settings') setSettings([...settings, newCard])
     else setCircumstances([...circumstances, newCard])
@@ -376,7 +380,7 @@ export function CardPackCreator({ isOpen, onClose, onCreated }: CardPackCreatorP
                 </p>
 
                 {characters.map((char, index) => (
-                  <div key={index} className="flex gap-2">
+                  <div key={char.id} className="flex gap-2">
                     <div className="flex-1">
                       <input
                         type="text"
@@ -430,7 +434,7 @@ export function CardPackCreator({ isOpen, onClose, onCreated }: CardPackCreatorP
                   </p>
 
                   {settings.map((setting, index) => (
-                    <div key={index} className="flex gap-2 mb-2">
+                    <div key={setting.id} className="flex gap-2 mb-2">
                       <input
                         type="text"
                         value={setting.name}
@@ -466,7 +470,7 @@ export function CardPackCreator({ isOpen, onClose, onCreated }: CardPackCreatorP
                   </p>
 
                   {circumstances.map((circ, index) => (
-                    <div key={index} className="flex gap-2 mb-2">
+                    <div key={circ.id} className="flex gap-2 mb-2">
                       <input
                         type="text"
                         value={circ.name}

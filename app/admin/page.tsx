@@ -107,20 +107,25 @@ export default function AdminPage() {
     return () => clearInterval(interval)
   }, [isAdmin, refreshAll, fetchRooms, fetchStats])
 
-  // Debounced user search
+  // Debounced user search — stores pending search and fetches after delay
+  const pendingSearchRef = useRef(userSearch)
   const handleSearchChange = useCallback((search: string) => {
     setUserSearch(search)
+    pendingSearchRef.current = search
     setUserPage(0)
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current)
     searchDebounceRef.current = setTimeout(() => {
-      // fetchUsers will be triggered by the userSearch dependency change
+      // fetchUsers reads userSearch from state, but the state update from setUserSearch
+      // will have taken effect by now, so the next render will trigger the effect below
+      fetchUsers()
     }, 300)
-  }, [])
+  }, [fetchUsers])
 
-  // Re-fetch users when search or page changes
+  // Re-fetch users when page changes
   useEffect(() => {
     fetchUsers()
-  }, [fetchUsers])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPage])
 
   // Keyboard shortcuts: 1/2/3 to switch tabs, R to refresh
   useEffect(() => {
@@ -179,7 +184,7 @@ export default function AdminPage() {
   return (
     <main className="page-container home-nostalgic">
       {/* Toast container */}
-      <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none">
+      <div className="fixed left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none" style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}>
         <AnimatePresence>
           {toasts.map((toast) => (
             <motion.div
@@ -203,7 +208,8 @@ export default function AdminPage() {
       {/* Back button */}
       <motion.button
         onClick={() => router.push('/')}
-        className="fixed top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] border-2 border-[var(--color-border)] rounded-lg shadow-lg hover:shadow-xl transition-all"
+        className="fixed left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] border-2 border-[var(--color-border)] rounded-lg shadow-lg hover:shadow-xl transition-all"
+        style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         whileHover={{ x: -4, scale: 1.02 }}

@@ -63,11 +63,15 @@ export function HostResults({
     successHaptic()
   }
 
-  const copyShareUrl = (url: string) => {
-    navigator.clipboard.writeText(url).catch(() => {})
-    setShareCopied(true)
-    toast.success('Share link copied!')
-    setTimeout(() => setShareCopied(false), 3000)
+  const copyShareUrl = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareCopied(true)
+      toast.success('Share link copied!')
+      setTimeout(() => setShareCopied(false), 3000)
+    } catch {
+      toast.success('Link: ' + url)
+    }
   }
 
   const triggerShare = (url: string) => {

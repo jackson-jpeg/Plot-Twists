@@ -367,7 +367,7 @@ export default function ProfilePage() {
                   <PlayerProfile playerId={playerId} hideHeader />
                 ) : (
                   <div className="text-center py-12">
-                    <LoadingSpinner variant="dots" text="Loading profile..." />
+                    <p className="text-[var(--color-text-secondary)]">Sign in to see your stats and achievements.</p>
                   </div>
                 )}
               </div>

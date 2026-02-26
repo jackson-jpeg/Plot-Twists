@@ -83,7 +83,8 @@ export default function Home() {
             initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -40 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] bg-[var(--color-success)] text-black px-6 py-3 rounded-xl font-semibold text-[0.95rem] shadow-lg"
+            className="fixed left-1/2 -translate-x-1/2 z-[60] bg-[var(--color-success)] text-black px-6 py-3 rounded-xl font-semibold text-[0.95rem] shadow-lg"
+            style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}
             role="status"
           >
             Credits added to your account!
@@ -93,7 +94,8 @@ export default function Home() {
 
       {/* Header with UserMenu */}
       <motion.div
-        className="fixed top-4 right-4 z-50"
+        className="fixed right-4 z-50"
+        style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}

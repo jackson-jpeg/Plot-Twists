@@ -239,12 +239,12 @@ export default function ExplorePage() {
       {/* Back button — ticket stub style */}
       <motion.button
         onClick={() => router.push('/')}
-        className="fixed top-4 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] border-2 border-[var(--color-border)] rounded-lg shadow-lg hover:shadow-xl transition-all"
+        className="fixed left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] border-2 border-[var(--color-border)] rounded-lg shadow-lg hover:shadow-xl transition-all"
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         whileHover={{ x: -4, scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        style={{ transform: 'rotate(-1deg)' }}
+        style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))', transform: 'rotate(-1deg)' }}
       >
         <span className="text-xl">←</span>
         <span className="font-medium text-[var(--color-text-primary)]">Home</span>

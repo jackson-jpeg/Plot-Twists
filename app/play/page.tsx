@@ -82,7 +82,7 @@ export default function PlayPage() {
   return (
     <main className="page-container">
       {/* Header */}
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed right-4 z-50" style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}>
         <UserMenu />
       </div>
 

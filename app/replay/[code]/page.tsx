@@ -175,11 +175,11 @@ export default function ReplayPage() {
 
   const getMoodColor = (mood: string) => {
     const colors: Record<string, string> = {
-      angry: '#D77A7A',
-      happy: '#82B682',
-      confused: '#E8A75D',
-      whispering: '#7C9FD9',
-      neutral: '#9B9590'
+      angry: 'var(--color-danger, #D77A7A)',
+      happy: 'var(--color-success, #82B682)',
+      confused: 'var(--color-warning, #E8A75D)',
+      whispering: 'var(--color-accent-2, #7C9FD9)',
+      neutral: 'var(--color-text-tertiary, #9B9590)'
     }
     return colors[mood] || colors.neutral
   }
@@ -187,16 +187,27 @@ export default function ReplayPage() {
   if (!isConnected || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
-        <div className="text-center">
+        <motion.div className="text-center" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
             className="text-6xl mb-4"
           >
             🎬
           </motion.div>
-          <p className="text-xl" style={{ color: 'var(--color-text-tertiary)' }}>Loading replay...</p>
-        </div>
+          <p className="text-xl font-display mb-3" style={{ color: 'var(--color-text-primary)' }}>Loading replay...</p>
+          <div className="flex justify-center gap-1.5">
+            {[0, 1, 2].map(i => (
+              <motion.div
+                key={i}
+                className="w-2 h-2 rounded-full"
+                style={{ background: 'var(--color-purple)' }}
+                animate={{ opacity: [0.3, 1, 0.3] }}
+                transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.3 }}
+              />
+            ))}
+          </div>
+        </motion.div>
       </div>
     )
   }
@@ -250,6 +261,7 @@ export default function ReplayPage() {
           <button
             onClick={() => router.push('/')}
             className="transition-colors text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
+            aria-label="Back to home"
           >
             ← Back
           </button>
@@ -399,6 +411,7 @@ export default function ReplayPage() {
               disabled={currentLineIndex === 0}
               className="p-3 disabled:opacity-50 rounded-full transition-colors"
               style={{ background: 'var(--color-surface-alt)' }}
+              aria-label="Previous line"
             >
               ⏮️
             </button>
@@ -406,6 +419,7 @@ export default function ReplayPage() {
               onClick={() => setIsPlaying(!isPlaying)}
               className="px-6 py-3 text-white rounded-full font-semibold transition-colors"
               style={{ background: 'var(--color-purple)' }}
+              aria-label={isPlaying ? 'Pause replay' : 'Play replay'}
             >
               {isPlaying ? '⏸️ Pause' : '▶️ Play'}
             </button>
@@ -414,6 +428,7 @@ export default function ReplayPage() {
               disabled={currentLineIndex === game.script.lines.length - 1}
               className="p-3 disabled:opacity-50 rounded-full transition-colors"
               style={{ background: 'var(--color-surface-alt)' }}
+              aria-label="Next line"
             >
               ⏭️
             </button>

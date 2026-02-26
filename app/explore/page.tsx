@@ -284,6 +284,7 @@ export default function ExplorePage() {
               onKeyDown={(e) => { if (e.key === 'Enter') handleSearch() }}
               placeholder="Search packs..."
               className="input w-full pl-10"
+              aria-label="Search card packs"
             />
           </div>
           <button

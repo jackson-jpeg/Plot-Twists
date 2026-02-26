@@ -1723,9 +1723,10 @@ textarea:focus-visible {
 .qr-wrapper {
   display: inline-block;
   padding: var(--space-4);
-  background: white;
+  background: #fff;
   border-radius: var(--radius-lg);
   border: 2px solid var(--color-border);
+  /* QR codes need white background for scanners, even in dark mode */
   box-shadow: var(--shadow-1);
   position: relative;
 }

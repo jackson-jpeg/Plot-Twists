@@ -203,10 +203,10 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
                       </div>
                     </div>
                     {roomPreview.playerCount >= roomPreview.maxPlayers && (
-                      <motion.p className="text-sm text-center p-2 rounded" style={{ background: 'rgba(255,255,255,0.5)', color: 'var(--color-warning)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>👁️ Room is full — you'll join as a spectator</motion.p>
+                      <motion.p className="text-sm text-center p-2 rounded" style={{ background: 'var(--color-surface)', color: 'var(--color-warning)', border: '1px solid var(--color-border)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>👁️ Room is full — you'll join as a spectator</motion.p>
                     )}
                     {roomPreview.gameState !== 'LOBBY' && (
-                      <motion.p className="text-sm text-center p-2 rounded mt-2" style={{ background: 'rgba(255,255,255,0.5)', color: 'var(--color-danger)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>⚠️ Game already in progress — wait for next round</motion.p>
+                      <motion.p className="text-sm text-center p-2 rounded mt-2" style={{ background: 'var(--color-surface)', color: 'var(--color-danger)', border: '1px solid var(--color-border)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>⚠️ Game already in progress — wait for next round</motion.p>
                     )}
                   </motion.div>
                 )}

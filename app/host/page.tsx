@@ -24,6 +24,7 @@ import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 import { successHaptic } from '@/hooks/useHaptics'
 
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
+import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { HostLobby } from './components/HostLobby'
 import { HostSelection } from './components/HostSelection'
@@ -379,6 +380,9 @@ function HostPageContent() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Reconnection overlay for mid-game socket drops */}
+      <ReconnectingOverlay gameState={gameState} />
 
       {/* Poster Lightbox */}
       <Modal isOpen={showPosterLightbox} onClose={() => setShowPosterLightbox(false)} title={script?.title ?? 'Movie Poster'} maxWidth="600px">

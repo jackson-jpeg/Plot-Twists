@@ -13,6 +13,7 @@ import { HomeJsonLd } from '@/components/JsonLd'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { NativeBootstrap } from '@/components/NativeBootstrap'
 import { ConnectionStatus } from '@/components/ConnectionStatus'
+import { BottomTabBar } from '@/components/BottomTabBar'
 
 const fredoka = Fredoka({
   subsets: ['latin'],
@@ -141,6 +142,7 @@ export default function RootLayout({
               <SocketProvider>
                 <ConnectionStatus />
                 {children}
+                <BottomTabBar />
               </SocketProvider>
             </AuthProvider>
             <SystemStatus />

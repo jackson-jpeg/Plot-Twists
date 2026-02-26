@@ -1634,6 +1634,11 @@ textarea:focus-visible {
   flex-direction: column;
 }
 
+/* Extra bottom padding for pages with the bottom tab bar */
+.page-container.has-tab-bar {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
 .hero-title {
   font-family: var(--font-display);
   font-size: clamp(39px, 8vw, 62px);

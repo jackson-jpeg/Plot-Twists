@@ -20,6 +20,7 @@ import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 import { useAuth } from '@/contexts/AuthContext'
 
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
+import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { JoinForm } from './components/JoinForm'
 import { JoinLobby } from './components/JoinLobby'
@@ -254,6 +255,9 @@ function JoinPageContent() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Reconnection overlay for mid-game socket drops */}
+      <ReconnectingOverlay gameState={gameState} />
 
       {/* Poster Lightbox */}
       <Modal isOpen={showPosterLightbox} onClose={() => setShowPosterLightbox(false)} title={script?.title ?? 'Movie Poster'} maxWidth="600px">

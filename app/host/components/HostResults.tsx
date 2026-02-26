@@ -8,6 +8,7 @@ import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/sc
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { VARIANTS } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
+import { withTimeout } from '@/lib/socketTimeout'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 import { useConfetti } from '@/hooks/useConfetti'
 import { XPGainAnimation } from '@/components/XPGainAnimation'
@@ -24,7 +25,7 @@ export interface HostResultsProps {
   scriptImageUrl: string | null
   socket: AppSocket | null
   userUid: string
-  toast: { success: (m: string) => void }
+  toast: { success: (m: string) => void; error: (m: string) => void }
   xpEvents: XPEvent[]
   levelUpData: { level: number; title: string } | null
   onDismissLevelUp: () => void
@@ -98,21 +99,32 @@ export function HostResults({
     }
   }
 
-  const handleShareScene = () => {
+  const handleShareScene = async () => {
     if (!socket || !script) return
     if (shareUrl) { triggerShare(shareUrl); return }
     setIsSharing(true)
-    socket.emit('get_game_history', userUid || '', 1, (response) => {
-      if (response.success && response.games && response.games.length > 0) {
-        socket.emit('share_game', response.games[0].id, (shareResponse) => {
-          setIsSharing(false)
-          if (shareResponse.success && shareResponse.shareUrl) {
-            setShareUrl(shareResponse.shareUrl)
-            triggerShare(shareResponse.shareUrl)
-          }
-        })
-      } else { setIsSharing(false) }
-    })
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const historyResponse: any = await withTimeout(
+        (cb) => socket.emit('get_game_history', userUid || '', 1, cb),
+        10000
+      )
+      if (historyResponse.success && historyResponse.games && historyResponse.games.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const shareResponse: any = await withTimeout(
+          (cb) => socket.emit('share_game', historyResponse.games[0].id, cb),
+          10000
+        )
+        if (shareResponse.success && shareResponse.shareUrl) {
+          setShareUrl(shareResponse.shareUrl)
+          triggerShare(shareResponse.shareUrl)
+        }
+      }
+    } catch {
+      toast.error('Failed to share — please try again')
+    } finally {
+      setIsSharing(false)
+    }
   }
 
   return (

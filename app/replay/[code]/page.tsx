@@ -266,7 +266,7 @@ export default function ReplayPage() {
   const currentLine = game.script.lines[currentLineIndex]
 
   return (
-    <div className="min-h-dvh" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
+    <div className="min-h-dvh" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       <ReplayJsonLd
         title={game.title}
         synopsis={game.synopsis}
@@ -277,11 +277,12 @@ export default function ReplayPage() {
       <div className="p-4 backdrop-blur-sm sticky top-0 z-10" style={{ background: 'var(--color-surface-elevated)', borderBottom: '1px solid var(--color-border)' }}>
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <button
-            onClick={() => router.push('/')}
-            className="transition-colors text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]"
-            aria-label="Back to home"
+            onClick={() => router.back()}
+            className="flex items-center gap-1 py-2 px-3 -ml-3 rounded-lg transition-colors text-sm font-medium"
+            style={{ color: 'var(--color-text-secondary)' }}
+            aria-label="Go back"
           >
-            ← Back
+            <span aria-hidden="true">←</span> Back
           </button>
           <div className="text-center">
             <h1 className="font-bold text-[var(--color-text-primary)]">{game.title}</h1>

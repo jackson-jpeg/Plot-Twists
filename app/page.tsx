@@ -62,7 +62,7 @@ export default function Home() {
 
   if (!mounted || loading) {
     return (
-      <main className="page-container items-center justify-center">
+      <main className="page-container has-tab-bar items-center justify-center">
         <div className="skeleton skeleton-heading"></div>
         <div className="skeleton skeleton-text" style={{ width: '80%' }}></div>
       </main>
@@ -75,7 +75,7 @@ export default function Home() {
   }
 
   return (
-    <main className="page-container items-center justify-center home-nostalgic">
+    <main className="page-container has-tab-bar items-center justify-center home-nostalgic">
       {/* Credits purchased banner */}
       <AnimatePresence>
         {creditsPurchased && (

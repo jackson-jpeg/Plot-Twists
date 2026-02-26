@@ -119,8 +119,8 @@ export default function ProfilePage() {
 
   if (!isConnected || authLoading) {
     return (
-      <main className="page-container home-nostalgic">
-        <div className="container max-w-2xl xl:max-w-3xl pt-20 pb-8 px-4 space-y-6">
+      <main className="page-container has-tab-bar home-nostalgic">
+        <div className="container max-w-2xl xl:max-w-3xl pt-4 pb-8 px-4 space-y-6">
           <div className="flex items-center gap-4 mb-5">
             <Skeleton variant="circle" width={64} height={64} />
             <div className="flex-1 space-y-2">
@@ -148,26 +148,12 @@ export default function ProfilePage() {
   ] : null
 
   return (
-    <main className="page-container home-nostalgic">
+    <main className="page-container has-tab-bar home-nostalgic">
       {/* Purchase Credits Modal */}
       <PurchaseCreditsModal
         isOpen={showPurchaseModal}
         onClose={() => setShowPurchaseModal(false)}
       />
-
-      {/* Fixed top bar */}
-      <motion.button
-        onClick={() => router.push('/')}
-        className="fixed left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] border-2 border-[var(--color-border)] rounded-lg shadow-lg hover:shadow-xl transition-all"
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        whileHover={{ x: -4, scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))', transform: 'rotate(-1deg)' }}
-      >
-        <span className="text-xl">←</span>
-        <span className="font-medium text-[var(--color-text-primary)]">Home</span>
-      </motion.button>
 
       {/* Credit balance pill (right) */}
       {user && !user.isAnonymous && (
@@ -181,7 +167,7 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      <div className="container max-w-2xl xl:max-w-3xl pt-20 pb-8 px-4">
+      <div className="container max-w-2xl xl:max-w-3xl pt-4 pb-8 px-4">
         {/* Profile Hero — full stats */}
         {heroStats ? (
           <motion.div

@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { VARIANTS, MOTION } from '@/lib/animations'
 
@@ -28,6 +28,15 @@ export interface JoinLoadingProps {
 export function JoinLoading({ loadingProgress, greenRoomQuestion }: JoinLoadingProps) {
   const stage = getCurrentLoadingStage(loadingProgress)
   const prefersReducedMotion = useReducedMotion()
+  const [elapsed, setElapsed] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => setElapsed(s => s + 1), 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const isDelayed = elapsed >= 60
+  const isSlow = elapsed >= 30 && !isDelayed
 
   return (
     <motion.div key="loading" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-lg text-center">
@@ -42,6 +51,35 @@ export function JoinLoading({ loadingProgress, greenRoomQuestion }: JoinLoadingP
         <div className="progress mb-8 relative">
           <motion.div className="progress-bar progress-bar-shimmer" initial={{ width: '0%' }} animate={{ width: `${Math.min(loadingProgress, 100)}%` }} transition={{ duration: 1.5, ease: [0.33, 1, 0.68, 1] }} />
         </div>
+
+        {/* Timeout indicators */}
+        <AnimatePresence mode="wait">
+          {isDelayed ? (
+            <motion.div
+              key="delayed"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-3 rounded-lg"
+              style={{ background: 'var(--color-warning-light, rgba(245,158,66,0.1))', border: '1px solid var(--color-warning, #F59E42)' }}
+            >
+              <p className="text-sm font-medium" style={{ color: 'var(--color-warning, #F59E42)' }}>
+                ⏱️ Taking longer than expected — hang tight, the AI is crafting something special
+              </p>
+            </motion.div>
+          ) : isSlow ? (
+            <motion.div
+              key="slow"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mb-6"
+            >
+              <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                Complex scripts take a bit longer...
+              </p>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
         <AnimatePresence mode="wait">
           {greenRoomQuestion && (
             <motion.div className="card card-accent-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>

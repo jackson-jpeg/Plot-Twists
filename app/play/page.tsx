@@ -80,25 +80,13 @@ export default function PlayPage() {
   }
 
   return (
-    <main className="page-container">
+    <main className="page-container has-tab-bar">
       {/* Header */}
       <div className="fixed right-4 z-50" style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}>
         <UserMenu />
       </div>
 
-      <div className="container max-w-2xl pt-4 pb-20">
-        {/* Back button */}
-        <motion.button
-          onClick={() => router.push('/')}
-          className="flex items-center gap-1.5 text-sm text-[var(--color-text-secondary)] mb-4"
-          whileTap={{ scale: 0.95 }}
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Home
-        </motion.button>
-
+      <div className="container max-w-2xl pt-4 pb-8">
         {/* Title */}
         <motion.div
           className="mb-6 text-center"

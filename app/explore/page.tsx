@@ -243,22 +243,8 @@ export default function ExplorePage() {
   const tabRotations = [-1, 0.5]
 
   return (
-    <main className="page-container home-nostalgic" style={{ minHeight: '100dvh' }}>
-      {/* Back button — ticket stub style */}
-      <motion.button
-        onClick={() => router.push('/')}
-        className="fixed left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] border-2 border-[var(--color-border)] rounded-lg shadow-lg hover:shadow-xl transition-all"
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        whileHover={{ x: -4, scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))', transform: 'rotate(-1deg)' }}
-      >
-        <span className="text-xl">←</span>
-        <span className="font-medium text-[var(--color-text-primary)]">Home</span>
-      </motion.button>
-
-      <div className="container max-w-2xl xl:max-w-4xl pt-20 pb-8 px-4">
+    <main className="page-container has-tab-bar home-nostalgic" style={{ minHeight: '100dvh' }}>
+      <div className="container max-w-2xl xl:max-w-4xl pt-4 pb-8 px-4">
         {/* Bulletin board header */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}

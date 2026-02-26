@@ -101,7 +101,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           reconnectionDelay: 500,
           reconnectionDelayMax: 15000,
           reconnectionAttempts: 50,
-          transports: ['polling', 'websocket'],
+          transports: ['websocket', 'polling'],
           upgrade: true,
           timeout: 20000,
           autoConnect: true,

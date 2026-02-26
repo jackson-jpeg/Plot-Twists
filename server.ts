@@ -1710,8 +1710,8 @@ app.prepare().then(async () => {
           return
         }
 
-        const gameMode = request.gameMode || 'ENSEMBLE'
-        const isMature = request.isMature || false
+        const gameMode = (request.gameMode && isValidGameMode(request.gameMode)) ? request.gameMode : 'ENSEMBLE'
+        const isMature = request.isMature === true
 
         // Try to find an existing matching room
         const existingRoom = matchmakingService.findMatchingRoom(gameMode, isMature)

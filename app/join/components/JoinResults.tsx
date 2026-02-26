@@ -169,7 +169,7 @@ export function JoinResults({
       <Modal isOpen={showPosterLightbox} onClose={onClosePosterLightbox} title={script?.title ?? 'Movie Poster'} maxWidth="600px">
         {scriptImageUrl && (
           <div className="flex justify-center">
-            <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain', borderRadius: 'var(--radius-lg, 12px)' }} />
+            <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} loading="lazy" style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain', borderRadius: 'var(--radius-lg, 12px)' }} />
           </div>
         )}
       </Modal>

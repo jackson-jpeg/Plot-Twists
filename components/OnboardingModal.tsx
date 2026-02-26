@@ -60,7 +60,7 @@ const STEPS = [
             <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '4px', fontSize: '14px' }}>
               {step.label}
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
+            <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: 1.4 }}>
               {step.desc}
             </div>
           </motion.div>

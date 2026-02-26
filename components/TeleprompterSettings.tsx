@@ -76,7 +76,7 @@ export function TeleprompterSettings({
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute top-full right-0 mt-2 z-20 min-w-64 max-w-[calc(100vw-2rem)] rounded-xl shadow-xl overflow-hidden"
+              className="absolute top-full right-0 mt-2 z-20 min-w-64 w-80 max-w-[calc(100dvw-2rem)] rounded-xl shadow-xl overflow-hidden"
               style={{
                 background: 'var(--color-surface)',
                 border: '1px solid var(--color-border)'
@@ -367,7 +367,7 @@ function CompactSettingsContent({
               value={settings.pastLinesVisible === 'all' ? 5 : settings.pastLinesVisible}
               onChange={(e) => onCustomChange(parseInt(e.target.value) || 0, settings.upcomingLinesVisible)}
               disabled={disabled}
-              className="w-full p-1 rounded text-center text-sm"
+              className="w-full p-1 rounded text-center text-base"
               style={{
                 background: 'var(--color-surface-alt)',
                 color: 'var(--color-text-primary)',
@@ -384,7 +384,7 @@ function CompactSettingsContent({
               value={settings.upcomingLinesVisible === 'all' ? 10 : settings.upcomingLinesVisible}
               onChange={(e) => onCustomChange(settings.pastLinesVisible, parseInt(e.target.value) || 1)}
               disabled={disabled}
-              className="w-full p-1 rounded text-center text-sm"
+              className="w-full p-1 rounded text-center text-base"
               style={{
                 background: 'var(--color-surface-alt)',
                 color: 'var(--color-text-primary)',

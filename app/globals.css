@@ -4224,6 +4224,7 @@ textarea:focus-visible {
 .form-input {
   width: 100%;
   padding: 0.75rem;
+  font-size: 16px;
   background: var(--color-surface-alt);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);

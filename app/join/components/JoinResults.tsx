@@ -92,7 +92,7 @@ export function JoinResults({
             {scriptImageUrl && (
               <motion.div className="mx-auto mb-4 flex flex-col items-center" initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} style={{ perspective: 1000 }}>
                 <motion.div onClick={onShowPosterLightbox} className="cursor-pointer overflow-hidden" style={{ maxWidth: 200, borderRadius: 'var(--radius-xl, 16px)', border: '3px solid var(--color-accent)', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.2)' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-                  <img src={scriptImageUrl} alt={`${script?.title} Poster`} className="w-full block object-contain" />
+                  <img src={scriptImageUrl} alt={`${script?.title} Poster`} className="w-full block object-contain" style={{ aspectRatio: '2/3' }} />
                 </motion.div>
                 {script && <motion.p className="font-display text-base mt-2" style={{ color: 'var(--color-text-secondary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>{script.title}</motion.p>}
               </motion.div>

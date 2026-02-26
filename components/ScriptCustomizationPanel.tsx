@@ -284,7 +284,7 @@ export function ScriptCustomizationPanel({
               disabled={disabled}
               placeholder="E.g., 'Include a running gag about coffee' or 'Make the villain sympathetic'"
               maxLength={500}
-              className="w-full p-3 rounded-lg resize-none h-20 disabled:opacity-50"
+              className="w-full p-3 rounded-lg resize-none h-20 text-base disabled:opacity-50"
               style={{
                 background: 'var(--color-surface-elevated)',
                 color: 'var(--color-text-primary)',

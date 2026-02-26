@@ -95,7 +95,7 @@ export function UserMenu() {
         >
           <div className="user-menu-avatar">
             {user.photoURL ? (
-              <img src={user.photoURL} alt={user.displayName || user.email?.split('@')[0] || 'Player'} />
+              <img src={user.photoURL} alt={user.displayName || user.email?.split('@')[0] || 'Player'} width={32} height={32} />
             ) : (
               getInitials()
             )}

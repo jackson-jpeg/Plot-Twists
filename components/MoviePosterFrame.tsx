@@ -57,7 +57,7 @@ export function MoviePosterFrame({
           src={imageUrl}
           alt={`${title ?? 'Movie'} Poster`}
           className="movie-poster-frame"
-          style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain' }}
+          style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain', aspectRatio: '2/3' }}
           onError={() => setImgError(true)}
         />
       </div>
@@ -101,14 +101,14 @@ export function MoviePosterFrame({
         <img
           src={imageUrl}
           alt={`${title ?? 'Movie'} Poster`}
-          style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+          style={{ width: '100%', objectFit: 'contain', display: 'block', aspectRatio: '2/3' }}
           onError={() => setImgError(true)}
         />
       </motion.div>
 
       {onClick && (
-        <p style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 6 }}>
-          Click poster to enlarge
+        <p style={{ fontSize: 13, color: 'var(--color-text-tertiary)', marginTop: 6 }}>
+          Tap poster to enlarge
         </p>
       )}
 

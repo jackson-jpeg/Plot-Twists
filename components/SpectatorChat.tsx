@@ -78,7 +78,7 @@ export function SpectatorChat({ messages, onSendMessage, disabled }: SpectatorCh
               style={{
                 display: 'flex',
                 gap: '6px',
-                fontSize: '13px',
+                fontSize: '14px',
                 lineHeight: 1.4,
               }}
             >
@@ -90,7 +90,7 @@ export function SpectatorChat({ messages, onSendMessage, disabled }: SpectatorCh
           ))}
         </AnimatePresence>
         {messages.length === 0 && (
-          <div style={{ color: 'var(--color-text-muted)', fontSize: '12px', textAlign: 'center', padding: '8px' }}>
+          <div style={{ color: 'var(--color-text-muted)', fontSize: '14px', textAlign: 'center', padding: '8px' }}>
             Send a message to heckle the performers!
           </div>
         )}
@@ -114,8 +114,8 @@ export function SpectatorChat({ messages, onSendMessage, disabled }: SpectatorCh
               border: '1px solid var(--color-border)',
               background: cooldown ? 'var(--color-surface-alt)' : 'transparent',
               color: cooldown ? 'var(--color-text-muted)' : 'var(--color-text-secondary)',
-              fontSize: '13px',
-              minHeight: '36px',
+              fontSize: '14px',
+              minHeight: '40px',
               cursor: cooldown ? 'not-allowed' : 'pointer',
               transition: 'all 0.15s',
               opacity: cooldown ? 0.5 : 1,
@@ -149,7 +149,6 @@ export function SpectatorChat({ messages, onSendMessage, disabled }: SpectatorCh
             background: 'var(--color-surface-alt)',
             color: 'var(--color-text-primary)',
             fontSize: '16px',
-            outline: 'none',
           }}
         />
         <button

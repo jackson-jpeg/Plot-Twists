@@ -18,6 +18,25 @@ export async function registerRoutes(
   io: SocketIOServer_,
   port: number
 ): Promise<void> {
+  // Apple App Site Association — must be served with correct content-type for universal links
+  app.get('/.well-known/apple-app-site-association', (_req, res) => {
+    res.setHeader('Content-Type', 'application/json')
+    res.json({
+      applinks: {
+        apps: [],
+        details: [
+          {
+            appID: '2MU4PC84GZ.com.plottwists.app',
+            paths: ['/join', '/join?code=*', '/replay/*', '/explore', '/play'],
+          },
+        ],
+      },
+      webcredentials: {
+        apps: ['2MU4PC84GZ.com.plottwists.app'],
+      },
+    })
+  })
+
   // Stripe routes must be registered first (webhook needs raw body before express.json)
   await registerStripeRoutes(app, io, port)
 

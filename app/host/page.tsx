@@ -47,6 +47,7 @@ function HostPageContent() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showPosterLightbox, setShowPosterLightbox] = useState(false)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
+  const [showAgeGate, setShowAgeGate] = useState(false)
   const [scriptCustomization, setScriptCustomization] = useState<ScriptCustomization>({
     comedyStyle: 'witty', scriptLength: 'standard', difficulty: 'intermediate',
     physicalComedy: 'minimal', enableCallbacks: true,
@@ -199,12 +200,19 @@ function HostPageContent() {
 
   const toggleMature = () => {
     if (!settings.isMature) {
-      // Confirm before enabling mature content
-      if (!window.confirm('Enable "After Dark" mode? This allows adult themes and mature humor. Only for players 17+.')) return
+      setShowAgeGate(true)
+      return
     }
-    const newSettings = { ...settings, isMature: !settings.isMature }
+    const newSettings = { ...settings, isMature: false }
     setSettings(newSettings)
-    socket?.emit('update_room_settings', roomCode, { isMature: newSettings.isMature })
+    socket?.emit('update_room_settings', roomCode, { isMature: false })
+  }
+
+  const confirmMatureMode = () => {
+    setShowAgeGate(false)
+    const newSettings = { ...settings, isMature: true }
+    setSettings(newSettings)
+    socket?.emit('update_room_settings', roomCode, { isMature: true })
   }
 
   const updateGameMode = (newMode: GameMode) => {
@@ -294,6 +302,40 @@ function HostPageContent() {
     <div className="page-container">
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="host" />
       <PurchaseCreditsModal isOpen={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} />
+
+      {/* Age Gate Modal for After Dark mode */}
+      <Modal isOpen={showAgeGate} onClose={() => setShowAgeGate(false)} title="Age Verification" maxWidth="380px">
+        <div className="text-center">
+          <div className="text-5xl mb-4">🌙</div>
+          <h3 className="text-lg font-display font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
+            After Dark Mode
+          </h3>
+          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
+            This mode contains adult themes and mature humor. You must be at least 17 years old to enable it.
+          </p>
+          <p className="text-xs mb-6" style={{ color: 'var(--color-text-tertiary)' }}>
+            By continuing, you confirm that you are 17 or older.
+          </p>
+          <div className="flex flex-col gap-2">
+            <motion.button
+              onClick={confirmMatureMode}
+              className="btn btn-primary w-full"
+              style={{ background: 'var(--color-purple)' }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              I'm 17 or Older — Enable
+            </motion.button>
+            <button
+              onClick={() => setShowAgeGate(false)}
+              className="text-sm py-2 cursor-pointer"
+              style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Insufficient Credits Modal */}
       <AnimatePresence>

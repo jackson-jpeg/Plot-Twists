@@ -163,7 +163,7 @@ export function HostLobby({
           <motion.div
             initial={{ x: -40, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.25 }}
+            transition={{ type: 'spring', delay: 0 }}
             className="card"
           >
             <div className="flex items-center gap-3 mb-6">
@@ -214,7 +214,7 @@ export function HostLobby({
                 <motion.span className="text-4xl" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}>🎭</motion.span>
                 <h2 className="text-2xl font-display" style={{ color: 'var(--color-text-primary)' }}>Players</h2>
               </div>
-              <motion.div className="badge badge-accent" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.35 }}>
+              <motion.div key={nonHostPlayers.length} className="badge badge-accent" initial={{ scale: 0 }} animate={{ scale: [1.3, 1] }} transition={{ type: 'spring', stiffness: 300, damping: 15 }}>
                 {nonHostPlayers.length}
               </motion.div>
             </div>
@@ -473,19 +473,24 @@ export function HostLobby({
             disabled={!canStartGame}
             className="btn btn-primary btn-large w-full"
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{ opacity: canStartGame ? 1 : 0.6 }}
+            animate={canStartGame ? {
+              opacity: 1, y: 0,
+              boxShadow: ['0 0 0 0 rgba(168, 85, 247, 0)', '0 0 20px 4px rgba(168, 85, 247, 0.4)', '0 0 0 0 rgba(168, 85, 247, 0)']
+            } : { opacity: 0.6, y: 0 }}
+            transition={canStartGame ? { boxShadow: { duration: 1.5, repeat: 2, ease: 'easeInOut' } } : {}}
             whileHover={canStartGame ? { scale: 1.02 } : {}}
             whileTap={canStartGame ? { scale: 0.98 } : {}}
           >
             <span>🎬</span>
             <span>{settings.gameMode === 'SOLO' ? 'Start Solo Game' : 'Start Game'}</span>
           </motion.button>
-          {!canStartGame && (
-            <motion.p className="text-sm text-center mt-2" style={{ color: 'var(--color-text-tertiary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              {getStartGameRequirement()}
-            </motion.p>
-          )}
+          <AnimatePresence>
+            {!canStartGame && (
+              <motion.p className="text-sm text-center mt-2" style={{ color: 'var(--color-text-tertiary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, height: 0 }}>
+                {getStartGameRequirement()}
+              </motion.p>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
     </>

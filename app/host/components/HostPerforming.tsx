@@ -70,7 +70,7 @@ export function HostPerforming({
   }, [currentLineIndex, teleprompterSettings.autoScroll])
 
   return (
-    <motion.div key="performing" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-5xl">
+    <motion.div key="performing" variants={VARIANTS.curtainRise} initial="initial" animate="animate" exit="exit" className="container max-w-5xl">
       <SpectatorTicker messages={spectatorMessages} />
       {!isSoloMode && <AudienceReactionBar roomCode={roomCode} isPerforming={true} isHost={true} />}
       {!isSoloMode && <PlotTwistVoting roomCode={roomCode} isHost={true} />}

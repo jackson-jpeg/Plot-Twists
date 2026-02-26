@@ -32,7 +32,7 @@ export function JoinPerforming({
   spectatorMessages, socket, onNextLine, onPreviousLine,
 }: JoinPerformingProps) {
   return (
-    <motion.div key="performing" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit">
+    <motion.div key="performing" variants={VARIANTS.curtainRise} initial="initial" animate="animate" exit="exit">
       <AudienceReactionBar roomCode={roomCode.toUpperCase()} isPerforming={true} isHost={false} />
       <PlotTwistVoting roomCode={roomCode.toUpperCase()} isHost={false} />
 

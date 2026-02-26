@@ -168,14 +168,24 @@ function JoinPageContent() {
     return (
       <div className="page-container items-center justify-center">
         <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="join" />
-        <JoinForm
-          socket={socket} isConnected={isConnected}
-          initialRoomCode={codeFromUrl || ''}
-          toast={toast}
-          onJoinSuccess={handleJoinSuccess}
-          onShowOnboarding={() => setShowOnboarding(true)}
-          onNavigateHome={() => router.push('/')}
-        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key="join-form"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, filter: 'blur(8px)' }}
+            transition={{ duration: 0.3 }}
+          >
+            <JoinForm
+              socket={socket} isConnected={isConnected}
+              initialRoomCode={codeFromUrl || ''}
+              toast={toast}
+              onJoinSuccess={handleJoinSuccess}
+              onShowOnboarding={() => setShowOnboarding(true)}
+              onNavigateHome={() => router.push('/')}
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
     )
   }

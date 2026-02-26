@@ -153,7 +153,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
               <label className="label">Room Code</label>
               <div className="input-wrapper">
                 <input type="text" value={roomCode} onChange={(e) => handleRoomCodeChange(e.target.value)} onBlur={() => { setRoomCodeTouched(true); setRoomCodeError(validateRoomCode(roomCode)) }}
-                  placeholder="Enter code (e.g., QUIZ)" maxLength={4} inputMode="text" autoCapitalize="characters" autoComplete="off" enterKeyHint="next"
+                  placeholder="Enter 4-letter code" maxLength={4} inputMode="text" autoCapitalize="characters" autoComplete="off" enterKeyHint="next"
                   className={`input font-script text-center text-3xl ${roomCodeTouched && roomCodeError ? 'input-error' : ''} ${isRoomCodeValid ? 'input-valid' : ''}`}
                   style={{ paddingRight: isRoomCodeValid ? '44px' : '16px' }} />
                 {isRoomCodeValid && <span className="input-check">✓</span>}
@@ -223,11 +223,14 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
                   style={{ paddingRight: isNicknameValid ? '44px' : '16px' }} />
                 {isNicknameValid && <span className="input-check">✓</span>}
               </div>
-              {nicknameTouched && nicknameError && <p className="error-text">⚠️ {nicknameError}</p>}
+              <div className="flex justify-between items-center">
+                {nicknameTouched && nicknameError ? <p className="error-text">⚠️ {nicknameError}</p> : <span />}
+                {nickname.length > 12 && <span className="text-xs" style={{ color: nickname.length >= 20 ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>{nickname.length}/20</span>}
+              </div>
             </div>
 
             {error && (
-              <motion.div className="error-banner p-4 rounded-lg flex items-center gap-3 justify-center" style={{ background: 'var(--color-danger)', border: '2px solid var(--color-bg)' }} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} role="alert">
+              <motion.div className="error-banner p-4 rounded-lg flex items-center gap-3 justify-center" style={{ background: 'var(--color-danger)' }} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} role="alert" aria-live="polite">
                 <span className="text-2xl" aria-hidden="true">{error.includes('not found') ? '🔍' : error.includes('full') ? '🚫' : error.includes('timeout') ? '⏱️' : '⚠️'}</span>
                 <p className="text-white font-semibold">{error}</p>
               </motion.div>

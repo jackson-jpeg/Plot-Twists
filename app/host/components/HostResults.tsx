@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import type { Script, GameResults, XPEvent, LevelInfo } from '@/lib/types'
@@ -9,6 +9,7 @@ import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { VARIANTS } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
+import { useConfetti } from '@/hooks/useConfetti'
 import { XPGainAnimation } from '@/components/XPGainAnimation'
 import { XPBar } from '@/components/XPBar'
 import { LevelUpCelebration } from '@/components/LevelUpCelebration'
@@ -38,11 +39,24 @@ export function HostResults({
   onShowPosterLightbox, onRequestSequel, onRequestNewGame,
 }: HostResultsProps) {
   const router = useRouter()
+  const { fireWinnerConfetti, fireCelebration } = useConfetti()
+  const confettiFiredRef = useRef(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [isSharing, setIsSharing] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
+
+  // Fire confetti on results reveal
+  useEffect(() => {
+    if (confettiFiredRef.current) return
+    confettiFiredRef.current = true
+    const delay = setTimeout(() => {
+      if (gameResults?.winner) fireWinnerConfetti()
+      else fireCelebration()
+    }, 400)
+    return () => clearTimeout(delay)
+  }, [gameResults, fireWinnerConfetti, fireCelebration])
 
   useEffect(() => {
     if (!socket || !userUid) return
@@ -102,7 +116,7 @@ export function HostResults({
   }
 
   return (
-    <motion.div key="results" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-4xl">
+    <motion.div key="results" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="container max-w-4xl">
       <div className="card text-center">
         {gameResults?.winner ? (
           <>
@@ -111,7 +125,7 @@ export function HostResults({
               <motion.div
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-44 h-44 rounded-full pointer-events-none"
                 style={{ background: 'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)' }}
-                animate={{ opacity: [0.15, 0.35, 0.15], scale: [0.9, 1.1, 0.9] }}
+                animate={{ opacity: [0.2, 0.3, 0.2], scale: [0.95, 1.05, 0.95] }}
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
               />
               <motion.div className="text-9xl relative" initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}>🏆</motion.div>
@@ -119,7 +133,7 @@ export function HostResults({
 
             {scriptImageUrl && <MoviePosterFrame imageUrl={scriptImageUrl} title={script?.title} onClick={onShowPosterLightbox} maxWidth={280} variant="results" />}
 
-            <motion.h1 className="hero-title mb-4" style={{ color: 'var(--color-accent)' }} initial={{ y: -30, opacity: 0, filter: 'blur(8px)' }} animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 0.5, duration: 0.5 }}>
+            <motion.h1 className="hero-title mb-4" style={{ color: 'var(--color-accent)' }} initial={{ y: -30, opacity: 0, filter: 'blur(8px)' }} animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 0.5, duration: 0.5 }} aria-live="polite" aria-atomic="true">
               {gameResults.winner.playerName} Wins!
             </motion.h1>
             <motion.p className="text-2xl mb-12" style={{ color: 'var(--color-text-secondary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>

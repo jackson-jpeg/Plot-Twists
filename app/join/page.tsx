@@ -73,6 +73,7 @@ function JoinPageContent() {
     countdown,
     spectatorMessages,
     loadingProgress,
+    loadingTimedOut,
     error,
     autoStartCountdown,
     xpEvents,
@@ -289,7 +290,7 @@ function JoinPageContent() {
 
         {gameState === 'LOADING' && (
           <GameErrorBoundary phaseName="loading" key="loading-eb">
-            <JoinLoading key="loading" loadingProgress={loadingProgress} greenRoomQuestion={greenRoomQuestion} />
+            <JoinLoading key="loading" loadingProgress={loadingProgress} greenRoomQuestion={greenRoomQuestion} loadingTimedOut={loadingTimedOut} onLeave={() => router.push('/')} />
           </GameErrorBoundary>
         )}
 

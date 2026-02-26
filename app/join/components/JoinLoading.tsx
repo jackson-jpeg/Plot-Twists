@@ -23,9 +23,11 @@ function getCurrentLoadingStage(progress: number) {
 export interface JoinLoadingProps {
   loadingProgress: number
   greenRoomQuestion: string
+  loadingTimedOut?: boolean
+  onLeave?: () => void
 }
 
-export function JoinLoading({ loadingProgress, greenRoomQuestion }: JoinLoadingProps) {
+export function JoinLoading({ loadingProgress, greenRoomQuestion, loadingTimedOut, onLeave }: JoinLoadingProps) {
   const stage = getCurrentLoadingStage(loadingProgress)
   const prefersReducedMotion = useReducedMotion()
   const [elapsed, setElapsed] = useState(0)
@@ -54,7 +56,24 @@ export function JoinLoading({ loadingProgress, greenRoomQuestion }: JoinLoadingP
 
         {/* Timeout indicators */}
         <AnimatePresence mode="wait">
-          {isDelayed ? (
+          {loadingTimedOut ? (
+            <motion.div
+              key="timed-out"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-lg text-center"
+              style={{ background: 'var(--color-danger-light)', border: '1px solid var(--color-danger)' }}
+            >
+              <p className="text-sm font-medium mb-3" style={{ color: 'var(--color-danger)' }}>
+                Something may have gone wrong with script generation.
+              </p>
+              {onLeave && (
+                <button onClick={onLeave} className="btn btn-ghost" style={{ minHeight: '44px' }}>
+                  🚪 Leave Game
+                </button>
+              )}
+            </motion.div>
+          ) : isDelayed ? (
             <motion.div
               key="delayed"
               initial={{ opacity: 0, y: 10 }}

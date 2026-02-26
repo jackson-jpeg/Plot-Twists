@@ -41,6 +41,7 @@ export function useJoinSocket({
   const [countdown, setCountdown] = useState<number | null>(null)
   const [spectatorMessages, setSpectatorMessages] = useState<SpectatorMessage[]>([])
   const [loadingProgress, setLoadingProgress] = useState(0)
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false)
   const [error, setError] = useState('')
   const [xpEvents, setXpEvents] = useState<XPEvent[]>([])
   const [levelUpData, setLevelUpData] = useState<{ level: number; title: string; reward?: LevelReward } | null>(null)
@@ -83,19 +84,27 @@ export function useJoinSocket({
     })
   }, [socket, isConnected])
 
-  // Loading progress animation
+  // Loading progress animation + timeout escape
   useEffect(() => {
     if (gameState === 'LOADING') {
       setLoadingProgress(0)
+      setLoadingTimedOut(false)
       loadingIntervalRef.current = setInterval(() => {
         setLoadingProgress(prev => (prev >= 95 ? 95 : prev + Math.random() * 2 + 0.5))
       }, 500)
+      // 90-second timeout — show escape option if script generation takes too long
+      const timeoutId = setTimeout(() => setLoadingTimedOut(true), 90_000)
+      return () => {
+        if (loadingIntervalRef.current) clearInterval(loadingIntervalRef.current)
+        clearTimeout(timeoutId)
+      }
     } else {
       if (loadingIntervalRef.current) {
         clearInterval(loadingIntervalRef.current)
         loadingIntervalRef.current = null
       }
       setLoadingProgress(0)
+      setLoadingTimedOut(false)
     }
     return () => {
       if (loadingIntervalRef.current) clearInterval(loadingIntervalRef.current)
@@ -250,6 +259,7 @@ export function useJoinSocket({
     countdown,
     spectatorMessages,
     loadingProgress,
+    loadingTimedOut,
     error, setError,
     xpEvents,
     levelUpData, setLevelUpData,

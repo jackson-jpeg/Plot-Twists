@@ -4,15 +4,16 @@
 
 import type { Express } from 'express'
 import { authenticateRequest } from '../middleware/auth'
+import { gameMetadataLimiter } from '../middleware/rateLimiter'
 import { getGame, getGameByShareCode } from '../services/gameHistory.service'
 import { deleteUser } from '../services/user.service'
 import { logger } from '../../lib/logger'
 
 export function registerApiRoutes(app: Express): void {
   // Game metadata API (used by Next.js generateMetadata for dynamic OG images)
-  app.get('/api/game/:shareCode', async (req, res) => {
+  app.get('/api/game/:shareCode', gameMetadataLimiter, async (req, res) => {
     try {
-      const { shareCode } = req.params
+      const shareCode = req.params.shareCode as string
       let game = await getGameByShareCode(shareCode)
       if (!game) {
         game = await getGame(shareCode)

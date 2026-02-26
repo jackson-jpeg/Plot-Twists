@@ -100,7 +100,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
     setError(''); setIsJoining(true)
     const upperRoomCode = roomCode.toUpperCase()
 
-    withTimeout<{ success: boolean; error?: string; role?: string; players?: Player[] }>(
+    withTimeout<{ success: boolean; error?: string; role?: string; players?: Player[]; playerId?: string }>(
       (cb) => socket.emit('join_room', upperRoomCode, nickname, cb),
       8000
     ).then((response) => {
@@ -116,8 +116,9 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
         if (role === 'SPECTATOR') toast.info('Room is full! You joined as a Spectator.')
         else toast.success(`Joined room ${upperRoomCode}!`)
 
-        let pid = ''
-        if (response.players) {
+        // Use server-returned playerId (preferred), fall back to nickname match
+        let pid = response.playerId || ''
+        if (!pid && response.players) {
           const myPlayer = response.players.find(p => p.nickname === nickname && !p.isHost)
           if (myPlayer) pid = myPlayer.id
         }

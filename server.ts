@@ -29,7 +29,7 @@ import { generateScript } from './server/services/scriptGeneration.service'
 import { startTeleprompterSync } from './server/services/teleprompter.service'
 import { calculateResults } from './server/services/voting.service'
 import { extractJSON } from './server/utils/jsonExtractor'
-import { SocketRateLimiter, gameMetadataLimiter } from './server/middleware/rateLimiter'
+import { SocketRateLimiter } from './server/middleware/rateLimiter'
 import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname, validateCardSelection, isValidGameMode, isValidPhoneNumber } from './server/utils/validation'
 import { withErrorHandler } from './server/middleware/socketErrorHandler'
 import { sendPushToUser } from './server/services/push.service'
@@ -127,6 +127,8 @@ const scriptGenerationLimiter = new SocketRateLimiter(20, 10 * 60 * 1000) // 20 
 const joinRoomLimiter = new SocketRateLimiter(30, 60 * 1000) // 30 joins per minute
 const reactionLimiter = new SocketRateLimiter(60, 60 * 1000) // 60 reactions per minute
 const cardPackLimiter = new SocketRateLimiter(5, 60 * 1000) // 5 pack operations per minute
+const cardPackReadLimiter = new SocketRateLimiter(30, 60 * 1000) // 30 pack reads per minute
+const spectatorMessageLimiter = new SocketRateLimiter(20, 60 * 1000) // 20 messages per minute
 
 
 // Sanitize user input (use enhanced version from utils)
@@ -378,6 +380,7 @@ app.prepare().then(async () => {
 
         callback({
           success: true,
+          playerId: player.id,
           players: playersList,
           settings: roomSettings,
           role: player.role
@@ -489,6 +492,31 @@ app.prepare().then(async () => {
       // Send available cards to all players
       const content = getFilteredContent(room.isMature)
       io.to(roomCode).emit('available_cards', content)
+    }))
+
+    // Retry script generation — re-generates with existing selections without going back to card selection
+    socket.on('retry_script_generation', withErrorHandler(socket, 'retry_script_generation', async (roomCode) => {
+      const room = roomService.getRoomFromCache(roomCode)
+      if (!room) return
+      if (!requireHost(room, socket)) return
+
+      // Only allow retry from LOADING state (timed out) or SELECTION (fallback)
+      if (room.gameState !== 'LOADING' && room.gameState !== 'SELECTION') {
+        logger.warn(`Retry script generation rejected: room ${roomCode} in ${room.gameState}`)
+        return
+      }
+
+      // Reset to allow startScriptGeneration to proceed
+      room.gameState = 'SELECTION'
+      const allSelections = Array.from(room.selections.values())
+      if (allSelections.length === 0) {
+        io.to(roomCode).emit('error', 'No card selections found. Please go back to lobby and try again.')
+        io.to(roomCode).emit('game_state_change', 'SELECTION')
+        return
+      }
+
+      logger.info(`Retrying script generation for room ${roomCode} with ${allSelections.length} existing selections`)
+      await startScriptGeneration(room, io)
     }))
 
     // End performance — host manually triggers transition to voting/results
@@ -1047,6 +1075,7 @@ app.prepare().then(async () => {
 
     // Send spectator message (chat/heckle)
     socket.on('send_spectator_message', withErrorHandler(socket, 'send_spectator_message', (roomCode, text, isPreset) => {
+      if (!spectatorMessageLimiter.check(socket.id)) return
       const room = validateRoom(roomCode, socket)
       if (!room || !room.audienceInteraction) return
       if (!requireRoomMember(room, socket)) return
@@ -1365,6 +1394,7 @@ app.prepare().then(async () => {
 
     // Search card packs
     socket.on('search_card_packs', withErrorHandler(socket, 'search_card_packs', async (query, callback) => {
+      if (!cardPackReadLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests. Please slow down.' }); return }
       try {
         const packs = await searchCardPacks(query)
         callback({ success: true, packs })
@@ -1376,6 +1406,7 @@ app.prepare().then(async () => {
 
     // Get featured packs
     socket.on('get_featured_packs', withErrorHandler(socket, 'get_featured_packs', async (limit, callback) => {
+      if (!cardPackReadLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests. Please slow down.' }); return }
       try {
         const packs = await getFeaturedPacks(limit)
         callback({ success: true, packs })
@@ -1387,6 +1418,7 @@ app.prepare().then(async () => {
 
     // Get a specific card pack
     socket.on('get_card_pack', withErrorHandler(socket, 'get_card_pack', async (packId, callback) => {
+      if (!cardPackReadLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests. Please slow down.' }); return }
       try {
         const pack = await getCardPack(packId)
         if (pack) {
@@ -2059,6 +2091,16 @@ app.prepare().then(async () => {
               io.to(code).emit('player_left', playerId)
               io.to(code).emit('players_update', Array.from(room.players.values()))
 
+              // If a player disconnected during SELECTION, re-check if remaining players have all submitted
+              if (room.gameState === 'SELECTION' && !player.isHost) {
+                const remainingPlayers = Array.from(room.players.values()).filter(p => p.role === 'PLAYER' && !p.isHost)
+                const allSubmitted = remainingPlayers.length > 0 && remainingPlayers.every(p => p.hasSubmittedSelection)
+                if (allSubmitted && room.players.size > 1) {
+                  logger.info(`All remaining players submitted after disconnect, starting script generation for room ${code}`)
+                  startScriptGeneration(room, io)
+                }
+              }
+
               // If host left and room is still in lobby, allow others to continue
               // Only delete room if it's empty or has been too long
               if (player.isHost && room.gameState === 'LOBBY' && room.players.size === 0) {
@@ -2099,10 +2141,14 @@ app.prepare().then(async () => {
   // Helper function to start script generation
   async function startScriptGeneration(room: Room, io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>) {
     // Guard against double-invocation race condition (two players submitting final card simultaneously)
+    // IMPORTANT: Set LOADING state atomically before any async work to prevent concurrent callers
     if (room.gameState === 'LOADING' || room.gameState === 'PERFORMING') {
       logger.warn(`Script generation skipped: room ${room.code} already in ${room.gameState}`)
       return
     }
+
+    room.gameState = 'LOADING'
+    io.to(room.code).emit('game_state_change', 'LOADING')
 
     // Rate limiting for script generation (use host socket ID)
     const hostSocketId = room.host.socketId
@@ -2121,9 +2167,6 @@ app.prepare().then(async () => {
       io.to(room.code).emit('game_state_change', 'SELECTION')
       return
     }
-
-    room.gameState = 'LOADING'
-    io.to(room.code).emit('game_state_change', 'LOADING')
 
     // Get all player selections
     const allSelections = Array.from(room.selections.values())
@@ -2309,4 +2352,13 @@ app.prepare().then(async () => {
 
   process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
   process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+
+  // Global crash protection — log and survive unhandled rejections, exit on uncaught exceptions
+  process.on('unhandledRejection', (reason) => {
+    logger.error('[UnhandledRejection]', reason)
+  })
+  process.on('uncaughtException', (error) => {
+    logger.error('[UncaughtException]', error)
+    gracefulShutdown('uncaughtException').finally(() => process.exit(1))
+  })
 })

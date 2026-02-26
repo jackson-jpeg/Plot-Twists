@@ -432,7 +432,7 @@ function HostPageContent() {
             availableCards={availableCards}
             greenRoomQuestion={greenRoomQuestion}
             onSubmitSoloCards={handleSubmitSoloCards}
-            onBackToLobby={() => setGameState('LOBBY')}
+            onBackToLobby={() => { socket?.emit('request_new_game', roomCode); setGameState('LOBBY') }}
             toast={toast}
           /></GameErrorBoundary>
         )}
@@ -445,8 +445,8 @@ function HostPageContent() {
             scriptTitlePreview={scriptTitlePreview}
             greenRoomQuestion={greenRoomQuestion}
             scriptGenerationTimedOut={scriptGenerationTimedOut}
-            onRetry={() => { socket?.emit('start_game', roomCode) }}
-            onBackToLobby={() => { setGameState('LOBBY') }}
+            onRetry={() => { socket?.emit('retry_script_generation', roomCode) }}
+            onBackToLobby={() => { socket?.emit('request_new_game', roomCode); setGameState('LOBBY') }}
           /></GameErrorBoundary>
         )}
 

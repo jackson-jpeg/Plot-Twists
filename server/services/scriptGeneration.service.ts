@@ -162,16 +162,21 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
 
     // Add timeout to prevent indefinite hangs if the API stalls
     const STREAM_TIMEOUT_MS = 120_000 // 2 minutes
+    let timeoutTimer: NodeJS.Timeout | undefined
     const timeoutPromise = new Promise<never>((_, reject) => {
-      const timer = setTimeout(() => {
+      timeoutTimer = setTimeout(() => {
         stream.abort()
         reject(new Error('Script generation timed out after 2 minutes'))
       }, STREAM_TIMEOUT_MS)
-      // Don't prevent process exit
-      timer.unref()
+      timeoutTimer.unref()
     })
 
-    const finalMessage = await Promise.race([stream.finalMessage(), timeoutPromise])
+    let finalMessage: Awaited<ReturnType<typeof stream.finalMessage>>
+    try {
+      finalMessage = await Promise.race([stream.finalMessage(), timeoutPromise])
+    } finally {
+      if (timeoutTimer) clearTimeout(timeoutTimer)
+    }
 
     logger.info(`Script generated successfully!`)
 

@@ -1,13 +1,16 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import type { Script, GameResults } from '@/lib/types'
+import type { Script, GameResults, XPEvent, LevelInfo } from '@/lib/types'
 import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { VARIANTS } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
+import { XPGainAnimation } from '@/components/XPGainAnimation'
+import { XPBar } from '@/components/XPBar'
+import { LevelUpCelebration } from '@/components/LevelUpCelebration'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -20,6 +23,9 @@ export interface HostResultsProps {
   socket: AppSocket | null
   userUid: string
   toast: { success: (m: string) => void }
+  xpEvents: XPEvent[]
+  levelUpData: { level: number; title: string } | null
+  onDismissLevelUp: () => void
   onShowPosterLightbox: () => void
   onRequestSequel: () => void
   onRequestNewGame: (keepSelections: boolean) => void
@@ -27,12 +33,21 @@ export interface HostResultsProps {
 
 export function HostResults({
   script, gameResults, scriptImageUrl, socket, userUid, toast,
+  xpEvents, levelUpData, onDismissLevelUp,
   onShowPosterLightbox, onRequestSequel, onRequestNewGame,
 }: HostResultsProps) {
   const [copySuccess, setCopySuccess] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [isSharing, setIsSharing] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
+  const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
+
+  useEffect(() => {
+    if (!socket || !userUid) return
+    socket.emit('get_progression', userUid, (response) => {
+      if (response.success && response.levelInfo) setLevelInfo(response.levelInfo)
+    })
+  }, [socket, userUid])
 
   const handleCopyScript = async () => {
     if (!script) return
@@ -119,6 +134,15 @@ export function HostResults({
             <motion.p className="text-2xl mb-12" style={{ color: 'var(--color-text-secondary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>Thanks for playing!</motion.p>
           </>
         )}
+
+        {/* XP Progression */}
+        <XPGainAnimation events={xpEvents} show={xpEvents.length > 0} />
+        {levelInfo && (
+          <motion.div className="w-full max-w-md mx-auto mt-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}>
+            <XPBar levelInfo={levelInfo} compact />
+          </motion.div>
+        )}
+        <LevelUpCelebration show={!!levelUpData} level={levelUpData?.level ?? 0} title={levelUpData?.title ?? ''} onClose={onDismissLevelUp} />
 
         {/* Highlights */}
         {gameResults?.highlights && gameResults.highlights.length > 0 && (

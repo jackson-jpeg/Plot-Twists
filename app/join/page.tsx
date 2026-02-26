@@ -69,6 +69,8 @@ function JoinPageContent() {
     loadingProgress,
     error,
     autoStartCountdown,
+    xpEvents,
+    levelUpData, setLevelUpData,
   } = useJoinSocket({
     socket, isConnected, myPlayerId, myRole,
     selectionCharacter: selection.character,
@@ -275,6 +277,11 @@ function JoinPageContent() {
             script={script} gameResults={gameResults}
             scriptImageUrl={scriptImageUrl}
             showPosterLightbox={showPosterLightbox}
+            socket={socket}
+            myPlayerId={myPlayerId}
+            xpEvents={xpEvents}
+            levelUpData={levelUpData}
+            onDismissLevelUp={() => setLevelUpData(null)}
             onShowPosterLightbox={() => setShowPosterLightbox(true)}
             onClosePosterLightbox={() => setShowPosterLightbox(false)}
           />

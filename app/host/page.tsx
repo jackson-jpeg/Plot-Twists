@@ -95,6 +95,8 @@ export default function HostPage() {
     spectatorMessages,
     selection, setSelection,
     hasSubmittedSelection, setHasSubmittedSelection,
+    xpEvents,
+    levelUpData, setLevelUpData,
   } = useHostSocket({ socket, isConnected, settings, roomCode, playerId: user?.uid || '', toast, achievementToasts })
 
   // Auth guard — require signed-in user
@@ -404,6 +406,9 @@ export default function HostPage() {
             scriptImageUrl={scriptImageUrl}
             socket={socket} userUid={user?.uid || ''}
             toast={toast}
+            xpEvents={xpEvents}
+            levelUpData={levelUpData}
+            onDismissLevelUp={() => setLevelUpData(null)}
             onShowPosterLightbox={() => setShowPosterLightbox(true)}
             onRequestSequel={requestSequel}
             onRequestNewGame={requestNewGame}

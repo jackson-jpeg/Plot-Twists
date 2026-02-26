@@ -101,15 +101,16 @@ export default function PlayPage() {
 
         {/* Title */}
         <motion.div
-          className="mb-6"
+          className="mb-6 text-center"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="text-2xl font-bold font-display text-[var(--color-text-primary)]">
+          <div className="text-4xl mb-2">🎭</div>
+          <h1 className="text-3xl font-bold font-display text-[var(--color-text-primary)]">
             Quick Play
           </h1>
           <p className="text-sm text-[var(--color-text-secondary)] mt-1">
-            Jump into a game with other players
+            Jump into a game with other players — no room code needed
           </p>
         </motion.div>
 

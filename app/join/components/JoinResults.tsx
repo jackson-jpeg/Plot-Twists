@@ -1,27 +1,49 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import type { Script, GameResults } from '@/lib/types'
+import type { Script, GameResults, XPEvent, LevelInfo } from '@/lib/types'
 import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
 import { successHaptic } from '@/hooks/useHaptics'
 import { Modal } from '@/components/Modal'
 import { VARIANTS } from '@/lib/animations'
+import { XPGainAnimation } from '@/components/XPGainAnimation'
+import { XPBar } from '@/components/XPBar'
+import { LevelUpCelebration } from '@/components/LevelUpCelebration'
+import type { Socket } from 'socket.io-client'
+import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
+
+type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>
 
 export interface JoinResultsProps {
   script: Script | null
   gameResults: GameResults | null
   scriptImageUrl: string | null
   showPosterLightbox: boolean
+  socket: AppSocket | null
+  myPlayerId: string
+  xpEvents: XPEvent[]
+  levelUpData: { level: number; title: string } | null
+  onDismissLevelUp: () => void
   onShowPosterLightbox: () => void
   onClosePosterLightbox: () => void
 }
 
 export function JoinResults({
   script, gameResults, scriptImageUrl,
-  showPosterLightbox, onShowPosterLightbox, onClosePosterLightbox,
+  showPosterLightbox, socket, myPlayerId,
+  xpEvents, levelUpData, onDismissLevelUp,
+  onShowPosterLightbox, onClosePosterLightbox,
 }: JoinResultsProps) {
   const [copySuccess, setCopySuccess] = useState(false)
+  const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
+
+  useEffect(() => {
+    if (!socket || !myPlayerId) return
+    socket.emit('get_progression', myPlayerId, (response) => {
+      if (response.success && response.levelInfo) setLevelInfo(response.levelInfo)
+    })
+  }, [socket, myPlayerId])
 
   const handleCopyScript = async () => {
     if (!script) return
@@ -89,6 +111,15 @@ export function JoinResults({
             <motion.p className="text-xl mb-8" style={{ color: 'var(--color-text-secondary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>Thanks for playing!</motion.p>
           </>
         )}
+
+        {/* XP Progression */}
+        <XPGainAnimation events={xpEvents} show={xpEvents.length > 0} />
+        {levelInfo && (
+          <motion.div className="w-full max-w-sm mx-auto mt-3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}>
+            <XPBar levelInfo={levelInfo} compact />
+          </motion.div>
+        )}
+        <LevelUpCelebration show={!!levelUpData} level={levelUpData?.level ?? 0} title={levelUpData?.title ?? ''} onClose={onDismissLevelUp} />
 
         {/* Script actions */}
         {script && (

@@ -232,7 +232,14 @@ export function HostLobby({
                   >
                     <div className="player-avatar">{player.nickname[0]?.toUpperCase()}</div>
                     <div className="flex-1">
-                      <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</p>
+                      <p className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--color-text-primary)' }}>
+                        {player.nickname}
+                        {player.level != null && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--color-purple-bg)', color: 'var(--color-purple)' }}>
+                            Lv.{player.level}
+                          </span>
+                        )}
+                      </p>
                       {player.hasSubmittedSelection && (
                         <motion.p className="text-xs font-medium" style={{ color: 'var(--color-success)' }} initial={{ scale: 0 }} animate={{ scale: 1 }} transition={MOTION.spring}>✓ Ready</motion.p>
                       )}

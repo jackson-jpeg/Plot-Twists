@@ -41,6 +41,11 @@ export function JoinLobby({ players, myRole, selectedPackName, autoStartCountdow
               </div>
               <span className="font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
                 {player.nickname}
+                {player.level != null && (
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--color-purple-bg)', color: 'var(--color-purple)' }}>
+                    Lv.{player.level}
+                  </span>
+                )}
                 {player.isHost && '👑'}
                 {player.role === 'SPECTATOR' && <span title="Spectator">👁️</span>}
               </span>

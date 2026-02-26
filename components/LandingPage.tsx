@@ -41,45 +41,12 @@ export function LandingPage() {
           </div>
         </motion.div>
 
-        {/* Scene Preview */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.15 }}
-          className="flex justify-center gap-2 sm:gap-4 mt-8 mb-2 px-2 sm:px-4"
-        >
-          {sceneExamples.map((scene, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30, rotate: scene.rotation + 5 }}
-              animate={{ opacity: 1, y: 0, rotate: scene.rotation }}
-              transition={{ delay: 0.2 + i * 0.12, type: 'spring', stiffness: 120, damping: 14 }}
-              whileHover={{ scale: 1.06, rotate: 0, y: -6 }}
-              className="polaroid-card relative flex-1 min-w-0 max-w-[180px] cursor-default"
-            >
-              <div className="tape-piece tape-top-center" style={{ width: '36px', height: '14px', top: '-7px' }} />
-              <div className="p-3 pt-4 text-center">
-                <motion.div
-                  className="text-3xl mb-2"
-                  animate={{ y: [0, -3, 0] }}
-                  transition={{ duration: 2 + i * 0.3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
-                >
-                  {scene.emoji}
-                </motion.div>
-                <p className="text-xs text-[var(--color-text-secondary)] font-handwritten leading-snug">
-                  &ldquo;{scene.scenario}&rdquo;
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* CTA section */}
+        {/* CTA section — above the fold */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, type: 'spring', stiffness: 100, damping: 15 }}
-          className="flex justify-center mt-6"
+          transition={{ delay: 0.15, type: 'spring', stiffness: 100, damping: 15 }}
+          className="flex justify-center mt-8"
         >
           <motion.div
             className="note-card relative max-w-[420px] w-full text-center p-8"
@@ -100,6 +67,9 @@ export function LandingPage() {
               <motion.button
                 onClick={() => analytics.landingCtaClicked('clerk')}
                 className="btn btn-primary w-full py-3 text-lg font-semibold"
+                style={{ boxShadow: '0 0 20px rgba(245, 158, 11, 0.3)' }}
+                animate={{ boxShadow: ['0 0 12px rgba(245, 158, 11, 0.25)', '0 0 24px rgba(245, 158, 11, 0.45)', '0 0 12px rgba(245, 158, 11, 0.25)'] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -107,6 +77,39 @@ export function LandingPage() {
               </motion.button>
             </SignInButton>
           </motion.div>
+        </motion.div>
+
+        {/* Scene Preview */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35 }}
+          className="flex justify-center gap-2 sm:gap-4 mt-6 mb-2 px-2 sm:px-4"
+        >
+          {sceneExamples.map((scene, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 30, rotate: scene.rotation + 5 }}
+              animate={{ opacity: 1, y: 0, rotate: scene.rotation }}
+              transition={{ delay: 0.4 + i * 0.12, type: 'spring', stiffness: 120, damping: 14 }}
+              whileHover={{ scale: 1.06, rotate: 0, y: -6 }}
+              className="polaroid-card relative flex-1 min-w-0 max-w-[180px] cursor-default"
+            >
+              <div className="tape-piece tape-top-center" style={{ width: '36px', height: '14px', top: '-7px' }} />
+              <div className="p-3 pt-4 text-center">
+                <motion.div
+                  className="text-3xl mb-2"
+                  animate={{ y: [0, -3, 0] }}
+                  transition={{ duration: 2 + i * 0.3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.4 }}
+                >
+                  {scene.emoji}
+                </motion.div>
+                <p className="text-xs text-[var(--color-text-secondary)] font-handwritten leading-snug">
+                  &ldquo;{scene.scenario}&rdquo;
+                </p>
+              </div>
+            </motion.div>
+          ))}
         </motion.div>
 
         {/* Social proof badges */}

@@ -7,8 +7,8 @@ import { getCharactersInScene } from '@/lib/scriptUtils'
 import { getMoodIndicator, getVisibleLines } from '@/lib/teleprompterUtils'
 import dynamic from 'next/dynamic'
 const TeleprompterSettingsPanel = dynamic(() => import('@/components/TeleprompterSettings').then(m => ({ default: m.TeleprompterSettings })), { ssr: false })
-import { AudienceReactionBar } from '@/components/AudienceReactionBar'
-import { PlotTwistVoting } from '@/components/PlotTwistVoting'
+const AudienceReactionBar = dynamic(() => import('@/components/AudienceReactionBar').then(m => ({ default: m.AudienceReactionBar })), { ssr: false })
+const PlotTwistVoting = dynamic(() => import('@/components/PlotTwistVoting').then(m => ({ default: m.PlotTwistVoting })), { ssr: false })
 import { SpectatorTicker } from '@/components/SpectatorChat'
 import { MoviePosterFrame, MoviePosterSkeleton } from '@/components/MoviePosterFrame'
 import { VARIANTS, MOTION } from '@/lib/animations'
@@ -37,6 +37,7 @@ export interface HostPerformingProps {
   onSetTeleprompterCustom: (past: number | 'all', upcoming: number | 'all') => void
   onToggleTeleprompterAutoScroll: () => void
   onShowPosterLightbox: () => void
+  onEndPerformance: () => void
 }
 
 export function HostPerforming({
@@ -46,7 +47,7 @@ export function HostPerforming({
   teleprompterSettings, teleprompterSettingsLoading,
   onNextLine, onPreviousLine, onTogglePlayPause, onTriggerChaos,
   onSetTeleprompterPreset, onSetTeleprompterCustom, onToggleTeleprompterAutoScroll,
-  onShowPosterLightbox,
+  onShowPosterLightbox, onEndPerformance,
 }: HostPerformingProps) {
   const scriptContainerRef = useRef<HTMLDivElement | null>(null)
 
@@ -184,7 +185,19 @@ export function HostPerforming({
             whileHover={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 1.05, x: currentLineIndex >= script.lines.length - 1 ? 0 : 2 }}
             whileTap={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 0.95 }}>Next →</motion.button>
         </div>
-        <motion.p className="text-center text-xs flex items-center justify-center gap-2" style={{ color: 'var(--color-text-tertiary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+        {currentLineIndex >= script.lines.length - 1 && (
+          <motion.button
+            onClick={() => { tapHaptic(); onEndPerformance() }}
+            className="btn btn-primary w-full mt-3"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span>🎭</span><span>Finish Scene → Vote</span>
+          </motion.button>
+        )}
+        <motion.p className="hidden sm:flex text-center text-xs items-center justify-center gap-2" style={{ color: 'var(--color-text-tertiary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
           <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'var(--color-surface-alt)' }}>←</kbd><span>Previous</span>
           <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'var(--color-surface-alt)' }}>Space</kbd><span>Play/Pause</span>
           <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'var(--color-surface-alt)' }}>→</kbd><span>Next</span>

@@ -16,6 +16,7 @@ import { MOTION, getVariants } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
 import { useJoinSocket } from '@/hooks/useJoinSocket'
 import { useAudioPlayer } from '@/hooks/useAudioPlayer'
+import { useAuth } from '@/contexts/AuthContext'
 
 import { JoinForm } from './components/JoinForm'
 import { JoinLobby } from './components/JoinLobby'
@@ -27,6 +28,7 @@ import { JoinResults } from './components/JoinResults'
 
 function JoinPageContent() {
   const router = useRouter()
+  const { user } = useAuth()
   const { socket, isConnected } = useSocket()
   const searchParams = useSearchParams()
   const codeFromUrl = searchParams.get('code')
@@ -279,6 +281,7 @@ function JoinPageContent() {
             showPosterLightbox={showPosterLightbox}
             socket={socket}
             myPlayerId={myPlayerId}
+            userUid={user?.uid || ''}
             xpEvents={xpEvents}
             levelUpData={levelUpData}
             onDismissLevelUp={() => setLevelUpData(null)}

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import type { Script, GameResults, XPEvent, LevelInfo } from '@/lib/types'
 import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
@@ -22,6 +23,7 @@ export interface JoinResultsProps {
   showPosterLightbox: boolean
   socket: AppSocket | null
   myPlayerId: string
+  userUid: string
   xpEvents: XPEvent[]
   levelUpData: { level: number; title: string } | null
   onDismissLevelUp: () => void
@@ -31,19 +33,21 @@ export interface JoinResultsProps {
 
 export function JoinResults({
   script, gameResults, scriptImageUrl,
-  showPosterLightbox, socket, myPlayerId,
+  showPosterLightbox, socket, myPlayerId, userUid,
   xpEvents, levelUpData, onDismissLevelUp,
   onShowPosterLightbox, onClosePosterLightbox,
 }: JoinResultsProps) {
+  const router = useRouter()
   const [copySuccess, setCopySuccess] = useState(false)
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
 
   useEffect(() => {
-    if (!socket || !myPlayerId) return
-    socket.emit('get_progression', myPlayerId, (response) => {
+    const uid = userUid || myPlayerId
+    if (!socket || !uid) return
+    socket.emit('get_progression', uid, (response) => {
       if (response.success && response.levelInfo) setLevelInfo(response.levelInfo)
     })
-  }, [socket, myPlayerId])
+  }, [socket, userUid, myPlayerId])
 
   const handleCopyScript = async () => {
     if (!script) return
@@ -135,7 +139,15 @@ export function JoinResults({
         <motion.div className="card text-center p-6" style={{ background: 'var(--color-highlight)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
           <motion.div className="text-4xl mb-3" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>⏳</motion.div>
           <p className="font-display text-lg mb-1" style={{ color: 'var(--color-text-primary)' }}>Waiting for Host...</p>
-          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>The host will start the next game</p>
+          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>The host will start the next game</p>
+          <motion.button
+            onClick={() => router.push('/')}
+            className="text-sm cursor-pointer"
+            style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)' }}
+            whileTap={{ scale: 0.95 }}
+          >
+            🚪 Leave Game
+          </motion.button>
         </motion.div>
       </div>
 

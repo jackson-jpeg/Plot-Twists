@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import type { Script, GameResults, XPEvent, LevelInfo } from '@/lib/types'
 import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
@@ -36,6 +37,7 @@ export function HostResults({
   xpEvents, levelUpData, onDismissLevelUp,
   onShowPosterLightbox, onRequestSequel, onRequestNewGame,
 }: HostResultsProps) {
+  const router = useRouter()
   const [copySuccess, setCopySuccess] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [isSharing, setIsSharing] = useState(false)
@@ -178,7 +180,7 @@ export function HostResults({
           <motion.button onClick={() => onRequestNewGame(false)} className="btn btn-secondary btn-large" style={{ minWidth: '280px' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <span>🔄</span><span>New Game (Same Players)</span>
           </motion.button>
-          <motion.button onClick={() => window.location.reload()} className="btn btn-ghost" style={{ minWidth: '280px' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.button onClick={() => router.push('/')} className="btn btn-ghost" style={{ minWidth: '280px' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <span>🚪</span><span>Exit to Home</span>
           </motion.button>
         </div>

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { RoomSettings, ScriptCustomization, AudioSettings, CardSelection, GameMode } from '@/lib/types'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { VARIANTS, MOTION, BUTTON, getVariants, getTransition } from '@/lib/animations'
+import { VARIANTS, MOTION, getVariants } from '@/lib/animations'
 import { useConfetti } from '@/hooks/useConfetti'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
@@ -443,6 +443,7 @@ function HostPageContent() {
             onSetTeleprompterCustom={setTeleprompterCustom}
             onToggleTeleprompterAutoScroll={toggleTeleprompterAutoScroll}
             onShowPosterLightbox={() => setShowPosterLightbox(true)}
+            onEndPerformance={() => socket?.emit('end_performance', roomCode)}
           />
         )}
 

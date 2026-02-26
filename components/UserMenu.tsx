@@ -91,6 +91,7 @@ export function UserMenu() {
           onClick={() => setIsOpen(!isOpen)}
           aria-expanded={isOpen}
           aria-haspopup="true"
+          aria-label="User menu"
         >
           <div className="user-menu-avatar">
             {user.photoURL ? (

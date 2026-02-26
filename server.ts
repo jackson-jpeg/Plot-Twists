@@ -491,6 +491,37 @@ app.prepare().then(async () => {
       io.to(roomCode).emit('available_cards', content)
     }))
 
+    // End performance — host manually triggers transition to voting/results
+    socket.on('end_performance', withErrorHandler(socket, 'end_performance', (roomCode) => {
+      const room = roomService.getRoomFromCache(roomCode)
+      if (!room) return
+      if (!requireHost(room, socket)) return
+      if (room.gameState !== 'PERFORMING') return
+
+      // Stop teleprompter auto-advance
+      roomService.clearRoomTimeout(room.code)
+
+      if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
+        room.gameState = 'VOTING'
+        io.to(room.code).emit('game_state_change', 'VOTING')
+
+        const { VOTING_TIMEOUT } = require('./server/utils/constants')
+        const votingTimeout = setTimeout(() => {
+          if (room.gameState !== 'VOTING') return
+          import('./server/services/voting.service').then(({ calculateResults }) => {
+            calculateResults(room, io)
+          }).catch(err => logger.error(`Voting timeout error for room ${room.code}:`, err))
+        }, VOTING_TIMEOUT)
+        votingTimeout.unref()
+        roomService.setRoomTimeout(room.code, votingTimeout)
+      } else {
+        room.gameState = 'RESULTS'
+        io.to(room.code).emit('game_state_change', 'RESULTS')
+      }
+      roomService.persistRoom(room)
+      logger.info(`Host manually ended performance for room ${room.code}`)
+    }))
+
     // Submit vote
     socket.on('submit_vote', withErrorHandler(socket, 'submit_vote', (roomCode, targetPlayerId) => {
       const room = roomService.getRoomFromCache(roomCode)

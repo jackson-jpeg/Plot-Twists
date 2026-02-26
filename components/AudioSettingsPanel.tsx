@@ -131,6 +131,9 @@ export function AudioSettingsPanel({
                 onClick={() => handleChange('soundEffectsEnabled', !local.soundEffectsEnabled)}
                 disabled={disabled}
                 className="toggle-switch disabled:opacity-50"
+                role="switch"
+                aria-checked={local.soundEffectsEnabled}
+                aria-label="Sound effects"
                 data-on={local.soundEffectsEnabled ? 'true' : 'false'}
               >
                 <motion.div
@@ -200,6 +203,9 @@ export function AudioSettingsPanel({
                 onClick={() => handleChange('voiceEnabled', !local.voiceEnabled)}
                 disabled={disabled}
                 className="toggle-switch disabled:opacity-50"
+                role="switch"
+                aria-checked={local.voiceEnabled}
+                aria-label="Voice narration"
                 data-on={local.voiceEnabled ? 'true' : 'false'}
               >
                 <motion.div
@@ -283,6 +289,9 @@ export function AudioSettingsPanel({
                 onClick={() => handleChange('ambienceEnabled', !local.ambienceEnabled)}
                 disabled={disabled}
                 className="toggle-switch disabled:opacity-50"
+                role="switch"
+                aria-checked={local.ambienceEnabled}
+                aria-label="Ambient music"
                 data-on={local.ambienceEnabled ? 'true' : 'false'}
               >
                 <motion.div
@@ -325,6 +334,9 @@ export function AudioSettingsPanel({
               onClick={() => handleChange('turnChimeEnabled', !local.turnChimeEnabled)}
               disabled={disabled}
               className="toggle-switch disabled:opacity-50"
+              role="switch"
+              aria-checked={local.turnChimeEnabled}
+              aria-label="Turn chime"
               data-on={local.turnChimeEnabled ? 'true' : 'false'}
             >
               <motion.div

@@ -13,19 +13,14 @@ export function HomeJsonLd() {
       '@type': 'Offer',
       price: '0',
       priceCurrency: 'USD',
-      description: '5 free scripts per day',
-    },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '100',
+      description: '5 free scripts per week',
     },
   }
 
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/<\/script/gi, '<\\/script') }}
     />
   )
 }
@@ -55,7 +50,7 @@ export function ReplayJsonLd({
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/<\/script/gi, '<\\/script') }}
     />
   )
 }

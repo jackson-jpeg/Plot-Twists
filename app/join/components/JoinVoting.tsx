@@ -49,7 +49,10 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
           <motion.div className="card text-center p-8" style={{ background: 'var(--color-highlight)' }} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
             <div className="text-6xl mb-4">✓</div>
             <p className="text-xl font-display" style={{ color: 'var(--color-text-primary)' }}>Vote Submitted!</p>
-            <p className="text-sm mt-2" style={{ color: 'var(--color-text-secondary)' }}>Waiting for others...</p>
+            <p className="text-sm mt-2 mb-3" style={{ color: 'var(--color-text-secondary)' }}>Waiting for others...</p>
+            <p className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+              {players.filter(p => p.role === 'PLAYER' && p.hasSubmittedVote).length}/{players.filter(p => p.role === 'PLAYER').length} votes in
+            </p>
           </motion.div>
         ) : (
           <div className="stack-sm">

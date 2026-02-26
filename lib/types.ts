@@ -431,6 +431,7 @@ export interface ClientToServerEvents {
   pause_script: (roomCode: string) => void
   resume_script: (roomCode: string) => void
   jump_to_line: (roomCode: string, lineIndex: number) => void
+  end_performance: (roomCode: string) => void
   request_sequel: (roomCode: string) => void
   request_new_game: (roomCode: string, options?: NewGameOptions) => void
   update_room_settings: (roomCode: string, settings: Partial<RoomSettings>) => void

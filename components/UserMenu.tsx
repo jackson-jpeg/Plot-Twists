@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { SignInButton } from '@clerk/nextjs'
 import { CreditBadge, CreditHeaderBadge } from './CreditBadge'
 import dynamic from 'next/dynamic'
-const PurchaseCreditsModal = dynamic(() => import('./PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false })
+const PurchaseCreditsModal = dynamic(() => import('./PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
 
 export function UserMenu() {
   const { user, loading, signOut } = useAuth()

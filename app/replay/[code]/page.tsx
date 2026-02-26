@@ -7,7 +7,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import type { SavedGame, ScriptLine, TeleprompterSettings } from '@/lib/types'
 import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
 import dynamic from 'next/dynamic'
-const TeleprompterSettingsPanel = dynamic(() => import('@/components/TeleprompterSettings').then(m => ({ default: m.TeleprompterSettings })), { ssr: false })
+const TeleprompterSettingsPanel = dynamic(() => import('@/components/TeleprompterSettings').then(m => ({ default: m.TeleprompterSettings })), { ssr: false, loading: () => <div style={{ height: 40 }} /> })
 import { getVisibleLines } from '@/lib/teleprompterUtils'
 import React from 'react'
 import { ReplayJsonLd } from '@/components/JsonLd'

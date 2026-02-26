@@ -16,7 +16,7 @@ import { ToastContainer } from '@/components/Toast'
 import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
 import { useAuth } from '@/contexts/AuthContext'
 import dynamic from 'next/dynamic'
-const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false })
+const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
 import { analytics } from '@/lib/analytics'
 import { useHostSocket } from '@/hooks/useHostSocket'
@@ -356,30 +356,20 @@ function HostPageContent() {
       </Modal>
 
       {/* Insufficient Credits Modal */}
-      <AnimatePresence>
-        {showInsufficientCredits && (
-          <motion.div {...variants.fade}
-            onClick={() => setShowInsufficientCredits(false)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
-            <motion.div {...variants.scaleIn}
-              onClick={e => e.stopPropagation()}
-              style={{ background: 'var(--color-surface)', border: '2px solid var(--color-border)', borderRadius: '1rem', padding: '2rem', maxWidth: '380px', width: '100%', textAlign: 'center' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🎬</div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '0.5rem' }}>Out of scripts!</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginBottom: '1.25rem' }}>Buy more to keep the show going.</p>
-              <button onClick={() => { setShowInsufficientCredits(false); setShowPurchaseModal(true) }}
-                className="user-menu-btn user-menu-btn-primary"
-                style={{ width: '100%', padding: '0.75rem', borderRadius: '0.5rem', fontSize: '1rem', marginBottom: '0.5rem' }}>
-                Buy Credits
-              </button>
-              <button onClick={() => setShowInsufficientCredits(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '0.85rem' }}>
-                Dismiss
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Modal isOpen={showInsufficientCredits} onClose={() => setShowInsufficientCredits(false)} title="Out of scripts!" maxWidth="380px">
+        <div className="text-center">
+          <div className="text-5xl mb-3">🎬</div>
+          <p className="text-sm mb-5" style={{ color: 'var(--color-text-secondary)' }}>Buy more credits to keep the show going.</p>
+          <button onClick={() => { setShowInsufficientCredits(false); setShowPurchaseModal(true) }}
+            className="btn btn-primary w-full mb-2">
+            Buy Credits
+          </button>
+          <button onClick={() => setShowInsufficientCredits(false)}
+            className="btn btn-ghost w-full text-sm">
+            Dismiss
+          </button>
+        </div>
+      </Modal>
 
       {/* Reconnection overlay for mid-game socket drops */}
       <ReconnectingOverlay gameState={gameState} />

@@ -7,7 +7,7 @@ import type { CardSelection, PlayerRole, AvailableCards, Player } from '@/lib/ty
 import { VARIANTS } from '@/lib/animations'
 import { tapHaptic } from '@/hooks/useHaptics'
 
-const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false })
+const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false, loading: () => <div className="card p-8 text-center"><div className="skeleton skeleton-heading mx-auto" /><div className="skeleton skeleton-text mx-auto mt-4" style={{ width: '60%' }} /></div> })
 
 export interface JoinSelectionProps {
   myRole: PlayerRole

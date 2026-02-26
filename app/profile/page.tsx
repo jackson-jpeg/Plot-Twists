@@ -12,8 +12,8 @@ import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 import { StatsSkeleton, Skeleton } from '@/components/EmptyState'
 import { CreditHeaderBadge, useCreditBalance } from '@/components/CreditBadge'
 import dynamic from 'next/dynamic'
-const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false })
-const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false })
+const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false, loading: () => <div className="card p-6"><div className="skeleton skeleton-heading" /><div className="skeleton skeleton-text mt-4" /></div> })
+const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
 import { ReferralCard } from '@/components/ReferralCard'
 import { XPBar } from '@/components/XPBar'
 import { WeeklyChallenges } from '@/components/WeeklyChallenges'
@@ -192,7 +192,7 @@ export default function ProfilePage() {
                   <h1 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats!.nickname}</h1>
                   {user && isAdminUser({ email: user.email, phoneNumber: user.phoneNumber }) && (
                     <span
-                      className="text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider"
+                      className="text-[11px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider"
                       style={{
                         backgroundColor: 'color-mix(in srgb, var(--color-danger) 15%, transparent)',
                         color: 'var(--color-danger)',

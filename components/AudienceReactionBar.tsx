@@ -251,7 +251,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
                     aria-label={`Send ${REACTION_LABELS[type]} reaction`}
                   >
                     <span className="text-3xl leading-none select-none">{REACTION_EMOJIS[type]}</span>
-                    <span className="text-[10px] font-medium leading-none" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    <span className="text-[11px] font-medium leading-none" style={{ color: 'rgba(255,255,255,0.5)' }}>
                       {REACTION_LABELS[type]}
                     </span>
                   </motion.button>

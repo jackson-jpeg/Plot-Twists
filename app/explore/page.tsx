@@ -32,7 +32,7 @@ function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSel
         <div className="flex justify-between items-start mb-1.5">
           <h3 className="text-base font-semibold text-[var(--color-text-primary)] font-display leading-tight">{pack.name}</h3>
           {pack.isMature && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-error)] text-white font-bold shrink-0 ml-2">
+            <span className="text-[11px] px-1.5 py-0.5 rounded bg-[var(--color-error)] text-white font-bold shrink-0 ml-2">
               18+
             </span>
           )}
@@ -132,7 +132,7 @@ function PackPreviewContent({
               {cat.icon}
             </motion.div>
             <div className="text-lg font-bold text-[var(--color-text-primary)] font-display">{cat.count}</div>
-            <div className="text-[10px] text-[var(--color-text-muted)]">{cat.label}</div>
+            <div className="text-[11px] text-[var(--color-text-muted)]">{cat.label}</div>
           </motion.div>
         ))}
       </div>

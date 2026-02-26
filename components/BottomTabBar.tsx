@@ -70,7 +70,7 @@ export function BottomTabBar() {
                 {tab.icon}
               </span>
               <span
-                className="text-[10px] mt-0.5 font-medium"
+                className="text-[11px] mt-0.5 font-medium"
                 style={{
                   color: isActive ? 'var(--color-accent)' : 'var(--color-text-disabled)',
                 }}

@@ -42,7 +42,7 @@ export function PublicRoomCard({ room, index, onJoin }: PublicRoomCardProps) {
             {room.publicTitle || `${room.hostNickname}'s Game`}
           </span>
           {room.isMature && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-pink)]/20 text-[var(--color-pink)] font-bold">
+            <span className="text-[11px] px-1.5 py-0.5 rounded bg-[var(--color-pink)]/20 text-[var(--color-pink)] font-bold">
               18+
             </span>
           )}
@@ -60,7 +60,7 @@ export function PublicRoomCard({ room, index, onJoin }: PublicRoomCardProps) {
           <div className="text-sm font-bold text-[var(--color-text-primary)]">
             {room.playerCount}/{room.maxPlayers}
           </div>
-          <div className="text-[10px] text-[var(--color-text-tertiary)]">
+          <div className="text-[11px] text-[var(--color-text-tertiary)]">
             {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'}
           </div>
         </div>

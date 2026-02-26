@@ -236,7 +236,7 @@ export function HostLobby({
                       <p className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--color-text-primary)' }}>
                         {player.nickname}
                         {player.level != null && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--color-purple-bg)', color: 'var(--color-purple)' }}>
+                          <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--color-purple-bg)', color: 'var(--color-purple)' }}>
                             Lv.{player.level}
                           </span>
                         )}
@@ -331,7 +331,7 @@ export function HostLobby({
                   <div className="text-2xl mb-2">{icon}</div>
                   <div className="font-display font-semibold mb-1" style={{ color: 'var(--color-text-primary)' }}>{label}</div>
                   <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{desc}</div>
-                  {sublabel && <div className="text-[10px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>{sublabel}</div>}
+                  {sublabel && <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>{sublabel}</div>}
                 </motion.button>
               ))}
             </div>

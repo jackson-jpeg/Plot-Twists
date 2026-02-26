@@ -63,8 +63,23 @@ export default function Home() {
   if (!mounted || loading) {
     return (
       <main className="page-container has-tab-bar items-center justify-center">
-        <div className="skeleton skeleton-heading"></div>
-        <div className="skeleton skeleton-text" style={{ width: '80%' }}></div>
+        <div className="container max-w-3xl" style={{ width: '100%' }}>
+          {/* Header skeleton */}
+          <div className="text-center mb-6">
+            <div className="skeleton mx-auto" style={{ width: 200, height: 32, borderRadius: 8 }} />
+            <div className="skeleton mx-auto mt-3" style={{ width: 260, height: 16, borderRadius: 6 }} />
+          </div>
+          {/* Ticket buttons skeleton */}
+          <div className="flex gap-4 justify-center mb-6">
+            <div className="skeleton" style={{ width: '45%', height: 100, borderRadius: 16 }} />
+            <div className="skeleton" style={{ width: '45%', height: 100, borderRadius: 16 }} />
+          </div>
+          {/* Quick play row skeleton */}
+          <div className="flex gap-3 justify-center">
+            <div className="skeleton" style={{ width: 140, height: 40, borderRadius: 20 }} />
+            <div className="skeleton" style={{ width: 140, height: 40, borderRadius: 20 }} />
+          </div>
+        </div>
       </main>
     )
   }
@@ -174,7 +189,7 @@ export default function Home() {
                 style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
               >
                 <div className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>{stat.value}</div>
-                <div className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>{stat.label}</div>
+                <div className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>{stat.label}</div>
               </div>
             ))}
           </motion.div>

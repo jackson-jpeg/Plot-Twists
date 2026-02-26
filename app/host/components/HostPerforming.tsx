@@ -6,9 +6,9 @@ import type { Script, TeleprompterSettings as TeleprompterSettingsType, Spectato
 import { getCharactersInScene } from '@/lib/scriptUtils'
 import { getMoodIndicator, getVisibleLines } from '@/lib/teleprompterUtils'
 import dynamic from 'next/dynamic'
-const TeleprompterSettingsPanel = dynamic(() => import('@/components/TeleprompterSettings').then(m => ({ default: m.TeleprompterSettings })), { ssr: false })
-const AudienceReactionBar = dynamic(() => import('@/components/AudienceReactionBar').then(m => ({ default: m.AudienceReactionBar })), { ssr: false })
-const PlotTwistVoting = dynamic(() => import('@/components/PlotTwistVoting').then(m => ({ default: m.PlotTwistVoting })), { ssr: false })
+const TeleprompterSettingsPanel = dynamic(() => import('@/components/TeleprompterSettings').then(m => ({ default: m.TeleprompterSettings })), { ssr: false, loading: () => <div style={{ height: 40 }} /> })
+const AudienceReactionBar = dynamic(() => import('@/components/AudienceReactionBar').then(m => ({ default: m.AudienceReactionBar })), { ssr: false, loading: () => <div style={{ height: 48 }} /> })
+const PlotTwistVoting = dynamic(() => import('@/components/PlotTwistVoting').then(m => ({ default: m.PlotTwistVoting })), { ssr: false, loading: () => <div style={{ height: 48 }} /> })
 import { SpectatorTicker } from '@/components/SpectatorChat'
 import { MoviePosterFrame, MoviePosterSkeleton } from '@/components/MoviePosterFrame'
 import { VARIANTS, MOTION } from '@/lib/animations'

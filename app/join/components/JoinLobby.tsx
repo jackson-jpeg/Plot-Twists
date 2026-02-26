@@ -46,9 +46,9 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
               </div>
               <span className="font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
                 {player.nickname}
-                {isMe && <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--color-purple-bg)', color: 'var(--color-purple)' }}>You</span>}
+                {isMe && <span className="text-[11px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--color-purple-bg)', color: 'var(--color-purple)' }}>You</span>}
                 {player.level != null && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--color-purple-bg)', color: 'var(--color-purple)' }}>
+                  <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--color-purple-bg)', color: 'var(--color-purple)' }}>
                     Lv.{player.level}
                   </span>
                 )}

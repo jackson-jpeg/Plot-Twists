@@ -219,7 +219,7 @@ export function HostSelection({
           ].map(({ count, label }) => (
             <div key={label} className="text-center px-3 py-1.5 rounded-lg" style={{ background: 'var(--color-surface-alt)' }}>
               <div className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>{count}</div>
-              <div className="text-[10px]" style={{ color: 'var(--color-text-tertiary)' }}>{label}</div>
+              <div className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>{label}</div>
             </div>
           ))}
         </motion.div>
@@ -252,7 +252,7 @@ export function HostSelection({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <p className="text-[10px] font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Improv Tip</p>
+        <p className="text-[11px] font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Improv Tip</p>
         <AnimatePresence mode="wait">
           <motion.div
             key={tipIndex}

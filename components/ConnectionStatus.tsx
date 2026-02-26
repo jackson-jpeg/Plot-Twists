@@ -6,7 +6,7 @@ import { useSocket } from '@/contexts/SocketContext'
 
 export function ConnectionStatus() {
   const [isOnline, setIsOnline] = useState(true)
-  const { connectionState, reconnectAttempt } = useSocket()
+  const { socket, connectionState, reconnectAttempt } = useSocket()
 
   useEffect(() => {
     // Set initial state (avoid SSR mismatch by defaulting to true)
@@ -74,7 +74,13 @@ export function ConnectionStatus() {
           {message}
           {isFullyLost && (
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                if (socket && !socket.connected) {
+                  socket.connect()
+                } else {
+                  window.location.reload()
+                }
+              }}
               style={{
                 marginLeft: '8px',
                 padding: '4px 12px',
@@ -85,9 +91,10 @@ export function ConnectionStatus() {
                 fontSize: '13px',
                 fontWeight: 600,
                 cursor: 'pointer',
+                minHeight: '36px',
               }}
             >
-              Refresh
+              Retry
             </button>
           )}
         </motion.div>

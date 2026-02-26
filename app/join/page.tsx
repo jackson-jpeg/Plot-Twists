@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { CardSelection, PlayerRole } from '@/lib/types'
@@ -158,19 +158,19 @@ function JoinPageContent() {
     })
   }
 
-  const handleVote = (playerId: string) => socket?.emit('submit_vote', roomCode, playerId)
+  const handleVote = useCallback((playerId: string) => socket?.emit('submit_vote', roomCode, playerId), [socket, roomCode])
 
-  const goToNextLine = () => {
+  const goToNextLine = useCallback(() => {
     if (script && currentLineIndex < script.lines.length - 1) {
       socket?.emit('player_jump_to_line', roomCode.toUpperCase(), currentLineIndex + 1)
     }
-  }
+  }, [script, currentLineIndex, socket, roomCode])
 
-  const goToPreviousLine = () => {
+  const goToPreviousLine = useCallback(() => {
     if (currentLineIndex > 0) {
       socket?.emit('player_jump_to_line', roomCode.toUpperCase(), currentLineIndex - 1)
     }
-  }
+  }, [currentLineIndex, socket, roomCode])
 
   if (!isConnected) {
     return (

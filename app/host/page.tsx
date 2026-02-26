@@ -239,28 +239,28 @@ function HostPageContent() {
     socket?.emit('update_room_settings', roomCode, { gameMode: newMode })
   }
 
-  const nextLine = () => {
+  const nextLine = useCallback(() => {
     if (script && currentLineIndex < script.lines.length - 1) {
       const newIndex = currentLineIndex + 1
       setCurrentLineIndex(newIndex)
       socket?.emit('jump_to_line', roomCode, newIndex)
     }
-  }
+  }, [script, currentLineIndex, socket, roomCode])
 
-  const previousLine = () => {
+  const previousLine = useCallback(() => {
     if (currentLineIndex > 0) {
       const newIndex = currentLineIndex - 1
       setCurrentLineIndex(newIndex)
       socket?.emit('jump_to_line', roomCode, newIndex)
     }
-  }
+  }, [currentLineIndex, socket, roomCode])
 
-  const togglePlayPause = () => {
+  const togglePlayPause = useCallback(() => {
     const newPlayingState = !isPlaying
     setIsPlaying(newPlayingState)
     if (newPlayingState) socket?.emit('resume_script', roomCode)
     else socket?.emit('pause_script', roomCode)
-  }
+  }, [isPlaying, socket, roomCode])
 
   const triggerChaos = useCallback(() => {
     if (!socket || chaosCooldown) return

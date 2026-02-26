@@ -2,11 +2,12 @@
 
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { QRCodeSVG } from 'qrcode.react'
+import dynamic from 'next/dynamic'
+const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => ({ default: m.QRCodeSVG })), { ssr: false, loading: () => <div className="skeleton" style={{ width: 180, height: 180, borderRadius: '8px' }} /> })
 import type { Player, RoomSettings, ScriptCustomization, AudioSettings, GameMode } from '@/lib/types'
-import { ScriptCustomizationPanel } from '@/components/ScriptCustomizationPanel'
-import { CardPackSelector } from '@/components/CardPackSelector'
-import { AudioSettingsPanel } from '@/components/AudioSettingsPanel'
+const ScriptCustomizationPanel = dynamic(() => import('@/components/ScriptCustomizationPanel').then(m => ({ default: m.ScriptCustomizationPanel })), { ssr: false, loading: () => null })
+const CardPackSelector = dynamic(() => import('@/components/CardPackSelector').then(m => ({ default: m.CardPackSelector })), { ssr: false, loading: () => null })
+const AudioSettingsPanel = dynamic(() => import('@/components/AudioSettingsPanel').then(m => ({ default: m.AudioSettingsPanel })), { ssr: false, loading: () => null })
 import { MOTION } from '@/lib/animations'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 import type { Socket } from 'socket.io-client'

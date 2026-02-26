@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import type { Player, RoomSettings, CardSelection, AvailableCards } from '@/lib/types'
-import { CardPicker } from '@/components/CardPicker'
+import dynamic from 'next/dynamic'
+const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false, loading: () => <div className="skeleton" style={{ height: '300px', borderRadius: '12px' }} /> })
 import { VARIANTS } from '@/lib/animations'
 import { tapHaptic } from '@/hooks/useHaptics'
 

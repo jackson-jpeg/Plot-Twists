@@ -26,12 +26,12 @@ import { successHaptic } from '@/hooks/useHaptics'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
-import { HostLobby } from './components/HostLobby'
-import { HostSelection } from './components/HostSelection'
-import { HostLoading } from './components/HostLoading'
-import { HostPerforming } from './components/HostPerforming'
-import { HostVoting } from './components/HostVoting'
-import { HostResults } from './components/HostResults'
+const HostLobby = dynamic(() => import('./components/HostLobby').then(m => ({ default: m.HostLobby })), { ssr: false, loading: () => null })
+const HostSelection = dynamic(() => import('./components/HostSelection').then(m => ({ default: m.HostSelection })), { ssr: false, loading: () => null })
+const HostLoading = dynamic(() => import('./components/HostLoading').then(m => ({ default: m.HostLoading })), { ssr: false, loading: () => null })
+const HostPerforming = dynamic(() => import('./components/HostPerforming').then(m => ({ default: m.HostPerforming })), { ssr: false, loading: () => null })
+const HostVoting = dynamic(() => import('./components/HostVoting').then(m => ({ default: m.HostVoting })), { ssr: false, loading: () => null })
+const HostResults = dynamic(() => import('./components/HostResults').then(m => ({ default: m.HostResults })), { ssr: false, loading: () => null })
 
 function HostPageContent() {
   const router = useRouter()

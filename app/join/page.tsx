@@ -19,16 +19,17 @@ import { useJoinSocket } from '@/hooks/useJoinSocket'
 import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 import { useAuth } from '@/contexts/AuthContext'
 
+import dynamic from 'next/dynamic'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
-import { JoinForm } from './components/JoinForm'
-import { JoinLobby } from './components/JoinLobby'
-import { JoinSelection } from './components/JoinSelection'
-import { JoinLoading } from './components/JoinLoading'
-import { JoinPerforming } from './components/JoinPerforming'
-import { JoinVoting } from './components/JoinVoting'
-import { JoinResults } from './components/JoinResults'
+const JoinForm = dynamic(() => import('./components/JoinForm').then(m => ({ default: m.JoinForm })), { ssr: false, loading: () => null })
+const JoinLobby = dynamic(() => import('./components/JoinLobby').then(m => ({ default: m.JoinLobby })), { ssr: false, loading: () => null })
+const JoinSelection = dynamic(() => import('./components/JoinSelection').then(m => ({ default: m.JoinSelection })), { ssr: false, loading: () => null })
+const JoinLoading = dynamic(() => import('./components/JoinLoading').then(m => ({ default: m.JoinLoading })), { ssr: false, loading: () => null })
+const JoinPerforming = dynamic(() => import('./components/JoinPerforming').then(m => ({ default: m.JoinPerforming })), { ssr: false, loading: () => null })
+const JoinVoting = dynamic(() => import('./components/JoinVoting').then(m => ({ default: m.JoinVoting })), { ssr: false, loading: () => null })
+const JoinResults = dynamic(() => import('./components/JoinResults').then(m => ({ default: m.JoinResults })), { ssr: false, loading: () => null })
 
 function JoinPageContent() {
   const router = useRouter()

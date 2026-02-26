@@ -2653,6 +2653,7 @@ textarea:focus-visible {
   /* Prevent nested scroll containers from rubber-banding the page */
   .overflow-y-auto, .overflow-x-auto, .overflow-auto {
     overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   /* Increase touch targets on touch devices */

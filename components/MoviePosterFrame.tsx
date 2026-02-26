@@ -57,6 +57,7 @@ export function MoviePosterFrame({
           src={imageUrl}
           alt={`${title ?? 'Movie'} Poster`}
           className="movie-poster-frame"
+          loading="lazy"
           style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain', aspectRatio: '2/3' }}
           onError={() => setImgError(true)}
         />
@@ -101,6 +102,7 @@ export function MoviePosterFrame({
         <img
           src={imageUrl}
           alt={`${title ?? 'Movie'} Poster`}
+          loading="lazy"
           style={{ width: '100%', objectFit: 'contain', display: 'block', aspectRatio: '2/3' }}
           onError={() => setImgError(true)}
         />

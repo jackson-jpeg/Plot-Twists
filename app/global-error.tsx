@@ -23,7 +23,7 @@ export default function GlobalError({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '16px',
+          padding: 'calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px))',
           fontFamily: "'Fredoka', 'DM Sans', system-ui, sans-serif",
           background: '#FFF8F0',
           color: '#2D2A26',

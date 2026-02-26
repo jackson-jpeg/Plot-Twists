@@ -95,6 +95,7 @@ function HostPageContent() {
     creditBalance, setCreditBalance,
     showInsufficientCredits, setShowInsufficientCredits,
     spectatorMessages,
+    countdown,
     selection, setSelection,
     hasSubmittedSelection, setHasSubmittedSelection,
     xpEvents,
@@ -372,6 +373,27 @@ function HostPageContent() {
           </div>
         )}
       </Modal>
+
+      {/* Pre-Performance Countdown */}
+      <AnimatePresence>
+        {countdown !== null && (
+          <motion.div {...variants.fade}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: 'rgba(0, 0, 0, 0.85)' }}>
+            <AnimatePresence mode="wait">
+              <motion.div key={countdown}
+                initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0.3, opacity: 0 }}
+                animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { scale: 2, opacity: 0 }}
+                transition={MOTION.bouncy}
+                className="text-center">
+                <div style={{ fontSize: '120px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1 }}>{countdown}</div>
+                <div style={{ fontSize: '18px', color: 'var(--color-text-tertiary)', marginTop: '16px' }}>Curtain up!</div>
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence mode="wait">
         {gameState === 'LOBBY' && (

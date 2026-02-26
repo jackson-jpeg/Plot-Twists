@@ -19,7 +19,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
   const votablePlayers = players.filter(p => p.role === 'PLAYER' && p.id !== myPlayerId)
 
   return (
-    <motion.div key="voting" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-lg">
+    <motion.div key="voting" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="container max-w-lg">
       <div className="card">
         <h1 className="text-3xl font-display text-center mb-2" style={{ color: 'var(--color-text-primary)' }}>🏆 Vote for MVP</h1>
 
@@ -47,12 +47,29 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
 
         {hasVoted ? (
           <motion.div className="card text-center p-8" style={{ background: 'var(--color-highlight)' }} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-            <div className="text-6xl mb-4">✓</div>
+            <motion.div className="text-6xl mb-4" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>✅</motion.div>
             <p className="text-xl font-display" style={{ color: 'var(--color-text-primary)' }}>Vote Submitted!</p>
             <p className="text-sm mt-2 mb-3" style={{ color: 'var(--color-text-secondary)' }}>Waiting for others...</p>
-            <p className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
-              {players.filter(p => p.role === 'PLAYER' && p.hasSubmittedVote).length}/{players.filter(p => p.role === 'PLAYER').length} votes in
-            </p>
+            {(() => {
+              const allPlayers = players.filter(p => p.role === 'PLAYER')
+              const voted = allPlayers.filter(p => p.hasSubmittedVote).length
+              return (
+                <>
+                  <div className="h-1.5 rounded-full mb-2 overflow-hidden mx-auto" style={{ background: 'var(--color-surface-alt)', maxWidth: '200px' }}>
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ background: voted === allPlayers.length ? 'var(--color-success)' : 'linear-gradient(90deg, var(--color-purple), var(--color-accent))' }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${allPlayers.length > 0 ? (voted / allPlayers.length) * 100 : 0}%` }}
+                      transition={{ duration: 0.6, ease: 'easeOut' }}
+                    />
+                  </div>
+                  <p className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {voted}/{allPlayers.length} votes in
+                  </p>
+                </>
+              )
+            })()}
           </motion.div>
         ) : (
           <div className="stack-sm">
@@ -67,7 +84,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
                 }}
                 initial={{ opacity: 0, x: -15 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: i * 0.08, duration: 0.3 }}
                 whileHover={{ scale: 1.02, borderColor: 'var(--color-purple)' }}
                 whileTap={{ scale: 0.98 }}
               >

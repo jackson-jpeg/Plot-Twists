@@ -442,7 +442,7 @@ export function CardPicker({
               <div
                 ref={gridRef}
                 className="overflow-y-auto scrollbar-thin"
-                style={{ maxHeight: 'clamp(200px, 38vh, 360px)' }}
+                style={{ maxHeight: 'clamp(200px, 42vh, 400px)' }}
               >
                 {filteredItems.length === 0 ? (
                   <div className="text-center py-8">

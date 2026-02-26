@@ -43,6 +43,8 @@ export function useHostSocket({
   const [creditBalance, setCreditBalance] = useState<{ free: number; banked: number; total: number } | null>(null)
   const [showInsufficientCredits, setShowInsufficientCredits] = useState(false)
   const [spectatorMessages, setSpectatorMessages] = useState<SpectatorMessage[]>([])
+  const [countdown, setCountdown] = useState<number | null>(null)
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const [xpEvents, setXpEvents] = useState<XPEvent[]>([])
   const [levelUpData, setLevelUpData] = useState<{ level: number; title: string; reward?: LevelReward } | null>(null)
 
@@ -98,7 +100,26 @@ export function useHostSocket({
     })
 
     socket.on('game_state_change', (newState: GameState) => {
-      setGameState(newState)
+      if (newState === 'PERFORMING' && gameStateRef.current !== 'PERFORMING') {
+        // Show 3-2-1 countdown before performing
+        gameStateRef.current = 'PERFORMING'
+        setCountdown(3)
+        let count = 3
+        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+        countdownIntervalRef.current = setInterval(() => {
+          count--
+          if (count > 0) {
+            setCountdown(count)
+          } else {
+            if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current)
+            countdownIntervalRef.current = null
+            setCountdown(null)
+            setGameState('PERFORMING')
+          }
+        }, 800)
+      } else {
+        setGameState(newState)
+      }
       if (newState === 'SELECTION') {
         setHasSubmittedSelection(false)
       }
@@ -218,6 +239,10 @@ export function useHostSocket({
         clearInterval(loadingIntervalRef.current)
         loadingIntervalRef.current = null
       }
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current)
+        countdownIntervalRef.current = null
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, isConnected])
@@ -242,6 +267,7 @@ export function useHostSocket({
     creditBalance, setCreditBalance,
     showInsufficientCredits, setShowInsufficientCredits,
     spectatorMessages,
+    countdown,
     selection, setSelection,
     hasSubmittedSelection, setHasSubmittedSelection,
     scriptGenerationTimeoutRef,

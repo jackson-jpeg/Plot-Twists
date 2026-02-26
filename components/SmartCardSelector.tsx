@@ -162,6 +162,12 @@ function CardCarouselNoLabel({
       opacity: 1,
       rotateY: 0
     },
+    shake: {
+      x: [0, -8, 8, -6, 6, -3, 3, 0],
+      opacity: 1,
+      rotateY: 0,
+      transition: { duration: 0.5, ease: 'easeInOut' as const }
+    },
     exit: (direction: number) => ({
       x: direction > 0 ? -300 : 300,
       opacity: 0,

@@ -15,7 +15,7 @@ export function HostVoting({ players, script }: HostVotingProps) {
   const votedCount = nonHostPlayers.filter(p => p.hasSubmittedVote).length
 
   return (
-    <motion.div key="voting" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-4xl text-center">
+    <motion.div key="voting" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="container max-w-4xl text-center">
       <motion.h1 className="hero-title mb-8" initial={{ y: -20 }} animate={{ y: 0 }}>🗳️ Voting Time</motion.h1>
 
       {/* Scene Recap */}
@@ -65,6 +65,18 @@ export function HostVoting({ players, script }: HostVotingProps) {
             {votedCount}/{nonHostPlayers.length} voted
           </span>
         </div>
+
+        {/* Vote progress bar */}
+        <div className="h-1.5 rounded-full mb-5 overflow-hidden" style={{ background: 'var(--color-surface-alt)' }}>
+          <motion.div
+            className="h-full rounded-full"
+            style={{ background: votedCount === nonHostPlayers.length ? 'var(--color-success)' : 'linear-gradient(90deg, var(--color-purple), var(--color-accent))' }}
+            initial={{ width: 0 }}
+            animate={{ width: `${nonHostPlayers.length > 0 ? (votedCount / nonHostPlayers.length) * 100 : 0}%` }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
+          />
+        </div>
+
         <div className="grid gap-4 md:grid-cols-2">
           {nonHostPlayers.map((player, i) => (
             <motion.div
@@ -73,7 +85,7 @@ export function HostVoting({ players, script }: HostVotingProps) {
                 background: player.hasSubmittedVote ? 'var(--color-highlight)' : 'var(--color-surface-alt)',
                 border: player.hasSubmittedVote ? '2px solid var(--color-success)' : '1px solid var(--color-border)'
               }}
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.05 }}
+              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, duration: 0.3 }}
             >
               <div className="flex items-center gap-3">
                 <div className="player-avatar">{player.nickname[0]?.toUpperCase()}</div>
@@ -85,7 +97,7 @@ export function HostVoting({ players, script }: HostVotingProps) {
                 </div>
               </div>
               {player.hasSubmittedVote ? (
-                <span className="badge badge-success">✓ Voted</span>
+                <motion.span className="badge badge-success" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>✓ Voted</motion.span>
               ) : (
                 <motion.span className="badge badge-warning" animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>Voting...</motion.span>
               )}

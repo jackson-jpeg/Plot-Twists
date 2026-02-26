@@ -481,19 +481,19 @@ Every interaction is **intentional**. Every state is **designed**. Every animati
 
 ---
 
-## Next Steps (If Continuing)
+## Status Update (2026-02-26)
 
-1. Polish `app/join/page.tsx` with same level of detail
-2. Add sound effects (subtle clicks, whooshes)
-3. Create more handwritten annotation moments
-4. Add confetti effect for game end
-5. Implement toast notifications in components
-6. Add haptic feedback triggers on mobile
-7. Create animated transitions between game states
-8. Add particle effects for special moments
+All "Next Steps" from the original changelog have been implemented:
 
-But this is already **deep**, thoughtful work. Not surface-level vibecoding.
+- ✅ Join page polished with same level of detail as host
+- ✅ Sound effects system (`useAudioPlayer` hook, `audio.service.ts`)
+- ✅ Confetti effects on results, card selection, level-up (`useConfetti` hook)
+- ✅ Toast notifications throughout all components
+- ✅ Haptic feedback on mobile (`useHaptics` hook)
+- ✅ Distinct phase transitions (curtainRise for performing, spotlight for results)
+- ✅ 47 components, 10 hooks, full dark mode, safe area insets, 44px tap targets
+- ✅ Error boundaries per game phase, socket timeout wrappers, reconnection overlays
 
 ---
 
-**Status:** Design system is production-ready with intentional craft throughout. 🎭
+**Status:** Design system is production-ready, shipped, and live at plot-twists.com.

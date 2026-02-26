@@ -833,6 +833,16 @@ app.prepare().then(async () => {
           io.to(roomCode).emit('ambience_start', ambienceTrack)
         }
 
+        // Generate poster in background (non-blocking)
+        generateTitleCard(finalScript.title, finalScript.synopsis, chosenSetting, characters)
+          .then((imageUrl) => {
+            if (imageUrl) {
+              if (room.script) room.script.imageUrl = imageUrl
+              io.to(roomCode).emit('script_image_update', imageUrl)
+            }
+          })
+          .catch((err) => logger.error('[Image Service] Sequel poster generation error:', err))
+
         logger.info(`Sequel generated: "${finalScript.title}"`)
 
         // Start teleprompter sync
@@ -2257,7 +2267,7 @@ app.prepare().then(async () => {
       io.to(room.code).emit('game_state_change', 'PERFORMING')
 
       // Generate poster in background (non-blocking)
-      generateTitleCard(finalScript.title, finalScript.synopsis, chosenSetting)
+      generateTitleCard(finalScript.title, finalScript.synopsis, chosenSetting, characters)
         .then((imageUrl) => {
           if (imageUrl) {
             if (room.script) room.script.imageUrl = imageUrl

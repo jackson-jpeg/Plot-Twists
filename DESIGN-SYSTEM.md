@@ -306,6 +306,6 @@ The most important UI element — scripts must look like **real screenplays**:
 
 ---
 
-**Design System Version:** 1.0
-**Last Updated:** 2026-01-14
-**Status:** ✅ Complete & Shipped
+**Design System Version:** 1.1
+**Last Updated:** 2026-02-26
+**Status:** Complete & Shipped (light + dark mode, safe area insets, 44px tap targets)

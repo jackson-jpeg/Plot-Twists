@@ -1,353 +1,163 @@
-# 🚀 Deployment Guide - Plot Twists
+# Deployment Guide — Plot Twists
 
-This guide covers deploying Plot Twists to various hosting platforms.
+## Platform: Railway
 
-## 📋 Prerequisites
+Plot Twists runs as a **single process** (Express + Socket.IO + Next.js) and requires persistent WebSocket connections. Railway is the current production host.
 
-Before deploying, ensure you have:
+**Important**: Vercel/Netlify serverless platforms **cannot** run this app — they don't support persistent WebSocket connections.
 
-1. **Anthropic API Key**: Get one from [Anthropic Console](https://console.anthropic.com/)
-2. **Environment Variables**: Set up based on `.env.example`
-3. **Node.js 18+**: Required for building and running the app
+## Prerequisites
 
-## 🔧 Environment Setup
+1. [Railway account](https://railway.app/) with CLI installed (`npm i -g @railway/cli`)
+2. Anthropic API key from [console.anthropic.com](https://console.anthropic.com/)
+3. Firebase project (for auth + Firestore)
+4. Environment variables configured (see below)
 
-### Required Environment Variables
+## Environment Variables
 
-```bash
-# Required
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+### Required
 
-# Optional (with sensible defaults)
-PORT=3000
+```env
+ANTHROPIC_API_KEY=sk-ant-...        # Claude API for script generation
+NEXT_PUBLIC_WS_URL=plot-twists.com  # Your domain (no protocol prefix)
+NEXT_PUBLIC_APP_URL=https://plot-twists.com
 NODE_ENV=production
-NEXT_PUBLIC_APP_URL=https://your-domain.com
-NEXT_PUBLIC_WS_URL=wss://your-domain.com
 ```
 
-Copy `.env.example` to `.env` and fill in your values:
+### Firebase (Required for auth + database)
+
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+FIREBASE_STORAGE_BUCKET=...
+GOOGLE_APPLICATION_CREDENTIALS_JSON=...  # Service account JSON (base64 or raw)
+```
+
+### Payments (Optional)
+
+```env
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+APPLE_SHARED_SECRET=...                  # App Store IAP verification
+```
+
+### Other
+
+```env
+GEMINI_API_KEY=...                  # Movie poster generation (Google Gemini)
+ALLOWED_ORIGINS=https://plot-twists.com  # CORS whitelist
+```
+
+**Important**: `NEXT_PUBLIC_*` variables are inlined at build time by Next.js. Changing them requires a rebuild, not just a restart.
+
+## Deploy to Railway
+
+### Option 1: CLI Deploy
 
 ```bash
-cp .env.example .env
+railway login
+railway link          # Link to existing project
+railway up            # Upload and deploy
 ```
 
-## 🌐 Deployment Options
+### Option 2: Git Push (Auto-Deploy)
 
-### Option 1: Vercel (Recommended for Next.js)
-
-Plot Twists uses Next.js and works great on Vercel!
-
-#### Steps:
-
-1. **Push to GitHub**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git remote add origin your-repo-url
-   git push -u origin main
-   ```
-
-2. **Connect to Vercel**
-   - Go to [vercel.com](https://vercel.com/)
-   - Click "Import Project"
-   - Select your GitHub repository
-   - Configure project:
-     - Framework Preset: Next.js
-     - Build Command: `npm run build`
-     - Output Directory: `.next`
-
-3. **Add Environment Variables**
-   In Vercel Dashboard → Settings → Environment Variables, add:
-   ```
-   ANTHROPIC_API_KEY=your_key_here
-   NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
-   NEXT_PUBLIC_WS_URL=wss://your-app.vercel.app
-   ```
-
-4. **Deploy**
-   - Vercel will automatically deploy
-   - Every push to `main` triggers a new deployment
-
-#### Important Notes:
-- WebSocket connections work automatically on Vercel
-- Make sure to update `NEXT_PUBLIC_WS_URL` with your Vercel domain
-- SSL/TLS is handled automatically
-
-### Option 2: Railway
-
-Railway is great for full-stack apps with WebSockets.
-
-#### Steps:
-
-1. **Install Railway CLI**
-   ```bash
-   npm install -g @railway/cli
-   ```
-
-2. **Login and Initialize**
-   ```bash
-   railway login
-   railway init
-   ```
-
-3. **Add Environment Variables**
-   ```bash
-   railway variables set ANTHROPIC_API_KEY=your_key_here
-   railway variables set NODE_ENV=production
-   ```
-
-4. **Deploy**
-   ```bash
-   railway up
-   ```
-
-5. **Configure Domain**
-   - Go to Railway Dashboard
-   - Click "Settings" → "Generate Domain"
-   - Update `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_WS_URL` with your domain
-
-### Option 3: Docker + Any Cloud Provider
-
-Deploy using Docker to AWS, Google Cloud, DigitalOcean, etc.
-
-#### Create Dockerfile:
-
-```dockerfile
-FROM node:18-alpine AS base
-
-# Install dependencies only when needed
-FROM base AS deps
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
-
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV DOCKER 1
-
-RUN npm run build
-
-# Production image
-FROM base AS runner
-WORKDIR /app
-
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/server.ts ./
-
-USER nextjs
-
-EXPOSE 3000
-
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
-
-CMD ["node", "server.js"]
-```
-
-#### Build and Deploy:
+Railway auto-deploys when you push to the linked branch:
 
 ```bash
-# Build Docker image
-docker build -t plot-twists .
-
-# Run locally to test
-docker run -p 3000:3000 -e ANTHROPIC_API_KEY=your_key plot-twists
-
-# Push to your registry and deploy
-docker tag plot-twists your-registry/plot-twists:latest
-docker push your-registry/plot-twists:latest
+git push origin v2    # Triggers Railway build + deploy
 ```
 
-### Option 4: Traditional VPS (DigitalOcean, AWS EC2, etc.)
+### Build Configuration
 
-Deploy to any VPS with Node.js support.
+Railway uses Nixpacks and auto-detects Node.js:
 
-#### Setup Steps:
+- **Build command**: `npm run build` (runs `next build`)
+- **Start command**: `npm run start` (runs `NODE_ENV=production tsx server.ts`)
+- **Node version**: 22.x (via Nixpacks)
 
-1. **SSH into your server**
-   ```bash
-   ssh user@your-server-ip
-   ```
+## Custom Domain
 
-2. **Install Node.js 18+**
-   ```bash
-   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-   sudo apt-get install -y nodejs
-   ```
+1. Railway Dashboard → Service → Settings → Networking → Custom Domain
+2. Add your domain (e.g., `plot-twists.com`)
+3. Configure DNS: CNAME record pointing to Railway's domain
+4. SSL is automatic via Let's Encrypt
 
-3. **Clone and Setup**
-   ```bash
-   git clone your-repo-url
-   cd plot-twists
-   npm install
-   ```
+## Architecture in Production
 
-4. **Create .env file**
-   ```bash
-   nano .env
-   # Add your environment variables
-   ```
-
-5. **Build the app**
-   ```bash
-   npm run build
-   ```
-
-6. **Install PM2 (Process Manager)**
-   ```bash
-   npm install -g pm2
-   ```
-
-7. **Start with PM2**
-   ```bash
-   pm2 start npm --name "plot-twists" -- start
-   pm2 save
-   pm2 startup
-   ```
-
-8. **Setup Nginx (Reverse Proxy)**
-   ```nginx
-   server {
-       listen 80;
-       server_name your-domain.com;
-
-       location / {
-           proxy_pass http://localhost:3000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection 'upgrade';
-           proxy_set_header Host $host;
-           proxy_cache_bypass $http_upgrade;
-       }
-
-       # WebSocket support
-       location /socket.io/ {
-           proxy_pass http://localhost:3000;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection "upgrade";
-       }
-   }
-   ```
-
-9. **Setup SSL with Let's Encrypt**
-   ```bash
-   sudo apt-get install certbot python3-certbot-nginx
-   sudo certbot --nginx -d your-domain.com
-   ```
-
-## 🔒 Security Checklist
-
-Before going to production:
-
-- [ ] Never commit `.env` file (add to `.gitignore`)
-- [ ] Use HTTPS/WSS in production
-- [ ] Set `NODE_ENV=production`
-- [ ] Rotate API keys regularly
-- [ ] Enable rate limiting
-- [ ] Monitor API usage
-- [ ] Set up error tracking
-- [ ] Configure CORS properly
-- [ ] Use security headers (already configured in `next.config.js`)
-
-## 📊 Monitoring & Analytics
-
-### Recommended Services:
-
-1. **Error Tracking**
-   - Sentry
-   - Rollbar
-   - LogRocket
-
-2. **Analytics**
-   - Vercel Analytics
-   - Google Analytics
-   - Plausible
-
-3. **Performance**
-   - Vercel Speed Insights
-   - Lighthouse CI
-
-## 🔄 CI/CD
-
-### GitHub Actions Example:
-
-Create `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to Production
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - run: npm ci
-      - run: npm run build
-      - run: npm test
+```
+User's Browser
+     │
+     ├── HTTPS (pages, assets) ──→ Railway (Next.js SSR)
+     │
+     └── WSS (game events) ──────→ Railway (Socket.IO)
+                                        │
+                                        ├── Firestore (persistent storage)
+                                        ├── Claude API (script generation)
+                                        ├── Gemini API (poster generation)
+                                        ├── Stripe API (payments)
+                                        └── Firebase Auth (token verification)
 ```
 
-## 🆘 Troubleshooting
+Everything runs in a single Railway service. The custom server (`server.ts`) handles both HTTP requests (via Next.js request handler) and WebSocket connections (via Socket.IO).
 
-### WebSocket Connection Issues
+### Room State
 
-1. **Check WebSocket URL**: Ensure `NEXT_PUBLIC_WS_URL` uses `wss://` (not `ws://`) in production
-2. **Proxy Configuration**: Make sure your reverse proxy supports WebSocket upgrades
-3. **Firewall**: Check that WebSocket ports are open
+- **In-memory Map** is authoritative for active room state
+- **Firestore** persistence is async and debounced (5s for high-frequency updates)
+- On server restart, rooms are **recovered from Firestore** automatically
+- Failed Firestore writes are queued for retry every 10s
 
-### Build Failures
+## Post-Deployment Checklist
 
-1. **Memory Issues**: Increase Node.js memory: `NODE_OPTIONS="--max-old-space-size=4096" npm run build`
-2. **TypeScript Errors**: Run `npm run type-check` to see all errors
-3. **Missing Dependencies**: Delete `node_modules` and `package-lock.json`, then `npm install`
+- [ ] Site loads at your domain (HTTP 200)
+- [ ] Can create a room (host view shows QR + room code)
+- [ ] Can join a room (player view connects via WebSocket)
+- [ ] Script generation works (Claude API key valid)
+- [ ] Auth works (Firebase config correct)
+- [ ] Payments work if applicable (Stripe webhook configured)
 
-### API Rate Limits
+## Monitoring
 
-1. Monitor your Anthropic API usage in the [console](https://console.anthropic.com/)
-2. Implement caching for scripts if needed
-3. Consider rate limiting requests per IP
+Check Railway logs for:
+- `[INFO] > Ready on http://0.0.0.0:3000` — server started
+- `[RoomService] Recovered N room(s)` — room recovery on restart
+- `[INFO] Socket.IO configured for production mode` — WebSocket ready
 
-## 📝 Post-Deployment
+### Health Check
 
-After deployment:
+```bash
+curl -s -o /dev/null -w "%{http_code}" -L https://plot-twists.com/
+# Should return 200
+```
 
-1. **Test all game modes**: Solo, Head-to-Head, Ensemble
-2. **Verify WebSocket connections**: Check room creation and joining
-3. **Test on mobile devices**: Ensure responsive design works
-4. **Monitor error logs**: Check for any runtime errors
-5. **Set up alerts**: For downtime and errors
+## Troubleshooting
 
-## 🎉 You're Live!
+### WebSocket Connection Fails
+- Verify `NEXT_PUBLIC_WS_URL` matches your domain (no `wss://` prefix — the client adds it)
+- Check Railway logs for CORS errors
+- Ensure `ALLOWED_ORIGINS` includes your domain
 
-Your Plot Twists app should now be live and ready for players!
+### Build Fails
+- Check that all `NEXT_PUBLIC_*` env vars are set (they're needed at build time)
+- Run `npm run build` locally to reproduce
+- Memory issues: Railway provides 8GB by default, usually sufficient
 
-For support, check:
-- [Next.js Deployment Docs](https://nextjs.org/docs/deployment)
-- [Socket.IO Deployment Guide](https://socket.io/docs/v4/deployment/)
-- [Anthropic API Docs](https://docs.anthropic.com/)
+### Room Creation Fails
+- Verify `ANTHROPIC_API_KEY` is valid
+- Check rate limits haven't been hit
+- Look for credit system errors in logs
 
----
+### Rooms Lost on Deploy
+- Rooms are recovered from Firestore on restart
+- Brief interruption (~30s) during deploy as the new instance starts
+- Active WebSocket connections will reconnect automatically (client has reconnection logic)
 
-Made with ❤️ for theater kids everywhere 🎭
+## Cost
+
+- **Railway**: ~$5-20/month depending on traffic (usage-based pricing)
+- **Anthropic API**: ~$0.01-0.03 per script generation
+- **Firebase**: Free tier covers most usage (Firestore reads/writes, Auth)
+- **Gemini API**: Free tier for poster generation

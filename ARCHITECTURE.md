@@ -1,8 +1,8 @@
-# Plot Twists - Application Architecture & Documentation
+# Plot Twists — Architecture & Documentation
 
-**Last Updated:** 2026-02-02
-**Version:** 1.6
-**Status:** Active Development
+**Last Updated:** 2026-02-26
+**Version:** 2.0
+**Status:** Production (live at plot-twists.com)
 
 ---
 
@@ -16,23 +16,29 @@
 6. [Real-Time Communication](#6-real-time-communication)
 7. [AI Integration](#7-ai-integration)
 8. [Game Logic & Features](#8-game-logic--features)
-9. [Data Structures](#9-data-structures)
-10. [User Flows](#10-user-flows)
-11. [Deployment](#11-deployment)
-12. [Recommended Improvements](#12-recommended-improvements)
-13. [Critical Files Reference](#13-critical-files-reference)
+9. [Data Persistence](#9-data-persistence)
+10. [Auth & Payments](#10-auth--payments)
+11. [Mobile (Capacitor)](#11-mobile-capacitor)
+12. [Security & Resilience](#12-security--resilience)
+13. [Testing](#13-testing)
+14. [Deployment](#14-deployment)
 
 ---
 
 ## 1. Project Overview
 
-**Plot Twists** is an AI-powered, real-time multiplayer improv comedy party game that generates hilarious scripts using Claude AI. Players pick random character/setting/circumstance cards, Claude generates a comedy script, and they perform it for an audience who votes on the MVP performance.
+**Plot Twists** is an AI-powered, real-time multiplayer improv comedy party game. Players pick character/setting/circumstance cards, Claude AI generates a comedy script, and they perform it live using synchronized teleprompters. Audience votes for MVP.
 
-### Key Innovation
-Uses WebSocket (Socket.io) for real-time synchronized teleprompter delivery across host TV screens and player mobile screens.
+### Codebase Stats
+- ~42,800 lines of TypeScript/CSS
+- 198 source files
+- 47 shared components, 10 custom hooks
+- 20 server services
+- 50+ socket events
+- 13 test suites
 
 ### Game Modes
-- **Solo Mode**: Single player with AI co-stars (1 player)
+- **Solo**: Single player with AI co-stars (1 player)
 - **Head-to-Head**: Two players competing (2 players)
 - **Ensemble**: Collaborative chaos (3-6 players)
 
@@ -47,73 +53,185 @@ Uses WebSocket (Socket.io) for real-time synchronized teleprompter delivery acro
 ### Frontend
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| Next.js | 16.1.2 | React framework with App Router |
-| React | 19.2.3 | UI library |
+| Next.js | 16.1.6 | React framework (App Router) |
+| React | 19.2.4 | UI library |
 | TypeScript | 5.9.3 | Type safety |
 | Tailwind CSS | 4.1.18 | Utility-first styling |
-| Framer Motion | 12.26.2 | Animations |
-| Socket.io Client | 4.8.3 | Real-time WebSocket |
+| Framer Motion | 12.31.0 | Animations |
+| Socket.IO Client | 4.8.3 | Real-time WebSocket |
 | canvas-confetti | 1.9.4 | Celebration effects |
 | qrcode.react | 4.2.0 | QR code generation |
 
 ### Backend
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| Node.js | 20.9.0+ | Runtime |
+| Node.js | 22.x | Runtime |
 | Express | 5.2.1 | HTTP server |
-| Socket.io | 4.8.3 | WebSocket server |
-| TypeScript | 5.9.3 | Type safety |
+| Socket.IO | 4.8.3 | WebSocket server |
 | tsx | 4.21.0 | TypeScript execution |
 
-### AI/ML
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| @anthropic-ai/sdk | 0.71.2 | Claude API client |
-| Claude Model | sonnet-4-5 | Script generation |
-| Zod | 4.3.5 | Schema validation |
+### AI & Services
+| Technology | Purpose |
+|------------|---------|
+| @anthropic-ai/sdk | Claude API client (script generation) |
+| Claude `sonnet-4-5` | Script generation model |
+| Google Gemini | Movie poster image generation |
+| Firebase Auth | Phone + anonymous authentication |
+| Firestore | Persistent database |
+| Stripe | Credit-based payments |
+| Zod 4 | Schema validation |
+
+### Mobile
+| Technology | Purpose |
+|------------|---------|
+| Capacitor | iOS WebView shell |
+| StoreKit 2 | In-app purchases (bridged to Swift) |
 
 ---
 
 ## 3. Project Structure
 
 ```
-/home/user/Plot-Twists/
-├── server.ts                          # Main backend (1,275 lines)
-├── next.config.js                     # Next.js config
-├── package.json                       # Dependencies
-├── design-tokens.json                 # Design system
-├── .env.example                       # Environment template
-│
-├── app/                              # Next.js App Router
-│   ├── layout.tsx                    # Root layout with SocketProvider
-│   ├── page.tsx                      # Home/landing page
-│   ├── globals.css                   # Design system (2,183 lines)
-│   ├── host/
-│   │   └── page.tsx                 # Host screen (TV view)
-│   └── join/
-│       └── page.tsx                 # Player screen (mobile view)
-│
-├── components/                       # Reusable UI components
-│   ├── CardCarousel.tsx             # Card selection interface
-│   ├── Modal.tsx                    # Modal wrapper
-│   ├── Toast.tsx                    # Notification system
-│   └── OnboardingModal.tsx          # Game rules
-│
-├── contexts/                         # React Context
-│   └── SocketContext.tsx            # Socket.io singleton
-│
-├── hooks/                            # Custom React hooks
-│   ├── useConfetti.ts               # Celebration animations
-│   ├── useToast.ts                  # Toast management
-│   └── useWakeLock.ts               # Screen wake lock
-│
-├── lib/                              # Business logic
-│   ├── types.ts                     # TypeScript interfaces (106 lines)
-│   ├── schema.ts                    # Zod validation
-│   ├── content.ts                   # Game content (20,991 lines)
-│   └── scriptUtils.ts               # Script utilities
-│
-└── public/                           # Static assets
+server.ts                               # Main entry — Express + Socket.IO + Next.js (2,364 lines)
+
+app/
+  page.tsx                              # Landing page
+  layout.tsx                            # Root layout
+  globals.css                           # Design system (4,518 lines)
+  host/
+    page.tsx                            # Host orchestrator (519 lines)
+    components/
+      HostLobby.tsx                     # QR, player list, game settings
+      HostSelection.tsx                 # Solo card picker + ensemble waiting
+      HostLoading.tsx                   # Script generation progress
+      HostPerforming.tsx                # Teleprompter, controls, chaos button
+      HostVoting.tsx                    # Voting status grid
+      HostResults.tsx                   # Winner, standings, share, actions
+  join/
+    page.tsx                            # Join orchestrator (353 lines)
+    components/
+      JoinForm.tsx                      # Room code + nickname form
+      JoinLobby.tsx                     # "You're In!" waiting view
+      JoinSelection.tsx                 # Card picker (spectator/player/submitted views)
+      JoinLoading.tsx                   # Loading progress + green room + timeout escape
+      JoinPerforming.tsx                # Mobile teleprompter + spectator chat
+      JoinVoting.tsx                    # MVP vote buttons
+      JoinResults.tsx                   # Results + script actions + XP
+  admin/                                # Admin dashboard (rooms, stats, users)
+  explore/                              # Card pack browser
+  profile/                              # Player profile + stats
+  replay/[code]/                        # Shareable game replays
+  play/                                 # Quick play / matchmaking
+  sign-in/, sign-up/                    # Auth pages
+  purchase/success/, purchase/cancelled/ # Stripe payment flow
+  privacy/, terms/                      # Legal pages
+
+hooks/
+  useHostSocket.ts                      # Host socket listeners + all host game state
+  useJoinSocket.ts                      # Join socket listeners + all join game state
+  useAudioPlayer.ts                     # Audio playback
+  useConfetti.ts                        # Confetti effects
+  useHaptics.ts                         # Haptic feedback (mobile)
+  useReducedMotion.ts                   # Reduced motion detection
+  useStandaloneMode.ts                  # PWA standalone detection
+  useTeleprompterSettings.ts            # Teleprompter display preferences
+  useToast.tsx                          # Toast notification system
+  useWakeLock.ts                        # Prevent screen sleep
+
+components/ (47 files)
+  GameErrorBoundary.tsx                 # Per-phase error boundary
+  ReconnectingOverlay.tsx               # Mid-game socket drop overlay
+  BottomTabBar.tsx                      # Mobile navigation
+  Modal.tsx, Toast.tsx                  # Core UI
+  CardPicker.tsx, SmartCardSelector.tsx  # Card selection
+  CardPackBrowser.tsx, CardPackCreator.tsx # Card packs
+  AudienceReactionBar.tsx               # Live audience reactions
+  SpectatorChat.tsx                     # Spectator messaging
+  PlotTwistVoting.tsx                   # Audience plot twist voting
+  MobileTeleprompter.tsx                # Mobile script view
+  MoviePosterFrame.tsx                  # AI poster display with fallback
+  XPBar.tsx, XPGainAnimation.tsx        # Progression UI
+  LevelUpCelebration.tsx                # Level up confetti
+  AchievementToast.tsx                  # Achievement notifications
+  PlayerProfile.tsx, GameHistory.tsx     # Profile views
+  CreditBadge.tsx, PurchaseCreditsModal.tsx # Payment UI
+  OnboardingModal.tsx                   # First-time user guide
+  StarRating.tsx                        # Post-game rating
+  ... and more
+
+contexts/
+  AuthContext.tsx                        # Firebase auth provider
+  SocketContext.tsx                      # Socket.IO connection provider
+  ThemeContext.tsx                       # Light/dark theme provider
+
+lib/
+  types.ts                              # All shared TypeScript types (816 lines)
+  animations.ts                         # Centralized MOTION presets + VARIANTS (277 lines)
+  content.ts                            # Card content data (1,067 lines)
+  api.ts                                # API client helpers
+  analytics.ts                          # Event tracking
+  firebase.ts                           # Firebase client init
+  logger.ts                             # Structured logging
+  platform.ts                           # Platform detection (web/iOS/Android)
+  schema.ts                             # Zod validation schemas
+  scriptUtils.ts                        # Script download/copy utilities
+  socketTimeout.ts                      # Socket emit timeout wrapper utility
+  stripe.ts                             # Stripe client setup
+  teleprompterUtils.ts                  # Mood indicators, visible line calculation
+
+server/
+  services/ (20 services)
+    room.service.ts                     # Room lifecycle, write-through cache, Firestore persistence
+    scriptGeneration.service.ts         # Claude API streaming script generation
+    scriptCustomization.service.ts      # Comedy style, length, difficulty options
+    voting.service.ts                   # Vote counting, MVP calculation
+    audience.service.ts                 # Live reactions, plot twist system, spectator chat
+    user.service.ts                     # User profiles, Firebase token verification
+    credit.service.ts                   # Two-bucket credit system (free weekly + banked)
+    playerStats.service.ts              # Stats, achievements, leaderboard
+    progression.service.ts              # XP, leveling, titles
+    gameHistory.service.ts              # Game saves, replay share codes
+    cardpack.service.ts                 # Custom card packs CRUD
+    teleprompter.service.ts             # Smart line timing (mood, punctuation, reading rate)
+    image.service.ts                    # AI-generated movie posters (Gemini)
+    audio.service.ts                    # Ambient music + sound effects
+    payment.service.ts                  # Payment transaction logging
+    apple.service.ts                    # Apple App Store IAP verification
+    push.service.ts                     # Push notifications
+    referral.service.ts                 # Referral code system
+    matchmaking.service.ts              # Quick play matchmaking
+    prompts/comedyPrompts.ts            # System prompts + mode instructions for Claude
+  middleware/
+    auth.ts                             # Express auth (Firebase ID tokens)
+    socketAuth.ts                       # Socket.IO auth handshake
+    security.ts                         # Helmet, CSP, CORS, security headers
+    rateLimiter.ts                      # Per-socket + HTTP rate limiting
+    socketErrorHandler.ts               # Centralized error handler wrapper
+  routes/
+    api.ts                              # REST API routes (game metadata, health)
+    auth.ts                             # Auth routes
+    stripe.ts                           # Stripe webhook + payment routes
+    apple.ts                            # Apple IAP routes
+    index.ts                            # Route registration
+  db/
+    adapter.ts                          # Abstract database interface
+    firestore.ts                        # Firestore implementation
+    json.ts                             # JSON file fallback (dev)
+    index.ts                            # Factory — auto-selects adapter from env
+  utils/
+    constants.ts                        # Game constants, timing, token limits
+    validation.ts                       # Input sanitization (XSS prevention)
+    roomSerializer.ts                   # Room <-> Firestore conversion
+    jsonExtractor.ts                    # Robust JSON extraction from Claude responses
+    timing.ts                           # Teleprompter line display time calculation
+  data/
+    communityPacks.ts                   # Built-in card pack data
+
+ios/
+  App/App/                              # Xcode project (Capacitor shell)
+  release.xcconfig                      # Release build config
+
+__tests__/unit/                         # 13 test suites
 ```
 
 ---
@@ -124,1645 +242,426 @@ Uses WebSocket (Socket.io) for real-time synchronized teleprompter delivery acro
 
 | Route | Purpose | View Type |
 |-------|---------|-----------|
-| `/` | Landing page with game info | Desktop/Mobile |
-| `/host` | Host screen with teleprompter | TV/Desktop |
-| `/join` | Player join & card selection | Mobile |
-
-### Key Components
-
-#### CardCarousel.tsx
-Interactive card selection with swipe gestures
-- Animated slide transitions
-- Random shuffle functionality
-- Used for Character/Setting/Circumstance selection
-
-#### Modal.tsx
-Reusable modal container with:
-- Framer Motion animations
-- Backdrop blur
-- Scrollable content
-
-#### Toast.tsx
-Notification system with:
-- 4 types: Success, Error, Warning, Info
-- Auto-dismiss (5 seconds)
-- Stacked positioning
-
-#### OnboardingModal.tsx
-Game rules and mode explanations
+| `/` | Landing page | Desktop/Mobile |
+| `/host` | Host orchestrator (TV view) | Desktop/TV |
+| `/join` | Player orchestrator (mobile view) | Mobile |
+| `/join?code=WXYZ` | Direct join with room code | Mobile |
+| `/explore` | Card pack browser | Any |
+| `/profile` | Player profile + stats | Any |
+| `/replay/[code]` | Shareable game replay | Any |
+| `/admin` | Admin dashboard | Desktop |
+| `/play` | Quick play / matchmaking | Mobile |
+| `/sign-in`, `/sign-up` | Authentication | Any |
 
 ### State Management
 
-**Global State**: SocketContext.tsx
-- Singleton Socket.io connection
-- Automatic reconnection with exponential backoff
-- CORS configuration for Railway/Vercel
+**Socket Hooks**: `useHostSocket` and `useJoinSocket` own all game state (gameState, players, script, etc.) and handle socket event subscriptions. They use `useRef` to avoid stale closures in socket listeners — the effect depends only on `[socket, isConnected]`.
 
-**Local State**: React hooks
-- `useState` for UI state
-- `useRef` for non-reactive values
-- `useCallback` for memoized functions
+**Contexts**:
+- `SocketContext` — singleton Socket.IO connection with auto-reconnect
+- `AuthContext` — Firebase auth state (user, loading, sign-in/out)
+- `ThemeContext` — light/dark mode
 
-### Custom Hooks
+**Local State**: React `useState` / `useCallback` for UI state in each phase component.
 
-```typescript
-useSocket()        // Access Socket.io connection
-useConfetti()      // Trigger celebration animations
-useToast()         // Show notifications
-useWakeLock()      // Prevent screen sleep
+### Component Loading
+
+All game phase components use `next/dynamic` for code splitting:
+```ts
+const JoinPerforming = dynamic(() => import('./components/JoinPerforming')
+  .then(m => ({ default: m.JoinPerforming })), { ssr: false, loading: () => null })
 ```
 
-### Styling System
+Heavy dependencies (QRCodeSVG, CardPicker, ScriptCustomizationPanel, AudioSettingsPanel) are also dynamically imported.
 
-**Design Tokens** (CSS custom properties):
-- Color palette (primary, secondary, accent)
-- Typography scale
-- Spacing system
-- Border radius
+### Styling
 
-**Typography**:
-- Display: Fredoka (rounded, playful)
-- UI: DM Sans (modern, clean)
-- Script: Courier Prime (monospace)
-- Handwritten: Permanent Marker
+- **CSS custom properties** for all colors: `var(--color-accent)`, `var(--color-text-primary)`, etc.
+- **Light + dark mode** via `prefers-color-scheme` with CSS variable overrides
+- **Tailwind** for layout/spacing; inline `style={{ color: 'var(--color-*)' }}` for theme colors
+- **Safe area insets**: `env(safe-area-inset-*)` for iOS notch/home indicator
+- **Typography**: Fredoka (display), DM Sans (body), Courier Prime (scripts)
 
-**Responsive Design**:
-- Mobile-first approach
-- Breakpoints: sm, md, lg, xl
-- Works on TV (1080p+), desktop, tablet, mobile
+### Animation System
+
+Centralized in `lib/animations.ts`:
+- `MOTION.spring`, `MOTION.gentle`, `MOTION.bouncy` — timing presets
+- `VARIANTS.pageTransition` — blur + scale + opacity (default phase transition)
+- `VARIANTS.curtainRise` — clip-path reveal (performing phase)
+- `VARIANTS.spotlight` — brightness reveal (results phase)
+- `getVariants(prefersReducedMotion)` — returns no-op variants when reduced motion is preferred
+
+### Error Handling
+
+`GameErrorBoundary` wraps each game phase. On crash, shows a "Scene Interrupted" card with retry button instead of white-screening the entire app. Socket state lives in the parent and survives the remount.
 
 ---
 
 ## 5. Backend Architecture
 
-### Server Setup
+### Server Setup (`server.ts`)
 
-**File**: `server.ts` (1,275 lines)
+Single process running:
+1. **Express** — HTTP routes, middleware, static assets
+2. **Socket.IO** — WebSocket event handlers (50+ events)
+3. **Next.js** — SSR page rendering via `app.getRequestHandler()`
 
-```typescript
-// HTTP Server
-const server = createServer(expressApp)
-
-// Socket.io Server
-const io = new SocketIOServer(server, {
-  cors: { /* origin validation */ },
-  transports: ['polling'] // Production (Railway)
-})
-
-// Listen on port 3000
-server.listen(port, hostname)
 ```
+server.listen(port) → Express → Socket.IO → Next.js request handler
+```
+
+### Socket Transport
+
+- **Production**: WebSocket-first with polling fallback (`['websocket', 'polling']`)
+- **Reconnection**: exponential backoff, 10 attempts max
+- **CORS**: configured via `ALLOWED_ORIGINS` env var
 
 ### Room Management
 
-**In-Memory Storage**:
-```typescript
-const rooms = new Map<string, Room>()
-```
+**Write-Through Cache**:
+- In-memory `Map<string, Room>` is the source of truth for active games
+- Firestore persistence is async and debounced (5s for high-frequency updates like teleprompter position)
+- Failed writes queued for retry every 10s
+- On server restart, rooms recovered from Firestore automatically
 
-**Room Structure**:
-```typescript
-interface Room {
-  code: string                    // 4-letter room code
-  host: Player                    // Host player
-  players: Map<string, Player>    // All players
-  gameState: GameState            // LOBBY|SELECTION|LOADING|PERFORMING|VOTING|RESULTS
-  gameMode: GameMode              // SOLO|HEAD_TO_HEAD|ENSEMBLE
-  isMature: boolean               // Content rating
-  selections: Map<string, CardSelection>
-  script?: Script                 // Generated script
-  currentLineIndex: number        // Teleprompter position
-  isPaused: boolean
-  votes: Map<string, string>
-  createdAt: number
-  lastActivity: number
-}
-```
+**Room Lifecycle**:
+1. Host creates room → 4-letter code assigned, room stored in memory + Firestore
+2. Players join via code → added to room, `players_update` broadcast
+3. Game flows through state machine → LOBBY → SELECTION → LOADING → PERFORMING → VOTING → RESULTS
+4. Host can start new game (returns to LOBBY) or end session
+5. Inactive rooms cleaned up after 1 hour (runs every 5 minutes)
 
-**Auto-Cleanup**: Inactive rooms deleted after 1 hour (runs every 5 minutes)
+### Credit System
 
-### API Endpoints (Socket.io Events)
+Two-bucket model:
+- **Free credits**: Weekly lazy reset, consumed first
+- **Banked credits**: Purchased via Stripe or Apple IAP, no expiry
+- Deductions use database transactions to prevent double-spend
+- Race condition guard: `gameState` set to `LOADING` synchronously before any async credit operations
 
-#### Server → Client Events
+### Teleprompter Timing
 
-```typescript
-room_created(code: string)
-player_joined(player: Player)
-player_left(playerId: string)
-game_state_change(newState: GameState)
-players_update(players: Player[])
-green_room_prompt(question: string)
-script_ready(script: Script)
-sync_teleprompter(data: TeleprompterSyncData | number)  // v1.5: timestamp-based or legacy
-game_over(results: GameResults)
-error(message: string)
-room_settings_update(settings: RoomSettings)
-available_cards(cards: {...})
-new_game_started(options: NewGameOptions)              // v1.5: play again without reload
-latency_ping(serverTimestamp: number)                  // v1.5: latency measurement
-latency_pong_response(data: { latency: number })       // v1.5: latency result
-```
-
-#### Client → Server Events
-
-```typescript
-create_room(settings, callback)
-join_room(roomCode, nickname, callback)
-submit_cards(roomCode, selections, callback)
-start_game(roomCode)
-submit_vote(roomCode, targetPlayerId)
-advance_script_line(roomCode)
-pause_script(roomCode)
-resume_script(roomCode)
-jump_to_line(roomCode, lineIndex)
-request_sequel(roomCode)
-request_new_game(roomCode, options?: NewGameOptions)   // v1.5: play again without reload
-player_jump_to_line(roomCode, lineIndex)              // v1.5: synced player navigation
-latency_pong(serverTimestamp, clientTimestamp)        // v1.5: latency measurement
-update_room_settings(roomCode, settings)
-disconnect()
-```
-
-### Key Backend Functions
-
-#### generateScript() (lines 62-557)
-Calls Claude API to generate comedy scripts
-- Constructs 300+ line system prompt
-- Handles Solo/Head-to-Head/Ensemble modes
-- Validates output with Zod
-- Returns structured script JSON
-
-#### startTeleprompterSync() (lines 1191-1238)
-Automatic line advancement based on reading speed
-- Calculates: `(wordCount / 120 WPM) * 60 * 1000` ms
-- Maintains timeout references per room
-- Handles pause/resume
-
-#### calculateResults() (lines 1241-1264)
-Vote counting and winner selection
-- Counts votes per player
-- Sorts by vote count
-- Returns results ranking
+Smart line timing based on:
+- Base reading time: `(wordCount / 120 WPM) * 60 * 1000` ms
+- **Punctuation pauses**: `.` = 400ms, `!` = 500ms, `?` = 450ms, `...` = 800ms, `,` = 200ms
+- **Mood multipliers**: angry = 0.9x, whispering = 1.3x, confused = 1.2x
+- **Bounds**: Clamped to 1.5s – 15s per line
+- Timestamp-based sync with `expectedDuration` for client-side prediction
 
 ---
 
 ## 6. Real-Time Communication
 
-### WebSocket Flow Diagram
+### Socket Event Flow
 
 ```
-HOST                 WebSocket            SERVER              Claude API
- |                   (Socket.io)            |
- |-- create_room -----------------------> |
- |                                         |-- Generate room
- |<--------- room_created ---------------- |
- |
- | (Display QR code)
- |
-
-PLAYER               WebSocket            SERVER
- |                   (Socket.io)            |
- |-- join_room --------------------------> |
- |                                         |-- Validate room
- |<----- player_joined (broadcast) ------- |
- |<------ players_update (broadcast) ----- |
- |
- |-- submit_cards ------------------------ |
- |                                         |-- Store selections
- |<------ players_update (broadcast) ----- |
- |                                         |
- |<-- game_state_change('LOADING') ------- |
- |<------ green_room_prompt -------------- |
- |                                         |-- generateScript() -------> |
- |                                         |                              |
- |                                         |      (10-20 seconds)        |
- |                                         | <--------------------------- |
- |<--------- script_ready ---------------- |
- |<-- game_state_change('PERFORMING') ---- |
- |                                         |
- |<----- sync_teleprompter(0) ----------- |
- |<----- sync_teleprompter(1) ----------- | (auto-advance)
- |<----- sync_teleprompter(2) ----------- | (based on reading time)
- |                  ...                   |
- |<-- game_state_change('VOTING') ------- | (script complete)
- |                                         |
- |-- submit_vote ------------------------> |
- |                                         |-- Count votes
- |<-------- game_over (results) ---------- |
- |                                         |
- | (Confetti celebration)
+HOST                 Socket.IO           SERVER              Claude API
+ |-- create_room ──────────────────────> |
+ |<──── room_created ─────────────────── |
+ |                                        |
+PLAYER                                    |
+ |── join_room ──────────────────────────>|
+ |<── players_update (broadcast) ─────── |
+ |                                        |
+ |── submit_cards ───────────────────────>|
+ |<── players_update (broadcast) ─────── |
+ |                                        |
+HOST: start_game ────────────────────────>|
+ |<── game_state_change('LOADING') ───── |
+ |<── green_room_prompt ──────────────── |
+ |                                        |──> Claude API (streaming)
+ |<── loading_progress ──────────────────|     (~10-20 seconds)
+ |<── script_ready ──────────────────────|<──
+ |<── game_state_change('PERFORMING') ── |
+ |                                        |
+ |<── sync_teleprompter(line, time) ──── | (auto-advance per line timing)
+ |                                        |
+ |<── game_state_change('VOTING') ────── | (script complete)
+ |── submit_vote ────────────────────────>|
+ |<── game_over(results) ────────────────|
 ```
 
-### Connection Configuration
+### Key Client → Server Events
 
-**Production** (Railway):
-```typescript
-transports: ['polling']  // WebSocket issues on Railway
-cors: { origin: ['*.railway.app', '*.vercel.app'] }
-reconnectionDelay: 1000
-reconnectionDelayMax: 5000
-reconnectionAttempts: 10
+```ts
+create_room(settings, callback)
+join_room(roomCode, nickname, callback)     // callback includes playerId
+submit_cards(roomCode, selections, callback)
+start_game(roomCode)
+retry_script_generation(roomCode)           // retry without re-selecting cards
+submit_vote(roomCode, targetPlayerId)
+advance_script_line(roomCode)
+pause_script(roomCode) / resume_script(roomCode)
+jump_to_line(roomCode, lineIndex)
+player_jump_to_line(roomCode, lineIndex)    // player-initiated navigation
+request_new_game(roomCode)
+send_spectator_message(roomCode, message)
+submit_reaction(roomCode, emoji)
+submit_plot_twist(roomCode, twistType)
+get_progression(uid, callback)
 ```
 
-**Development**:
-```typescript
-transports: ['polling', 'websocket']
-cors: { origin: 'http://localhost:3000' }
+### Key Server → Client Events
+
+```ts
+room_created(code)
+players_update(players[])
+game_state_change(newState)
+script_ready(script)
+sync_teleprompter({ lineIndex, serverTimestamp, expectedDuration })
+game_over(results)
+available_cards(cards)
+loading_progress(progress)
+green_room_prompt(question)
+spectator_message(message)
+reaction_burst(emoji, count)
+xp_event(event)
+achievement_unlocked(achievement)
+host_disconnected() / host_reconnected()
 ```
 
 ---
 
 ## 7. AI Integration
 
-### Claude API Configuration
+### Script Generation
 
 **Model**: `claude-sonnet-4-5-20250929`
-- Response time: 8-10 seconds
-- Token allocation: 8,192-10,000 tokens
+- Streaming responses via `@anthropic-ai/sdk`
 - Temperature: 1.0 (maximum creativity)
+- Token allocation: 8,192–10,000 tokens
+- 2-minute timeout with abort on timeout
+- Timer cleanup in `finally` block to prevent leaks
 
-### System Prompt Structure
-
-**Comedy Guidelines** (~300 lines):
-- 18+ vs Family Friendly instructions
+**System Prompt** (~300 lines in `server/services/prompts/comedyPrompts.ts`):
+- Comedy style guidelines (improv principles, Rule of Three, YES-AND)
+- Mode-specific instructions (Solo/Head-to-Head/Ensemble)
 - Character voice matching
-- Scene structure (Hook → Explore → Escalate → Peak Chaos → Button)
-- Improv principles (YES-AND, Rule of Three)
+- Scene structure: Hook → Explore → Escalate → Peak Chaos → Button
+- Customizable: comedy style, script length, difficulty level
 
-**Game Mode Specific**:
-- **Solo**: AI creates 2-3 co-star characters
-- **Head-to-Head**: Opposing goals, competitive banter
-- **Ensemble**: Straight man + chaos agents
+**Output**: Validated with Zod schema — title, synopsis, lines array (speaker, text, mood).
 
-**Sequel Mode**:
-- Same characters/setting/circumstance
-- References previous script for callbacks
-- Escalates stakes from Episode 1
+**Retry**: `retry_script_generation` event re-uses existing card selections without returning to SELECTION phase.
 
-### Output Format
+### Image Generation
 
-```json
-{
-  "title": "Punny title",
-  "synopsis": "[CHARACTER] must [DO THING] while [OBSTACLE]",
-  "lines": [
-    {
-      "speaker": "Character Name",
-      "text": "Dialogue text",
-      "mood": "angry|happy|confused|whispering|neutral"
-    }
-  ]
-}
-```
-
-### Validation
-
-**Zod Schema** (`lib/schema.ts`):
-- Validates title, synopsis, lines array
-- Ensures speaker, text, mood fields exist
-- Fallback mood to 'neutral' if invalid
-
-**Error Handling**:
-- Strip markdown code blocks
-- Parse JSON
-- Validate structure
-- Log errors and retry on failure
+**Model**: Google Gemini
+- Generates movie poster images for each script
+- Stored in Firebase Storage
+- `MoviePosterFrame` component with error fallback (gradient + title on image load failure)
 
 ---
 
 ## 8. Game Logic & Features
 
-### Game Modes
+### Game State Machine
 
-#### Solo Mode
-- 1 player with AI co-stars
-- AI takes 50-60% of lines
-- No voting (results only)
+```
+LOBBY → SELECTION → LOADING → PERFORMING → VOTING → RESULTS
+  ↑                                                    │
+  └────────────────── request_new_game ────────────────┘
+```
 
-#### Head-to-Head Mode
-- 2 players competing
-- Opposing character goals
-- Voting round after performance
+### Card System
 
-#### Ensemble Mode
-- 3-6 players
-- First player = "straight man"
-- Others = "agents of chaos"
-- Voting round after performance
+- **Built-in content**: `lib/content.ts` (1,067 lines) — characters, settings, circumstances
+- **Community packs**: 20+ built-in themed packs (`server/data/communityPacks.ts`)
+- **Custom packs**: Users can create, edit, and share card packs
+- **Card selection**: `SmartCardSelector` with categories, search, and shuffle
+- **Submit confirmation**: Double-tap to confirm (prevents accidental submission)
+- **Progress indicator**: Shows "2/4 players submitted" while waiting
 
-### Content System
+### Audience & Spectator Features
 
-**Three Card Types**:
-1. **Characters** (100+ per rating)
-   - Safe: Michael Scott, Yoda, Batman, SpongeBob
-   - Mature: Tony Soprano, Deadpool, Rick Sanchez
+- **Spectator chat**: Real-time messaging during performances
+- **Live reactions**: Emoji burst system with rate limiting
+- **Plot twist voting**: Audience can vote on mid-performance twists
+- **Spectator role**: Auto-assigned when room is full, can still watch and vote
 
-2. **Settings** (70+ per rating)
-   - Safe: Central Perk, The Office, Jurassic Park
-   - Mature: Crime scenes, dark scenarios
+### Progression System
 
-3. **Circumstances** (60+ per rating)
-   - Safe: "Teaching a class", "Running a restaurant"
-   - Mature: "Escaping from jail", "Confessing a crime"
+- **XP**: Earned for playing games, winning, achievements
+- **Levels**: Level up with titles (e.g., "Scene Stealer", "Drama Queen")
+- **Achievements**: Milestone-based unlocks with toast notifications
+- **Stats**: Games played, wins, streaks tracked per player
+- **Leaderboard**: Ranked by XP across all players
 
-**File**: `lib/content.ts` (20,991 lines)
+### Audio System
 
-### Teleprompter System
+- Ambient background music
+- Sound effects for game events
+- User-configurable volume via `AudioSettingsPanel`
 
-**Host View**:
-- Full script visible
-- Current line highlighted
-- Manual controls (Previous, Next, Pause, Resume)
-- Keyboard shortcuts (Arrow keys, Space)
+### Replay System
 
-**Player View**:
-- Current line large and centered
-- Next line preview
-- Mood indicator (emoji)
-- Vibration feedback when character speaks (mobile)
-- Navigation controls (Back/Next) synced with all clients
-
-**Smart Timing (v1.5)**:
-- Base reading time = `(words / 120 WPM) * 60` seconds
-- **Punctuation pauses**: `.` = 400ms, `!` = 500ms, `?` = 450ms, `...` = 800ms, `,` = 200ms
-- **Mood multipliers**: angry = 0.9x (faster), whispering = 1.3x (slower), confused = 1.2x
-- **Stage directions**: Base 2000ms + reduced word time
-- **Bounds**: Clamped to 1.5s - 15s per line
-
-**Timestamp-Based Sync (v1.5)**:
-- Sync events include `serverTimestamp` for precise coordination
-- `expectedDuration` sent with each sync for client-side prediction
-- Backward compatible with legacy number-only sync format
-- Latency measurement via ping/pong events
-
-**Player Navigation (v1.5)**:
-- Players can navigate forward/backward during performance
-- Navigation syncs with ALL clients (host + players)
-- Brief pause then auto-resume after player navigation
-- Helps recover from accidental advances
-
-### Voting System
-
-**Head-to-Head / Ensemble Only**:
-1. Voting screen after script completes
-2. Each player votes for another player's MVP
-3. Spectators can vote but don't affect results
-4. Results sorted by vote count
-5. Winner gets confetti celebration
-
-### Green Room Trivia
-
-**Purpose**: Mask AI generation wait time
-
-**Implementation**: Setting-specific trivia questions
-- Example: "What year did The Office premiere?" for office settings
-- Keeps players engaged during 10-20 second wait
+- Games saved with unique share codes
+- `/replay/[code]` page for viewing past performances
+- Script + poster + metadata preserved
 
 ---
 
-## 9. Data Structures
+## 9. Data Persistence
 
-### Room State Example
+### Database Adapter Pattern
 
-```typescript
-{
-  code: "WXYZ",
-  host: {
-    id: "host-123",
-    nickname: "Host",
-    role: "HOST",
-    socketId: "abc123",
-    isHost: true
-  },
-  players: Map {
-    "player1-id" => {
-      id: "player1-id",
-      nickname: "Alice",
-      role: "PLAYER",
-      socketId: "def456"
-    },
-    "player2-id" => {
-      id: "player2-id",
-      nickname: "Bob",
-      role: "PLAYER",
-      socketId: "ghi789"
-    }
-  },
-  gameState: "PERFORMING",
-  gameMode: "HEAD_TO_HEAD",
-  isMature: false,
-  selections: Map {
-    "player1-id" => {
-      character: "Batman",
-      setting: "Starbucks",
-      circumstance: "ordering coffee"
-    },
-    "player2-id" => {
-      character: "Yoda",
-      setting: "Starbucks",
-      circumstance: "spilling drink"
-    }
-  },
-  script: {
-    title: "The Batista",
-    synopsis: "Batman must order coffee while Yoda complains about the line",
-    lines: [
-      {
-        speaker: "Yoda",
-        text: "In line this long been, we have.",
-        mood: "confused"
-      },
-      {
-        speaker: "Batman",
-        text: "I'm here for the justice, not the latte.",
-        mood: "whispering"
-      }
-      // ... more lines
-    ]
-  },
-  currentLineIndex: 5,
-  isPaused: false,
-  votes: Map {
-    "player1-id" => "player2-id",
-    "player2-id" => "player1-id"
-  },
-  createdAt: 1706000000000,
-  lastActivity: 1706000300000
-}
+```ts
+// server/db/adapter.ts — abstract interface
+// server/db/firestore.ts — Firestore implementation (production)
+// server/db/json.ts — JSON file fallback (development)
+// server/db/index.ts — factory, auto-selects from env
 ```
 
-### Player Interface
+### What's Persisted
 
-```typescript
-interface Player {
-  id: string              // Unique player ID (UUID)
-  nickname: string        // Display name (max 50 chars)
-  role: PlayerRole        // HOST|PLAYER|SPECTATOR
-  socketId: string        // Socket.io connection ID
-  isHost: boolean         // Quick host check
-  hasSubmittedCards?: boolean
-}
+| Data | Storage | Pattern |
+|------|---------|---------|
+| Room state | Memory + Firestore | Write-through cache, debounced |
+| User profiles | Firestore | Direct read/write |
+| Player stats | Firestore | Transactional updates |
+| Game history | Firestore | Write on game end |
+| Card packs | Firestore | CRUD via cardpack.service |
+| Credits | Firestore | Transactional (prevents double-spend) |
+| Payments | Firestore | Transaction logging |
+
+---
+
+## 10. Auth & Payments
+
+### Authentication
+
+- **Firebase Auth**: Phone number + anonymous sign-in
+- **Socket auth**: `socketAuth.ts` middleware verifies Firebase ID tokens on handshake
+- **HTTP auth**: `auth.ts` middleware on protected Express routes
+- **AuthContext**: React context provides `user`, `loading`, sign-in/out methods
+
+### Payment System
+
+**Stripe** (web):
+- Credit purchase flow → Stripe Checkout → webhook confirms → credits added
+- Webhook endpoint: `/api/stripe/webhook`
+
+**Apple IAP** (iOS):
+- StoreKit 2 bridged via Capacitor plugin
+- Server-side receipt verification via `apple.service.ts`
+- Credits added after verification
+
+---
+
+## 11. Mobile (Capacitor)
+
+### iOS App
+
+Capacitor WebView shell (~286 lines of native Swift):
+- Portrait-only orientation (iPhone), all orientations (iPad)
+- `NSUserNotificationsUsageDescription` in Info.plist for push notifications
+- `ITSAppUsesNonExemptEncryption: false` (no export compliance needed)
+- StoreKit 2 integration for in-app purchases
+- `release.xcconfig`: `CAPACITOR_DEBUG = false`
+
+### Mobile UX
+
+- Safe area insets (`env(safe-area-inset-*)`) for notch/home indicator
+- 44px minimum tap targets on all interactive elements
+- Haptic feedback on card selection and key actions
+- Wake lock prevents screen sleep during performances
+- Body scroll lock during overlays (countdown, host disconnect)
+
+---
+
+## 12. Security & Resilience
+
+### Server Security
+- **Helmet.js**: CSP, HSTS, X-Frame-Options, X-Content-Type-Options
+- **Input validation**: All user input sanitized (XSS strip, length limits, format checks)
+- **Rate limiting**:
+  - Per-socket: `SocketRateLimiter` on room creation, joining, script generation, spectator messages, card pack reads
+  - Per-IP: `express-rate-limit` on HTTP API routes
+- **CORS**: Whitelist via `ALLOWED_ORIGINS`
+- **Environment validation**: Required env vars checked on startup
+
+### Resilience
+- **Socket emit timeouts**: `lib/socketTimeout.ts` — 10s default, prevents hung UI
+- **Error boundaries**: `GameErrorBoundary` per game phase — crash one phase, not the whole app
+- **Reconnection overlay**: `ReconnectingOverlay` shown during mid-game socket drops
+- **Host disconnect handling**: Players see overlay with "Wait" or "Leave" options
+- **Loading timeout**: 90s timeout in LOADING state with escape button
+- **Crash protection**: `uncaughtException` and `unhandledRejection` handlers trigger graceful shutdown
+- **Room recovery**: Rooms persisted to Firestore, recovered on server restart
+- **Retry queue**: Failed Firestore writes retried every 10s
+
+### Client Resilience
+- WebSocket-first transport with polling fallback
+- Exponential backoff reconnection (up to 10 attempts)
+- `useReducedMotion` gating on all decorative animations
+- Dynamic imports prevent large bundle blocking initial load
+
+---
+
+## 13. Testing
+
+### Infrastructure
+- **Jest** with ts-jest for TypeScript
+- **13 test suites** covering critical server logic
+- Coverage thresholds: 50% across all metrics
+
+### Test Suites
+
+```
+__tests__/unit/server/
+  middleware/rateLimiter.test.ts         # Socket rate limiter
+  utils/validation.test.ts              # Input sanitization
+  utils/timing.test.ts                  # Teleprompter line timing
+  utils/jsonExtractor.test.ts           # JSON extraction from AI responses
+  services/voting.service.test.ts       # Vote counting, MVP
+  services/credit.service.test.ts       # Credit deduction, two-bucket
+  services/audience.service.test.ts     # Reactions, spectator features
+  services/playerStats.service.test.ts  # Stats tracking
+  services/progression.service.test.ts  # XP, leveling
+  services/room.service.test.ts         # Room lifecycle
+  services/gameHistory.service.test.ts  # Game saves, replays
+  db/index.test.ts                      # Database adapter factory
+  socket/helpers.test.ts                # Socket helper utilities
 ```
 
-### Script Interface
+### Running Tests
 
-```typescript
-interface Script {
-  title: string           // Comedy title
-  synopsis: string        // One-line summary
-  lines: ScriptLine[]     // Array of dialogue lines
-}
-
-interface ScriptLine {
-  speaker: string         // Character name
-  text: string            // Dialogue text
-  mood: Mood              // angry|happy|confused|whispering|neutral
-}
+```bash
+npm run test         # All tests with coverage
+npm run test:watch   # Watch mode
+npm run test:unit    # Unit tests only
 ```
 
 ---
 
-## 10. User Flows
-
-### Complete Game Session
-
-```
-HOST FLOW:
-Landing Page
-  ↓
-Click "Host a Game"
-  ↓
-Room created automatically (4-letter code)
-  ↓
-QR Code + room code displayed
-  ↓
-Select game mode & content rating
-  ↓
-Wait for players to join
-  ↓
-Click "Start Game"
-  ↓
-Players receive available cards
-  ↓
-Teleprompter displays full script
-  ↓
-Controls: Pause/Resume/Jump/Advance
-  ↓
-Script completes → Voting phase
-  ↓
-Results & winner announcement
-  ↓
-Option: Request sequel or new game
-
-PLAYER FLOW:
-Landing Page
-  ↓
-Click "Join Game"
-  ↓
-Enter room code OR scan QR
-  ↓
-Enter nickname
-  ↓
-Join room (PLAYER or SPECTATOR if full)
-  ↓
-Receive available cards
-  ↓
-CardCarousel: Pick character/setting/circumstance
-  ↓
-Submit selections
-  ↓
-Green room trivia (wait for script)
-  ↓
-Script ready → see current & next lines
-  ↓
-Watch performance
-  ↓
-Vibration when your character speaks
-  ↓
-Voting phase: Select MVP player
-  ↓
-See results with confetti
-  ↓
-Play again or leave
-```
-
----
-
-## 11. Deployment
+## 14. Deployment
 
 ### Platform: Railway
 
-**Why Railway?**
-- Persistent Node.js server (required for Socket.io)
-- Maintains WebSocket connections
-- (Vercel is serverless, cannot maintain connections)
+Single-process deployment (Express + Socket.IO + Next.js).
 
-### Environment Variables
+- **Build**: Nixpacks auto-detects Node.js, runs `npm run build`
+- **Start**: `NODE_ENV=production tsx server.ts`
+- **Domain**: plot-twists.com (custom domain via Railway)
+- **SSL**: Automatic via Let's Encrypt
 
-```env
-ANTHROPIC_API_KEY=sk-ant-...           # Claude API key (required)
-PORT=3000                               # Server port (Railway auto-assigns)
-NODE_ENV=production                    # Environment mode
-NEXT_PUBLIC_WS_URL=your-app.up.railway.app  # WebSocket URL
+See `DEPLOYMENT.md` for full deployment guide, environment variables, and troubleshooting.
+
+### Deploy Commands
+
+```bash
+railway up            # CLI deploy
+git push origin v2    # Auto-deploy via git
 ```
 
-### Configuration
+### Production Startup
 
-**Railway**:
-- Detects `Procfile` with `tsx server.ts`
-- Automatically assigns `PORT` environment variable
-- CORS configured for Railway domains
-
-**Production Optimizations**:
-- Image optimization (Next.js)
-- Security headers (X-Frame-Options, CSP)
-- Gzip compression
-- CSS minification
-- Code splitting
-
----
-
-## 12. Recommended Improvements
-
-### 🔴 Critical Priority
-
-#### 1. Data Persistence
-**Current State**: All room data stored in-memory (lost on server restart)
-
-**Recommendations**:
-- Add Redis for room state persistence
-- Store active games, player data, voting results
-- Enable server restarts without losing games
-- Consider PostgreSQL for game history, analytics
-
-**Impact**: High - Prevents data loss on deployments
-
-#### 2. Rate Limiting
-**Current State**: No rate limiting on API endpoints or Claude API calls
-
-**Recommendations**:
-- Add rate limiting middleware (express-rate-limit)
-- Limit script generation requests per IP/room
-- Prevent API key abuse
-- Add request queuing for Claude API
-
-**Impact**: High - Cost control and security
-
-#### 3. Error Handling & Monitoring
-**Current State**: Basic error logging, no monitoring
-
-**Recommendations**:
-- Add Sentry or similar error tracking
-- Implement structured logging (Winston/Pino)
-- Add health check endpoints
-- Monitor Claude API failures
-- Track WebSocket connection issues
-
-**Impact**: High - Production reliability
-
-### 🟡 High Priority
-
-#### 4. Testing Infrastructure
-**Current State**: No tests (`package.json` has placeholder)
-
-**Recommendations**:
-- Add Jest for unit tests
-- Add React Testing Library for component tests
-- Test critical paths (room creation, script generation, voting)
-- Add E2E tests (Playwright) for full game flow
-- Mock Claude API for testing
-
-**Impact**: Medium-High - Code quality and reliability
-
-#### 5. Security Enhancements
-**Current State**: Basic input sanitization, no CSRF protection
-
-**Recommendations**:
-- Add CSRF token validation
-- Implement room password protection (optional)
-- Add input validation on all Socket.io events
-- Sanitize HTML in player nicknames, room codes
-- Add Content Security Policy headers
-- Rate limit room creation per IP
-
-**Impact**: High - Security and abuse prevention
-
-#### 6. Mobile Experience
-**Current State**: Basic mobile support, no PWA
-
-**Recommendations**:
-- Convert to Progressive Web App (PWA)
-- Add offline support for static assets
-- Improve touch gestures on card carousel
-- Add haptic feedback (iOS)
-- Optimize for portrait orientation
-- Add "Add to Home Screen" prompt
-
-**Impact**: Medium - User experience
-
-### 🟢 Medium Priority
-
-#### 7. Performance Optimization
-**Current State**: Single server instance, no caching
-
-**Recommendations**:
-- Add Redis caching for frequently accessed data
-- Implement CDN for static assets
-- Optimize bundle size (analyze with next-bundle-analyzer)
-- Lazy load components not needed on initial render
-- Add service worker for asset caching
-- Consider horizontal scaling with Socket.io adapter
-
-**Impact**: Medium - Scalability
-
-#### 8. Analytics & Metrics
-**Current State**: Vercel Analytics only (frontend)
-
-**Recommendations**:
-- Add game metrics tracking (game duration, player count, mode popularity)
-- Track Claude API usage (cost per game, generation time)
-- Monitor room creation/join rates
-- Track voting patterns, winner statistics
-- Add user feedback mechanism
-- Create admin dashboard for metrics
-
-**Impact**: Medium - Product insights
-
-#### 9. Content Management
-**Current State**: Hardcoded content in `lib/content.ts` (20,991 lines)
-
-**Recommendations**:
-- Move content to database or CMS
-- Allow community contributions (user-submitted characters)
-- Add content moderation system
-- Implement content versioning
-- Add seasonal/themed content packs
-- Allow hosts to create custom card packs
-
-**Impact**: Medium - Scalability and engagement
-
-#### 10. AI Script Quality
-**Current State**: Single Claude model, no fallback
-
-**Recommendations**:
-- Implement script rating system (players vote on script quality)
-- A/B test different system prompts
-- Add fallback to cached scripts if API fails
-- Implement script regeneration option
-- Fine-tune prompts based on player feedback
-- Add "script style" options (dry humor, slapstick, etc.)
-
-**Impact**: Medium - User experience
-
-### 🔵 Low Priority (Nice to Have)
-
-#### 11. Social Features
-**Recommendations**:
-- Add script sharing (export to social media)
-- Allow recording performances (video/audio)
-- Create player profiles with stats
-- Add friend system
-- Implement leaderboards
-- Add "replay" feature to watch past performances
-
-**Impact**: Low-Medium - Engagement
-
-#### 12. Accessibility
-**Recommendations**:
-- Add screen reader support (ARIA labels)
-- Improve keyboard navigation
-- Add color-blind mode
-- Implement font size controls
-- Add audio cues for line changes
-- Support voice-to-text for voting
-
-**Impact**: Medium - Inclusivity
-
-#### 13. Internationalization (i18n)
-**Recommendations**:
-- Add multi-language support (next-intl)
-- Translate UI strings
-- Support international characters in Claude prompts
-- Add region-specific content (UK vs US humor)
-
-**Impact**: Low - Market expansion
-
-#### 14. Advanced Features
-**Recommendations**:
-- Add "Director Mode" (host can give live notes)
-- Implement audience reactions (emojis during performance)
-- Add background music/sound effects
-- Create "Tournament Mode" (bracket-style competition)
-- Add "Improv Games" mode (different formats like Whose Line)
-- Implement AI-generated sound effects
-
-**Impact**: Low - Feature richness
-
-### 🛠️ Technical Debt
-
-#### 15. Code Organization
-**Current State**: Single 1,275-line `server.ts` file
-
-**Recommendations**:
-- Split into modules:
-  - `routes/` - HTTP endpoints
-  - `socket/` - Socket.io event handlers
-  - `services/` - Room management, AI generation
-  - `models/` - Data structures
-  - `utils/` - Helper functions
-- Move types to shared `lib/types.ts`
-- Create barrel exports for clean imports
-
-**Impact**: Medium - Maintainability
-
-#### 16. TypeScript Strictness
-**Recommendations**:
-- Enable `strict` mode in tsconfig.json
-- Add stricter type checking
-- Remove `any` types
-- Add exhaustive type guards
-
-**Impact**: Low-Medium - Type safety
-
----
-
-## 13. Recent Improvements (2026-01-23)
-
-### ✅ Implemented
-
-#### Security Enhancements
-- **Helmet.js Integration**: Added comprehensive security headers
-  - Content Security Policy (CSP)
-  - X-Frame-Options: DENY
-  - X-Content-Type-Options: nosniff
-  - X-XSS-Protection
-  - Referrer-Policy
-- **Enhanced Input Validation**:
-  - Sanitization of user input (nicknames, room codes)
-  - XSS prevention (strip dangerous characters)
-  - Format validation for room codes and UUIDs
-  - Max length enforcement
-- **Environment Validation**: Automatic check for required environment variables on startup
-
-#### Rate Limiting
-- **HTTP Rate Limiting** (express-rate-limit):
-  - General API: 100 requests per 15 minutes
-  - Room creation: 10 rooms per 5 minutes per IP
-  - Script generation: 20 scripts per 10 minutes per IP
-- **Socket.io Rate Limiting**:
-  - Custom `SocketRateLimiter` class for per-connection limits
-  - Room creation: 10 attempts per 5 minutes
-  - Join room: 30 attempts per minute
-  - Script generation: 20 attempts per 10 minutes
-  - Automatic cleanup of stale rate limit records
-
-#### Code Organization
-- **New Module Structure**:
-  ```
-  server/
-  ├── middleware/
-  │   ├── rateLimiter.ts          # Rate limiting for HTTP & Socket.io
-  │   └── security.ts             # Helmet config & env validation
-  ├── utils/
-  │   ├── constants.ts            # App-wide constants
-  │   └── validation.ts           # Input sanitization & validation
-  └── services/
-      ├── room.service.ts         # Room management functions
-      ├── ai.service.ts           # Claude API integration
-      └── teleprompter.service.ts # Teleprompter sync logic
-  ```
-- **Benefits**:
-  - Improved maintainability
-  - Easier testing
-  - Clearer separation of concerns
-  - Reusable utilities
-
-#### Testing Infrastructure
-- **Jest Configuration**:
-  - ts-jest for TypeScript support
-  - jsdom environment for React components
-  - Coverage thresholds (50% across all metrics)
-  - Test scripts: `test`, `test:watch`, `test:unit`
-- **Unit Tests Created**:
-  - `validation.test.ts`: Input sanitization, room code validation, nickname validation
-  - `rateLimiter.test.ts`: Socket rate limiter functionality
-- **Test Coverage**: Initial tests for critical security and validation functions
-
-#### PWA (Progressive Web App)
-- **Manifest.json**:
-  - Standalone display mode
-  - App icons (192x192, 512x512)
-  - Theme colors
-  - Shortcuts (Join Game, Host Game)
-  - Screenshots for app stores
-- **Service Worker** (`sw.js`):
-  - Cache-first strategy for static assets
-  - Network-first with cache fallback for dynamic content
-  - Automatic cache cleanup on updates
-  - Offline support for core pages
-- **Mobile Enhancements**:
-  - Apple Web App capable
-  - Status bar styling
-  - Portrait orientation lock
-  - Service worker registration in production
-
-#### Dependencies Added
-```json
-{
-  "dependencies": {
-    "express-rate-limit": "^7.4.1",
-    "helmet": "^8.0.0"
-  },
-  "devDependencies": {
-    "@testing-library/jest-dom": "^6.5.0",
-    "@testing-library/react": "^16.1.0",
-    "@types/jest": "^29.5.14",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
-    "ts-jest": "^29.2.5"
-  }
-}
 ```
-
-### Impact Assessment
-
-**Security**: 🔴 High Impact
-- XSS and injection attack prevention
-- Rate limiting prevents API abuse and cost overruns
-- Environment validation catches misconfigurations early
-
-**Developer Experience**: 🟡 Medium Impact
-- Cleaner code organization
-- Testing infrastructure enables confidence in changes
-- Modular structure simplifies debugging
-
-**User Experience**: 🟢 Low-Medium Impact
-- PWA enables "Add to Home Screen" on mobile
-- Offline support for better reliability
-- Faster loading with service worker caching
-
-### Files Added/Modified
-
-**New Files**:
-- `server/middleware/rateLimiter.ts`
-- `server/middleware/security.ts`
-- `server/utils/constants.ts`
-- `server/utils/validation.ts`
-- `server/services/room.service.ts`
-- `server/services/ai.service.ts`
-- `server/services/teleprompter.service.ts`
-- `public/manifest.json`
-- `public/sw.js`
-- `components/ServiceWorkerRegistration.tsx`
-- `jest.config.js`
-- `jest.setup.js`
-- `__tests__/unit/server/utils/validation.test.ts`
-- `__tests__/unit/server/middleware/rateLimiter.test.ts`
-
-**Modified Files**:
-- `server.ts` - Added rate limiting, security middleware, enhanced validation
-- `package.json` - Added dependencies and test scripts
-- `app/layout.tsx` - Added PWA meta tags and service worker registration
-
----
-
-## 13.2. UX Improvements (2026-01-23)
-
-### ✅ Card Selection Enhancements
-
-#### "Shuffle All" Button
-- **Feature**: One-click random selection of all three cards
-- **Location**: Card selection screen (appears when not in custom mode)
-- **Visual**: Gradient button with dice emoji (🎲)
-- **Feedback**:
-  - Mobile vibration pattern (50ms × 3)
-  - Success toast notification
-- **Impact**: Reduces decision paralysis, speeds up game start
-
-**Code Location**: `app/join/page.tsx:371-402`
-
-#### Progress Indicator
-- **Feature**: Real-time visual feedback showing selection progress
-- **Display**:
-  - 3 circles (one per card type)
-  - Filled circles = selected (green)
-  - Empty circles = not selected (gray)
-  - Text counter: "X/3"
-- **Location**: Top-right of "Pick Your Cards" header
-- **Animation**: Smooth scale transition on selection
-
-**Code Location**: `app/join/page.tsx:368-382`
-
-#### Haptic Feedback
-- **Feature**: Mobile vibration when selecting cards
-- **Trigger**: Each card selection from carousel
-- **Pattern**: Single 50ms vibration
-- **Devices**: Mobile browsers supporting Navigator.vibrate API
-- **Graceful Degradation**: Silent on unsupported devices
-
-**Code Location**: `app/join/page.tsx:472-475, 527-530, 581-584`
-
-#### Selection Preview Box
-- **Feature**: Live preview of selected cards
-- **Display**: Compact card showing:
-  - Character (🎭)
-  - Setting (🏛️)
-  - Circumstance (⚡)
-- **Styling**: Highlighted background with accent border
-- **Animation**: Spring animation on appearance
-- **Updates**: Real-time as selections change
-
-**Code Location**: `app/join/page.tsx:595-622`
-
-#### Enhanced Submit Button
-- **Visual States**:
-  - **Incomplete** (< 3 cards):
-    - Opacity 50%
-    - Text shows "Submit Cards (X/3)"
-    - Disabled state
-  - **Complete** (3/3 cards):
-    - Full opacity
-    - Text shows "Submit Cards - Ready!"
-    - Pulsing glow animation
-    - Enabled state
-- **Animation**: Infinite pulse effect when ready
-- **Accessibility**: Clear visual indication of readiness
-
-**Code Location**: `app/join/page.tsx:624-652`
-
-### Impact Assessment
-
-**User Experience**: 🟢 High Impact
-- **Reduces friction**: "Shuffle All" speeds up selection for indecisive players
-- **Clear feedback**: Progress indicator prevents confusion
-- **Mobile-first**: Haptic feedback enhances touch interaction
-- **Transparency**: Preview box builds confidence before submission
-
-**Technical Risk**: 🟢 Very Low
-- All features are additive (no breaking changes)
-- Graceful degradation for unsupported browsers
-- No backend changes required
-- Build tests pass
-
-**Performance**: 🟢 Excellent
-- Lightweight animations (Framer Motion)
-- No additional API calls
-- Client-side only logic
-- Minimal re-renders
-
----
-
-## 13.3. New Features (2026-01-24)
-
-### Feature 1: Audience Interaction System
-
-**Purpose:** Transform passive spectators into active participants who can influence performances in real-time.
-
-#### Components
-
-**Live Reactions:**
-- 5 reaction types: Laugh (😂), Cheer (🎉), Gasp (😱), Boo (👎), Applause (👏)
-- Rate-limited to 1 reaction per 2 seconds per user
-- Floating reaction animations on host screen
-- Real-time aggregated counts
-
-**Plot Twist Voting:**
-- Host can trigger mid-performance "plot twist" events
-- Audience votes on 4 randomly generated twist options
-- 15-second voting window
-- Winning twist gets injected into the script
-- AI generates reaction lines for characters
-
-#### Socket Events
-
-| Event | Direction | Purpose |
-|-------|-----------|---------|
-| `send_audience_reaction` | Client → Server | Send a reaction |
-| `audience_reaction_received` | Server → Client | Broadcast reaction |
-| `audience_reaction_counts` | Server → Client | Aggregated counts |
-| `start_plot_twist` | Client → Server | Host starts twist vote |
-| `plot_twist_started` | Server → Client | Broadcast twist options |
-| `vote_plot_twist` | Client → Server | Cast vote |
-| `plot_twist_result` | Server → Client | Announce winner |
-| `plot_twist_injected` | Server → Client | New lines added |
-
-#### Files Added
-- `server/services/audience.service.ts` - Reaction handling, plot twist generation
-- `components/AudienceReactionBar.tsx` - Reaction buttons and display
-- `components/PlotTwistVoting.tsx` - Voting UI
-
----
-
-### Feature 2: AI Script Customization Engine
-
-**Purpose:** Give hosts granular control over script generation style and difficulty.
-
-#### Customization Options
-
-| Setting | Options | Default |
-|---------|---------|---------|
-| Comedy Style | Witty, Slapstick, Absurdist, Dark, Sitcom, Improv | Witty |
-| Script Length | Quick (15-25), Standard (30-40), Epic (45-60) | Standard |
-| Difficulty | Beginner, Intermediate, Advanced | Intermediate |
-| Physical Comedy | None, Minimal, Heavy | Minimal |
-| Enable Callbacks | true/false | true |
-| Custom Instructions | Free text (500 char max) | - |
-
-#### How It Works
-
-1. Host selects customization options in lobby
-2. Settings stored in `room.scriptCustomization`
-3. `buildCustomizationPrompt()` generates dynamic AI instructions
-4. Instructions injected into Claude system prompt
-5. Token limits adjusted based on script length
-
-#### Files Added
-- `server/services/scriptCustomization.service.ts` - Prompt generation
-- `components/ScriptCustomizationPanel.tsx` - Settings UI
-
----
-
-### Feature 3: Custom Card Pack Creator
-
-**Purpose:** Let users create, share, and import custom character/setting/circumstance packs.
-
-#### Card Pack Structure
-
-```typescript
-interface CardPack {
-  id: string
-  name: string
-  description: string
-  author: string
-  theme: string
-  isMature: boolean
-  isBuiltIn: boolean
-  isPublic: boolean
-  characters: Card[]    // min 5
-  settings: Card[]      // min 3
-  circumstances: Card[] // min 3
-  downloads: number
-  rating: number
-  ratingCount: number
-}
+[INFO] Environment variables validated
+[INFO] Firebase Admin initialized
+[INFO] Database connected using Firestore adapter
+[INFO] [RoomService] Recovered N room(s)
+[INFO] Card Pack Service initialized with 21 packs
+[INFO] Socket.IO configured for production mode
+[INFO] > Ready on http://0.0.0.0:3000
 ```
-
-#### Features
-
-- **Standard Pack**: Built-in default (200+ characters, 70+ settings, 60+ circumstances)
-- **Custom Packs**: User-created and persisted to `data/cardpacks.json`
-- **Example Packs**: "Office Comedy" and "Sci-Fi Adventures" (deterministic IDs for persistence)
-- **Pack Selection**: Host chooses pack in lobby
-- **Rating System**: Interactive star rating (1-5 stars) with hover states
-- **Pack Browser**: Full modal for discovering community packs with search, filter, and sort
-- **Pack Editor**: Edit existing custom packs (3-step wizard)
-- **Pack Deletion**: Delete custom packs with confirmation modal
-- **Player Visibility**: Players see selected pack name in lobby
-
-#### Socket Events
-
-| Event | Direction | Purpose |
-|-------|-----------|---------|
-| `list_card_packs` | Client → Server | Get available packs |
-| `select_card_pack` | Client → Server | Choose pack for room |
-| `card_pack_selected` | Server → Client | Broadcast selection |
-| `create_card_pack` | Client → Server | Create new pack |
-| `update_card_pack` | Client → Server | Update existing pack |
-| `delete_card_pack` | Client → Server | Delete a pack |
-| `rate_card_pack` | Client → Server | Rate a pack |
-| `search_card_packs` | Client → Server | Search packs by query |
-| `get_featured_packs` | Client → Server | Get top-rated packs |
-| `get_card_pack` | Client → Server | Get pack details by ID |
-
-#### Files Added/Modified
-- `server/services/cardpack.service.ts` - Pack CRUD operations (enhanced with deterministic IDs)
-- `components/CardPackSelector.tsx` - Pack browser UI (enhanced with edit/delete/rate)
-- `components/CardPackCreator.tsx` - 3-step pack creation wizard
-- `components/CardPackEditor.tsx` - Edit existing packs
-- `components/CardPackBrowser.tsx` - Full discovery modal with search/filter/sort
-- `components/StarRating.tsx` - Interactive star rating component
-- `components/DeleteConfirmModal.tsx` - Confirmation dialog for deletions
-- `data/cardpacks.json` - Pack persistence
-
----
-
-### Feature 4: Voice & Audio Integration
-
-**Purpose:** Bring scripts to life with text-to-speech for AI co-stars and ambient audio.
-
-#### Audio Features
-
-**Text-to-Speech:**
-- Browser-native TTS for AI character lines (Solo mode)
-- Adjustable speed (0.5x - 2.0x)
-- Adjustable pitch (0.5x - 2.0x)
-- Mood-based voice modulation
-
-**Sound Effects:**
-- 8 built-in effects: door_slam, laugh_track, dramatic_sting, applause, record_scratch, crickets, explosion, magic_sparkle
-- Host can trigger manually
-- Auto-detected from script content (e.g., "[door slam]")
-
-**Ambience:**
-- Setting-appropriate background audio
-- Tracks for: office, restaurant, space, outdoors, city, horror, medieval
-- Adjustable volume
-
-**Turn Notification:**
-- Chime when it's your character's turn to speak
-- Helps performers stay engaged
-
-#### Audio Settings Structure
-
-```typescript
-interface AudioSettings {
-  voiceEnabled: boolean
-  voiceSettings: VoiceSettings
-  soundEffectsEnabled: boolean
-  soundEffectsVolume: number
-  ambienceEnabled: boolean
-  ambienceVolume: number
-  turnChimeEnabled: boolean
-}
-```
-
-#### Socket Events
-
-| Event | Direction | Purpose |
-|-------|-----------|---------|
-| `update_audio_settings` | Client → Server | Change audio config |
-| `audio_settings_update` | Server → Client | Broadcast changes |
-| `play_sound_effect` | Server → Client | Trigger SFX |
-| `ambience_start` | Server → Client | Start background audio |
-| `ambience_stop` | Server → Client | Stop background audio |
-| `turn_chime` | Server → Client | Notify player's turn |
-
-#### Files Added
-- `server/services/audio.service.ts` - Audio utilities
-- `components/AudioSettingsPanel.tsx` - Settings UI
-
----
-
-### Updated Room Interface
-
-```typescript
-interface Room {
-  // ... existing fields
-
-  // Feature 1: Audience Interaction
-  audienceInteraction?: AudienceInteractionState
-
-  // Feature 2: Script Customization
-  scriptCustomization?: ScriptCustomization
-
-  // Feature 3: Card Pack
-  cardPackId?: string
-
-  // Feature 4: Audio Settings
-  audioSettings?: AudioSettings
-}
-```
-
-### Updated RoomSettings Interface
-
-```typescript
-interface RoomSettings {
-  isMature: boolean
-  gameMode: GameMode
-  scriptCustomization?: ScriptCustomization
-  cardPackId?: string
-  audioSettings?: AudioSettings
-  audienceInteractionEnabled?: boolean
-}
-```
-
----
-
-### Impact Assessment
-
-**User Experience**: 🔥 Major Enhancement
-- Audience no longer passive
-- Highly customizable scripts
-- Unlimited content via card packs
-- Immersive audio experience
-
-**Replayability**: 🔥 Significantly Increased
-- 6 comedy styles × 3 lengths × 3 difficulties = 54 combinations
-- Unlimited custom card packs
-- Plot twists make each performance unique
-
-**Technical Complexity**: 🟡 Moderate
-- 4 new service files
-- 5 new frontend components
-- 20+ new socket events
-- Extended types.ts (~250 new lines)
-
----
-
-## 13.4. Teleprompter Sync & Play-Again Improvements (2026-02-02)
-
-### Smart Line Timing
-
-**Purpose:** Replace fixed WPM timing with intelligent duration calculation that accounts for punctuation, mood, and line type.
-
-#### Timing Constants (`server/utils/constants.ts`)
-
-```typescript
-// Punctuation pauses (ms)
-PUNCTUATION_PAUSES = {
-  '.': 400, '!': 500, '?': 450, ',': 200,
-  ':': 300, ';': 250, '...': 800, '--': 400
-}
-
-// Mood multipliers (faster/slower delivery)
-MOOD_TIMING_MULTIPLIERS = {
-  angry: 0.9,      // Faster
-  happy: 1.0,
-  confused: 1.2,   // More hesitation
-  whispering: 1.3, // Slower
-  neutral: 1.0
-}
-
-// Bounds
-MIN_LINE_DISPLAY_TIME = 1500   // 1.5 seconds minimum
-MAX_LINE_DISPLAY_TIME = 15000  // 15 seconds maximum
-STAGE_DIRECTION_BASE_TIME = 2000
-```
-
-#### Timing Utility (`server/utils/timing.ts`)
-
-```typescript
-function calculateLineDisplayTime(line: ScriptLine): number {
-  // 1. Base time from word count (120 WPM)
-  // 2. Add punctuation pauses (ellipsis = 800ms, period = 400ms, etc.)
-  // 3. Apply mood multiplier
-  // 4. Special handling for stage directions (NARRATOR)
-  // 5. Clamp to min/max bounds
-}
-```
-
-### Timestamp-Based Sync
-
-**Purpose:** Enable precise synchronization across multiple devices with varying network latency.
-
-#### Sync Data Structure
-
-```typescript
-interface TeleprompterSyncData {
-  lineIndex: number
-  serverTimestamp: number
-  expectedDuration?: number  // For client-side prediction
-}
-```
-
-#### Latency Measurement
-
-- Server sends `latency_ping` with timestamp
-- Client responds with `latency_pong`
-- Server calculates RTT and sends `latency_pong_response`
-- Clients can display network latency for debugging
-
-### Player Navigation
-
-**Key Behavior:** When ANY player navigates, everyone (host + all players) moves to that line together. This ensures perfect sync at all times.
-
-#### Implementation
-
-1. Player presses Back/Next on their device
-2. `player_jump_to_line` event sent to server
-3. Server validates line index
-4. Server clears auto-advance timeout
-5. Server broadcasts `sync_teleprompter` to ALL clients
-6. After 500ms delay, auto-advance resumes
-
-#### UI (Join Page)
-
-- Back/Next buttons at bottom of PERFORMING screen
-- Line counter: "X / total"
-- Helper text: "Navigation syncs with everyone"
-
-### Play Again Without Reload
-
-**Purpose:** Allow sequential games without page reloads, keeping players in the room.
-
-#### Host Flow
-
-1. Results screen shows three buttons:
-   - "Generate Sequel" - continues story with same setup
-   - "New Game (Same Players)" - resets to LOBBY
-   - "Exit to Home" - page reload
-
-2. "New Game" triggers `request_new_game` event
-
-3. Server resets:
-   - `gameState` → 'LOBBY'
-   - Clears script, votes, submission flags
-   - Optionally keeps card selections
-   - Resets audience interaction
-
-4. Server broadcasts `new_game_started` to all clients
-
-5. Clients reset local state without reload
-
-#### Player Flow
-
-1. Results screen shows "Waiting for Host..."
-2. Receives `new_game_started` event
-3. Resets to LOBBY state automatically
-
-### Vote Reset Bug Fix
-
-**Issue:** Votes from previous games carried over to sequels.
-
-**Fix:** Clear votes in `request_sequel` handler before generating new script:
-
-```typescript
-room.votes.clear()
-for (const player of room.players.values()) {
-  player.hasSubmittedVote = false
-}
-```
-
-### Files Added/Modified
-
-**New Files:**
-- `server/utils/timing.ts` - Smart timing calculation
-
-**Modified Files:**
-- `server/utils/constants.ts` - Added timing constants
-- `server.ts` - Updated teleprompter sync, added new handlers
-- `lib/types.ts` - Added TeleprompterSyncData, NewGameOptions, new events
-- `app/host/page.tsx` - Play-again flow, latency handling
-- `app/join/page.tsx` - Player navigation, play-again flow
-
-### Impact Assessment
-
-**User Experience**: 🟢 High Impact
-- Better pacing with smart timing
-- Players can recover from accidental advances
-- Seamless multi-game sessions
-
-**Technical Risk**: 🟢 Low
-- Backward compatible sync format
-- No breaking changes to existing flow
-- Graceful degradation
-
----
-
-## 13.5. Security & Stability Fixes (2026-02-02)
-
-### Memory Leak Fixes (Critical)
-
-**Issue:** `plotTwistTimeouts` and `roomTimeouts` Maps accumulated orphaned timeout references that were never cleared on room deletion or player disconnect.
-
-**Fix:**
-1. Added timeout cleanup in the room cleanup interval (runs every 5 minutes)
-2. Added timeout cleanup in disconnect handler when:
-   - Host leaves and room is empty
-   - Host disconnects during active game
-
-```typescript
-// In room cleanup interval and disconnect handler
-const roomTimeout = roomTimeouts.get(code)
-if (roomTimeout) {
-  clearTimeout(roomTimeout)
-  roomTimeouts.delete(code)
-}
-const plotTwistTimeout = plotTwistTimeouts.get(code)
-if (plotTwistTimeout) {
-  clearTimeout(plotTwistTimeout)
-  plotTwistTimeouts.delete(code)
-}
-```
-
-### Host Disconnect Recovery
-
-**Issue:** When host disconnected, players remained stranded with no notification or recovery options.
-
-**Fix:**
-1. Added `host_disconnected` event type to `ServerToClientEvents`
-2. Server emits `host_disconnected` when host leaves during active game
-3. Join page shows overlay with:
-   - Explanation message
-   - "Wait for Reconnection" button
-   - "Return Home" button
-
-```typescript
-// Server (disconnect handler)
-io.to(code).emit('host_disconnected', {
-  message: 'The host has left the game. You can wait for them to reconnect or return to the home page.'
-})
-```
-
-### Script Generation Timeout
-
-**Issue:** If Claude API failed or timed out, users saw infinite loading spinner with no way to cancel or retry.
-
-**Fix:**
-1. Added 30-second timeout timer when entering LOADING state
-2. Timeout UI shows after 30 seconds with:
-   - "Taking longer than expected" message
-   - "Retry" button - restarts script generation
-   - "Back to Lobby" button - returns to lobby state
-3. Timeout automatically clears when leaving LOADING state
-
-### Room Validation Helper
-
-**Issue:** Many socket handlers accepted `roomCode` without validation, risking crashes or unauthorized access.
-
-**Fix:**
-Created `validateRoom()` helper function applied to 5 handlers:
-- `send_audience_reaction`
-- `vote_plot_twist`
-- `update_audio_settings`
-- `trigger_sound_effect`
-- `player_jump_to_line`
-
-```typescript
-function validateRoom(roomCode: string, socket: { emit: (event: 'error', message: string) => void }): Room | null {
-  if (!roomCode || !isValidRoomCode(roomCode)) {
-    socket.emit('error', 'Invalid room code')
-    return null
-  }
-  const room = rooms.get(roomCode.toUpperCase())
-  if (!room) {
-    socket.emit('error', 'Room not found')
-    return null
-  }
-  return room
-}
-```
-
-### CORS Restriction
-
-**Issue:** CORS allowed all `*.vercel.app` subdomains, permitting any Vercel-deployed app to connect.
-
-**Fix:** Restricted to only `plot-twists` preview deployments:
-
-```typescript
-// Before
-if (!dev && origin.endsWith('.vercel.app')) { ... }
-
-// After
-if (!dev && origin.match(/^https:\/\/plot-twists(-[a-z0-9]+)?\.vercel\.app$/)) { ... }
-```
-
-### TypeScript Type Fixes
-
-**Issue:** `lib/firebase.ts` used `any` types for Firebase app and auth objects.
-
-**Fix:** Added proper type definitions:
-
-```typescript
-type FirebaseApp = { name: string; options: Record<string, unknown> }
-type FirebaseAuth = { currentUser: unknown; onAuthStateChanged: (callback: (user: unknown) => void) => () => void }
-
-let app: FirebaseApp | null = null
-let auth: FirebaseAuth | null = null
-```
-
-### Card Submission Loading State
-
-**Issue:** No feedback when submitting card selections - button just sat there.
-
-**Fix:**
-1. Added `isSubmitting` state
-2. Button shows loading spinner and "Submitting..." text during submission
-3. Button disabled while submitting to prevent double-submission
-
-### Files Modified
-
-| File | Changes |
-|------|---------|
-| `server.ts` | Memory leak fixes, host disconnect event, room validation helper, CORS restriction |
-| `app/join/page.tsx` | Host disconnect overlay, card submission loading state |
-| `app/host/page.tsx` | Script generation timeout with retry UI |
-| `lib/types.ts` | Added `host_disconnected` event type |
-| `lib/firebase.ts` | Fixed TypeScript any types |
-
-### Impact Assessment
-
-**Stability**: 🔴 Critical
-- Prevents server memory exhaustion from orphaned timeouts
-- Prevents players from being stranded on host disconnect
-
-**Security**: 🟡 Medium
-- CORS now only allows legitimate preview domains
-- Room validation prevents potential crashes from invalid requests
-
-**User Experience**: 🟢 High
-- Clear feedback during card submission
-- Recoverable state when script generation times out
-- Graceful handling of host disconnection
-
----
-
-## 14. Critical Files Reference
-
-| File | Lines | Purpose | Update Frequency |
-|------|-------|---------|------------------|
-| `/server.ts` | ~2,000 | Backend core | High |
-| `/app/globals.css` | 2,183 | Design system | Low |
-| `/app/host/page.tsx` | ~450 | Host UI | Medium |
-| `/app/join/page.tsx` | ~500 | Player UI | Medium |
-| `/contexts/SocketContext.tsx` | 125 | Socket manager | Low |
-| `/lib/types.ts` | ~400 | Type definitions | Medium |
-| `/lib/content.ts` | 20,991 | Game content | Low |
-| `/lib/schema.ts` | 20 | Validation | Low |
-| `/design-tokens.json` | 132 | Design tokens | Low |
-| `/package.json` | 47 | Dependencies | Medium |
-| `/server/utils/timing.ts` | ~100 | Smart line timing | Low |
-| `/server/utils/constants.ts` | ~60 | App constants | Low |
-| `/server/services/audience.service.ts` | ~200 | Audience interactions | Low |
-| `/server/services/scriptCustomization.service.ts` | ~250 | AI prompt customization | Low |
-| `/server/services/cardpack.service.ts` | ~300 | Card pack CRUD | Low |
-| `/server/services/audio.service.ts` | ~250 | Audio utilities | Low |
-| `/components/AudienceReactionBar.tsx` | ~130 | Reaction UI | Low |
-| `/components/PlotTwistVoting.tsx` | ~180 | Plot twist voting | Low |
-| `/components/ScriptCustomizationPanel.tsx` | ~220 | Script settings UI | Low |
-| `/components/CardPackSelector.tsx` | ~170 | Pack browser UI | Low |
-| `/components/AudioSettingsPanel.tsx` | ~260 | Audio settings UI | Low |
-| `/data/cardpacks.json` | Variable | Custom pack storage | Dynamic |
-
----
-
-## Update Log
-
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2026-02-02 | 1.6 | Security & stability fixes: memory leak cleanup, host disconnect recovery, script generation timeout, room validation helper, CORS restriction, TypeScript type fixes, card submission loading state | Claude |
-| 2026-02-02 | 1.5 | Teleprompter sync improvements: smart timing (punctuation/mood-aware), timestamp-based sync, player navigation controls, play-again without reload, vote reset fix | Claude |
-| 2026-02-01 | 1.4 | Card Pack Creator feature completion: CardPackEditor, DeleteConfirmModal, StarRating, CardPackBrowser components; search/featured/edit/delete socket events | Claude |
-| 2026-01-24 | 1.3 | Added 4 major features: Audience Interaction System, AI Script Customization Engine, Custom Card Pack Creator, Voice & Audio Integration | Claude |
-| 2026-01-23 | 1.2 | Enhanced card selection UX with "Shuffle All", progress indicators, haptic feedback, and selection preview | Claude |
-| 2026-01-23 | 1.1 | Added security enhancements, rate limiting, testing infrastructure, PWA support, code organization | Claude |
-| 2026-01-23 | 1.0 | Initial architecture documentation | Claude |
-
----
-
-## Maintenance Notes
-
-**When to Update This Document**:
-- New features added
-- Backend API changes
-- New dependencies added
-- Deployment configuration changes
-- Critical bug fixes affecting architecture
-- Performance optimizations
-- Security updates
-
-**Review Schedule**: Monthly or after major releases
-
----
-
-## Quick Links
-
-- [Claude API Docs](https://docs.anthropic.com)
-- [Socket.io Docs](https://socket.io/docs/v4/)
-- [Next.js Docs](https://nextjs.org/docs)
-- [Tailwind CSS](https://tailwindcss.com/docs)
-- [Railway Docs](https://docs.railway.app)
-
----
-
-**End of Architecture Documentation**

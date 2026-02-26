@@ -166,7 +166,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
         </div>
 
         {/* Reaction counts badge */}
-        <div className="fixed right-4 bg-black/80 backdrop-blur-sm rounded-xl p-2 sm:p-3 flex gap-1.5 sm:gap-3" style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))', zIndex: 'var(--z-sticky)' }}>
+        <div className="fixed right-4 backdrop-blur-sm rounded-xl p-2 sm:p-3 flex gap-1.5 sm:gap-3" style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))', zIndex: 'var(--z-sticky)', background: 'var(--color-overlay)' }}>
           {reactionTypes.map(type => (
             <div key={type} className="flex flex-col items-center">
               <span className="text-xl sm:text-2xl">{REACTION_EMOJIS[type]}</span>

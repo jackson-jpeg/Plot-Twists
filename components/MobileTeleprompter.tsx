@@ -147,7 +147,7 @@ export function MobileTeleprompter({
             {/* Font size controls */}
             <button
               onClick={() => updateFontSize(-2)}
-              className="w-9 h-9 rounded flex items-center justify-center text-xs"
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-semibold"
               style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
               aria-label="Decrease font size"
             >
@@ -155,7 +155,7 @@ export function MobileTeleprompter({
             </button>
             <button
               onClick={() => updateFontSize(2)}
-              className="w-9 h-9 rounded flex items-center justify-center text-sm font-bold"
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold"
               style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
               aria-label="Increase font size"
             >
@@ -165,7 +165,7 @@ export function MobileTeleprompter({
             {!isCapacitorNative() && (
               <button
                 onClick={toggleFullscreen}
-                className="w-9 h-9 rounded flex items-center justify-center"
+                className="w-10 h-10 rounded-lg flex items-center justify-center"
                 style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
                 aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               >

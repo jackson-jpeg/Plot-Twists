@@ -92,7 +92,7 @@ export function JoinResults({
             {scriptImageUrl && (
               <motion.div className="mx-auto mb-4 flex flex-col items-center" initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} style={{ perspective: 1000 }}>
                 <motion.div onClick={onShowPosterLightbox} className="cursor-pointer overflow-hidden" style={{ maxWidth: 200, borderRadius: 'var(--radius-xl, 16px)', border: '3px solid var(--color-accent)', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.2)' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-                  <img src={scriptImageUrl} alt={`${script?.title} Poster`} className="w-full block object-contain" style={{ aspectRatio: '2/3' }} />
+                  <img src={scriptImageUrl} alt={`${script?.title} Poster`} loading="lazy" className="w-full block object-contain" style={{ aspectRatio: '2/3' }} />
                 </motion.div>
                 {script && <motion.p className="font-display text-base mt-2" style={{ color: 'var(--color-text-secondary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>{script.title}</motion.p>}
               </motion.div>
@@ -119,7 +119,7 @@ export function JoinResults({
             {scriptImageUrl && (
               <motion.div className="mx-auto mb-4 flex flex-col items-center" initial={{ rotateY: 90, opacity: 0 }} animate={{ rotateY: 0, opacity: 1 }} transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }} style={{ perspective: 1000 }}>
                 <motion.div onClick={onShowPosterLightbox} className="cursor-pointer overflow-hidden" style={{ maxWidth: 200, borderRadius: 'var(--radius-xl, 16px)', border: '3px solid var(--color-accent-2)', boxShadow: '0 20px 40px -12px rgba(0,0,0,0.2)' }} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-                  <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} className="w-full block object-contain" />
+                  <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} loading="lazy" className="w-full block object-contain" style={{ aspectRatio: '2/3' }} />
                 </motion.div>
                 {script && <motion.p className="font-display text-base mt-2" style={{ color: 'var(--color-text-secondary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>{script.title}</motion.p>}
               </motion.div>
@@ -150,14 +150,14 @@ export function JoinResults({
         )}
 
         {/* Waiting for host */}
-        <motion.div className="card text-center p-6" style={{ background: 'var(--color-highlight)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
+        <motion.div className="card text-center p-6" style={{ background: 'var(--color-highlight)', border: '1px solid var(--color-accent)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
           <motion.div className="text-4xl mb-3" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>⏳</motion.div>
-          <p className="font-display text-lg mb-1" style={{ color: 'var(--color-text-primary)' }}>Waiting for Host...</p>
-          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>The host will start the next game</p>
+          <p className="font-display text-lg mb-1" style={{ color: 'var(--color-text-primary)' }}>Waiting for Host</p>
+          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>The host will start the next round</p>
           <motion.button
             onClick={() => router.push('/')}
-            className="text-sm cursor-pointer"
-            style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)' }}
+            className="btn btn-ghost"
+            style={{ minHeight: '44px' }}
             whileTap={{ scale: 0.95 }}
           >
             🚪 Leave Game

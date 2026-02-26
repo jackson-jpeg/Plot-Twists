@@ -165,9 +165,9 @@ export function HostPerforming({
             onClick={onTriggerChaos} disabled={chaosCooldown}
             className={`btn relative overflow-hidden ${chaosShaking ? 'animate-chaos-shake' : ''}`}
             style={{
-              background: chaosCooldown ? 'linear-gradient(135deg, #6b21a8, #9d174d)' : 'linear-gradient(135deg, #a855f7, #ec4899)',
+              background: chaosCooldown ? 'linear-gradient(135deg, var(--color-purple-dark, #6b21a8), var(--color-pink-dark, #9d174d))' : 'linear-gradient(135deg, var(--color-purple), var(--color-pink))',
               color: 'white', opacity: chaosCooldown ? 0.7 : 1,
-              boxShadow: chaosCooldown ? 'none' : '0 0 15px rgba(168, 85, 247, 0.4)',
+              boxShadow: chaosCooldown ? 'none' : '0 0 15px var(--color-purple-glow, rgba(168, 85, 247, 0.4))',
             }}
             whileHover={!chaosCooldown ? { scale: 1.05 } : {}} whileTap={!chaosCooldown ? { scale: 0.95 } : {}}
             animate={!chaosCooldown ? { boxShadow: ['0 0 10px rgba(168, 85, 247, 0.3)', '0 0 25px rgba(168, 85, 247, 0.5)', '0 0 10px rgba(168, 85, 247, 0.3)'] } : {}}
@@ -179,12 +179,12 @@ export function HostPerforming({
               <span className="flex items-center gap-2"><motion.span animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}>🌀</motion.span>{isSoloMode ? 'TWIST' : 'CHAOS'}</span>
             )}
             {chaosCooldown && (
-              <div className="absolute bottom-0 left-0 h-1 rounded-full" style={{ width: `${(chaosCooldownRemaining / 30) * 100}%`, background: 'linear-gradient(90deg, #a855f7, #ec4899)', transition: 'width 0.1s linear' }} />
+              <div className="absolute bottom-0 left-0 h-1 rounded-full" style={{ width: `${(chaosCooldownRemaining / 30) * 100}%`, background: 'linear-gradient(90deg, var(--color-purple), var(--color-pink))', transition: 'width 0.1s linear' }} />
             )}
           </motion.button>
           <motion.button onClick={() => { tapHaptic(); onNextLine() }} disabled={currentLineIndex >= script.lines.length - 1} className="btn btn-ghost" style={{ opacity: currentLineIndex >= script.lines.length - 1 ? 0.5 : 1 }}
             whileHover={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 1.05, x: currentLineIndex >= script.lines.length - 1 ? 0 : 2 }}
-            whileTap={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 0.95 }}>Next<span className="hidden sm:inline"> →</span></motion.button>
+            whileTap={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 0.95 }} aria-label="Next line">Next<span className="hidden sm:inline"> →</span></motion.button>
         </div>
         {currentLineIndex >= script.lines.length - 1 && (
           <motion.button

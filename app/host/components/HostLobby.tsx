@@ -145,7 +145,7 @@ export function HostLobby({
                 {creditBalance && (
                   <div className="mt-2 text-sm font-semibold" style={{
                     color: creditBalance.total === 0 ? 'var(--color-danger, #f87171)'
-                      : creditBalance.free > 0 ? 'var(--color-success, #4ade80)' : '#facc15'
+                      : creditBalance.free > 0 ? 'var(--color-success, #4ade80)' : 'var(--color-warning, #facc15)'
                   }}>
                     {creditBalance.total} script{creditBalance.total !== 1 ? 's' : ''} remaining
                   </div>

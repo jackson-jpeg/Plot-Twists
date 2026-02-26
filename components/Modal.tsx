@@ -115,7 +115,7 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(42, 39, 34, 0.8)',
+            background: 'var(--color-overlay, rgba(42, 39, 34, 0.8))',
             backdropFilter: 'blur(4px)'
           }}
           aria-hidden="true"

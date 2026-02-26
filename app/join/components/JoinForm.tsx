@@ -149,7 +149,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
         <div className="card card-accent">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-4xl font-display" style={{ color: 'var(--color-text-primary)', marginBottom: 0 }}>Join Game</h1>
-            <button onClick={onShowOnboarding} className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '14px' }}><span>❓</span></button>
+            <button onClick={onShowOnboarding} className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '14px' }} aria-label="How to play"><span>❓</span></button>
           </div>
 
           <div className="stack">

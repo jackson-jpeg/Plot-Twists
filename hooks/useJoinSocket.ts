@@ -226,6 +226,10 @@ export function useJoinSocket({
         clearInterval(countdownIntervalRef.current)
         countdownIntervalRef.current = null
       }
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current)
+        loadingIntervalRef.current = null
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, isConnected])

@@ -131,7 +131,7 @@ export default function ReplayPage() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Clipboard API may fail in insecure contexts
+      setCopied(false)
     }
   }
 

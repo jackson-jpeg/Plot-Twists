@@ -91,6 +91,8 @@
   --color-highlight-blue: #E3F0FF;
   --color-highlight-green: #E3F7E8;
 
+  --color-overlay: rgba(42, 39, 34, 0.8);
+
   --color-script-bg: #FFFFF8;
   --color-script-active: #FFF9E0;
   --color-script-your-line: #FFE8F0;
@@ -171,6 +173,8 @@
     --color-highlight-pink: #4A3540;
     --color-highlight-blue: #2E3D4A;
     --color-highlight-green: #2E4A35;
+
+    --color-overlay: rgba(0, 0, 0, 0.8);
 
     --color-script-bg: #252320;
     --color-script-active: #3A3A2E;

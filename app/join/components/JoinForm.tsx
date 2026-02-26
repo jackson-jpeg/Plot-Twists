@@ -6,6 +6,7 @@ import type { Player, PlayerRole, GameMode } from '@/lib/types'
 import { analytics } from '@/lib/analytics'
 import { successHaptic, errorHaptic } from '@/hooks/useHaptics'
 import { isCapacitorNative } from '@/lib/platform'
+import { withTimeout } from '@/lib/socketTimeout'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -98,12 +99,11 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
     if (!socket) { toast.error('Not connected to server'); return }
     setError(''); setIsJoining(true)
     const upperRoomCode = roomCode.toUpperCase()
-    let timedOut = false
-    const timeoutId = setTimeout(() => { timedOut = true; setIsJoining(false); setError('Connection timed out. Please try again.'); toast.error('Connection timed out') }, 8000)
 
-    socket.emit('join_room', upperRoomCode, nickname, (response) => {
-      clearTimeout(timeoutId)
-      if (timedOut) return
+    withTimeout<{ success: boolean; error?: string; role?: string; players?: Player[] }>(
+      (cb) => socket.emit('join_room', upperRoomCode, nickname, cb),
+      8000
+    ).then((response) => {
       setIsJoining(false)
       if (response.success) {
         const role = response.role || 'PLAYER'
@@ -132,6 +132,10 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
         const errorMsg = response.error || 'Room not found'
         setError(errorMsg); toast.error(errorMsg)
       }
+    }).catch(() => {
+      setIsJoining(false)
+      setError('Connection timed out. Please try again.')
+      toast.error('Connection timed out')
     })
   }
 

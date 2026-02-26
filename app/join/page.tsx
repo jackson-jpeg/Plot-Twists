@@ -193,14 +193,16 @@ function JoinPageContent() {
             exit={{ opacity: 0, scale: 0.95, filter: 'blur(8px)' }}
             transition={{ duration: 0.3 }}
           >
-            <JoinForm
-              socket={socket} isConnected={isConnected}
-              initialRoomCode={codeFromUrl || ''}
-              toast={toast}
-              onJoinSuccess={handleJoinSuccess}
-              onShowOnboarding={() => setShowOnboarding(true)}
-              onNavigateHome={() => router.push('/')}
-            />
+            <GameErrorBoundary phaseName="join">
+              <JoinForm
+                socket={socket} isConnected={isConnected}
+                initialRoomCode={codeFromUrl || ''}
+                toast={toast}
+                onJoinSuccess={handleJoinSuccess}
+                onShowOnboarding={() => setShowOnboarding(true)}
+                onNavigateHome={() => router.push('/')}
+              />
+            </GameErrorBoundary>
           </motion.div>
         </AnimatePresence>
       </div>

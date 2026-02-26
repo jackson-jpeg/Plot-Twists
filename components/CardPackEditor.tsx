@@ -205,7 +205,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="modal-panel rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+          className="modal-panel rounded-2xl w-full max-w-2xl max-h-[90dvh] overflow-hidden"
         >
           {/* Header */}
           <div className="p-6 border-b border-[var(--color-border)]">

@@ -192,7 +192,7 @@ export default function ReplayPage() {
 
   if (!isConnected || loading) {
     return (
-      <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
+      <div className="min-h-dvh" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
         {/* Skeleton header */}
         <div className="p-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -232,7 +232,7 @@ export default function ReplayPage() {
 
   if (error || !game) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
+      <div className="min-h-dvh flex items-center justify-center p-4" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -266,7 +266,7 @@ export default function ReplayPage() {
   const currentLine = game.script.lines[currentLineIndex]
 
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
+    <div className="min-h-dvh" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
       <ReplayJsonLd
         title={game.title}
         synopsis={game.synopsis}

@@ -229,7 +229,7 @@ export function CardPackCreator({ isOpen, onClose, onCreated }: CardPackCreatorP
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="modal-panel w-full max-w-2xl max-h-[90vh] overflow-hidden"
+          className="modal-panel w-full max-w-2xl max-h-[90dvh] overflow-hidden"
         >
           {/* Header */}
           <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>

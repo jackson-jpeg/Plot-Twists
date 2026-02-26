@@ -15,7 +15,7 @@ export default function HostError({
   }, [error])
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--color-surface)]">
+    <div className="min-h-dvh flex items-center justify-center p-4 bg-[var(--color-surface)]">
       <div className="text-center max-w-md">
         <div className="text-8xl mb-6">🎬</div>
         <h1 className="text-3xl font-display font-bold text-[var(--color-text-primary)] mb-3">

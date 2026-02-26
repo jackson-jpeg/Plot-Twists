@@ -141,7 +141,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="modal-panel w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+          className="modal-panel w-full max-w-4xl max-h-[90dvh] overflow-hidden flex flex-col"
         >
           {/* Header */}
           <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>

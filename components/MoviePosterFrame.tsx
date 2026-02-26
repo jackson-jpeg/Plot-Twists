@@ -57,7 +57,7 @@ export function MoviePosterFrame({
           src={imageUrl}
           alt={`${title ?? 'Movie'} Poster`}
           className="movie-poster-frame"
-          style={{ maxHeight: '75vh', maxWidth: '100%', objectFit: 'contain' }}
+          style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain' }}
           onError={() => setImgError(true)}
         />
       </div>

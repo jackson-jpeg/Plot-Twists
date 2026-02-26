@@ -135,7 +135,7 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
             boxShadow: '0 24px 48px rgba(42, 39, 34, 0.2)',
             maxWidth,
             width: '100%',
-            maxHeight: '90vh',
+            maxHeight: '90dvh',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column'

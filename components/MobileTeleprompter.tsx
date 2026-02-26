@@ -101,7 +101,7 @@ export function MobileTeleprompter({
   const moodIndicator = getMoodIndicator(currentLine.mood)
 
   return (
-    <div ref={containerRef} className="min-h-screen flex flex-col" style={{ background: 'var(--color-bg)' }}>
+    <div ref={containerRef} className="min-h-dvh flex flex-col" style={{ background: 'var(--color-bg)' }}>
       {/* YOUR TURN full-screen flash */}
       <AnimatePresence>
         {showYourTurn && (

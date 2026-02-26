@@ -218,7 +218,8 @@ export function HostLobby({
                 {nonHostPlayers.length}
               </motion.div>
             </div>
-            <div className="stack-sm max-h-80 overflow-y-auto">
+            <div className="relative">
+            <div className="stack-sm max-h-80 overflow-y-auto" style={{ maskImage: nonHostPlayers.length > 4 ? 'linear-gradient(to bottom, black 85%, transparent 100%)' : undefined, WebkitMaskImage: nonHostPlayers.length > 4 ? 'linear-gradient(to bottom, black 85%, transparent 100%)' : undefined }}>
               <AnimatePresence mode="popLayout">
                 {nonHostPlayers.map((player, index) => (
                   <motion.div
@@ -261,6 +262,7 @@ export function HostLobby({
                   <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Click "Start Solo Game" when ready</p>
                 </motion.div>
               )}
+            </div>
             </div>
           </motion.div>
         </div>

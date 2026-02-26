@@ -310,10 +310,10 @@ export default function Home() {
         )}
 
         {/* Footer */}
-        <div className="mt-8 text-center text-xs" style={{ color: 'var(--color-text-disabled)' }}>
-          <Link href="/privacy" className="hover:underline" style={{ color: 'var(--color-text-tertiary)' }}>Privacy</Link>
+        <div className="mt-8 text-center text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+          <Link href="/privacy" className="hover:underline" style={{ color: 'var(--color-text-secondary)' }}>Privacy</Link>
           {' '}&middot;{' '}
-          <Link href="/terms" className="hover:underline" style={{ color: 'var(--color-text-tertiary)' }}>Terms</Link>
+          <Link href="/terms" className="hover:underline" style={{ color: 'var(--color-text-secondary)' }}>Terms</Link>
         </div>
 
       </div>

@@ -185,20 +185,20 @@ export function HostResults({
         {/* Actions */}
         <div className="flex flex-col gap-4 items-center mt-8">
           {script && (
-            <motion.button onClick={handleShareScene} className="btn btn-large" style={{ minWidth: '280px', background: 'linear-gradient(135deg, var(--color-purple), var(--color-pink))', color: 'white', border: 'none' }}
+            <motion.button onClick={handleShareScene} className="btn btn-large" style={{ maxWidth: '320px', width: '100%', background: 'linear-gradient(135deg, var(--color-purple), var(--color-pink))', color: 'white', border: 'none' }}
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} disabled={isSharing}>
               <span>{shareCopied ? '✓' : '🔗'}</span><span>{isSharing ? 'Sharing...' : shareCopied ? 'Link Copied!' : 'Share This Scene'}</span>
             </motion.button>
           )}
           {script && (
-            <motion.button onClick={onRequestSequel} className="btn btn-primary btn-large" style={{ minWidth: '280px' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.3 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <motion.button onClick={onRequestSequel} className="btn btn-primary btn-large" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.3 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <span>🎬</span><span>Generate Sequel</span>
             </motion.button>
           )}
-          <motion.button onClick={() => onRequestNewGame(false)} className="btn btn-secondary btn-large" style={{ minWidth: '280px' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <span>🔄</span><span>New Game (Same Players)</span>
+          <motion.button onClick={() => onRequestNewGame(false)} className="btn btn-secondary btn-large" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <span>🔄</span><span>New Round — Same Players</span>
           </motion.button>
-          <motion.button onClick={() => router.push('/')} className="btn btn-ghost" style={{ minWidth: '280px' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.button onClick={() => router.push('/')} className="btn btn-ghost" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <span>🚪</span><span>Exit to Home</span>
           </motion.button>
         </div>

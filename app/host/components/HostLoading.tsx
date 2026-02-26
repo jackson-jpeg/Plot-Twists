@@ -45,7 +45,10 @@ export function HostLoading({
 
   return (
     <motion.div key="loading" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-2xl text-center">
-      <motion.h1 className="hero-title mb-12" animate={{ opacity: [1, 0.7, 1] }} transition={{ duration: 2, repeat: Infinity }}>🎬 Writing Script</motion.h1>
+      <motion.h1 className="hero-title mb-4" animate={{ opacity: [1, 0.7, 1] }} transition={{ duration: 2, repeat: Infinity }}>🎬 Writing Script</motion.h1>
+      <motion.p className="text-sm mb-8" style={{ color: 'var(--color-text-tertiary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+        {settings.scriptCustomization?.comedyStyle ? `Style: ${settings.scriptCustomization.comedyStyle.charAt(0).toUpperCase() + settings.scriptCustomization.comedyStyle.slice(1)}` : 'Improv comedy'} &middot; {settings.gameMode === 'SOLO' ? 'Solo' : settings.gameMode === 'HEAD_TO_HEAD' ? 'Head to Head' : 'Ensemble'}
+      </motion.p>
       <div className="card">
         <AnimatePresence mode="wait">
           <motion.div key={stage.icon} initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 180 }} transition={MOTION.gentle} className="text-8xl mb-6">{stage.icon}</motion.div>
@@ -64,15 +67,21 @@ export function HostLoading({
           </motion.div>
         )}
 
-        <div className="progress mb-8 relative">
-          <motion.div className="progress-bar progress-bar-shimmer" initial={{ width: '0%' }} animate={{ width: `${Math.min(loadingProgress, 100)}%` }} transition={{ duration: 0.5, ease: 'easeOut' }} />
+        <div className="flex items-center gap-3 mb-8">
+          <div className="progress relative flex-1">
+            <motion.div className="progress-bar progress-bar-shimmer" initial={{ width: '0%' }} animate={{ width: `${Math.min(loadingProgress, 100)}%` }} transition={{ duration: 0.5, ease: 'easeOut' }} />
+          </div>
+          <span className="text-sm font-mono tabular-nums" style={{ color: 'var(--color-text-tertiary)', minWidth: '3ch' }}>{Math.round(Math.min(loadingProgress, 100))}%</span>
         </div>
 
         <AnimatePresence mode="wait">
           {greenRoomQuestion && !scriptGenerationTimedOut && (
-            <motion.div className="card card-accent-2 mt-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-              <h3 className="font-display text-lg mb-3" style={{ color: 'var(--color-accent-2)' }}>💭 While You Wait</h3>
-              <p className="italic" style={{ color: 'var(--color-text-primary)' }}>"{greenRoomQuestion}"</p>
+            <motion.div className="card card-accent-2 mt-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+              style={{ boxShadow: '0 0 0 1px var(--color-accent-2)' }}
+            >
+              <h3 className="font-display text-lg mb-3" style={{ color: 'var(--color-accent-2)' }}>💭 Green Room</h3>
+              <p className="text-lg italic" style={{ color: 'var(--color-text-primary)' }}>&ldquo;{greenRoomQuestion}&rdquo;</p>
+              <p className="text-xs mt-3" style={{ color: 'var(--color-text-tertiary)' }}>Discuss with your fellow performers while the script is being written</p>
             </motion.div>
           )}
           {scriptGenerationTimedOut && (

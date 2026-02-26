@@ -143,8 +143,8 @@ export function useHostSocket({
         setLoadingPhase('')
         setScriptTitlePreview(null)
         loadingIntervalRef.current = setInterval(() => {
-          setLoadingProgress(prev => (prev >= 15 ? prev : prev + Math.random() * 3 + 1))
-        }, 2000)
+          setLoadingProgress(prev => (prev >= 15 ? prev : prev + Math.random() * 2 + 0.5))
+        }, 500)
         scriptGenerationTimeoutRef.current = setTimeout(() => {
           setScriptGenerationTimedOut(true)
         }, 90000)

@@ -1,6 +1,34 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
+
+function PosterFallback({ title, maxWidth }: { title?: string; maxWidth?: number }) {
+  return (
+    <div
+      style={{
+        maxWidth: maxWidth ?? 320,
+        width: '100%',
+        aspectRatio: '2/3',
+        background: 'linear-gradient(135deg, var(--color-purple), var(--color-pink))',
+        borderRadius: 'var(--radius-lg, 12px)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '1.5rem',
+        gap: '0.75rem',
+      }}
+    >
+      <span style={{ fontSize: '3rem' }}>🎬</span>
+      {title && (
+        <span style={{ color: 'white', fontWeight: 700, fontSize: '1.1rem', textAlign: 'center', lineHeight: 1.3 }}>
+          {title}
+        </span>
+      )}
+    </div>
+  )
+}
 
 interface MoviePosterFrameProps {
   imageUrl: string
@@ -19,7 +47,10 @@ export function MoviePosterFrame({
   showNowShowing = false,
   variant = 'performance'
 }: MoviePosterFrameProps) {
+  const [imgError, setImgError] = useState(false)
+
   if (variant === 'lightbox') {
+    if (imgError) return <PosterFallback title={title} maxWidth={500} />
     return (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <img
@@ -27,7 +58,16 @@ export function MoviePosterFrame({
           alt={`${title ?? 'Movie'} Poster`}
           className="movie-poster-frame"
           style={{ maxHeight: '75vh', maxWidth: '100%', objectFit: 'contain' }}
+          onError={() => setImgError(true)}
         />
+      </div>
+    )
+  }
+
+  if (imgError) {
+    return (
+      <div className="mx-auto mb-6 flex flex-col items-center">
+        <PosterFallback title={title} maxWidth={maxWidth} />
       </div>
     )
   }
@@ -62,6 +102,7 @@ export function MoviePosterFrame({
           src={imageUrl}
           alt={`${title ?? 'Movie'} Poster`}
           style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+          onError={() => setImgError(true)}
         />
       </motion.div>
 

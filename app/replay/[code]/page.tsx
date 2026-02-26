@@ -13,6 +13,7 @@ import React from 'react'
 import { ReplayJsonLd } from '@/components/JsonLd'
 import { analytics } from '@/lib/analytics'
 import { isIOSNative } from '@/lib/platform'
+import { withTimeout } from '@/lib/socketTimeout'
 
 // Share button configuration
 const SHARE_PLATFORMS = [
@@ -78,13 +79,18 @@ export default function ReplayPage() {
     if (!socket || !shareCode) return
 
     setLoading(true)
-    socket.emit('get_game_details', shareCode, (response) => {
+    withTimeout<{ success: boolean; game?: SavedGame; error?: string }>(
+      (cb) => socket.emit('get_game_details', shareCode, cb)
+    ).then((response) => {
       setLoading(false)
       if (response.success && response.game) {
         setGame(response.game)
       } else {
         setError(response.error || 'Game not found')
       }
+    }).catch(() => {
+      setLoading(false)
+      setError('Request timed out — please try again')
     })
   }, [socket, shareCode])
 
@@ -186,28 +192,40 @@ export default function ReplayPage() {
 
   if (!isConnected || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
-        <motion.div className="text-center" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-            className="text-6xl mb-4"
-          >
-            🎬
-          </motion.div>
-          <p className="text-xl font-display mb-3" style={{ color: 'var(--color-text-primary)' }}>Loading replay...</p>
-          <div className="flex justify-center gap-1.5">
-            {[0, 1, 2].map(i => (
-              <motion.div
-                key={i}
-                className="w-2 h-2 rounded-full"
-                style={{ background: 'var(--color-purple)' }}
-                animate={{ opacity: [0.3, 1, 0.3] }}
-                transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.3 }}
-              />
-            ))}
+      <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
+        {/* Skeleton header */}
+        <div className="p-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="skeleton" style={{ width: 60, height: 20, borderRadius: 6 }} />
+            <div className="text-center">
+              <div className="skeleton" style={{ width: 160, height: 20, borderRadius: 6, margin: '0 auto 6px' }} />
+              <div className="skeleton" style={{ width: 80, height: 14, borderRadius: 6, margin: '0 auto' }} />
+            </div>
+            <div className="skeleton" style={{ width: 70, height: 30, borderRadius: 8 }} />
           </div>
-        </motion.div>
+        </div>
+        <div className="max-w-4xl mx-auto p-4 space-y-6">
+          {/* Cast skeleton */}
+          <div className="rounded-xl p-6" style={{ background: 'var(--color-surface-alt)' }}>
+            <div className="skeleton" style={{ width: '60%', height: 16, borderRadius: 6, marginBottom: 12 }} />
+            <div className="skeleton" style={{ width: '90%', height: 14, borderRadius: 6, marginBottom: 8 }} />
+            <div className="skeleton" style={{ width: '75%', height: 14, borderRadius: 6 }} />
+          </div>
+          {/* Script player skeleton */}
+          <div className="rounded-xl p-6" style={{ background: 'var(--color-surface-alt)' }}>
+            <div className="skeleton" style={{ width: '100%', height: 8, borderRadius: 4, marginBottom: 24 }} />
+            <div className="flex flex-col items-center gap-3 py-8">
+              <div className="skeleton" style={{ width: 80, height: 24, borderRadius: 12 }} />
+              <div className="skeleton" style={{ width: 120, height: 20, borderRadius: 6 }} />
+              <div className="skeleton" style={{ width: '80%', height: 28, borderRadius: 6 }} />
+            </div>
+            <div className="flex justify-center gap-4 mt-4">
+              <div className="skeleton" style={{ width: 44, height: 44, borderRadius: '50%' }} />
+              <div className="skeleton" style={{ width: 100, height: 44, borderRadius: 22 }} />
+              <div className="skeleton" style={{ width: 44, height: 44, borderRadius: '50%' }} />
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

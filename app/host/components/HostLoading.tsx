@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import type { RoomSettings } from '@/lib/types'
 import { VARIANTS, MOTION } from '@/lib/animations'
 
@@ -42,16 +42,17 @@ export function HostLoading({
   greenRoomQuestion, scriptGenerationTimedOut, onRetry, onBackToLobby,
 }: HostLoadingProps) {
   const stage = getCurrentLoadingStage(loadingProgress, loadingPhase)
+  const prefersReducedMotion = useReducedMotion()
 
   return (
     <motion.div key="loading" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-2xl text-center">
-      <motion.h1 className="hero-title mb-4" animate={{ opacity: [1, 0.7, 1] }} transition={{ duration: 2, repeat: Infinity }}>🎬 Writing Script</motion.h1>
+      <motion.h1 className="hero-title mb-4" animate={prefersReducedMotion ? {} : { opacity: [1, 0.7, 1] }} transition={{ duration: 2, repeat: Infinity }}>🎬 Writing Script</motion.h1>
       <motion.p className="text-sm mb-8" style={{ color: 'var(--color-text-tertiary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
         {settings.scriptCustomization?.comedyStyle ? `Style: ${settings.scriptCustomization.comedyStyle.charAt(0).toUpperCase() + settings.scriptCustomization.comedyStyle.slice(1)}` : 'Improv comedy'} &middot; {settings.gameMode === 'SOLO' ? 'Solo' : settings.gameMode === 'HEAD_TO_HEAD' ? 'Head to Head' : 'Ensemble'}
       </motion.p>
       <div className="card">
         <AnimatePresence mode="wait">
-          <motion.div key={stage.icon} initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 180 }} transition={MOTION.gentle} className="text-8xl mb-6">{stage.icon}</motion.div>
+          <motion.div key={stage.icon} initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0, rotate: -180 }} animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, rotate: 0 }} exit={prefersReducedMotion ? { opacity: 0 } : { scale: 0, rotate: 180 }} transition={MOTION.gentle} className="text-8xl mb-6">{stage.icon}</motion.div>
         </AnimatePresence>
         <AnimatePresence mode="wait">
           <motion.p key={stage.message} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="text-xl mb-8 font-display" style={{ color: 'var(--color-text-primary)' }}>{stage.message}</motion.p>
@@ -69,7 +70,7 @@ export function HostLoading({
 
         <div className="flex items-center gap-3 mb-8">
           <div className="progress relative flex-1">
-            <motion.div className="progress-bar progress-bar-shimmer" initial={{ width: '0%' }} animate={{ width: `${Math.min(loadingProgress, 100)}%` }} transition={{ duration: 0.5, ease: 'easeOut' }} />
+            <motion.div className="progress-bar progress-bar-shimmer" initial={{ width: '0%' }} animate={{ width: `${Math.min(loadingProgress, 100)}%` }} transition={{ duration: 1.5, ease: [0.33, 1, 0.68, 1] }} />
           </div>
           <span className="text-sm font-mono tabular-nums" style={{ color: 'var(--color-text-tertiary)', minWidth: '3ch' }}>{Math.round(Math.min(loadingProgress, 100))}%</span>
         </div>

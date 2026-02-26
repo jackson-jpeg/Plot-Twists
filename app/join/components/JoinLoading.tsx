@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { VARIANTS, MOTION } from '@/lib/animations'
 
 const loadingStages = [
@@ -27,19 +27,20 @@ export interface JoinLoadingProps {
 
 export function JoinLoading({ loadingProgress, greenRoomQuestion }: JoinLoadingProps) {
   const stage = getCurrentLoadingStage(loadingProgress)
+  const prefersReducedMotion = useReducedMotion()
 
   return (
     <motion.div key="loading" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-lg text-center">
       <div className="card">
         <h1 className="text-3xl font-display mb-6" style={{ color: 'var(--color-text-primary)' }}>Get Ready!</h1>
         <AnimatePresence mode="wait">
-          <motion.div key={stage.icon} initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 180 }} transition={MOTION.gentle} className="text-8xl mb-4">{stage.icon}</motion.div>
+          <motion.div key={stage.icon} initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0, rotate: -180 }} animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, rotate: 0 }} exit={prefersReducedMotion ? { opacity: 0 } : { scale: 0, rotate: 180 }} transition={MOTION.gentle} className="text-8xl mb-4">{stage.icon}</motion.div>
         </AnimatePresence>
         <AnimatePresence mode="wait">
           <motion.p key={stage.message} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="text-xl mb-8 font-display" style={{ color: 'var(--color-text-primary)' }}>{stage.message}</motion.p>
         </AnimatePresence>
         <div className="progress mb-8 relative">
-          <motion.div className="progress-bar progress-bar-shimmer" initial={{ width: '0%' }} animate={{ width: `${Math.min(loadingProgress, 100)}%` }} transition={{ duration: 0.5, ease: 'easeOut' }} />
+          <motion.div className="progress-bar progress-bar-shimmer" initial={{ width: '0%' }} animate={{ width: `${Math.min(loadingProgress, 100)}%` }} transition={{ duration: 1.5, ease: [0.33, 1, 0.68, 1] }} />
         </div>
         <AnimatePresence mode="wait">
           {greenRoomQuestion && (

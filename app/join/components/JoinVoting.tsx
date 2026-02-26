@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import type { Player, Script } from '@/lib/types'
 import { VARIANTS } from '@/lib/animations'
 import { successHaptic } from '@/hooks/useHaptics'
@@ -15,6 +15,7 @@ export interface JoinVotingProps {
 }
 
 export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }: JoinVotingProps) {
+  const prefersReducedMotion = useReducedMotion()
   const hasVoted = players.find(p => p.id === myPlayerId)?.hasSubmittedVote
   const votablePlayers = players.filter(p => p.role === 'PLAYER' && p.id !== myPlayerId)
 
@@ -47,7 +48,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
 
         {hasVoted ? (
           <motion.div className="card text-center p-8" style={{ background: 'var(--color-highlight)' }} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-            <motion.div className="text-6xl mb-4" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>✅</motion.div>
+            <motion.div className="text-6xl mb-4" initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0 }} animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>✅</motion.div>
             <p className="text-xl font-display" style={{ color: 'var(--color-text-primary)' }}>Vote Submitted!</p>
             <p className="text-sm mt-2 mb-3" style={{ color: 'var(--color-text-secondary)' }}>Waiting for others...</p>
             {(() => {

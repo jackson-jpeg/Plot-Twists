@@ -88,8 +88,8 @@ export function useJoinSocket({
     if (gameState === 'LOADING') {
       setLoadingProgress(0)
       loadingIntervalRef.current = setInterval(() => {
-        setLoadingProgress(prev => (prev >= 95 ? 95 : prev + Math.random() * 8 + 2))
-      }, 1500)
+        setLoadingProgress(prev => (prev >= 95 ? 95 : prev + Math.random() * 2 + 0.5))
+      }, 500)
     } else {
       if (loadingIntervalRef.current) {
         clearInterval(loadingIntervalRef.current)

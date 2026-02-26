@@ -6,6 +6,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import type { RoomSettings, ScriptCustomization, AudioSettings, CardSelection, GameMode } from '@/lib/types'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { VARIANTS, MOTION, getVariants } from '@/lib/animations'
+import { withTimeout } from '@/lib/socketTimeout'
 import { useConfetti } from '@/hooks/useConfetti'
 import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
@@ -22,6 +23,8 @@ import { useHostSocket } from '@/hooks/useHostSocket'
 import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 import { successHaptic } from '@/hooks/useHaptics'
 
+import { GameErrorBoundary } from '@/components/GameErrorBoundary'
+import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { HostLobby } from './components/HostLobby'
 import { HostSelection } from './components/HostSelection'
 import { HostLoading } from './components/HostLoading'
@@ -135,11 +138,16 @@ function HostPageContent() {
     if (authLoading || !user) return
     if (!socket || !isConnected || roomCreatedRef.current) return
     roomCreatedRef.current = true
-    socket.emit('create_room', settings, (response) => {
+    withTimeout<{ success: boolean; code?: string }>(
+      (cb) => socket.emit('create_room', settings, cb)
+    ).then((response) => {
       if (response.success && response.code) {
         setRoomCode(response.code)
         analytics.gameCreated(settings.gameMode)
       }
+    }).catch(() => {
+      roomCreatedRef.current = false
+      toast.error('Failed to create room — please refresh')
     })
     socket.emit('get_credit_balance', (response) => {
       if (response.success && response.balance) setCreditBalance(response.balance)
@@ -375,10 +383,7 @@ function HostPageContent() {
       {/* Poster Lightbox */}
       <Modal isOpen={showPosterLightbox} onClose={() => setShowPosterLightbox(false)} title={script?.title ?? 'Movie Poster'} maxWidth="600px">
         {scriptImageUrl && (
-          <div className="flex justify-center">
-            <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`}
-              style={{ maxHeight: '75vh', maxWidth: '100%', objectFit: 'contain', borderRadius: 'var(--radius-lg, 12px)' }} />
-          </div>
+          <MoviePosterFrame imageUrl={scriptImageUrl} title={script?.title} variant="lightbox" />
         )}
       </Modal>
 
@@ -405,7 +410,7 @@ function HostPageContent() {
 
       <AnimatePresence mode="wait">
         {gameState === 'LOBBY' && (
-          <HostLobby
+          <GameErrorBoundary phaseName="lobby" key="lobby-eb"><HostLobby
             key="lobby"
             roomCode={roomCode} joinUrl={joinUrl} isConnected={isConnected}
             players={players} settings={settings} creditBalance={creditBalance}
@@ -420,11 +425,11 @@ function HostPageContent() {
             onSetSettings={setSettings}
             onShowOnboarding={() => setShowOnboarding(true)}
             onNavigateHome={() => router.push('/')}
-          />
+          /></GameErrorBoundary>
         )}
 
         {gameState === 'SELECTION' && (
-          <HostSelection
+          <GameErrorBoundary phaseName="selection" key="selection-eb"><HostSelection
             key="selection"
             settings={settings} players={players}
             selection={selection} setSelection={setSelection}
@@ -435,11 +440,11 @@ function HostPageContent() {
             onSubmitSoloCards={handleSubmitSoloCards}
             onBackToLobby={() => setGameState('LOBBY')}
             toast={toast}
-          />
+          /></GameErrorBoundary>
         )}
 
         {gameState === 'LOADING' && (
-          <HostLoading
+          <GameErrorBoundary phaseName="loading" key="loading-eb"><HostLoading
             key="loading"
             settings={settings}
             loadingProgress={loadingProgress} loadingPhase={loadingPhase}
@@ -448,11 +453,11 @@ function HostPageContent() {
             scriptGenerationTimedOut={scriptGenerationTimedOut}
             onRetry={() => { socket?.emit('start_game', roomCode) }}
             onBackToLobby={() => { setGameState('LOBBY') }}
-          />
+          /></GameErrorBoundary>
         )}
 
         {gameState === 'PERFORMING' && script && (
-          <HostPerforming
+          <GameErrorBoundary phaseName="performing" key="performing-eb"><HostPerforming
             key="performing"
             script={script} currentLineIndex={currentLineIndex}
             isPlaying={isPlaying} roomCode={roomCode}
@@ -474,15 +479,15 @@ function HostPageContent() {
             onToggleTeleprompterAutoScroll={toggleTeleprompterAutoScroll}
             onShowPosterLightbox={() => setShowPosterLightbox(true)}
             onEndPerformance={() => socket?.emit('end_performance', roomCode)}
-          />
+          /></GameErrorBoundary>
         )}
 
         {gameState === 'VOTING' && (
-          <HostVoting key="voting" players={players} script={script} />
+          <GameErrorBoundary phaseName="voting" key="voting-eb"><HostVoting key="voting" players={players} script={script} /></GameErrorBoundary>
         )}
 
         {gameState === 'RESULTS' && (
-          <HostResults
+          <GameErrorBoundary phaseName="results" key="results-eb"><HostResults
             key="results"
             script={script} gameResults={gameResults}
             scriptImageUrl={scriptImageUrl}
@@ -494,7 +499,7 @@ function HostPageContent() {
             onShowPosterLightbox={() => setShowPosterLightbox(true)}
             onRequestSequel={requestSequel}
             onRequestNewGame={requestNewGame}
-          />
+          /></GameErrorBoundary>
         )}
       </AnimatePresence>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import type { Player, Script } from '@/lib/types'
 import { VARIANTS } from '@/lib/animations'
 
@@ -11,6 +11,7 @@ export interface HostVotingProps {
 }
 
 export function HostVoting({ players, script }: HostVotingProps) {
+  const prefersReducedMotion = useReducedMotion()
   const nonHostPlayers = players.filter(p => !p.isHost)
   const votedCount = nonHostPlayers.filter(p => p.hasSubmittedVote).length
 
@@ -99,7 +100,7 @@ export function HostVoting({ players, script }: HostVotingProps) {
               {player.hasSubmittedVote ? (
                 <motion.span className="badge badge-success" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>✓ Voted</motion.span>
               ) : (
-                <motion.span className="badge badge-warning" animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>Voting...</motion.span>
+                <motion.span className="badge badge-warning" animate={prefersReducedMotion ? {} : { scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>Voting...</motion.span>
               )}
             </motion.div>
           ))}

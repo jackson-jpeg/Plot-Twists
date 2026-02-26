@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import type { Player, RoomSettings, CardSelection, AvailableCards } from '@/lib/types'
 import { CardPicker } from '@/components/CardPicker'
 import { VARIANTS } from '@/lib/animations'
+import { tapHaptic } from '@/hooks/useHaptics'
 
 const IMPROV_TIPS = [
   { emoji: '🎭', tip: '"Yes, and..." — always build on what your scene partner gives you.' },
@@ -36,9 +37,28 @@ export function HostSelection({
   onSubmitSoloCards, onBackToLobby, toast,
 }: HostSelectionProps) {
   const pageTransitionVariants = VARIANTS.pageTransition
+  const prefersReducedMotion = useReducedMotion()
   const nonHostPlayers = players.filter(p => !p.isHost)
   const readyCount = nonHostPlayers.filter(p => p.hasSubmittedSelection).length
   const [tipIndex, setTipIndex] = useState(0)
+  const [confirmMode, setConfirmMode] = useState(false)
+
+  // Auto-reset confirmMode after 3 seconds
+  useEffect(() => {
+    if (!confirmMode) return
+    const timer = setTimeout(() => setConfirmMode(false), 3000)
+    return () => clearTimeout(timer)
+  }, [confirmMode])
+
+  const handleSoloSubmit = useCallback(() => {
+    if (!confirmMode) {
+      setConfirmMode(true)
+      tapHaptic()
+      return
+    }
+    setConfirmMode(false)
+    onSubmitSoloCards()
+  }, [confirmMode, onSubmitSoloCards])
 
   // Cycle through improv tips
   useEffect(() => {
@@ -91,7 +111,7 @@ export function HostSelection({
         <div className="card">
           {availableCards.characters.length === 0 ? (
             <motion.div className="text-center py-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <motion.div className="text-4xl mb-4" animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>🎴</motion.div>
+              <motion.div className="text-4xl mb-4" animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>🎴</motion.div>
               <p style={{ color: 'var(--color-text-secondary)' }}>Loading cards...</p>
             </motion.div>
           ) : (
@@ -106,16 +126,21 @@ export function HostSelection({
               />
 
               <motion.button
-                onClick={onSubmitSoloCards}
+                onClick={handleSoloSubmit}
                 disabled={!selection.character || !selection.setting || !selection.circumstance || isSubmittingCards}
                 className="btn btn-primary btn-large w-full mt-6"
-                style={{ opacity: (!selection.character || !selection.setting || !selection.circumstance || isSubmittingCards) ? 0.6 : 1 }}
+                style={{
+                  opacity: (!selection.character || !selection.setting || !selection.circumstance || isSubmittingCards) ? 0.6 : 1,
+                  ...(confirmMode ? { background: 'var(--color-success)', borderColor: 'var(--color-success)' } : {}),
+                }}
                 whileHover={{ scale: isSubmittingCards ? 1 : 1.02 }} whileTap={{ scale: isSubmittingCards ? 1 : 0.98 }}
-                animate={(selection.character && selection.setting && selection.circumstance && !isSubmittingCards) ? { boxShadow: ['0 0 0 0 rgba(245, 158, 66, 0.1)', '0 0 0 8px rgba(245, 158, 66, 0.15)', '0 0 0 0 rgba(245, 158, 66, 0.1)'] } : {}}
-                transition={(selection.character && selection.setting && selection.circumstance && !isSubmittingCards) ? { duration: 2, repeat: Infinity } : {}}
+                animate={(selection.character && selection.setting && selection.circumstance && !isSubmittingCards && !confirmMode && !prefersReducedMotion) ? { boxShadow: ['0 0 0 0 rgba(245, 158, 66, 0.1)', '0 0 0 8px rgba(245, 158, 66, 0.15)', '0 0 0 0 rgba(245, 158, 66, 0.1)'] } : {}}
+                transition={(selection.character && selection.setting && selection.circumstance && !isSubmittingCards && !confirmMode && !prefersReducedMotion) ? { duration: 2, repeat: Infinity } : {}}
               >
                 {isSubmittingCards ? (
-                  <><motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>⏳</motion.span><span>Submitting...</span></>
+                  <><motion.span animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>⏳</motion.span><span>Submitting...</span></>
+                ) : confirmMode ? (
+                  <><span>✅</span><span>Tap again to confirm</span></>
                 ) : (
                   <><span>✨</span><span>{(!selection.character || !selection.setting || !selection.circumstance) ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)` : 'Submit Cards - Ready!'}</span></>
                 )}
@@ -171,7 +196,7 @@ export function HostSelection({
                 <div className="player-avatar" style={{ width: '32px', height: '32px', fontSize: '13px' }}>{player.nickname[0]?.toUpperCase()}</div>
                 <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
               </div>
-              <motion.span className={`text-sm font-medium badge ${player.hasSubmittedSelection ? 'badge-success' : 'badge-warning'}`} animate={player.hasSubmittedSelection ? {} : { scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+              <motion.span className={`text-sm font-medium badge ${player.hasSubmittedSelection ? 'badge-success' : 'badge-warning'}`} animate={player.hasSubmittedSelection || prefersReducedMotion ? {} : { scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
                 {player.hasSubmittedSelection ? '✓ Ready' : '⏳ Selecting'}
               </motion.span>
             </motion.div>

@@ -13,11 +13,14 @@ import { OnboardingModal } from '@/components/OnboardingModal'
 import { Modal } from '@/components/Modal'
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
 import { MOTION, getVariants } from '@/lib/animations'
+import { withTimeout } from '@/lib/socketTimeout'
 import { analytics } from '@/lib/analytics'
 import { useJoinSocket } from '@/hooks/useJoinSocket'
 import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 import { useAuth } from '@/contexts/AuthContext'
 
+import { GameErrorBoundary } from '@/components/GameErrorBoundary'
+import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { JoinForm } from './components/JoinForm'
 import { JoinLobby } from './components/JoinLobby'
 import { JoinSelection } from './components/JoinSelection'
@@ -140,10 +143,15 @@ function JoinPageContent() {
       toast.error('Please select all cards'); return
     }
     setIsSubmitting(true)
-    socket.emit('submit_cards', roomCode, selection, (response) => {
+    withTimeout<{ success: boolean; error?: string }>(
+      (cb) => socket.emit('submit_cards', roomCode, selection, cb)
+    ).then((response) => {
       setIsSubmitting(false)
       if (response.success) { setHasSubmitted(true); toast.success('Cards submitted!') }
       else toast.error(response.error || 'Failed to submit cards')
+    }).catch(() => {
+      setIsSubmitting(false)
+      toast.error('Request timed out — please try again')
     })
   }
 
@@ -250,62 +258,71 @@ function JoinPageContent() {
       {/* Poster Lightbox */}
       <Modal isOpen={showPosterLightbox} onClose={() => setShowPosterLightbox(false)} title={script?.title ?? 'Movie Poster'} maxWidth="600px">
         {scriptImageUrl && (
-          <div className="flex justify-center">
-            <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`}
-              style={{ maxHeight: '75vh', maxWidth: '100%', objectFit: 'contain', borderRadius: 'var(--radius-lg, 12px)' }} />
-          </div>
+          <MoviePosterFrame imageUrl={scriptImageUrl} title={script?.title} variant="lightbox" />
         )}
       </Modal>
 
       <AnimatePresence mode="wait">
         {gameState === 'LOBBY' && (
-          <JoinLobby key="lobby" players={players} myPlayerId={myPlayerId} myRole={myRole} selectedPackName={selectedPackName} autoStartCountdown={autoStartCountdown} />
+          <GameErrorBoundary phaseName="lobby" key="lobby-eb">
+            <JoinLobby key="lobby" players={players} myPlayerId={myPlayerId} myRole={myRole} selectedPackName={selectedPackName} autoStartCountdown={autoStartCountdown} />
+          </GameErrorBoundary>
         )}
 
         {gameState === 'SELECTION' && (
-          <JoinSelection
-            key="selection"
-            myRole={myRole} hasSubmitted={hasSubmitted} isSubmitting={isSubmitting}
-            selection={selection} setSelection={setSelection}
-            availableCards={availableCards} roomIsMature={roomIsMature}
-            error={error} onSubmitCards={handleSubmitCards} toast={toast}
-          />
+          <GameErrorBoundary phaseName="selection" key="selection-eb">
+            <JoinSelection
+              key="selection"
+              myRole={myRole} hasSubmitted={hasSubmitted} isSubmitting={isSubmitting}
+              selection={selection} setSelection={setSelection}
+              availableCards={availableCards} roomIsMature={roomIsMature}
+              error={error} players={players} onSubmitCards={handleSubmitCards} toast={toast}
+            />
+          </GameErrorBoundary>
         )}
 
         {gameState === 'LOADING' && (
-          <JoinLoading key="loading" loadingProgress={loadingProgress} greenRoomQuestion={greenRoomQuestion} />
+          <GameErrorBoundary phaseName="loading" key="loading-eb">
+            <JoinLoading key="loading" loadingProgress={loadingProgress} greenRoomQuestion={greenRoomQuestion} />
+          </GameErrorBoundary>
         )}
 
         {gameState === 'PERFORMING' && script && (
-          <JoinPerforming
-            key="performing"
-            script={script} currentLineIndex={currentLineIndex}
-            myCharacter={myCharacter} myRole={myRole}
-            roomCode={roomCode} spectatorMessages={spectatorMessages}
-            socket={socket}
-            onNextLine={goToNextLine} onPreviousLine={goToPreviousLine}
-          />
+          <GameErrorBoundary phaseName="performing" key="performing-eb">
+            <JoinPerforming
+              key="performing"
+              script={script} currentLineIndex={currentLineIndex}
+              myCharacter={myCharacter} myRole={myRole}
+              roomCode={roomCode} spectatorMessages={spectatorMessages}
+              socket={socket}
+              onNextLine={goToNextLine} onPreviousLine={goToPreviousLine}
+            />
+          </GameErrorBoundary>
         )}
 
         {gameState === 'VOTING' && (
-          <JoinVoting key="voting" players={players} myPlayerId={myPlayerId} script={script} myCharacter={myCharacter} onVote={handleVote} />
+          <GameErrorBoundary phaseName="voting" key="voting-eb">
+            <JoinVoting key="voting" players={players} myPlayerId={myPlayerId} script={script} myCharacter={myCharacter} onVote={handleVote} />
+          </GameErrorBoundary>
         )}
 
         {gameState === 'RESULTS' && (
-          <JoinResults
-            key="results"
-            script={script} gameResults={gameResults}
-            scriptImageUrl={scriptImageUrl}
-            showPosterLightbox={showPosterLightbox}
-            socket={socket}
-            myPlayerId={myPlayerId}
-            userUid={user?.uid || ''}
-            xpEvents={xpEvents}
-            levelUpData={levelUpData}
-            onDismissLevelUp={() => setLevelUpData(null)}
-            onShowPosterLightbox={() => setShowPosterLightbox(true)}
-            onClosePosterLightbox={() => setShowPosterLightbox(false)}
-          />
+          <GameErrorBoundary phaseName="results" key="results-eb">
+            <JoinResults
+              key="results"
+              script={script} gameResults={gameResults}
+              scriptImageUrl={scriptImageUrl}
+              showPosterLightbox={showPosterLightbox}
+              socket={socket}
+              myPlayerId={myPlayerId}
+              userUid={user?.uid || ''}
+              xpEvents={xpEvents}
+              levelUpData={levelUpData}
+              onDismissLevelUp={() => setLevelUpData(null)}
+              onShowPosterLightbox={() => setShowPosterLightbox(true)}
+              onClosePosterLightbox={() => setShowPosterLightbox(false)}
+            />
+          </GameErrorBoundary>
         )}
       </AnimatePresence>
 

@@ -353,7 +353,7 @@ export function CardPicker({
                     <motion.button
                       onClick={clearSearch}
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center justify-center rounded-full"
-                      style={{ width: '28px', height: '28px', background: 'var(--color-surface-alt)', color: 'var(--color-text-tertiary)', fontSize: '14px', border: 'none', cursor: 'pointer' }}
+                      style={{ width: '36px', height: '36px', background: 'var(--color-surface-alt)', color: 'var(--color-text-tertiary)', fontSize: '14px', border: 'none', cursor: 'pointer' }}
                       initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                       whileTap={{ scale: 0.85 }}
@@ -381,7 +381,7 @@ export function CardPicker({
                   <div
                     ref={chipContainerRef}
                     className="flex gap-1.5 overflow-x-auto pb-1"
-                    style={{ scrollbarWidth: 'none' }}
+                    style={{ scrollbarWidth: 'none', overscrollBehavior: 'contain' }}
                     onScroll={() => {
                       const el = chipContainerRef.current
                       if (el) setChipScrollable(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
@@ -442,7 +442,7 @@ export function CardPicker({
               <div
                 ref={gridRef}
                 className="overflow-y-auto scrollbar-thin"
-                style={{ maxHeight: 'clamp(200px, 42vh, 400px)' }}
+                style={{ maxHeight: 'clamp(200px, 42vh, 400px)', overscrollBehavior: 'contain' }}
               >
                 {filteredItems.length === 0 ? (
                   <div className="text-center py-8">
@@ -553,7 +553,7 @@ export function CardPicker({
                     <motion.button
                       onClick={() => clearCard(tab.key)}
                       className="flex-shrink-0 flex items-center justify-center"
-                      style={{ color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', width: '28px', height: '28px', fontSize: '13px', lineHeight: 1 }}
+                      style={{ color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', width: '36px', height: '36px', fontSize: '13px', lineHeight: 1 }}
                       whileHover={{ scale: 1.15 }}
                       whileTap={{ scale: 0.85 }}
                       aria-label={`Clear ${tab.label}`}

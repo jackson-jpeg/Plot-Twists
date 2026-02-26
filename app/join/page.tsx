@@ -88,6 +88,14 @@ function JoinPageContent() {
     }
   }, [])
 
+  // Lock body scroll when overlays are visible
+  useEffect(() => {
+    if (hostDisconnected || countdown !== null) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [hostDisconnected, countdown])
+
   // Reset orchestrator state when returning to LOBBY (new game)
   useEffect(() => {
     if (gameState === 'LOBBY') {

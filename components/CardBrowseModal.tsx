@@ -138,7 +138,7 @@ export function CardBrowseModal({
 
         {/* Category Filter Chips */}
         {availableCategories.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin' }}>
+          <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'thin', overscrollBehavior: 'contain' }}>
             {availableCategories.map(category => {
               const isSelected = selectedCategories.includes(category.id)
               return (

@@ -204,6 +204,14 @@ export default function ExplorePage() {
     loadFeatured()
   }, [loadFeatured])
 
+  // Lock body scroll when loading overlay is visible
+  useEffect(() => {
+    if (loadingPack) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [loadingPack])
+
   const handleSearch = useCallback(() => {
     if (!socket || !isConnected || !searchQuery.trim()) return
     setLoading(true)

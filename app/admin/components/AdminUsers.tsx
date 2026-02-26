@@ -86,7 +86,7 @@ export function AdminUsers({ users, total, search, onSearchChange, page, onPageC
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search by name, email, phone, or UID..."
-          className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] transition-all"
+          className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] text-base focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] transition-all"
         />
         {search && (
           <button

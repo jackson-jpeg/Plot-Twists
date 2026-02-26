@@ -65,7 +65,7 @@ export function SmartCardSelector({
             <motion.button
               onClick={() => setIsBrowseOpen(true)}
               className="btn btn-ghost"
-              style={{ padding: '8px 12px', fontSize: '14px' }}
+              style={{ padding: '10px 16px', fontSize: '14px' }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               title="Browse all options"

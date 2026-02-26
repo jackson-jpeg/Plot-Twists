@@ -122,6 +122,14 @@ function HostPageContent() {
     }
   }, [searchParams])
 
+  // Lock body scroll when countdown overlay is visible
+  useEffect(() => {
+    if (countdown !== null) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [countdown])
+
   // Create room
   useEffect(() => {
     if (authLoading || !user) return

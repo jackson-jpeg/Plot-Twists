@@ -286,8 +286,9 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
                         background: 'var(--color-surface-alt)',
                         ...(hasVoted ? {} : { borderColor: 'transparent' }),
                       }}
-                      onMouseEnter={e => { if (!hasVoted) (e.currentTarget.style.borderColor = 'var(--color-purple-border)') }}
-                      onMouseLeave={e => { if (!hasVoted) (e.currentTarget.style.borderColor = 'transparent') }}
+                      onPointerDown={e => { if (!hasVoted) (e.currentTarget.style.borderColor = 'var(--color-purple-border)') }}
+                      onPointerUp={e => { if (!hasVoted) (e.currentTarget.style.borderColor = 'transparent') }}
+                      onPointerLeave={e => { if (!hasVoted) (e.currentTarget.style.borderColor = 'transparent') }}
                     >
                       {/* Vote progress bar */}
                       <motion.div

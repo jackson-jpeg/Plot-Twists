@@ -109,12 +109,13 @@ export function SpectatorChat({ messages, onSendMessage, disabled }: SpectatorCh
             onClick={() => handleSend(preset.text, true)}
             disabled={cooldown || disabled}
             style={{
-              padding: '4px 8px',
+              padding: '8px 12px',
               borderRadius: '12px',
               border: '1px solid var(--color-border)',
               background: cooldown ? 'var(--color-surface-alt)' : 'transparent',
               color: cooldown ? 'var(--color-text-muted)' : 'var(--color-text-secondary)',
-              fontSize: '12px',
+              fontSize: '13px',
+              minHeight: '36px',
               cursor: cooldown ? 'not-allowed' : 'pointer',
               transition: 'all 0.15s',
               opacity: cooldown ? 0.5 : 1,
@@ -142,12 +143,12 @@ export function SpectatorChat({ messages, onSendMessage, disabled }: SpectatorCh
           enterKeyHint="send"
           style={{
             flex: 1,
-            padding: '6px 10px',
+            padding: '8px 12px',
             borderRadius: '8px',
             border: '1px solid var(--color-border)',
             background: 'var(--color-surface-alt)',
             color: 'var(--color-text-primary)',
-            fontSize: '13px',
+            fontSize: '16px',
             outline: 'none',
           }}
         />
@@ -155,9 +156,10 @@ export function SpectatorChat({ messages, onSendMessage, disabled }: SpectatorCh
           onClick={() => handleSend(customText, false)}
           disabled={cooldown || disabled || !customText.trim()}
           style={{
-            padding: '6px 12px',
+            padding: '10px 16px',
             borderRadius: '8px',
             border: 'none',
+            minHeight: '40px',
             background: cooldown || !customText.trim() ? 'var(--color-border)' : 'var(--color-accent)',
             color: 'white',
             fontSize: '13px',

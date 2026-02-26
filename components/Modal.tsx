@@ -181,11 +181,15 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
                   borderRadius: 'var(--radius-md)',
                   transition: 'color 0.2s, background 0.2s'
                 }}
-                onMouseEnter={(e) => {
+                onPointerDown={(e) => {
                   e.currentTarget.style.color = 'var(--color-text-primary)'
                   e.currentTarget.style.background = 'var(--color-surface-alt)'
                 }}
-                onMouseLeave={(e) => {
+                onPointerUp={(e) => {
+                  e.currentTarget.style.color = 'var(--color-text-tertiary)'
+                  e.currentTarget.style.background = 'transparent'
+                }}
+                onPointerLeave={(e) => {
                   e.currentTarget.style.color = 'var(--color-text-tertiary)'
                   e.currentTarget.style.background = 'transparent'
                 }}

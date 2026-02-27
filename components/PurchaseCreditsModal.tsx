@@ -16,23 +16,17 @@ import { getAuthHeaders } from '@/lib/authHeaders'
 interface PurchaseCreditsModalProps {
   isOpen: boolean
   onClose: () => void
+  currentBalance?: number
 }
 
 const BEST_VALUE_ID = 'studio'
 
-const PACKAGE_META: Record<string, { tagline: string }> = {
-  starter: { tagline: 'A taste of the show' },
-  party:   { tagline: 'Grab some friends' },
-  pro:     { tagline: 'Lights, camera, action' },
-  studio:  { tagline: 'The full experience' },
-}
-
-export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalProps) {
+export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: PurchaseCreditsModalProps) {
   const { user, getToken } = useAuth()
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
-  const [selectedPkgId, setSelectedPkgId] = useState<string | null>(null)
+  const [selectedPkgId, setSelectedPkgId] = useState<string>(BEST_VALUE_ID)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [restoringPurchases, setRestoringPurchases] = useState(false)
   const successTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
@@ -84,7 +78,6 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
 
       const data = await res.json()
       if (data.clientSecret) {
-        setSelectedPkgId(packageId)
         setClientSecret(data.clientSecret)
         setLoading(null)
       } else {
@@ -102,12 +95,11 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
 
   const handleBack = useCallback(() => {
     setClientSecret(null)
-    setSelectedPkgId(null)
   }, [])
 
   const handleClose = useCallback(() => {
     setClientSecret(null)
-    setSelectedPkgId(null)
+    setSelectedPkgId(BEST_VALUE_ID)
     setLoading(null)
     setError(null)
     setSuccessMessage(null)
@@ -115,7 +107,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
     onClose()
   }, [onClose])
 
-  const selectedPkg = selectedPkgId ? CREDIT_PACKAGES.find(p => p.id === selectedPkgId) : null
+  const selectedPkg = CREDIT_PACKAGES.find(p => p.id === selectedPkgId)
   const showCheckout = !!clientSecret
 
   return (
@@ -127,35 +119,24 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={handleClose}
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', padding: '16px' }}
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
         >
           <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.97 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.97 }}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
             transition={{ type: 'spring', damping: 28, stiffness: 350 }}
             onClick={e => e.stopPropagation()}
-            className="relative w-full overflow-hidden rounded-2xl"
+            className="relative w-full overflow-hidden sm:rounded-2xl rounded-t-2xl"
             style={{
               maxWidth: showCheckout ? '560px' : '420px',
-              maxHeight: '90vh',
+              maxHeight: '92vh',
               overflowY: 'auto',
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              boxShadow: 'var(--shadow-3)',
+              background: 'var(--color-bg)',
+              boxShadow: '0 -4px 40px rgba(0,0,0,0.15)',
             }}
           >
-            {/* Close button */}
-            <button
-              onClick={handleClose}
-              aria-label="Close"
-              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full z-10"
-              style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer' }}
-            >
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-            </button>
-
             <AnimatePresence mode="wait" initial={false}>
               {showCheckout ? (
                 <motion.div
@@ -166,37 +147,25 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   transition={{ duration: 0.2 }}
                   className="p-5"
                 >
-                  {/* Back + package info */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <button
-                      onClick={handleBack}
-                      className="flex items-center gap-1.5 text-sm font-medium mb-3"
-                      style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      Back
-                    </button>
-                    {selectedPkg && (
-                      <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}>
-                        <div>
-                          <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{selectedPkg.label}</span>
-                          <span className="text-xs ml-2" style={{ color: 'var(--color-text-tertiary)' }}>{selectedPkg.scripts} scripts &middot; ${(selectedPkg.price / 100).toFixed(0)}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Embedded Stripe checkout */}
+                  <button
+                    onClick={handleBack}
+                    className="flex items-center gap-1.5 text-sm font-medium mb-3"
+                    style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Back
+                  </button>
+                  {selectedPkg && (
+                    <div className="flex items-center gap-3 p-3 rounded-xl mb-4" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}>
+                      <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{selectedPkg.label}</span>
+                      <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{selectedPkg.scripts} scripts &middot; ${(selectedPkg.price / 100).toFixed(0)}</span>
+                    </div>
+                  )}
                   <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
-                    <EmbeddedCheckoutProvider
-                      stripe={getStripePromise()}
-                      options={{ clientSecret }}
-                    >
+                    <EmbeddedCheckoutProvider stripe={getStripePromise()} options={{ clientSecret }}>
                       <EmbeddedCheckout />
                     </EmbeddedCheckoutProvider>
                   </div>
-
-                  {/* Trust footer */}
                   <div className="flex items-center justify-center gap-2 mt-4 text-xs" style={{ color: 'var(--color-text-disabled)' }}>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                     Secure checkout powered by Stripe
@@ -211,13 +180,37 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   transition={{ duration: 0.2 }}
                 >
                   {/* Header */}
-                  <div className="text-center pt-6 pb-4 px-5">
-                    <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-disabled)', letterSpacing: '0.1em' }}>Plot Twists Presents</p>
-                    <h2 className="text-xl font-bold font-display" style={{ color: 'var(--color-text-primary)' }}>Script Credits</h2>
-                    <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>Buy once, use anytime. Credits never expire.</p>
+                  <div className="flex items-center justify-between px-5 pt-6 pb-2">
+                    <h2 className="font-display" style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                      Get credits
+                    </h2>
+                    <button
+                      onClick={handleClose}
+                      aria-label="Close"
+                      className="w-8 h-8 flex items-center justify-center rounded-full"
+                      style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer' }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                    </button>
                   </div>
 
-                  {/* Success */}
+                  {/* Current balance */}
+                  {currentBalance !== undefined && (
+                    <div className="text-center py-4">
+                      <p style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>Current balance</p>
+                      <div className="flex items-baseline justify-center gap-1.5 mt-1">
+                        <span className="font-display" style={{ fontSize: '48px', fontWeight: 700, color: 'var(--color-text-primary)', lineHeight: 1 }}>
+                          {currentBalance}
+                        </span>
+                        <span style={{ fontSize: '18px', color: 'var(--color-text-tertiary)' }}>credits</span>
+                      </div>
+                      <p style={{ fontSize: '13px', color: 'var(--color-accent)', marginTop: '4px' }}>
+                        1 credit = 1 script generation
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Messages */}
                   {successMessage && (
                     <motion.div
                       className="mx-5 mb-3 px-3 py-2 rounded-lg text-sm text-center"
@@ -228,8 +221,6 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                       {successMessage}
                     </motion.div>
                   )}
-
-                  {/* Error */}
                   {error && (
                     <motion.div
                       className="mx-5 mb-3 px-3 py-2 rounded-lg text-sm text-center"
@@ -241,77 +232,126 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                     </motion.div>
                   )}
 
-                  {/* Package list */}
-                  <div className="px-5 space-y-2">
+                  {/* Package tiers */}
+                  <div className="px-5 space-y-3">
                     {CREDIT_PACKAGES.map((pkg, i) => {
-                      const meta = PACKAGE_META[pkg.id] || { tagline: '' }
+                      const isSelected = selectedPkgId === pkg.id
                       const isBest = pkg.id === BEST_VALUE_ID
                       const perScript = (pkg.price / pkg.scripts / 100).toFixed(2)
-                      const isLoading = loading === pkg.id
-                      const isDimmed = loading !== null && !isLoading
 
                       return (
                         <motion.button
                           key={pkg.id}
-                          onClick={() => handlePurchase(pkg.id)}
-                          disabled={loading !== null}
-                          className="w-full flex items-center gap-3 p-3 rounded-xl text-left relative"
+                          onClick={() => setSelectedPkgId(pkg.id)}
+                          className="w-full flex items-center gap-4 p-4 rounded-xl text-left relative"
                           style={{
-                            background: isBest ? 'var(--color-accent-light)' : 'var(--color-surface-alt)',
-                            border: isBest ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
-                            cursor: loading ? 'default' : 'pointer',
-                            opacity: isDimmed ? 0.4 : 1,
-                            transition: 'opacity 0.2s',
+                            background: isSelected ? 'var(--color-accent-light, rgba(245,158,66,0.08))' : 'var(--color-surface)',
+                            border: isSelected ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
+                            cursor: 'pointer',
                           }}
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: isDimmed ? 0.4 : 1, x: 0 }}
-                          transition={{ delay: i * 0.06 + 0.1 }}
-                          whileHover={loading ? undefined : { x: 4 }}
-                          whileTap={loading ? undefined : { scale: 0.985 }}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.05 + 0.1 }}
+                          whileTap={{ scale: 0.98 }}
                         >
                           {isBest && (
                             <span
-                              className="absolute -top-2.5 right-3 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                              style={{ background: 'var(--color-accent)', color: '#fff' }}
+                              className="absolute -top-2.5 right-4 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
+                              style={{ background: 'var(--color-accent)', color: '#fff', fontSize: '10px', letterSpacing: '0.05em' }}
                             >
                               Best Value
                             </span>
                           )}
 
+                          {/* Circle badge */}
+                          <div
+                            className="flex items-center justify-center rounded-xl shrink-0"
+                            style={{
+                              width: 48,
+                              height: 48,
+                              background: isSelected ? 'var(--color-accent)' : 'var(--color-surface-alt)',
+                              color: isSelected ? '#fff' : 'var(--color-text-secondary)',
+                              fontSize: '18px',
+                              fontWeight: 700,
+                              borderRadius: '12px',
+                            }}
+                          >
+                            {pkg.scripts}
+                          </div>
+
+                          {/* Label + per-script */}
                           <div className="flex-1 min-w-0">
-                            <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{pkg.label}</div>
-                            <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{meta.tagline}</div>
+                            <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                              {pkg.scripts} credits
+                            </div>
+                            <div style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
+                              ${perScript} per script
+                            </div>
                           </div>
 
-                          <div className="text-right shrink-0">
-                            <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{pkg.scripts} scripts</div>
-                            <div className="text-[10px]" style={{ color: 'var(--color-text-disabled)' }}>${perScript} each</div>
-                          </div>
-
-                          <div className="w-14 text-right shrink-0">
-                            {isLoading ? (
-                              <div
-                                className="w-5 h-5 rounded-full border-2 ml-auto"
-                                style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-accent)', animation: 'spin 0.6s linear infinite' }}
-                              />
-                            ) : (
-                              <span className="text-base font-bold" style={{ color: 'var(--color-text-primary)' }}>${(pkg.price / 100).toFixed(0)}</span>
-                            )}
+                          {/* Price */}
+                          <div className="shrink-0">
+                            <span style={{ fontSize: '20px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                              ${(pkg.price / 100).toFixed(2)}
+                            </span>
                           </div>
                         </motion.button>
                       )
                     })}
                   </div>
 
-                  {/* Footer */}
-                  <div className="text-center py-4 px-5">
-                    <button
-                      onClick={handleClose}
-                      className="text-sm"
-                      style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}
+                  {/* Free credits info */}
+                  <div
+                    className="mx-5 mt-4 flex items-center gap-3 px-4 py-3 rounded-xl"
+                    style={{ background: 'var(--color-success-light, rgba(16,185,129,0.08))' }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{ color: 'var(--color-success)', flexShrink: 0 }}>
+                      <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
+                      <path d="M10 5.5V10l3 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <div>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)' }}>5 free credits weekly</p>
+                      <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>Resets every Monday</p>
+                    </div>
+                  </div>
+
+                  {/* Purchase CTA */}
+                  <div className="px-5 pt-6 pb-3">
+                    <motion.button
+                      onClick={() => selectedPkg && handlePurchase(selectedPkg.id)}
+                      disabled={loading !== null || !selectedPkg}
+                      className="w-full"
+                      style={{
+                        padding: '16px 24px',
+                        borderRadius: '14px',
+                        fontSize: '17px',
+                        fontWeight: 700,
+                        background: loading ? 'var(--color-surface-alt)' : 'var(--color-accent)',
+                        color: loading ? 'var(--color-text-tertiary)' : '#fff',
+                        border: 'none',
+                        cursor: loading ? 'default' : 'pointer',
+                      }}
+                      whileHover={loading ? undefined : { scale: 1.02 }}
+                      whileTap={loading ? undefined : { scale: 0.98 }}
                     >
-                      Maybe later
-                    </button>
+                      {loading ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <span className="w-4 h-4 rounded-full border-2" style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-accent)', animation: 'spin 0.6s linear infinite' }} />
+                          Processing...
+                        </span>
+                      ) : selectedPkg ? (
+                        `Purchase ${selectedPkg.scripts} credits — $${(selectedPkg.price / 100).toFixed(2)}`
+                      ) : (
+                        'Select a package'
+                      )}
+                    </motion.button>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="text-center pb-5 px-5">
+                    <p style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
+                      One-time purchase. No subscription.
+                    </p>
                     {isIOSNative() && (
                       <button
                         onClick={async () => {
@@ -327,7 +367,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                           setRestoringPurchases(false)
                         }}
                         disabled={restoringPurchases}
-                        className="block mx-auto mt-1 text-xs"
+                        className="mt-2 text-xs"
                         style={{ background: 'none', border: 'none', color: 'var(--color-text-disabled)', cursor: 'pointer' }}
                       >
                         {restoringPurchases ? 'Restoring...' : 'Restore Purchases'}

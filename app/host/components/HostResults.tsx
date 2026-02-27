@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import type { Script, GameResults, XPEvent, LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
 import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
-import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { VARIANTS } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
 import { withTimeout } from '@/lib/socketTimeout'
@@ -49,6 +48,7 @@ export function HostResults({
   const [shareCopied, setShareCopied] = useState(false)
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
   const [directorsReview, setDirectorsReview] = useState<DirectorsReviewType | null>(null)
+  const [posterError, setPosterError] = useState(false)
 
   // Fire confetti on results reveal
   useEffect(() => {
@@ -190,50 +190,174 @@ export function HostResults({
     }
   }
 
+  const winner = gameResults?.winner
+  const castNames = gameResults?.allResults?.map(r => r.playerName) ?? []
+
   return (
-    <motion.div key="results" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="container max-w-4xl">
-      <div className="card text-center">
-        {gameResults?.winner ? (
-          <>
-            {/* Trophy */}
-            <div className="relative inline-block mb-8">
-              <motion.div
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-44 h-44 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)' }}
-                animate={{ opacity: [0.2, 0.3, 0.2], scale: [0.95, 1.05, 0.95] }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              />
-              <motion.div className="text-9xl relative" initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}>🏆</motion.div>
-            </div>
+    <motion.div
+      key="results"
+      variants={VARIANTS.spotlight}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="min-h-dvh w-full flex flex-col"
+      style={{ background: '#1A1714' }}
+    >
+      <div className="w-full max-w-lg mx-auto px-5 py-6 flex flex-col flex-1">
+        {/* Top bar: THAT'S A WRAP + Share */}
+        <motion.div
+          className="flex items-center justify-between mb-6"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <span
+            className="font-display text-sm tracking-widest uppercase"
+            style={{ color: '#9B9590', letterSpacing: '0.15em' }}
+          >
+            That&apos;s a Wrap
+          </span>
+          {script && (
+            <motion.button
+              onClick={handleShareScene}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium"
+              style={{
+                color: '#FDFCFA',
+                background: 'transparent',
+                border: '1px solid rgba(155, 149, 144, 0.35)',
+              }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              disabled={isSharing}
+            >
+              <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
+              <span>{isSharing ? 'Sharing...' : shareCopied ? 'Copied!' : 'Share'}</span>
+            </motion.button>
+          )}
+        </motion.div>
 
-            {scriptImageUrl && <MoviePosterFrame imageUrl={scriptImageUrl} title={script?.title} onClick={onShowPosterLightbox} maxWidth={280} variant="results" />}
+        {/* Hero Poster */}
+        <motion.div
+          className="relative w-full rounded-2xl overflow-hidden mb-6"
+          style={{ aspectRatio: '3/4', cursor: scriptImageUrl ? 'pointer' : undefined }}
+          onClick={scriptImageUrl ? onShowPosterLightbox : undefined}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {scriptImageUrl && !posterError ? (
+            <img
+              src={scriptImageUrl}
+              alt={`${script?.title ?? 'Movie'} Poster`}
+              loading="lazy"
+              onError={() => setPosterError(true)}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(135deg, #2A1F3D, #1A1714)',
+              }}
+            />
+          )}
 
-            <motion.h1 className="hero-title mb-4" style={{ color: 'var(--color-accent)' }} initial={{ y: -30, opacity: 0, filter: 'blur(8px)' }} animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 0.5, duration: 0.5 }} aria-live="polite" aria-atomic="true">
-              {gameResults.winner.playerName} Wins!
+          {/* Gradient overlay at bottom for text */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '55%',
+              background: 'linear-gradient(to top, rgba(26,23,20,0.95) 0%, rgba(26,23,20,0.7) 40%, transparent 100%)',
+              pointerEvents: 'none',
+            }}
+          />
+
+          {/* Title + production + cast overlaid at bottom */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              padding: '24px',
+              pointerEvents: 'none',
+            }}
+          >
+            <motion.h1
+              className="font-display"
+              style={{
+                color: '#FDFCFA',
+                fontSize: 'clamp(1.75rem, 6vw, 2.5rem)',
+                fontWeight: 700,
+                lineHeight: 1.1,
+                marginBottom: 8,
+              }}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              {script?.title ?? 'Performance Complete'}
             </motion.h1>
-            <motion.p className="text-2xl mb-12" style={{ color: 'var(--color-text-secondary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>
-              <span style={{ color: 'var(--color-accent)', fontWeight: 700 }}>MVP</span> with {gameResults.winner.votes} vote{gameResults.winner.votes !== 1 ? 's' : ''}
+            <motion.p
+              className="uppercase tracking-widest text-xs font-medium"
+              style={{ color: '#9B9590', letterSpacing: '0.12em', marginBottom: 8 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              A Plot Twists Production
             </motion.p>
+            {castNames.length > 0 && (
+              <motion.p
+                className="text-sm"
+                style={{ color: 'rgba(155, 149, 144, 0.8)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7 }}
+              >
+                {castNames.join('  /  ')}
+              </motion.p>
+            )}
+          </div>
+        </motion.div>
 
-            <Standings results={gameResults.allResults} />
-            <ScriptSummary script={script} scriptImageUrl={scriptImageUrl} copySuccess={copySuccess} onCopy={handleCopyScript} onDownload={handleDownloadScript} />
-          </>
-        ) : (
-          <>
-            <div className="relative inline-block mb-8">
-              <motion.div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, var(--color-accent-2) 0%, transparent 70%)' }} animate={{ opacity: [0.1, 0.25, 0.1], scale: [0.9, 1.1, 0.9] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
-              <motion.div className="text-9xl relative" initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}>🎉</motion.div>
-            </div>
-            {scriptImageUrl && <MoviePosterFrame imageUrl={scriptImageUrl} title={script?.title} onClick={onShowPosterLightbox} maxWidth={280} variant="results" />}
-            <motion.h1 className="hero-title mb-6" style={{ color: 'var(--color-text-primary)' }} initial={{ y: -30, opacity: 0, filter: 'blur(8px)' }} animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 0.5, duration: 0.5 }}>Performance Complete!</motion.h1>
-            <motion.p className="text-2xl mb-12" style={{ color: 'var(--color-text-secondary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>Thanks for playing!</motion.p>
-          </>
+        {/* MVP line */}
+        {winner && (
+          <motion.div
+            className="flex items-center justify-center gap-2 mb-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <div className="flex-1 h-px" style={{ background: 'rgba(155, 149, 144, 0.2)' }} />
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="#F59E42" />
+            </svg>
+            <span className="font-display font-bold" style={{ color: '#F59E42' }}>
+              {winner.playerName} is MVP
+            </span>
+            <span className="text-sm" style={{ color: '#9B9590' }}>
+              {winner.votes} vote{winner.votes !== 1 ? 's' : ''}
+            </span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(155, 149, 144, 0.2)' }} />
+          </motion.div>
         )}
 
         {/* XP Progression */}
         <XPGainAnimation events={xpEvents} show={xpEvents.length > 0} />
         {levelInfo && (
-          <motion.div className="w-full max-w-md mx-auto mt-4" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}>
+          <motion.div className="w-full max-w-md mx-auto mt-2 mb-2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}>
             <XPBar levelInfo={levelInfo} compact />
           </motion.div>
         )}
@@ -241,15 +365,15 @@ export function HostResults({
 
         {/* Highlights */}
         {gameResults?.highlights && gameResults.highlights.length > 0 && (
-          <motion.div className="w-full max-w-md mx-auto mt-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}>
-            <details className="rounded-xl overflow-hidden" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}>
-              <summary className="p-4 cursor-pointer text-center font-semibold" style={{ color: 'var(--color-text-primary)' }}>🏆 Game Highlights</summary>
+          <motion.div className="w-full mt-4 mb-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}>
+            <details className="rounded-xl overflow-hidden" style={{ background: 'rgba(253, 252, 250, 0.04)', border: '1px solid rgba(155, 149, 144, 0.15)' }}>
+              <summary className="p-4 cursor-pointer text-center font-semibold text-sm" style={{ color: '#9B9590' }}>Game Highlights</summary>
               <div className="px-4 pb-4 grid grid-cols-2 gap-3">
                 {gameResults.highlights.map((h, i) => (
-                  <motion.div key={h.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }} className="text-center p-3 rounded-lg" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                  <motion.div key={h.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }} className="text-center p-3 rounded-lg" style={{ background: 'rgba(253, 252, 250, 0.04)', border: '1px solid rgba(155, 149, 144, 0.1)' }}>
                     <div className="text-2xl mb-1">{h.icon}</div>
-                    <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{h.label}</div>
-                    <div className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{h.value}</div>
+                    <div className="text-xs" style={{ color: '#9B9590' }}>{h.label}</div>
+                    <div className="font-semibold text-sm" style={{ color: '#FDFCFA' }}>{h.value}</div>
                   </motion.div>
                 ))}
               </div>
@@ -259,134 +383,146 @@ export function HostResults({
 
         {/* Director's Review */}
         {directorsReview && (
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-center mt-4">
             <DirectorsReview review={directorsReview} delay={1.0} />
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex flex-col gap-4 items-center mt-8">
-          {script && (
-            <motion.button onClick={handleShareScene} className="btn btn-large" style={{ maxWidth: '320px', width: '100%', background: 'linear-gradient(135deg, var(--color-purple), var(--color-pink))', color: 'white', border: 'none' }}
-              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} disabled={isSharing}>
-              <span>{shareCopied ? '✓' : '🔗'}</span><span>{isSharing ? 'Sharing...' : shareCopied ? 'Link Copied!' : 'Share This Scene'}</span>
+        {/* Action pills: Save, Copy script, Replay */}
+        {script && (
+          <motion.div
+            className="flex gap-3 mt-6 mb-2"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+          >
+            <motion.button
+              onClick={handleDownloadScript}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
+              style={{
+                color: '#FDFCFA',
+                background: 'rgba(253, 252, 250, 0.06)',
+                border: '1px solid rgba(155, 149, 144, 0.2)',
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 10V13C2 13.5523 2.44772 14 3 14H13C13.5523 14 14 13.5523 14 13V10" stroke="#9B9590" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M8 2V10M8 10L5 7M8 10L11 7" stroke="#9B9590" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Save
             </motion.button>
-          )}
+            <motion.button
+              onClick={handleCopyScript}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
+              style={{
+                color: '#FDFCFA',
+                background: 'rgba(253, 252, 250, 0.06)',
+                border: '1px solid rgba(155, 149, 144, 0.2)',
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="#9B9590" strokeWidth="1.5" />
+                <path d="M11 5V3.5C11 2.67157 10.3284 2 9.5 2H3.5C2.67157 2 2 2.67157 2 3.5V9.5C2 10.3284 2.67157 11 3.5 11H5" stroke="#9B9590" strokeWidth="1.5" />
+              </svg>
+              {copySuccess ? 'Copied!' : 'Copy script'}
+            </motion.button>
+            <motion.button
+              onClick={onRequestSequel}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
+              style={{
+                color: '#FDFCFA',
+                background: 'rgba(253, 252, 250, 0.06)',
+                border: '1px solid rgba(155, 149, 144, 0.2)',
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="6" stroke="#9B9590" strokeWidth="1.5" />
+                <path d="M8 5V8L10 10" stroke="#9B9590" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              Replay
+            </motion.button>
+          </motion.div>
+        )}
+
+        {/* Share buttons (character + poster) */}
+        <motion.div
+          className="flex gap-3 mt-2 mb-2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1 }}
+        >
           <motion.button
             onClick={handleShareCharacter}
-            className="btn btn-large w-full"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium"
             style={{
-              maxWidth: '320px',
-              background: 'var(--color-surface)',
-              border: '1.5px solid var(--color-border)',
-              color: 'var(--color-text-primary)',
+              color: '#9B9590',
+              background: 'transparent',
+              border: '1px solid rgba(155, 149, 144, 0.15)',
             }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2 }}
             whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.97 }}
           >
-            Share My Character
+            Share Character
           </motion.button>
           <motion.button
             onClick={() => handleSharePoster('story')}
-            className="btn btn-large w-full"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium"
             style={{
-              maxWidth: '320px',
-              background: 'var(--color-surface)',
-              border: '1.5px solid var(--color-border)',
-              color: 'var(--color-text-primary)',
+              color: '#9B9590',
+              background: 'transparent',
+              border: '1px solid rgba(155, 149, 144, 0.15)',
             }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.3 }}
             whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={{ scale: 0.97 }}
           >
             Share Poster
           </motion.button>
-          {script && (
-            <motion.button onClick={onRequestSequel} className="btn btn-primary btn-large" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.4 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <span>🎬</span><span>Generate Sequel</span>
-            </motion.button>
-          )}
-          <motion.button onClick={() => onRequestNewGame(false)} className="btn btn-secondary btn-large" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <span>🔄</span><span>New Round — Same Players</span>
-          </motion.button>
-          <motion.button onClick={() => router.push('/')} className="btn btn-ghost" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.7 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <span>🚪</span><span>Exit to Home</span>
-          </motion.button>
-        </div>
-      </div>
-    </motion.div>
-  )
-}
+        </motion.div>
 
-function Standings({ results }: { results: { playerId: string; playerName: string; votes: number }[] }) {
-  if (!results || results.length <= 1) return null
-  const maxVotes = Math.max(...results.map(r => r.votes), 1)
-  const totalVotes = results.reduce((sum, r) => sum + r.votes, 0)
+        {/* Spacer to push bottom actions down */}
+        <div className="flex-1" />
 
-  return (
-    <motion.div className="mb-12" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}>
-      <h2 className="font-display text-2xl mb-6" style={{ color: 'var(--color-text-primary)' }}>Final Standings</h2>
-      <div className="flex flex-col gap-4">
-        {results.map((result, index) => {
-          const percentage = totalVotes > 0 ? Math.round((result.votes / totalVotes) * 100) : 0
-          const barColor = index === 0 ? 'var(--color-accent)' : index === 1 ? 'var(--color-accent-2)' : 'var(--color-border-strong)'
-          const isWinner = index === 0
-          return (
-            <motion.div key={result.playerId}
-              className="text-left rounded-xl"
-              style={{
-                background: isWinner ? 'var(--color-highlight)' : 'var(--color-surface-alt)',
-                border: isWinner ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
-                padding: '20px 24px',
-              }}
-              initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9 + index * 0.15 }}
-            >
-              <div className="flex items-center justify-between mb-2.5">
-                <div className="flex items-center gap-3">
-                  <motion.span style={{ fontSize: isWinner ? 36 : 28, display: 'inline-block' }} initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.95 + index * 0.15 }}>
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🎭'}
-                  </motion.span>
-                  <span className="font-display" style={{ fontSize: isWinner ? 22 : 18, fontWeight: isWinner ? 700 : 600, color: 'var(--color-text-primary)' }}>{result.playerName}</span>
-                </div>
-                <span style={{ fontSize: isWinner ? 22 : 18, fontWeight: 700, color: barColor }}>{result.votes}</span>
-              </div>
-              <div className="w-full rounded-full overflow-hidden relative" style={{ height: isWinner ? 12 : 8, background: 'var(--color-border)' }}>
-                <motion.div className="h-full rounded-full relative overflow-hidden" style={{ background: barColor }}
-                  initial={{ width: '0%' }} animate={{ width: `${maxVotes > 0 ? (result.votes / maxVotes) * 100 : 0}%` }}
-                  transition={{ delay: 0.9 + index * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                >
-                  {isWinner && <div className="progress-bar-shimmer absolute inset-0" />}
-                </motion.div>
-              </div>
-              <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>{percentage}% of votes</p>
-            </motion.div>
-          )
-        })}
-      </div>
-    </motion.div>
-  )
-}
+        {/* Play again — large amber button */}
+        <motion.button
+          onClick={() => onRequestNewGame(false)}
+          className="w-full py-4 rounded-2xl font-display text-lg font-bold"
+          style={{
+            background: '#F59E42',
+            color: '#1A1714',
+            border: 'none',
+          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.3 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          Play again
+        </motion.button>
 
-function ScriptSummary({ script, scriptImageUrl, copySuccess, onCopy, onDownload }: {
-  script: Script | null; scriptImageUrl: string | null; copySuccess: boolean; onCopy: () => void; onDownload: () => void
-}) {
-  if (!script) return null
-  return (
-    <motion.div className="card text-left" style={{ background: 'var(--color-surface-alt)', padding: '20px 24px' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
-      {!scriptImageUrl && (
-        <>
-          <p className="font-script font-bold text-lg mb-1" style={{ color: 'var(--color-text-primary)' }}>{script.title}</p>
-          <p className="italic text-sm mb-3" style={{ color: 'var(--color-text-tertiary)' }}>{script.synopsis}</p>
-        </>
-      )}
-      <div className="flex gap-3 flex-wrap">
-        <motion.button onClick={onDownload} className="btn btn-secondary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>{'share' in navigator ? '📤' : '💾'}</span><span>{'share' in navigator ? 'Share Script' : 'Download Script'}</span></motion.button>
-        <motion.button onClick={onCopy} className="btn btn-ghost" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>{copySuccess ? '✓' : '📋'}</span><span>{copySuccess ? 'Copied!' : 'Copy to Clipboard'}</span></motion.button>
+        {/* Back to lobby */}
+        <motion.button
+          onClick={() => router.push('/')}
+          className="w-full py-4 text-sm font-medium"
+          style={{
+            color: '#9B9590',
+            background: 'transparent',
+            border: 'none',
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          Back to lobby
+        </motion.button>
       </div>
     </motion.div>
   )

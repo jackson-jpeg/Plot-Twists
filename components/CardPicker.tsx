@@ -393,14 +393,15 @@ export function CardPicker({
                         <motion.button
                           key={category.id}
                           onClick={() => toggleCategory(category.id)}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-full whitespace-nowrap"
+                          className="flex items-center gap-1 px-3 py-2 rounded-full whitespace-nowrap"
                           style={{
                             background: isSelected ? activeTabConfig.color : 'var(--color-surface-alt)',
                             color: isSelected ? 'white' : 'var(--color-text-secondary)',
                             border: `1px solid ${isSelected ? activeTabConfig.color : 'var(--color-border)'}`,
-                            fontSize: '13px',
+                            fontSize: '14px',
                             fontWeight: isSelected ? 600 : 400,
                             flexShrink: 0,
+                            minHeight: '36px',
                           }}
                           whileTap={{ scale: 0.95 }}
                         >
@@ -431,8 +432,8 @@ export function CardPicker({
                 </span>
                 <button
                   onClick={toggleCustom}
-                  className="text-xs flex items-center gap-1 px-2 py-1 rounded-md transition-colors"
-                  style={{ color: 'var(--color-text-secondary)', background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
+                  className="text-sm flex items-center gap-1 px-3 py-2 rounded-md transition-colors"
+                  style={{ color: 'var(--color-text-secondary)', background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', cursor: 'pointer', minHeight: '36px' }}
                 >
                   ✎ Write your own
                 </button>

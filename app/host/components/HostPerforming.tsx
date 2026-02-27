@@ -13,6 +13,7 @@ import { SpectatorTicker } from '@/components/SpectatorChat'
 import { MoviePosterFrame, MoviePosterSkeleton } from '@/components/MoviePosterFrame'
 import { VARIANTS, MOTION } from '@/lib/animations'
 import { tapHaptic } from '@/hooks/useHaptics'
+import { PauseIcon, PlayIcon, ChaosIcon } from '@/components/GameIcons'
 
 export interface HostPerformingProps {
   script: Script
@@ -70,7 +71,22 @@ export function HostPerforming({
   }, [currentLineIndex, teleprompterSettings.autoScroll])
 
   return (
-    <motion.div key="performing" variants={VARIANTS.curtainRise} initial="initial" animate="animate" exit="exit" className="container max-w-5xl">
+    <motion.div
+      key="performing"
+      variants={VARIANTS.curtainRise}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="container max-w-5xl"
+      style={{
+        background: '#1A1714',
+        color: '#FDFCFA',
+        minHeight: '100vh',
+        margin: '0 auto',
+        padding: '1.5rem',
+        borderRadius: '0',
+      }}
+    >
       <SpectatorTicker messages={spectatorMessages} />
       {!isSoloMode && <AudienceReactionBar roomCode={roomCode} isPerforming={true} isHost={true} />}
       {!isSoloMode && <PlotTwistVoting roomCode={roomCode} isHost={true} />}
@@ -88,32 +104,59 @@ export function HostPerforming({
         ) : null}
       </AnimatePresence>
 
-      {/* Meta Info */}
-      <motion.div className="mb-6" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+      {/* Scene indicator + timer */}
+      <motion.div className="mb-4" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
         <div className="flex items-center justify-between gap-4 mb-2">
-          <h2 className="text-2xl sm:text-3xl font-display min-w-0 truncate" style={{ color: 'var(--color-text-primary)' }}>{script.title}</h2>
+          <span
+            className="text-xs font-semibold uppercase tracking-widest"
+            style={{ color: '#9B9590', letterSpacing: '0.15em' }}
+          >
+            Line {currentLineIndex + 1} of {script.lines.length}
+          </span>
           {networkLatency !== null && (
             <motion.div
-              className="flex items-center gap-2 px-3 py-1 rounded-full text-xs shrink-0"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs shrink-0"
               style={{
-                background: networkLatency < 100 ? 'var(--color-success)' : networkLatency < 300 ? 'var(--color-warning)' : 'var(--color-danger)',
-                color: 'white', opacity: 0.8
+                background: networkLatency < 100 ? 'rgba(76, 175, 80, 0.2)' : networkLatency < 300 ? 'rgba(245, 158, 66, 0.2)' : 'rgba(215, 122, 122, 0.2)',
+                color: networkLatency < 100 ? '#82B682' : networkLatency < 300 ? '#F59E42' : '#D77A7A',
               }}
-              initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 0.8, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
               title={`Network latency: ${networkLatency}ms`}
               aria-label={`Network latency: ${networkLatency}ms, ${networkLatency < 100 ? 'good' : networkLatency < 300 ? 'moderate' : 'poor'}`}
             >
-              <span aria-hidden="true">{networkLatency < 100 ? '🟢' : networkLatency < 300 ? '🟡' : '🔴'}</span>
+              <span
+                style={{
+                  width: 6, height: 6, borderRadius: '50%', display: 'inline-block',
+                  background: networkLatency < 100 ? '#82B682' : networkLatency < 300 ? '#F59E42' : '#D77A7A',
+                }}
+              />
               <span>{networkLatency}ms</span>
             </motion.div>
           )}
         </div>
-        <p className="text-lg italic mb-4" style={{ color: 'var(--color-text-secondary)' }}>{script.synopsis}</p>
-        <p className="text-sm mb-4" style={{ color: 'var(--color-text-tertiary)' }}>Characters: {getCharactersInScene(script).join(', ')}</p>
-        <div className="flex items-center gap-4">
-          <span className="font-script font-bold" style={{ color: 'var(--color-accent)' }}>LINE {currentLineIndex + 1}/{script.lines.length}</span>
-          <div className="progress flex-1">
-            <motion.div className="progress-bar" initial={{ width: '0%' }} animate={{ width: `${((currentLineIndex + 1) / script.lines.length) * 100}%` }} transition={{ duration: 0.3 }} />
+
+        {/* Title */}
+        <h2
+          className="text-2xl sm:text-3xl font-display font-bold min-w-0 truncate mb-1"
+          style={{ color: '#FDFCFA' }}
+        >
+          {script.title}
+        </h2>
+        <p className="text-sm italic mb-4" style={{ color: '#9B9590' }}>{script.synopsis}</p>
+        <p className="text-xs mb-4" style={{ color: '#6B6560' }}>
+          {getCharactersInScene(script).join(' / ')}
+        </p>
+
+        {/* Progress bar */}
+        <div className="flex items-center gap-3">
+          <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(155, 149, 144, 0.2)' }}>
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: '#F59E42' }}
+              initial={{ width: '0%' }}
+              animate={{ width: `${((currentLineIndex + 1) / script.lines.length) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
           </div>
         </div>
       </motion.div>
@@ -124,31 +167,75 @@ export function HostPerforming({
       </motion.div>
 
       {/* Script */}
-      <motion.div ref={scriptContainerRef} className="script-container mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <div className="script-title">{script.title}</div>
+      <motion.div
+        ref={scriptContainerRef}
+        className="mb-6 rounded-xl p-4 sm:p-6"
+        style={{ background: 'rgba(253, 252, 250, 0.03)' }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
         <AnimatePresence mode="sync">
           {getVisibleLines(script.lines, currentLineIndex, teleprompterSettings).map(({ line, originalIndex }) => {
+            const isCurrent = originalIndex === currentLineIndex
+            const isPast = originalIndex < currentLineIndex
             const moodIndicator = getMoodIndicator(line.mood)
+            const isStageDirection = line.speaker?.toLowerCase() === 'stage direction' || line.speaker?.toLowerCase() === 'narrator'
+
             return (
               <motion.div
                 key={originalIndex}
-                className={`script-line ${originalIndex === currentLineIndex ? 'script-line-active' : originalIndex < currentLineIndex ? 'script-line-past' : 'script-line-upcoming'}`}
-                initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }} data-line-index={originalIndex}
+                className="py-3 px-4 rounded-lg mb-2"
+                style={{
+                  background: isCurrent ? 'rgba(245, 158, 66, 0.08)' : 'transparent',
+                  borderLeft: isCurrent ? '3px solid #F59E42' : '3px solid transparent',
+                  opacity: isPast ? 0.4 : 1,
+                  transition: 'background 0.2s, opacity 0.2s',
+                }}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: isPast ? 0.4 : 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                data-line-index={originalIndex}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="script-character">{line.speaker}</div>
-                  {originalIndex === currentLineIndex && (
-                    <motion.div className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold"
-                      style={{ background: `${moodIndicator.color}20`, border: `1px solid ${moodIndicator.color}60`, color: moodIndicator.color }}
-                      initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={MOTION.spring}
+                {isStageDirection ? (
+                  <p className="text-sm italic" style={{ color: 'rgba(245, 158, 66, 0.6)' }}>
+                    ({line.text})
+                  </p>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-1">
+                      <span
+                        className="text-xs font-bold uppercase tracking-widest"
+                        style={{ color: '#F59E42', letterSpacing: '0.12em' }}
+                      >
+                        {line.speaker}
+                      </span>
+                      {isCurrent && moodIndicator.label !== 'Neutral' && (
+                        <motion.span
+                          className="text-xs font-medium px-2 py-0.5 rounded-full"
+                          style={{
+                            background: `${moodIndicator.color}15`,
+                            color: moodIndicator.color,
+                            border: `1px solid ${moodIndicator.color}30`,
+                          }}
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          transition={MOTION.spring}
+                        >
+                          {moodIndicator.label}
+                        </motion.span>
+                      )}
+                    </div>
+                    <p
+                      className="text-base sm:text-lg leading-relaxed"
+                      style={{ color: isCurrent ? '#FDFCFA' : '#C8C3BE' }}
                     >
-                      <span className="text-base" aria-hidden="true">{moodIndicator.emoji}</span>
-                      <span>{moodIndicator.label}</span>
-                    </motion.div>
-                  )}
-                </div>
-                <div className="script-dialogue">{line.text}</div>
+                      {line.text}
+                    </p>
+                  </>
+                )}
               </motion.div>
             )
           })}
@@ -156,52 +243,122 @@ export function HostPerforming({
       </motion.div>
 
       {/* Controls */}
-      <motion.div className="card" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
-        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-3 flex-wrap">
-          <motion.button onClick={() => { tapHaptic(); onPreviousLine() }} disabled={currentLineIndex === 0} className="btn btn-ghost" style={{ opacity: currentLineIndex === 0 ? 0.5 : 1 }}
-            whileHover={{ scale: currentLineIndex === 0 ? 1 : 1.05, x: currentLineIndex === 0 ? 0 : -2 }} whileTap={{ scale: currentLineIndex === 0 ? 1 : 0.95 }} aria-label="Previous line"><span className="hidden sm:inline">← </span>Prev</motion.button>
-          <motion.button onClick={() => { tapHaptic(); onTogglePlayPause() }} className="btn btn-primary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} aria-label={isPlaying ? 'Pause teleprompter' : 'Play teleprompter'}>{isPlaying ? '⏸ Pause' : '▶ Play'}</motion.button>
+      <motion.div
+        className="rounded-xl p-4"
+        style={{ background: 'rgba(253, 252, 250, 0.05)', border: '1px solid rgba(155, 149, 144, 0.15)' }}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 flex-wrap">
           <motion.button
-            onClick={onTriggerChaos} disabled={chaosCooldown}
+            onClick={() => { tapHaptic(); onPreviousLine() }}
+            disabled={currentLineIndex === 0}
+            className="btn btn-ghost"
+            style={{
+              opacity: currentLineIndex === 0 ? 0.3 : 0.8,
+              color: '#FDFCFA',
+              border: '1px solid rgba(155, 149, 144, 0.2)',
+            }}
+            whileHover={{ scale: currentLineIndex === 0 ? 1 : 1.05, x: currentLineIndex === 0 ? 0 : -2 }}
+            whileTap={{ scale: currentLineIndex === 0 ? 1 : 0.95 }}
+            aria-label="Previous line"
+          >
+            <span className="hidden sm:inline">&larr; </span>Prev
+          </motion.button>
+
+          {/* Play/Pause circle button */}
+          <motion.button
+            onClick={() => { tapHaptic(); onTogglePlayPause() }}
+            className="flex items-center justify-center rounded-full"
+            style={{
+              width: '52px',
+              height: '52px',
+              background: '#F59E42',
+              color: '#1A1714',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
+            aria-label={isPlaying ? 'Pause teleprompter' : 'Play teleprompter'}
+          >
+            {isPlaying ? <PauseIcon size={22} color="#1A1714" /> : <PlayIcon size={22} color="#1A1714" />}
+          </motion.button>
+
+          <motion.button
+            onClick={onTriggerChaos}
+            disabled={chaosCooldown}
             className={`btn relative overflow-hidden ${chaosShaking ? 'animate-chaos-shake' : ''}`}
             style={{
-              background: chaosCooldown ? 'linear-gradient(135deg, var(--color-purple-dark, #6b21a8), var(--color-pink-dark, #9d174d))' : 'linear-gradient(135deg, var(--color-purple), var(--color-pink))',
-              color: 'white', opacity: chaosCooldown ? 0.7 : 1,
-              boxShadow: chaosCooldown ? 'none' : '0 0 15px var(--color-purple-glow, rgba(168, 85, 247, 0.4))',
+              background: chaosCooldown ? 'rgba(155, 149, 144, 0.15)' : 'linear-gradient(135deg, var(--color-purple), var(--color-pink))',
+              color: 'white',
+              opacity: chaosCooldown ? 0.5 : 1,
+              border: 'none',
             }}
-            whileHover={!chaosCooldown ? { scale: 1.05 } : {}} whileTap={!chaosCooldown ? { scale: 0.95 } : {}}
-            animate={!chaosCooldown ? { boxShadow: ['0 0 10px rgba(168, 85, 247, 0.3)', '0 0 25px rgba(168, 85, 247, 0.5)', '0 0 10px rgba(168, 85, 247, 0.3)'] } : {}}
+            whileHover={!chaosCooldown ? { scale: 1.05 } : {}}
+            whileTap={!chaosCooldown ? { scale: 0.95 } : {}}
+            animate={!chaosCooldown ? { boxShadow: ['0 0 10px rgba(168, 85, 247, 0.2)', '0 0 25px rgba(168, 85, 247, 0.4)', '0 0 10px rgba(168, 85, 247, 0.2)'] } : {}}
             transition={!chaosCooldown ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
           >
             {chaosCooldown ? (
-              <span className="flex items-center gap-2">🌀 {Math.ceil(chaosCooldownRemaining)}s</span>
+              <span className="flex items-center gap-2">
+                <ChaosIcon size={16} color="white" /> {Math.ceil(chaosCooldownRemaining)}s
+              </span>
             ) : (
-              <span className="flex items-center gap-2"><motion.span animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}>🌀</motion.span>{isSoloMode ? 'TWIST' : 'CHAOS'}</span>
+              <span className="flex items-center gap-2">
+                <ChaosIcon size={16} color="white" />{isSoloMode ? 'TWIST' : 'CHAOS'}
+              </span>
             )}
             {chaosCooldown && (
               <div className="absolute bottom-0 left-0 h-1 rounded-full" style={{ width: `${(chaosCooldownRemaining / 30) * 100}%`, background: 'linear-gradient(90deg, var(--color-purple), var(--color-pink))', transition: 'width 0.1s linear' }} />
             )}
           </motion.button>
-          <motion.button onClick={() => { tapHaptic(); onNextLine() }} disabled={currentLineIndex >= script.lines.length - 1} className="btn btn-ghost" style={{ opacity: currentLineIndex >= script.lines.length - 1 ? 0.5 : 1 }}
+
+          <motion.button
+            onClick={() => { tapHaptic(); onNextLine() }}
+            disabled={currentLineIndex >= script.lines.length - 1}
+            className="btn btn-ghost"
+            style={{
+              opacity: currentLineIndex >= script.lines.length - 1 ? 0.3 : 0.8,
+              color: '#FDFCFA',
+              border: '1px solid rgba(155, 149, 144, 0.2)',
+            }}
             whileHover={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 1.05, x: currentLineIndex >= script.lines.length - 1 ? 0 : 2 }}
-            whileTap={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 0.95 }} aria-label="Next line">Next<span className="hidden sm:inline"> →</span></motion.button>
+            whileTap={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 0.95 }}
+            aria-label="Next line"
+          >
+            Next<span className="hidden sm:inline"> &rarr;</span>
+          </motion.button>
         </div>
+
         {currentLineIndex >= script.lines.length - 1 && (
           <motion.button
             onClick={() => { tapHaptic(); onEndPerformance() }}
-            className="btn btn-primary w-full mt-3"
+            className="btn w-full mt-3 font-semibold"
+            style={{ background: '#F59E42', color: '#1A1714', border: 'none' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <span>🎭</span><span>Finish Scene → Vote</span>
+            Finish Scene -- Vote
           </motion.button>
         )}
-        <motion.p className="hidden sm:flex text-center text-xs items-center justify-center gap-2" style={{ color: 'var(--color-text-tertiary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'var(--color-surface-alt)' }}>←</kbd><span>Previous</span>
-          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'var(--color-surface-alt)' }}>Space</kbd><span>Play/Pause</span>
-          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'var(--color-surface-alt)' }}>→</kbd><span>Next</span>
+
+        <motion.p
+          className="hidden sm:flex text-center text-xs items-center justify-center gap-2 mt-3"
+          style={{ color: '#6B6560' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'rgba(155, 149, 144, 0.15)', color: '#9B9590' }}>&larr;</kbd>
+          <span>Previous</span>
+          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'rgba(155, 149, 144, 0.15)', color: '#9B9590' }}>Space</kbd>
+          <span>Play/Pause</span>
+          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'rgba(155, 149, 144, 0.15)', color: '#9B9590' }}>&rarr;</kbd>
+          <span>Next</span>
         </motion.p>
       </motion.div>
     </motion.div>

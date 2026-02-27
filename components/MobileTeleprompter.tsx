@@ -239,7 +239,6 @@ export function MobileTeleprompter({
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ ...MOTION.spring, delay: 0.1 }}
               >
-                <span style={{ fontSize: '1.25rem' }}>{moodIndicator.emoji}</span>
                 <span>{moodIndicator.label}</span>
               </motion.div>
 

@@ -9,6 +9,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import { UserMenu } from '@/components/UserMenu'
 import { LandingPage } from '@/components/LandingPage'
 import { XPBar } from '@/components/XPBar'
+import { MOTION } from '@/lib/animations'
 import type { LevelInfo, PlayerStats } from '@/lib/types'
 
 function useMediaQuery(query: string): boolean {
@@ -21,6 +22,75 @@ function useMediaQuery(query: string): boolean {
     return () => mql.removeEventListener('change', handler)
   }, [query])
   return matches
+}
+
+function HostIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="4" y="6" width="24" height="16" rx="3" stroke="currentColor" strokeWidth="2" />
+      <path d="M12 26h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M16 22v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function JoinIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <rect x="8" y="4" width="16" height="24" rx="3" stroke="currentColor" strokeWidth="2" />
+      <circle cx="16" cy="14" r="4" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M11 22h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function SoloPersonIcon() {
+  return (
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+      <circle cx="28" cy="20" r="8" stroke="var(--color-accent)" strokeWidth="2" />
+      <path d="M14 44c0-7.732 6.268-14 14-14s14 6.268 14 14" stroke="var(--color-accent)" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function TheaterMasksIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <circle cx="10" cy="12" r="7" stroke="currentColor" strokeWidth="2" />
+      <circle cx="7.5" cy="11" r="1" fill="currentColor" />
+      <circle cx="12.5" cy="11" r="1" fill="currentColor" />
+      <path d="M7.5 14.5c1.5 1.5 3.5 1.5 5 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="18" cy="14" r="7" stroke="currentColor" strokeWidth="2" />
+      <circle cx="15.5" cy="13" r="1" fill="currentColor" />
+      <circle cx="20.5" cy="13" r="1" fill="currentColor" />
+      <path d="M15.5 16.5c1.5 1 3.5 1 5 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function ChevronRightIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M8 5l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ClockIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10 6v4l3 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function StarIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M10 2l2.47 5.01L18 7.75l-4 3.9.94 5.5L10 14.27l-4.94 2.88.94-5.5-4-3.9 5.53-.74L10 2z" fill="currentColor" />
+    </svg>
+  )
 }
 
 export default function Home() {
@@ -62,22 +132,24 @@ export default function Home() {
 
   if (!mounted || loading) {
     return (
-      <main className="page-container has-tab-bar items-center justify-center">
-        <div className="container max-w-3xl" style={{ width: '100%' }}>
-          {/* Header skeleton */}
-          <div className="text-center mb-6">
-            <div className="skeleton mx-auto" style={{ width: 200, height: 32, borderRadius: 8 }} />
-            <div className="skeleton mx-auto mt-3" style={{ width: 260, height: 16, borderRadius: 6 }} />
+      <main className="page-container has-tab-bar" style={{ alignItems: 'flex-start' }}>
+        <div className="container max-w-md" style={{ width: '100%', padding: '0 20px' }}>
+          {/* Top bar skeleton */}
+          <div className="flex items-center justify-between" style={{ paddingTop: '16px' }}>
+            <div className="skeleton" style={{ width: 140, height: 28, borderRadius: 8 }} />
+            <div className="skeleton" style={{ width: 40, height: 40, borderRadius: 20 }} />
           </div>
-          {/* Ticket buttons skeleton */}
-          <div className="flex gap-4 justify-center mb-6">
-            <div className="skeleton" style={{ width: '45%', height: 100, borderRadius: 16 }} />
-            <div className="skeleton" style={{ width: '45%', height: 100, borderRadius: 16 }} />
+          {/* Greeting skeleton */}
+          <div style={{ marginTop: 24 }}>
+            <div className="skeleton" style={{ width: 220, height: 40, borderRadius: 8 }} />
+            <div className="skeleton mt-2" style={{ width: 200, height: 16, borderRadius: 6 }} />
           </div>
-          {/* Quick play row skeleton */}
-          <div className="flex gap-3 justify-center">
-            <div className="skeleton" style={{ width: 140, height: 40, borderRadius: 20 }} />
-            <div className="skeleton" style={{ width: 140, height: 40, borderRadius: 20 }} />
+          {/* Solo card skeleton */}
+          <div className="skeleton mt-6" style={{ width: '100%', height: 160, borderRadius: 16 }} />
+          {/* Friends cards skeleton */}
+          <div className="flex gap-3 mt-6">
+            <div className="skeleton flex-1" style={{ height: 140, borderRadius: 16 }} />
+            <div className="skeleton flex-1" style={{ height: 140, borderRadius: 16 }} />
           </div>
         </div>
       </main>
@@ -89,8 +161,11 @@ export default function Home() {
     return <LandingPage />
   }
 
+  const firstName = user?.displayName?.split(' ')[0]
+  const userInitial = (user?.displayName?.[0] || user?.email?.[0] || '?').toUpperCase()
+
   return (
-    <main className="page-container has-tab-bar items-center justify-center home-nostalgic">
+    <main className="page-container has-tab-bar" style={{ alignItems: 'flex-start' }}>
       {/* Credits purchased banner */}
       <AnimatePresence>
         {creditsPurchased && (
@@ -98,8 +173,12 @@ export default function Home() {
             initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -40 }}
-            className="fixed left-1/2 -translate-x-1/2 z-[60] bg-[var(--color-success)] text-black px-6 py-3 rounded-xl font-semibold text-[0.95rem] shadow-lg"
-            style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}
+            className="fixed left-1/2 -translate-x-1/2 z-[60] px-6 py-3 rounded-xl font-semibold text-[0.95rem] shadow-lg"
+            style={{
+              top: 'calc(16px + env(safe-area-inset-top, 0px))',
+              background: 'var(--color-success)',
+              color: '#fff',
+            }}
             role="status"
           >
             Credits added to your account!
@@ -107,230 +186,379 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Header with UserMenu */}
-      <motion.div
-        className="fixed right-4 z-50"
-        style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <UserMenu />
-      </motion.div>
-
-      <div className="container max-w-3xl">
-
-        {/* Personalized header */}
+      <div className="container max-w-md" style={{ width: '100%', padding: '0 20px' }}>
+        {/* Top bar: branding left, avatar right */}
         <motion.div
-          initial={{ y: -60, opacity: 0, scale: 0.9 }}
-          animate={{ y: 0, opacity: 1, scale: 1 }}
-          transition={{
-            type: "spring",
-            stiffness: 100,
-            damping: 15,
-            delay: 0
-          }}
-          className="bulletin-board-header"
+          className="flex items-center justify-between"
+          style={{ paddingTop: '16px' }}
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={MOTION.gentle}
         >
-          <div className="header-polaroid">
-            {user?.displayName ? (
-              <>
-                <h1 className="hero-title-nostalgic">
-                  Hey, {user.displayName.split(' ')[0]}
-                  <span className="title-emoji">🎭</span>
-                </h1>
-                <div className="polaroid-caption">
-                  Ready for another show?
-                </div>
-              </>
-            ) : (
-              <>
-                <h1 className="hero-title-nostalgic">
-                  Plot Twists
-                  <span className="title-emoji">🎭</span>
-                </h1>
-                <div className="polaroid-caption">
-                  Turn any group into comedy gold with AI-powered improv
-                </div>
-                <div className="polaroid-explainer">
-                  1-6 players. 15 minutes of pure chaos. Zero acting skills required.
-                </div>
-              </>
-            )}
-            {levelInfo && (
-              <motion.div
-                className="mt-3 max-w-xs mx-auto"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <XPBar levelInfo={levelInfo} compact />
-              </motion.div>
-            )}
+          <div className="flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+            <TheaterMasksIcon />
+            <span className="font-display font-bold" style={{ fontSize: '17px' }}>Plot Twists</span>
           </div>
+          <UserMenu />
         </motion.div>
 
-        {/* Quick stats for returning users */}
-        {playerStats && playerStats.gamesPlayed > 0 && (
-          <motion.div
-            className="flex justify-center gap-3 mt-2 mb-1"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
+        {/* Greeting */}
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={MOTION.gentle}
+          style={{ marginTop: '24px' }}
+        >
+          <h1
+            className="font-display"
+            style={{
+              fontSize: firstName ? 'clamp(36px, 9vw, 44px)' : 'clamp(40px, 10vw, 48px)',
+              fontWeight: 700,
+              color: 'var(--color-text-primary)',
+              letterSpacing: '-0.03em',
+              lineHeight: 1.1,
+            }}
           >
-            {[
-              { label: 'Games', value: playerStats.gamesPlayed },
-              { label: 'MVPs', value: playerStats.gamesWon },
-              { label: 'Streak', value: playerStats.currentWinStreak },
-            ].map(stat => (
-              <div
-                key={stat.label}
-                className="px-3 py-1.5 rounded-full text-center"
-                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-              >
-                <div className="text-sm font-bold" style={{ color: 'var(--color-text-primary)' }}>{stat.value}</div>
-                <div className="text-[11px]" style={{ color: 'var(--color-text-tertiary)' }}>{stat.label}</div>
-              </div>
-            ))}
-          </motion.div>
-        )}
+            {firstName ? `Hey, ${firstName}` : 'Plot Twists'}
+          </h1>
+          <p style={{ fontSize: '15px', color: 'var(--color-text-tertiary)', marginTop: '6px' }}>
+            What are you in the mood for?
+          </p>
+          {levelInfo && (
+            <motion.div
+              className="mt-3"
+              style={{ maxWidth: '280px' }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <XPBar levelInfo={levelInfo} compact />
+            </motion.div>
+          )}
+        </motion.div>
 
-        {/* Game buttons styled like tickets with distinct colors */}
-        <div className="ticket-container">
+        {/* Play Solo card */}
+        <motion.button
+          onClick={() => router.push('/play')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            marginTop: '24px',
+            padding: '24px',
+            background: '#2A2722',
+            borderRadius: '20px',
+            border: 'none',
+            cursor: 'pointer',
+            textAlign: 'left',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, ...MOTION.gentle }}
+          whileHover={canHover ? { y: -3, scale: 1.01 } : undefined}
+          whileTap={{ scale: 0.98 }}
+        >
+          <div style={{ flex: 1 }}>
+            <h2 className="font-display" style={{ fontSize: '22px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>
+              Play solo
+            </h2>
+            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.4, marginBottom: '16px', maxWidth: '220px' }}>
+              Pick cards, get a script, perform it. Just you and the AI.
+            </p>
+            <div className="flex items-center gap-3">
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '8px 20px',
+                  background: 'var(--color-accent)',
+                  color: '#fff',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                }}
+              >
+                Start now
+              </span>
+              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>~3 min</span>
+            </div>
+          </div>
+          <div style={{ flexShrink: 0, marginLeft: '12px', opacity: 0.5 }}>
+            <SoloPersonIcon />
+          </div>
+        </motion.button>
+
+        {/* WITH FRIENDS section */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.25 }}
+          style={{ marginTop: '28px', marginBottom: '12px' }}
+        >
+          <span
+            style={{
+              fontSize: '12px',
+              fontWeight: 600,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--color-text-tertiary)',
+            }}
+          >
+            With Friends
+          </span>
+        </motion.div>
+
+        <div className="flex gap-3">
           <motion.button
             onClick={() => router.push('/host')}
-            className="game-ticket ticket-host ticket-purple"
-            initial={{ x: -100, opacity: 0, rotate: -5 }}
-            animate={{ x: 0, opacity: 1, rotate: -1 }}
-            transition={{
-              delay: 0.2,
-              type: "spring",
-              stiffness: 100,
-              damping: 15
+            className="flex-1"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '8px',
+              padding: '20px',
+              background: 'var(--color-surface)',
+              border: '1.5px solid var(--color-border)',
+              borderRadius: '16px',
+              cursor: 'pointer',
+              color: 'var(--color-text-secondary)',
+              textAlign: 'left',
             }}
-            whileHover={canHover ? { y: -8, rotate: 0, scale: 1.03 } : undefined}
-            whileTap={{ scale: 0.98, y: -4 }}
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3, ...MOTION.gentle }}
+            whileHover={canHover ? { y: -3, scale: 1.02 } : undefined}
+            whileTap={{ scale: 0.97 }}
           >
-            <motion.div
-              className="ticket-stub"
-              whileHover={canHover ? { rotate: [-5, 5, -5, 0] } : undefined}
-              transition={{ duration: 0.5 }}
-            >
-              <span className="text-5xl">🎬</span>
-            </motion.div>
-            <div className="ticket-main">
-              <div className="ticket-title ticket-title-large">Host a Game</div>
-              <div className="ticket-subtitle">Start the show</div>
-            </div>
-            <div className="ticket-notch"></div>
+            <HostIcon />
+            <span className="font-display text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>Host</span>
+            <span style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', lineHeight: 1.3 }}>Cast to TV, run the show</span>
           </motion.button>
 
           <motion.button
             onClick={() => router.push('/join')}
-            className="game-ticket ticket-join ticket-pink"
-            initial={{ x: 100, opacity: 0, rotate: 5 }}
-            animate={{ x: 0, opacity: 1, rotate: 1 }}
-            transition={{
-              delay: 0.3,
-              type: "spring",
-              stiffness: 100,
-              damping: 15
+            className="flex-1"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '8px',
+              padding: '20px',
+              background: 'var(--color-surface)',
+              border: '1.5px solid var(--color-border)',
+              borderRadius: '16px',
+              cursor: 'pointer',
+              color: 'var(--color-text-secondary)',
+              textAlign: 'left',
             }}
-            whileHover={canHover ? { y: -8, rotate: 0, scale: 1.03 } : undefined}
-            whileTap={{ scale: 0.98, y: -4 }}
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.35, ...MOTION.gentle }}
+            whileHover={canHover ? { y: -3, scale: 1.02 } : undefined}
+            whileTap={{ scale: 0.97 }}
           >
-            <motion.div
-              className="ticket-stub"
-              whileHover={canHover ? { rotate: [5, -5, 5, 0] } : undefined}
-              transition={{ duration: 0.5 }}
-            >
-              <span className="text-5xl">🎮</span>
-            </motion.div>
-            <div className="ticket-main">
-              <div className="ticket-title ticket-title-large">Join Game</div>
-              <div className="ticket-subtitle">Join the fun</div>
-            </div>
-            <div className="ticket-notch"></div>
+            <JoinIcon />
+            <span className="font-display text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>Join</span>
+            <span style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', lineHeight: 1.3 }}>Enter a room code</span>
           </motion.button>
         </div>
 
-        {/* Quick Play & Explore buttons */}
-        <div className="flex justify-center gap-3 mt-4">
-          <motion.button
-            onClick={() => router.push('/play')}
-            className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-[var(--color-purple)] text-white shadow-sm cursor-pointer"
-            initial={{ opacity: 0, y: 20 }}
-            animate={playerStats && playerStats.gamesPlayed > 0
-              ? { opacity: 1, y: 0, boxShadow: ['0 0 0 0 rgba(168, 85, 247, 0.2)', '0 0 12px 4px rgba(168, 85, 247, 0.3)', '0 0 0 0 rgba(168, 85, 247, 0.2)'] }
-              : { opacity: 1, y: 0 }
-            }
-            transition={playerStats && playerStats.gamesPlayed > 0
-              ? { opacity: { delay: 0.4 }, y: { delay: 0.4, type: 'spring', stiffness: 100, damping: 15 }, boxShadow: { duration: 2, repeat: Infinity, delay: 1 } }
-              : { delay: 0.4, type: 'spring', stiffness: 100, damping: 15 }
-            }
-            whileHover={canHover ? { y: -3, scale: 1.03 } : undefined}
-            whileTap={{ scale: 0.97 }}
-          >
-            <span className="text-lg">⚡</span>
-            <span className="text-sm font-semibold">Quick Play</span>
-          </motion.button>
-
-          <motion.button
-            onClick={() => router.push('/explore')}
-            className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm cursor-pointer"
-            initial={{ opacity: 0, y: 20 }}
+        {/* LAST GAME section */}
+        {playerStats && playerStats.gamesPlayed > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45, type: 'spring', stiffness: 100, damping: 15 }}
-            whileHover={canHover ? { y: -3, scale: 1.03, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' } : undefined}
-            whileTap={{ scale: 0.97 }}
+            transition={{ delay: 0.4 }}
+            style={{ marginTop: '28px' }}
           >
-            <span className="text-lg">🎴</span>
-            <span className="text-sm font-medium text-[var(--color-text-primary)]">Explore Packs</span>
-          </motion.button>
-        </div>
+            <span
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: 'var(--color-text-tertiary)',
+                display: 'block',
+                marginBottom: '12px',
+              }}
+            >
+              Last Game
+            </span>
+            <Link
+              href="/profile"
+              className="flex items-center gap-3"
+              style={{
+                padding: '16px 20px',
+                background: 'var(--color-surface)',
+                border: '1.5px solid var(--color-border)',
+                borderRadius: '16px',
+                textDecoration: 'none',
+              }}
+            >
+              <div
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  background: 'var(--color-accent)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  color: '#fff',
+                }}
+              >
+                <StarIcon />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="font-semibold" style={{ fontSize: '15px', color: 'var(--color-text-primary)' }}>
+                  {playerStats.gamesPlayed} game{playerStats.gamesPlayed !== 1 ? 's' : ''} played
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>
+                  {playerStats.gamesWon > 0 ? `${playerStats.gamesWon} MVP win${playerStats.gamesWon !== 1 ? 's' : ''}` : 'Keep playing to earn MVP!'}
+                </div>
+              </div>
+              <div style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }}>
+                <ChevronRightIcon />
+              </div>
+            </Link>
+          </motion.div>
+        )}
 
-        {/* How it works — hidden for returning users */}
+        {/* Explore card packs row */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          style={{ marginTop: playerStats && playerStats.gamesPlayed > 0 ? '12px' : '28px' }}
+        >
+          <Link
+            href="/explore"
+            className="flex items-center gap-3"
+            style={{
+              padding: '14px 20px',
+              background: 'var(--color-surface)',
+              border: '1.5px solid var(--color-border)',
+              borderRadius: '16px',
+              textDecoration: 'none',
+            }}
+          >
+            <div style={{ color: 'var(--color-text-secondary)' }}>
+              <ClockIcon />
+            </div>
+            <span style={{ flex: 1, fontSize: '15px', fontWeight: 500, color: 'var(--color-text-primary)' }}>
+              Explore card packs
+            </span>
+            <div style={{ color: 'var(--color-text-tertiary)' }}>
+              <ChevronRightIcon />
+            </div>
+          </Link>
+        </motion.div>
+
+        {/* How it works -- for new users */}
         {(!playerStats || playerStats.gamesPlayed === 0) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mt-8 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border)] p-6 shadow-sm"
+            className="mt-6 rounded-2xl p-6"
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              boxShadow: 'var(--shadow-1)',
+            }}
           >
-            <div className="grid grid-cols-3 gap-4 sm:gap-6 items-start">
+            <div className="grid grid-cols-3 gap-4 items-start">
               {[
-                { num: '1', emoji: '🃏', title: 'Draw cards', desc: 'Character + setting + a wild twist' },
-                { num: '2', emoji: '✨', title: 'AI writes the scene', desc: 'A custom comedy script in seconds' },
-                { num: '3', emoji: '🎭', title: 'Perform & vote', desc: 'Act it out, crown the MVP' },
+                { num: '1', title: 'Draw cards', desc: 'Character + setting + a wild twist' },
+                { num: '2', title: 'AI writes', desc: 'A custom comedy script in seconds' },
+                { num: '3', title: 'Perform', desc: 'Act it out, crown the MVP' },
               ].map((step, i) => (
                 <motion.div
                   key={step.num}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.55 + i * 0.1, type: 'spring', stiffness: 120, damping: 14 }}
+                  transition={{ delay: 0.55 + i * 0.1, ...MOTION.gentle }}
                   className="text-center"
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}
                 >
-                  <div className="text-3xl sm:text-4xl mb-2">{step.emoji}</div>
-                  <div className="inline-flex items-center gap-1.5 mb-1">
-                    <span className="w-5 h-5 rounded-full bg-[var(--color-purple)] text-white text-[11px] font-bold flex items-center justify-center shrink-0">
+                  <div
+                    className="flex items-center justify-center"
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '16px',
+                      background: 'var(--color-text-primary)',
+                    }}
+                  >
+                    <span
+                      className="font-display"
+                      style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-bg)' }}
+                    >
                       {step.num}
                     </span>
-                    <span className="text-sm font-semibold text-[var(--color-text-primary)] font-display">{step.title}</span>
                   </div>
-                  <p className="text-xs text-[var(--color-text-secondary)] leading-snug">{step.desc}</p>
+                  <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{step.title}</span>
+                  <p className="text-xs leading-snug" style={{ color: 'var(--color-text-secondary)' }}>{step.desc}</p>
                 </motion.div>
               ))}
             </div>
           </motion.div>
         )}
 
+        {/* Stats bar at bottom */}
+        {playerStats && playerStats.gamesPlayed > 0 && (
+          <motion.div
+            className="flex items-center justify-center"
+            style={{
+              marginTop: '24px',
+              paddingTop: '16px',
+              borderTop: '1px solid var(--color-border)',
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            {[
+              { label: 'Games', value: playerStats.gamesPlayed },
+              { label: 'MVPs', value: playerStats.gamesWon },
+              { label: 'Streak', value: playerStats.currentWinStreak },
+            ].map((stat, i) => (
+              <div key={stat.label} className="flex items-center">
+                {i > 0 && (
+                  <div
+                    style={{
+                      width: '1px',
+                      height: '28px',
+                      background: 'var(--color-border)',
+                      margin: '0 24px',
+                    }}
+                  />
+                )}
+                <div className="text-center">
+                  <div className="font-display font-bold" style={{ fontSize: '18px', color: 'var(--color-text-primary)' }}>
+                    {stat.value}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                    {stat.label}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        )}
+
         {/* Footer */}
-        <div className="mt-8 text-center text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+        <div className="mt-6 mb-4 text-center text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
           <Link href="/privacy" className="hover:underline" style={{ color: 'var(--color-text-secondary)' }}>Privacy</Link>
           {' '}&middot;{' '}
           <Link href="/terms" className="hover:underline" style={{ color: 'var(--color-text-secondary)' }}>Terms</Link>
         </div>
-
       </div>
     </main>
   )

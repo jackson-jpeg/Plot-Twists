@@ -205,6 +205,7 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
               padding: '24px',
               overflowY: 'auto',
               WebkitOverflowScrolling: 'touch',
+              overscrollBehavior: 'contain',
               flex: 1
             }}
           >

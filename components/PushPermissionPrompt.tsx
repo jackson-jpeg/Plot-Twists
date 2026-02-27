@@ -66,9 +66,10 @@ export function PushPermissionPrompt() {
                 background: 'none',
                 border: 'none',
                 color: 'var(--color-text-secondary)',
-                fontSize: '13px',
+                fontSize: '14px',
                 cursor: 'pointer',
-                padding: '6px 10px',
+                padding: '10px 14px',
+                minHeight: '44px',
               }}
             >
               Not now
@@ -80,10 +81,11 @@ export function PushPermissionPrompt() {
                 color: '#fff',
                 border: 'none',
                 borderRadius: '8px',
-                fontSize: '13px',
+                fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',
-                padding: '6px 14px',
+                padding: '10px 18px',
+                minHeight: '44px',
               }}
             >
               Enable

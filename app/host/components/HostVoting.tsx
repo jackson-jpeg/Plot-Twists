@@ -4,6 +4,7 @@ import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { Player, Script } from '@/lib/types'
 import { VARIANTS } from '@/lib/animations'
+import { CheckCircleIcon, SpinnerIcon } from '@/components/GameIcons'
 
 export interface HostVotingProps {
   players: Player[]
@@ -16,96 +17,121 @@ export function HostVoting({ players, script }: HostVotingProps) {
   const votedCount = nonHostPlayers.filter(p => p.hasSubmittedVote).length
 
   return (
-    <motion.div key="voting" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="container max-w-4xl text-center">
-      <motion.h1 className="hero-title mb-8" initial={{ y: -20 }} animate={{ y: 0 }}>🗳️ Voting Time</motion.h1>
+    <motion.div key="voting" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="container max-w-4xl">
+
+      {/* Top bar */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <motion.h1
+            className="text-3xl sm:text-4xl font-display font-bold"
+            style={{ color: 'var(--color-text-primary)' }}
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+          >
+            Vote for MVP
+          </motion.h1>
+          <motion.p
+            className="text-sm mt-1"
+            style={{ color: 'var(--color-text-tertiary)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            Who stole the show?
+          </motion.p>
+        </div>
+        <motion.span
+          className="text-sm font-semibold px-3 py-1.5 rounded-full shrink-0"
+          style={{
+            background: votedCount === nonHostPlayers.length ? 'var(--color-success)' : 'var(--color-surface-alt)',
+            color: votedCount === nonHostPlayers.length ? 'white' : 'var(--color-text-secondary)'
+          }}
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.15 }}
+        >
+          {votedCount}/{nonHostPlayers.length} voted
+        </motion.span>
+      </div>
 
       {/* Scene Recap */}
       {script && (
         <motion.div
-          className="card mb-6 text-left"
+          className="mb-6 p-4 rounded-lg"
+          style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">🎬</span>
-            <h3 className="font-display font-semibold" style={{ color: 'var(--color-text-primary)' }}>The Scene</h3>
-          </div>
-          <div className="mb-3">
-            <h4 className="text-lg font-bold font-display" style={{ color: 'var(--color-accent)' }}>{script.title}</h4>
-            {script.synopsis && (
-              <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>{script.synopsis}</p>
-            )}
-          </div>
-          {nonHostPlayers.some(p => p.assignedCharacter) && (
-            <div className="flex flex-wrap gap-2">
-              {nonHostPlayers.filter(p => p.assignedCharacter).map(player => (
-                <div
-                  key={player.id}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm"
-                  style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
-                >
-                  <div className="player-avatar" style={{ width: '24px', height: '24px', fontSize: '11px' }}>{player.nickname[0]?.toUpperCase()}</div>
-                  <span style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
-                  <span style={{ color: 'var(--color-text-tertiary)' }}>as</span>
-                  <span className="font-medium" style={{ color: 'var(--color-purple)' }}>{player.assignedCharacter}</span>
-                </div>
-              ))}
+          <div className="flex items-start gap-3">
+            <div>
+              <h4 className="text-lg font-bold font-display" style={{ color: 'var(--color-accent)' }}>{script.title}</h4>
+              {script.synopsis && (
+                <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>{script.synopsis}</p>
+              )}
             </div>
-          )}
+          </div>
         </motion.div>
       )}
 
-      <div className="card">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-display" style={{ color: 'var(--color-text-primary)' }}>Who had the best performance?</h2>
-          <span className="text-sm font-semibold px-3 py-1 rounded-full" style={{
-            background: votedCount === nonHostPlayers.length ? 'var(--color-success)' : 'var(--color-surface-alt)',
-            color: votedCount === nonHostPlayers.length ? 'white' : 'var(--color-text-secondary)'
-          }}>
-            {votedCount}/{nonHostPlayers.length} voted
-          </span>
-        </div>
-
-        {/* Vote progress bar */}
-        <div className="h-1.5 rounded-full mb-5 overflow-hidden" style={{ background: 'var(--color-surface-alt)' }}>
+      {/* Player cards */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {nonHostPlayers.map((player, i) => (
           <motion.div
-            className="h-full rounded-full"
-            style={{ background: votedCount === nonHostPlayers.length ? 'var(--color-success)' : 'linear-gradient(90deg, var(--color-purple), var(--color-accent))' }}
-            initial={{ width: 0 }}
-            animate={{ width: `${nonHostPlayers.length > 0 ? (votedCount / nonHostPlayers.length) * 100 : 0}%` }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-          />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          {nonHostPlayers.map((player, i) => (
-            <motion.div
-              key={player.id} className="card split"
-              style={{
-                background: player.hasSubmittedVote ? 'var(--color-highlight)' : 'var(--color-surface-alt)',
-                border: player.hasSubmittedVote ? '2px solid var(--color-success)' : '1px solid var(--color-border)'
-              }}
-              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08, duration: 0.3 }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="player-avatar">{player.nickname[0]?.toUpperCase()}</div>
-                <div>
-                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
-                  {player.assignedCharacter && (
-                    <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>as {player.assignedCharacter}</div>
-                  )}
-                </div>
+            key={player.id}
+            className="flex items-center justify-between p-4 rounded-xl"
+            style={{
+              background: player.hasSubmittedVote ? 'rgba(245, 158, 66, 0.06)' : 'var(--color-surface-alt)',
+              border: player.hasSubmittedVote ? '2px solid var(--color-accent)' : '1px solid var(--color-border)'
+            }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08, duration: 0.3 }}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="flex items-center justify-center rounded-full font-display font-bold shrink-0"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  fontSize: '18px',
+                  background: player.hasSubmittedVote ? 'var(--color-accent)' : 'var(--color-surface)',
+                  color: player.hasSubmittedVote ? 'white' : 'var(--color-text-primary)',
+                  border: player.hasSubmittedVote ? 'none' : '1px solid var(--color-border)',
+                }}
+              >
+                {player.nickname[0]?.toUpperCase()}
               </div>
-              {player.hasSubmittedVote ? (
-                <motion.span className="badge badge-success" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>✓ Voted</motion.span>
-              ) : (
-                <motion.span className="badge badge-warning" animate={prefersReducedMotion ? {} : { scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>Voting...</motion.span>
-              )}
-            </motion.div>
-          ))}
-        </div>
+              <div>
+                <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
+                {player.assignedCharacter && (
+                  <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{player.assignedCharacter}</div>
+                )}
+              </div>
+            </div>
+            {player.hasSubmittedVote ? (
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>
+                <CheckCircleIcon size={24} color="var(--color-accent)" />
+              </motion.div>
+            ) : (
+              <motion.div animate={prefersReducedMotion ? {} : { opacity: [0.5, 1, 0.5] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                <SpinnerIcon size={20} color="var(--color-text-tertiary)" />
+              </motion.div>
+            )}
+          </motion.div>
+        ))}
       </div>
+
+      {/* Bottom hint */}
+      <motion.p
+        className="text-center text-xs mt-6"
+        style={{ color: 'var(--color-text-tertiary)' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.4 }}
+      >
+        Waiting for all players to cast their votes...
+      </motion.p>
     </motion.div>
   )
 }

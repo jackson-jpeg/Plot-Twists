@@ -7,11 +7,11 @@ export interface MoodIndicator {
 }
 
 const moodMap: Record<string, MoodIndicator> = {
-  angry: { emoji: '😠', color: '#D77A7A', label: 'Angry' },
-  happy: { emoji: '😊', color: '#82B682', label: 'Happy' },
-  confused: { emoji: '😕', color: '#E8A75D', label: 'Confused' },
-  whispering: { emoji: '🤫', color: '#7C9FD9', label: 'Whispering' },
-  neutral: { emoji: '😐', color: '#9B9590', label: 'Neutral' }
+  angry: { emoji: '', color: '#D77A7A', label: 'Angry' },
+  happy: { emoji: '', color: '#82B682', label: 'Happy' },
+  confused: { emoji: '', color: '#E8A75D', label: 'Confused' },
+  whispering: { emoji: '', color: '#7C9FD9', label: 'Whispering' },
+  neutral: { emoji: '', color: '#9B9590', label: 'Neutral' }
 }
 
 /**

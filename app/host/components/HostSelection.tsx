@@ -7,14 +7,15 @@ import dynamic from 'next/dynamic'
 const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false, loading: () => <div className="skeleton" style={{ height: '300px', borderRadius: '12px' }} /> })
 import { VARIANTS } from '@/lib/animations'
 import { tapHaptic } from '@/hooks/useHaptics'
+import { CheckCircleIcon, SpinnerIcon, StatusDot } from '@/components/GameIcons'
 
 const IMPROV_TIPS = [
-  { emoji: '🎭', tip: '"Yes, and..." — always build on what your scene partner gives you.' },
-  { emoji: '🎤', tip: 'Commit fully to your character. Go big or go home!' },
-  { emoji: '👀', tip: 'Listen more than you talk. The best comedy comes from reacting.' },
-  { emoji: '🤸', tip: 'Don\'t be afraid to move! Physicality makes scenes pop.' },
-  { emoji: '💡', tip: 'Make your scene partner look good — it makes the whole scene better.' },
-  { emoji: '🎪', tip: 'Play at the top of your intelligence. Dumb characters can be smart about being dumb.' },
+  { tip: '"Yes, and..." -- always build on what your scene partner gives you.' },
+  { tip: 'Commit fully to your character. Go big or go home!' },
+  { tip: 'Listen more than you talk. The best comedy comes from reacting.' },
+  { tip: "Don't be afraid to move! Physicality makes scenes pop." },
+  { tip: 'Make your scene partner look good -- it makes the whole scene better.' },
+  { tip: 'Play at the top of your intelligence. Dumb characters can be smart about being dumb.' },
 ]
 
 export interface HostSelectionProps {
@@ -75,15 +76,17 @@ export function HostSelection({
     return (
       <motion.div key="solo-waiting" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-lg text-center">
         <div className="card">
-          <motion.div className="text-8xl mb-6" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>✅</motion.div>
+          <motion.div className="flex justify-center mb-6" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>
+            <CheckCircleIcon size={64} color="var(--color-success)" />
+          </motion.div>
           <motion.h1 className="text-4xl font-display mb-4" style={{ color: 'var(--color-success)' }} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>Cards Submitted!</motion.h1>
           <motion.p className="text-lg mb-6" style={{ color: 'var(--color-text-secondary)' }} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>Generating your scene...</motion.p>
           <motion.div className="p-4 rounded-lg text-left" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-            <p className="text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>YOUR SCENE:</p>
+            <p className="text-xs mb-3 uppercase tracking-wider font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>YOUR SCENE</p>
             <div className="space-y-2 text-sm">
-              <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold">🎭</span> {selection.character}</p>
-              <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold">🏛️</span> {selection.setting}</p>
-              <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold">⚡</span> {selection.circumstance}</p>
+              <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold uppercase text-xs tracking-wide" style={{ color: 'var(--color-text-tertiary)' }}>Character</span> <span className="ml-2">{selection.character}</span></p>
+              <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold uppercase text-xs tracking-wide" style={{ color: 'var(--color-text-tertiary)' }}>Setting</span> <span className="ml-2">{selection.setting}</span></p>
+              <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold uppercase text-xs tracking-wide" style={{ color: 'var(--color-text-tertiary)' }}>Wild Card</span> <span className="ml-2">{selection.circumstance}</span></p>
             </div>
           </motion.div>
         </div>
@@ -106,14 +109,14 @@ export function HostSelection({
     return (
       <motion.div key="solo-selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-2xl">
         <motion.button onClick={onBackToLobby} className="back-button mb-4" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} whileHover={{ x: -4 }} whileTap={{ scale: 0.95 }}>
-          <span className="back-arrow">←</span><span>Back to Lobby</span>
+          <span className="back-arrow">&larr;</span><span>Back to Lobby</span>
         </motion.button>
 
         <div className="card">
           {availableCards.characters.length === 0 ? (
             <motion.div className="text-center py-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <motion.div className="text-4xl mb-4" animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>🎴</motion.div>
-              <p style={{ color: 'var(--color-text-secondary)' }}>Loading cards...</p>
+              <SpinnerIcon size={32} color="var(--color-text-secondary)" className={prefersReducedMotion ? '' : ''} />
+              <p className="mt-4" style={{ color: 'var(--color-text-secondary)' }}>Loading cards...</p>
             </motion.div>
           ) : (
             <>
@@ -139,11 +142,11 @@ export function HostSelection({
                 transition={(selection.character && selection.setting && selection.circumstance && !isSubmittingCards && !confirmMode && !prefersReducedMotion) ? { duration: 2, repeat: Infinity } : {}}
               >
                 {isSubmittingCards ? (
-                  <><motion.span animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>⏳</motion.span><span>Submitting...</span></>
+                  <><SpinnerIcon size={16} color="currentColor" /><span>Submitting...</span></>
                 ) : confirmMode ? (
-                  <><span>✅</span><span>Tap again to confirm</span></>
+                  <><CheckCircleIcon size={16} color="currentColor" /><span>Tap again to confirm</span></>
                 ) : (
-                  <><span>✨</span><span>{(!selection.character || !selection.setting || !selection.circumstance) ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)` : 'Submit Cards - Ready!'}</span></>
+                  <span>{(!selection.character || !selection.setting || !selection.circumstance) ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)` : 'Submit Cards -- Ready!'}</span>
                 )}
               </motion.button>
             </>
@@ -158,7 +161,23 @@ export function HostSelection({
 
   return (
     <motion.div key="selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-2xl text-center">
-      <motion.h1 className="hero-title mb-6" initial={{ y: -20 }} animate={{ y: 0 }}>🎴 Selecting Cards</motion.h1>
+      <motion.h1
+        className="text-3xl sm:text-4xl font-display font-bold mb-2"
+        style={{ color: 'var(--color-text-primary)' }}
+        initial={{ y: -20 }}
+        animate={{ y: 0 }}
+      >
+        Pick your cards
+      </motion.h1>
+      <motion.p
+        className="text-sm mb-6"
+        style={{ color: 'var(--color-text-tertiary)' }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
+        Everyone picks a character, setting, and wild card
+      </motion.p>
 
       {/* Progress bar */}
       <motion.div
@@ -168,18 +187,18 @@ export function HostSelection({
         transition={{ delay: 0.1 }}
       >
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>Players ready</span>
+          <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Players</span>
           <span className="text-sm font-bold" style={{ color: readyCount === nonHostPlayers.length ? 'var(--color-success)' : 'var(--color-text-primary)' }}>
-            {readyCount}/{nonHostPlayers.length}
+            {readyCount}/{nonHostPlayers.length} ready
           </span>
         </div>
-        <div className="w-full h-3 rounded-full overflow-hidden" style={{ background: 'var(--color-surface-alt)' }}>
+        <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-surface-alt)' }}>
           <motion.div
             className="h-full rounded-full"
             style={{
               background: readyCount === nonHostPlayers.length
                 ? 'var(--color-success)'
-                : 'linear-gradient(90deg, var(--color-purple), var(--color-pink))'
+                : 'var(--color-accent)'
             }}
             initial={{ width: '0%' }}
             animate={{ width: nonHostPlayers.length > 0 ? `${(readyCount / nonHostPlayers.length) * 100}%` : '0%' }}
@@ -189,19 +208,39 @@ export function HostSelection({
       </motion.div>
 
       {/* Player list */}
-      <div className="card mb-4">
-        <div className="stack-sm">
-          {nonHostPlayers.map((player, i) => (
-            <motion.div key={player.id} className="split p-4 rounded-lg" style={{ background: 'var(--color-surface-alt)' }} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
-              <div className="flex items-center gap-2">
-                <div className="player-avatar" style={{ width: '32px', height: '32px', fontSize: '13px' }}>{player.nickname[0]?.toUpperCase()}</div>
-                <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
-              </div>
-              <motion.span className={`text-sm font-medium badge ${player.hasSubmittedSelection ? 'badge-success' : 'badge-warning'}`} animate={player.hasSubmittedSelection || prefersReducedMotion ? {} : { scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                {player.hasSubmittedSelection ? '✓ Ready' : '⏳ Selecting'}
-              </motion.span>
-            </motion.div>
-          ))}
+      <div className="mb-4">
+        <div className="space-y-2">
+          {nonHostPlayers.map((player, i) => {
+            const status = player.hasSubmittedSelection ? 'done' : 'waiting'
+            return (
+              <motion.div
+                key={player.id}
+                className="flex items-center justify-between p-3 rounded-lg"
+                style={{ background: 'var(--color-surface-alt)' }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <div className="flex items-center gap-3">
+                  {status === 'done' ? (
+                    <CheckCircleIcon size={20} color="var(--color-success)" />
+                  ) : (
+                    <StatusDot status="waiting" size={20} />
+                  )}
+                  <div className="player-avatar" style={{ width: '32px', height: '32px', fontSize: '13px' }}>{player.nickname[0]?.toUpperCase()}</div>
+                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
+                </div>
+                <span
+                  className="text-sm font-medium"
+                  style={{
+                    color: player.hasSubmittedSelection ? 'var(--color-success)' : 'var(--color-text-tertiary)',
+                  }}
+                >
+                  {player.hasSubmittedSelection ? '3/3 cards' : 'Waiting'}
+                </span>
+              </motion.div>
+            )
+          })}
         </div>
       </div>
 
@@ -235,12 +274,9 @@ export function HostSelection({
           transition={{ delay: 0.3 }}
           style={{ background: 'var(--color-highlight)', border: '1px solid var(--color-accent)' }}
         >
-          <div className="flex items-start gap-3">
-            <span className="text-2xl">💬</span>
-            <div>
-              <p className="text-xs font-semibold mb-1" style={{ color: 'var(--color-text-tertiary)' }}>GREEN ROOM</p>
-              <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>{greenRoomQuestion}</p>
-            </div>
+          <div>
+            <p className="text-xs font-semibold mb-1 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>GREEN ROOM</p>
+            <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>{greenRoomQuestion}</p>
           </div>
         </motion.div>
       )}
@@ -255,17 +291,17 @@ export function HostSelection({
       >
         <p className="text-[11px] font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Improv Tip</p>
         <AnimatePresence mode="wait">
-          <motion.div
+          <motion.p
             key={tipIndex}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.3 }}
-            className="flex items-start gap-2"
+            className="text-sm text-left"
+            style={{ color: 'var(--color-text-secondary)' }}
           >
-            <span className="text-lg">{currentTip.emoji}</span>
-            <p className="text-sm text-left" style={{ color: 'var(--color-text-secondary)' }}>{currentTip.tip}</p>
-          </motion.div>
+            {currentTip.tip}
+          </motion.p>
         </AnimatePresence>
       </motion.div>
     </motion.div>

@@ -152,8 +152,12 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   transition={{ duration: 0.2 }}
                 >
                   {/* Branded checkout header */}
-                  <div className="purchase-checkout-header">
-                    <button onClick={handleBack} className="purchase-back-btn">
+                  <div style={{ marginBottom: '16px' }}>
+                    <button
+                      onClick={handleBack}
+                      className="flex items-center gap-1.5 text-sm font-medium"
+                      style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}
+                    >
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       Back
                     </button>

@@ -149,7 +149,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
               <h2 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Browse Card Packs</h2>
               <button
                 onClick={onClose}
-                className="modal-close-btn"
+                className="w-8 h-8 flex items-center justify-center rounded-full text-lg" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer' }}
               >
                 x
               </button>

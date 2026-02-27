@@ -271,14 +271,13 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
             {/* Favorite Character */}
             {stats.favoriteCharacter && (
               <motion.div
-                className="polaroid-card relative"
-                style={{ transform: 'rotate(-0.5deg)' }}
+                className="relative rounded-xl"
+                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                whileHover={{ rotate: 0, scale: 1.02 }}
+                whileHover={{ scale: 1.02 }}
               >
-                <div className="tape-piece tape-top-left" style={{ width: '50px', height: '18px' }} />
                 <div className="p-5">
                   <h3 className="text-sm text-[var(--color-text-tertiary)] mb-2 font-display">Favorite Character</h3>
                   <div className="flex items-center gap-3">
@@ -302,14 +301,13 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
 
             {/* Game Mode Breakdown */}
             <motion.div
-              className="polaroid-card relative"
-              style={{ transform: 'rotate(0.5deg)' }}
+              className="relative rounded-xl"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              whileHover={{ rotate: 0, scale: 1.02 }}
+              whileHover={{ scale: 1.02 }}
             >
-              <div className="tape-piece tape-top-right" style={{ width: '50px', height: '18px' }} />
               <div className="p-5">
                 <h3 className="text-sm text-[var(--color-text-tertiary)] mb-3 font-display">Game Mode Performance</h3>
                 <div className="space-y-3">
@@ -334,14 +332,13 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
 
             {/* Audience Love */}
             <motion.div
-              className="polaroid-card relative"
-              style={{ transform: 'rotate(-1deg)' }}
+              className="relative rounded-xl"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              whileHover={{ rotate: 0, scale: 1.02 }}
+              whileHover={{ scale: 1.02 }}
             >
-              <div className="tape-piece tape-top-center" />
               <div className="p-5">
                 <h3 className="text-sm text-[var(--color-text-tertiary)] mb-2 font-display">Audience Reactions</h3>
                 <div className="flex items-center gap-4">
@@ -452,12 +449,11 @@ function StatCard({ icon, label, value, index = 0 }: { icon: string, label: stri
 
   return (
     <motion.div
-      className="polaroid-card p-4 text-center relative"
-      style={{ transform: `rotate(${rotation}deg)` }}
+      className="p-4 text-center relative rounded-xl"
+      style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
       variants={staggerItem}
-      whileHover={{ scale: 1.05, rotate: 0, transition: { duration: 0.2 } }}
+      whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
     >
-      <div className="tape-piece tape-top-center" style={{ width: '40px', height: '16px', top: '-8px' }} />
       <motion.div
         className="text-2xl mb-1"
         variants={emojiWiggle}
@@ -534,12 +530,12 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
       {/* Tape decoration for unlocked achievements */}
       {unlocked && (
         <div
-          className="tape-piece absolute -top-2 left-1/2 -translate-x-1/2"
-          style={{ width: '40px', height: '14px' }}
+          className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
+          style={{ background: 'var(--color-accent)' }}
         />
       )}
 
-      <div className={`p-4 ${unlocked ? 'pt-5' : ''}`}>
+      <div className="p-4">
         <div className="flex items-start gap-3">
           <div className="relative">
             <motion.div
@@ -631,19 +627,15 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
     fetchLeaderboard()
   }, [fetchLeaderboard])
 
-  const categories: { key: LeaderboardCategory, label: string, icon: string }[] = [
-    { key: 'wins', label: 'Wins', icon: '🏆' },
-    { key: 'games', label: 'Games', icon: '🎮' },
-    { key: 'winRate', label: 'Win %', icon: '📈' },
-    { key: 'streak', label: 'Streak', icon: '🔥' }
+  const categories: { key: LeaderboardCategory, label: string }[] = [
+    { key: 'wins', label: 'Wins' },
+    { key: 'games', label: 'Games' },
+    { key: 'winRate', label: 'Win %' },
+    { key: 'streak', label: 'Streak' }
   ]
 
-  const medals = ['🥇', '🥈', '🥉']
-  const podiumSlotClasses = [
-    'leaderboard-podium-slot-1',
-    'leaderboard-podium-slot-2',
-    'leaderboard-podium-slot-3',
-  ]
+  const medals = ['1st', '2nd', '3rd']
+  const medalColors = ['var(--color-accent)', 'var(--color-text-tertiary)', 'var(--color-text-disabled)']
 
   // Split entries into podium (top 3) and remaining rows
   const hasPodium = entries.length >= 3
@@ -652,21 +644,28 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-[var(--color-text-primary)] font-display flex items-center gap-2">
-        <span>🏅</span> Leaderboard
+      <h2 className="text-xl font-bold text-[var(--color-text-primary)] font-display">
+        Leaderboard
       </h2>
 
-      {/* Paper tabs */}
-      <div className="leaderboard-tabs">
+      {/* Tabs */}
+      <div className="flex gap-1 overflow-x-auto">
         {categories.map(cat => (
           <button
             key={cat.key}
             onClick={() => setActiveCategory(cat.key)}
-            className={`leaderboard-tab ${
-              activeCategory === cat.key ? 'leaderboard-tab-active' : ''
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+              activeCategory === cat.key
+                ? 'text-white'
+                : 'text-[var(--color-text-tertiary)]'
             }`}
+            style={{
+              background: activeCategory === cat.key ? 'var(--color-accent)' : 'var(--color-surface-alt)',
+              border: activeCategory === cat.key ? 'none' : '1px solid var(--color-border)',
+              cursor: 'pointer',
+            }}
           >
-            {cat.icon} {cat.label}
+            {cat.label}
           </button>
         ))}
       </div>
@@ -676,7 +675,6 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
         <div className="text-center py-8 text-[var(--color-text-secondary)]">Loading...</div>
       ) : entries.length === 0 ? (
         <div className="text-center py-8">
-          <div className="text-4xl mb-3">🏆</div>
           <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">The Hall of Fame Awaits</h3>
           <p className="text-[var(--color-text-secondary)]">Play more games to compete on the leaderboard!</p>
         </div>
@@ -685,37 +683,33 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
           {/* Top 3 podium — only when >= 3 entries */}
           {hasPodium && (
             <motion.div
-              className="leaderboard-podium"
+              className="grid grid-cols-3 gap-3"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
               {podiumEntries.map((entry, index) => (
-                <div
+                <motion.div
                   key={entry.playerId}
-                  className={`leaderboard-podium-slot ${podiumSlotClasses[index]}`}
+                  className="text-center rounded-xl p-3"
+                  style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
                 >
-                  <motion.div
-                    className="leaderboard-podium-card"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <div className="tape-piece tape-top-center" style={{ width: '36px', height: '12px', top: '-6px' }} />
-                    <div className="leaderboard-podium-medal">{medals[index]}</div>
-                    <div className="leaderboard-podium-name">{entry.nickname}</div>
-                    <div className="leaderboard-podium-value">
-                      {entry.value}{activeCategory === 'winRate' ? '%' : ''}
-                    </div>
-                  </motion.div>
-                </div>
+                  <div className="text-xs font-bold mb-1" style={{ color: medalColors[index] }}>{medals[index]}</div>
+                  <div className="text-sm font-semibold text-[var(--color-text-primary)] font-display truncate">{entry.nickname}</div>
+                  <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {entry.value}{activeCategory === 'winRate' ? '%' : ''}
+                  </div>
+                </motion.div>
               ))}
             </motion.div>
           )}
 
           {/* Remaining rows (4-10, or all if < 3 entries) */}
           {rowEntries.length > 0 && (
-            <div className="leaderboard-rows">
+            <div className="space-y-1">
               {rowEntries.map((entry, i) => {
                 const actualIndex = hasPodium ? i + 3 : i
                 return (
@@ -724,18 +718,19 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: actualIndex * 0.04 }}
-                    className="leaderboard-row"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg"
+                    style={{ background: 'var(--color-surface-alt)' }}
                   >
-                    <div className="leaderboard-row-rank">
+                    <span className="text-xs font-bold w-6 text-center" style={{ color: 'var(--color-text-disabled)' }}>
                       {!hasPodium && actualIndex < 3
                         ? medals[actualIndex]
                         : `#${entry.rank}`
                       }
-                    </div>
-                    <div className="leaderboard-row-name">{entry.nickname}</div>
-                    <div className="leaderboard-row-value">
+                    </span>
+                    <span className="flex-1 text-sm font-medium text-[var(--color-text-primary)] truncate">{entry.nickname}</span>
+                    <span className="text-sm font-semibold" style={{ color: 'var(--color-accent)' }}>
                       {entry.value}{activeCategory === 'winRate' ? '%' : ''}
-                    </div>
+                    </span>
                   </motion.div>
                 )
               })}

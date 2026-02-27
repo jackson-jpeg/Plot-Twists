@@ -213,7 +213,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
               <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">Edit Card Pack</h2>
               <button
                 onClick={onClose}
-                className="modal-close-btn"
+                className="w-8 h-8 flex items-center justify-center rounded-full text-lg" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer' }}
               >
                 x
               </button>
@@ -384,7 +384,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                         {characters.length > 5 && (
                           <button
                             onClick={() => removeCard('characters', index)}
-                            className="remove-field-btn"
+                            className="w-6 h-6 flex items-center justify-center rounded text-xs" style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)', border: 'none', cursor: 'pointer' }}
                           >
                             x
                           </button>
@@ -394,7 +394,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
 
                     <button
                       onClick={() => addCard('characters')}
-                      className="add-field-btn"
+                      className="w-full py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-accent)', border: '1px dashed var(--color-border)', cursor: 'pointer' }}
                     >
                       + Add Character
                     </button>
@@ -428,7 +428,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                           {settings.length > 3 && (
                             <button
                               onClick={() => removeCard('settings', index)}
-                              className="remove-field-btn"
+                              className="w-6 h-6 flex items-center justify-center rounded text-xs" style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)', border: 'none', cursor: 'pointer' }}
                             >
                               x
                             </button>
@@ -438,7 +438,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
 
                       <button
                         onClick={() => addCard('settings')}
-                        className="add-field-btn add-field-btn-sm text-sm"
+                        className="text-sm px-2 py-1 rounded" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-accent)', border: '1px dashed var(--color-border)', cursor: 'pointer' }}
                       >
                         + Add Setting
                       </button>
@@ -464,7 +464,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                           {circumstances.length > 3 && (
                             <button
                               onClick={() => removeCard('circumstances', index)}
-                              className="remove-field-btn"
+                              className="w-6 h-6 flex items-center justify-center rounded text-xs" style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)', border: 'none', cursor: 'pointer' }}
                             >
                               x
                             </button>
@@ -474,7 +474,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
 
                       <button
                         onClick={() => addCard('circumstances')}
-                        className="add-field-btn add-field-btn-sm text-sm"
+                        className="text-sm px-2 py-1 rounded" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-accent)', border: '1px dashed var(--color-border)', cursor: 'pointer' }}
                       >
                         + Add Circumstance
                       </button>
@@ -490,14 +490,14 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
             {step > 1 ? (
               <button
                 onClick={() => setStep(step - 1)}
-                className="modal-footer-btn-ghost"
+                className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
               >
                 Back
               </button>
             ) : (
               <button
                 onClick={onClose}
-                className="modal-footer-btn-ghost"
+                className="px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
               >
                 Cancel
               </button>
@@ -506,7 +506,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
             <button
               onClick={handleNext}
               disabled={isSubmitting || isLoading}
-              className="modal-footer-btn-primary"
+              className="px-4 py-2 rounded-lg text-sm font-semibold" style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
             >
               {isSubmitting ? 'Saving...' : step === 3 ? 'Save Changes' : 'Next'}
             </button>

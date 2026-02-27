@@ -11,6 +11,7 @@ import { successHaptic } from '@/hooks/useHaptics'
 import { useConfetti } from '@/hooks/useConfetti'
 import { Modal } from '@/components/Modal'
 import { VARIANTS } from '@/lib/animations'
+import { TrophyIcon, ShareIcon, CopyIcon, DoorIcon, StarIcon, MedalIcon, SpinnerIcon } from '@/components/GameIcons'
 import { XPGainAnimation } from '@/components/XPGainAnimation'
 import { XPBar } from '@/components/XPBar'
 import { LevelUpCelebration } from '@/components/LevelUpCelebration'
@@ -143,8 +144,8 @@ export function JoinResults({
   }
 
   return (
-    <motion.div key="results" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="container max-w-lg">
-      <div className="card text-center">
+    <motion.div key="results" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" style={{ padding: '24px 16px', background: 'var(--color-bg)' }}>
+      <div className="w-full max-w-lg mx-auto text-center">
         {gameResults?.winner ? (
           <>
             {/* Trophy */}
@@ -152,7 +153,9 @@ export function JoinResults({
               <motion.div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-36 rounded-full pointer-events-none"
                 style={{ background: 'radial-gradient(circle, var(--color-accent) 0%, transparent 70%)' }}
                 animate={{ opacity: [0.2, 0.3, 0.2], scale: [0.95, 1.05, 0.95] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
-              <motion.div className="text-8xl relative" initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}>🏆</motion.div>
+              <motion.div className="relative" initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}>
+                <TrophyIcon size={80} color="var(--color-accent)" />
+              </motion.div>
             </div>
 
             {/* Poster */}
@@ -165,10 +168,10 @@ export function JoinResults({
               </motion.div>
             )}
 
-            <motion.h1 className="text-4xl font-display mb-2" style={{ color: 'var(--color-accent)' }} initial={{ y: -20, opacity: 0, filter: 'blur(8px)' }} animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 0.5, duration: 0.5 }} aria-live="polite" aria-atomic="true">
+            <motion.h1 style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 700, color: 'var(--color-accent)', marginBottom: '6px' }} initial={{ y: -20, opacity: 0, filter: 'blur(8px)' }} animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 0.5, duration: 0.5 }} aria-live="polite" aria-atomic="true">
               {gameResults.winner.playerName} Wins!
             </motion.h1>
-            <motion.p className="text-xl mb-8" style={{ color: 'var(--color-text-secondary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>
+            <motion.p style={{ fontSize: '18px', color: 'var(--color-text-secondary)', marginBottom: '28px' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>
               <span style={{ color: 'var(--color-accent)', fontWeight: 700 }}>MVP</span> with {gameResults.winner.votes} vote{gameResults.winner.votes !== 1 ? 's' : ''}
             </motion.p>
 
@@ -180,7 +183,9 @@ export function JoinResults({
               <motion.div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full pointer-events-none"
                 style={{ background: 'radial-gradient(circle, var(--color-accent-2) 0%, transparent 70%)' }}
                 animate={{ opacity: [0.1, 0.25, 0.1], scale: [0.9, 1.1, 0.9] }} transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
-              <motion.div className="text-8xl relative" initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}>🎉</motion.div>
+              <motion.div className="relative" initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}>
+                <StarIcon size={64} color="var(--color-accent-2)" />
+              </motion.div>
             </div>
 
             {scriptImageUrl && (
@@ -192,8 +197,8 @@ export function JoinResults({
               </motion.div>
             )}
 
-            <motion.h1 className="text-4xl font-display mb-6" style={{ color: 'var(--color-text-primary)' }} initial={{ y: -20, opacity: 0, filter: 'blur(8px)' }} animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 0.5, duration: 0.5 }}>Performance Complete!</motion.h1>
-            <motion.p className="text-xl mb-8" style={{ color: 'var(--color-text-secondary)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>Thanks for playing!</motion.p>
+            <motion.h1 style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '20px' }} initial={{ y: -20, opacity: 0, filter: 'blur(8px)' }} animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 0.5, duration: 0.5 }}>Performance Complete!</motion.h1>
+            <motion.p style={{ fontSize: '18px', color: 'var(--color-text-secondary)', marginBottom: '28px' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>Thanks for playing!</motion.p>
           </>
         )}
 
@@ -210,8 +215,24 @@ export function JoinResults({
         {script && (
           <motion.div className="mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0 }}>
             <div className="flex gap-3 justify-center flex-wrap">
-              <motion.button onClick={handleShareScript} className="btn btn-secondary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>{'share' in navigator ? '📤' : '💾'}</span><span>{'share' in navigator ? 'Share Script' : 'Save Script'}</span></motion.button>
-              <motion.button onClick={handleCopyScript} className="btn btn-ghost" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>{copySuccess ? '✓' : '📋'}</span><span>{copySuccess ? 'Copied!' : 'Copy Script'}</span></motion.button>
+              <motion.button
+                onClick={handleShareScript}
+                className="flex items-center gap-2"
+                style={{ padding: '10px 20px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              >
+                <ShareIcon size={16} color="currentColor" />
+                <span>{'share' in navigator ? 'Share Script' : 'Save Script'}</span>
+              </motion.button>
+              <motion.button
+                onClick={handleCopyScript}
+                className="flex items-center gap-2"
+                style={{ padding: '10px 20px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              >
+                <CopyIcon size={16} color="currentColor" />
+                <span>{copySuccess ? 'Copied!' : 'Copy Script'}</span>
+              </motion.button>
             </div>
           </motion.div>
         )}
@@ -220,12 +241,17 @@ export function JoinResults({
         <motion.div className="flex flex-col items-center gap-3 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}>
           <motion.button
             onClick={handleShareCharacter}
-            className="btn btn-large w-full"
+            className="w-full"
             style={{
               maxWidth: '320px',
+              padding: '14px',
+              borderRadius: '14px',
+              fontSize: '16px',
+              fontWeight: 600,
               background: 'var(--color-surface)',
               border: '1.5px solid var(--color-border)',
               color: 'var(--color-text-primary)',
+              cursor: 'pointer',
             }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -234,12 +260,17 @@ export function JoinResults({
           </motion.button>
           <motion.button
             onClick={() => handleSharePoster('story')}
-            className="btn btn-large w-full"
+            className="w-full"
             style={{
               maxWidth: '320px',
+              padding: '14px',
+              borderRadius: '14px',
+              fontSize: '16px',
+              fontWeight: 600,
               background: 'var(--color-surface)',
               border: '1.5px solid var(--color-border)',
               color: 'var(--color-text-primary)',
+              cursor: 'pointer',
             }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -290,7 +321,6 @@ export function JoinResults({
             </p>
             <SignInButton mode="redirect">
               <button
-                className="btn btn-primary"
                 style={{
                   background: 'var(--color-accent)',
                   color: '#fff',
@@ -318,17 +348,26 @@ export function JoinResults({
         )}
 
         {/* Waiting for host */}
-        <motion.div className="card text-center p-6" style={{ background: 'var(--color-highlight)', border: '1px solid var(--color-accent)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }}>
-          <motion.div className="text-4xl mb-3" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>⏳</motion.div>
-          <p className="font-display text-lg mb-1" style={{ color: 'var(--color-text-primary)' }}>Waiting for Host</p>
-          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>The host will start the next round</p>
+        <motion.div
+          className="text-center p-6 rounded-xl"
+          style={{ background: 'var(--color-highlight)', border: '1px solid var(--color-accent)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2 }}
+        >
+          <motion.div className="flex justify-center mb-3" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+            <SpinnerIcon size={32} color="var(--color-accent)" />
+          </motion.div>
+          <p style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '4px' }}>Waiting for Host</p>
+          <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>The host will start the next round</p>
           <motion.button
             onClick={() => router.push('/')}
-            className="btn btn-ghost"
-            style={{ minHeight: '44px' }}
+            className="flex items-center gap-2 mx-auto"
+            style={{ padding: '10px 20px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
             whileTap={{ scale: 0.95 }}
           >
-            🚪 Leave Game
+            <DoorIcon size={16} color="currentColor" />
+            Leave Game
           </motion.button>
         </motion.div>
       </div>
@@ -364,8 +403,8 @@ function Standings({ results }: { results: { playerId: string; playerName: strin
               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9 + index * 0.15 }}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2.5">
-                  <motion.span style={{ fontSize: isWinner ? 28 : 22, display: 'inline-block' }} initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.95 + index * 0.15 }}>
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🎭'}
+                  <motion.span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} initial={{ scale: 0, rotate: -180 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', bounce: 0.5, delay: 0.95 + index * 0.15 }}>
+                    {index === 0 ? <MedalIcon size={isWinner ? 28 : 22} color="var(--color-accent)" /> : index === 1 ? <MedalIcon size={22} color="var(--color-accent-2)" /> : index === 2 ? <MedalIcon size={22} color="var(--color-border-strong)" /> : <StarIcon size={22} color="var(--color-text-tertiary)" />}
                   </motion.span>
                   <span style={{ fontSize: isWinner ? 18 : 16, fontWeight: isWinner ? 700 : 600, color: 'var(--color-text-primary)' }}>{result.playerName}</span>
                 </div>
@@ -375,7 +414,7 @@ function Standings({ results }: { results: { playerId: string; playerName: strin
                 <motion.div className="h-full rounded-full relative overflow-hidden" style={{ background: barColor }}
                   initial={{ width: '0%' }} animate={{ width: `${maxVotes > 0 ? (result.votes / maxVotes) * 100 : 0}%` }}
                   transition={{ delay: 0.9 + index * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
-                  {isWinner && <div className="progress-bar-shimmer absolute inset-0" />}
+                  {isWinner && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)', animation: 'shimmer 1.5s ease-in-out infinite' }} />}
                 </motion.div>
               </div>
               <p className="text-xs mt-1" style={{ color: 'var(--color-text-tertiary)' }}>{percentage}% of votes</p>

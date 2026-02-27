@@ -254,11 +254,17 @@ export function HostPerforming({
           <motion.button
             onClick={() => { tapHaptic(); onPreviousLine() }}
             disabled={currentLineIndex === 0}
-            className="btn btn-ghost"
+            className="flex items-center gap-1"
             style={{
+              padding: '10px 18px',
+              borderRadius: '12px',
+              fontSize: '14px',
+              fontWeight: 600,
               opacity: currentLineIndex === 0 ? 0.3 : 0.8,
               color: '#FDFCFA',
+              background: 'transparent',
               border: '1px solid rgba(155, 149, 144, 0.2)',
+              cursor: currentLineIndex === 0 ? 'not-allowed' : 'pointer',
             }}
             whileHover={{ scale: currentLineIndex === 0 ? 1 : 1.05, x: currentLineIndex === 0 ? 0 : -2 }}
             whileTap={{ scale: currentLineIndex === 0 ? 1 : 0.95 }}
@@ -289,12 +295,17 @@ export function HostPerforming({
           <motion.button
             onClick={onTriggerChaos}
             disabled={chaosCooldown}
-            className={`btn relative overflow-hidden ${chaosShaking ? 'animate-chaos-shake' : ''}`}
+            className={`relative overflow-hidden flex items-center justify-center ${chaosShaking ? 'animate-chaos-shake' : ''}`}
             style={{
+              padding: '10px 18px',
+              borderRadius: '12px',
+              fontSize: '14px',
+              fontWeight: 600,
               background: chaosCooldown ? 'rgba(155, 149, 144, 0.15)' : 'linear-gradient(135deg, var(--color-purple), var(--color-pink))',
               color: 'white',
               opacity: chaosCooldown ? 0.5 : 1,
               border: 'none',
+              cursor: chaosCooldown ? 'not-allowed' : 'pointer',
             }}
             whileHover={!chaosCooldown ? { scale: 1.05 } : {}}
             whileTap={!chaosCooldown ? { scale: 0.95 } : {}}
@@ -318,11 +329,17 @@ export function HostPerforming({
           <motion.button
             onClick={() => { tapHaptic(); onNextLine() }}
             disabled={currentLineIndex >= script.lines.length - 1}
-            className="btn btn-ghost"
+            className="flex items-center gap-1"
             style={{
+              padding: '10px 18px',
+              borderRadius: '12px',
+              fontSize: '14px',
+              fontWeight: 600,
               opacity: currentLineIndex >= script.lines.length - 1 ? 0.3 : 0.8,
               color: '#FDFCFA',
+              background: 'transparent',
               border: '1px solid rgba(155, 149, 144, 0.2)',
+              cursor: currentLineIndex >= script.lines.length - 1 ? 'not-allowed' : 'pointer',
             }}
             whileHover={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 1.05, x: currentLineIndex >= script.lines.length - 1 ? 0 : 2 }}
             whileTap={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 0.95 }}
@@ -335,8 +352,8 @@ export function HostPerforming({
         {currentLineIndex >= script.lines.length - 1 && (
           <motion.button
             onClick={() => { tapHaptic(); onEndPerformance() }}
-            className="btn w-full mt-3 font-semibold"
-            style={{ background: '#F59E42', color: '#1A1714', border: 'none' }}
+            className="w-full mt-3"
+            style={{ padding: '14px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, background: '#F59E42', color: '#1A1714', border: 'none', cursor: 'pointer' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02 }}

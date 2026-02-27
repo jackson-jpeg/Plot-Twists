@@ -3,8 +3,9 @@
 import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { Player, Script } from '@/lib/types'
-import { VARIANTS } from '@/lib/animations'
+import { VARIANTS, MOTION } from '@/lib/animations'
 import { successHaptic } from '@/hooks/useHaptics'
+import { TrophyIcon, CheckCircleIcon } from '@/components/GameIcons'
 
 export interface JoinVotingProps {
   players: Player[]
@@ -14,58 +15,134 @@ export interface JoinVotingProps {
   onVote: (playerId: string) => void
 }
 
+const AVATAR_COLORS = [
+  '#3B5998', '#7B3F72', '#4A6741', '#8B6914', '#2D6A6A',
+  '#6B4C3B', '#4B0082', '#8B4513', '#2F4F4F', '#3B3B3B',
+]
+
+function getAvatarColor(name: string): string {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
+}
+
 export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }: JoinVotingProps) {
   const prefersReducedMotion = useReducedMotion()
   const hasVoted = players.find(p => p.id === myPlayerId)?.hasSubmittedVote
   const votablePlayers = players.filter(p => p.role === 'PLAYER' && p.id !== myPlayerId)
 
   return (
-    <motion.div key="voting" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="container max-w-lg">
-      <div className="card">
-        <h1 className="text-3xl font-display text-center mb-2" style={{ color: 'var(--color-text-primary)' }}>🏆 Vote for MVP</h1>
-
-        {/* Script title recap */}
-        {script && (
-          <p className="text-center text-sm mb-1 font-medium" style={{ color: 'var(--color-accent)' }}>
-            {script.title}
-          </p>
-        )}
+    <motion.div
+      key="voting"
+      variants={VARIANTS.spotlight}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="flex flex-col items-center justify-center"
+      style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
+    >
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <motion.div
+          className="text-center mb-6"
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex justify-center mb-3">
+            <TrophyIcon size={40} color="var(--color-accent)" />
+          </div>
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '32px',
+              fontWeight: 700,
+              color: 'var(--color-text-primary)',
+              marginBottom: '4px',
+            }}
+          >
+            Vote for MVP
+          </h1>
+          {script && (
+            <p style={{ fontSize: '14px', color: 'var(--color-accent)', fontWeight: 600 }}>
+              {script.title}
+            </p>
+          )}
+        </motion.div>
 
         {/* Your character reminder */}
         {myCharacter && (
           <motion.div
-            className="text-center mb-4 px-3 py-2 rounded-lg mx-auto"
-            style={{ background: 'var(--color-purple-bg)', maxWidth: 'fit-content' }}
+            className="flex items-center justify-center gap-2 mb-6 px-4 py-2 rounded-lg mx-auto"
+            style={{ background: 'var(--color-purple-bg)', width: 'fit-content' }}
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
           >
-            <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>You played as </span>
-            <span className="text-xs font-bold" style={{ color: 'var(--color-purple)' }}>{myCharacter}</span>
+            <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>You played as</span>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-purple)' }}>{myCharacter}</span>
           </motion.div>
         )}
 
-        {!myCharacter && <p className="text-center mb-6" style={{ color: 'var(--color-text-secondary)' }}>Who had the best performance?</p>}
+        {!myCharacter && !hasVoted && (
+          <p className="text-center mb-6" style={{ color: 'var(--color-text-secondary)', fontSize: '15px' }}>
+            Who had the best performance?
+          </p>
+        )}
 
         {hasVoted ? (
-          <motion.div className="card text-center p-8" style={{ background: 'var(--color-highlight)' }} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-            <motion.div className="text-6xl mb-4" initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0 }} animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>✅</motion.div>
-            <p className="text-xl font-display" style={{ color: 'var(--color-text-primary)' }}>Vote Submitted!</p>
-            <p className="text-sm mt-2 mb-3" style={{ color: 'var(--color-text-secondary)' }}>Waiting for others...</p>
+          /* Vote submitted state */
+          <motion.div
+            className="text-center p-8 rounded-xl"
+            style={{ background: 'var(--color-highlight)', border: '1px solid var(--color-border)' }}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+          >
+            <motion.div
+              className="flex justify-center mb-4"
+              initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1 }}
+              transition={{ type: 'spring', bounce: 0.5 }}
+            >
+              <CheckCircleIcon size={56} color="var(--color-success)" />
+            </motion.div>
+            <p
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '22px',
+                fontWeight: 700,
+                color: 'var(--color-text-primary)',
+                marginBottom: '6px',
+              }}
+            >
+              Vote Submitted!
+            </p>
+            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
+              Waiting for others...
+            </p>
             {(() => {
               const allPlayers = players.filter(p => p.role === 'PLAYER')
               const voted = allPlayers.filter(p => p.hasSubmittedVote).length
               return (
                 <>
-                  <div className="h-1.5 rounded-full mb-2 overflow-hidden mx-auto" style={{ background: 'var(--color-surface-alt)', maxWidth: '200px' }}>
+                  <div
+                    className="mx-auto rounded-full overflow-hidden"
+                    style={{ height: '6px', maxWidth: '200px', background: 'var(--color-surface-alt)' }}
+                  >
                     <motion.div
                       className="h-full rounded-full"
-                      style={{ background: voted === allPlayers.length ? 'var(--color-success)' : 'linear-gradient(90deg, var(--color-purple), var(--color-accent))' }}
+                      style={{
+                        background: voted === allPlayers.length
+                          ? 'var(--color-success)'
+                          : 'linear-gradient(90deg, var(--color-purple), var(--color-accent))',
+                      }}
                       initial={{ width: 0 }}
                       animate={{ width: `${allPlayers.length > 0 ? (voted / allPlayers.length) * 100 : 0}%` }}
                       transition={{ duration: 0.6, ease: 'easeOut' }}
                     />
                   </div>
-                  <p className="text-xs font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+                  <p className="text-xs font-medium mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
                     {voted}/{allPlayers.length} votes in
                   </p>
                 </>
@@ -73,37 +150,71 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
             })()}
           </motion.div>
         ) : (
-          <div className="stack-sm">
+          /* Player vote buttons */
+          <div className="flex flex-col gap-3">
             {votablePlayers.map((player, i) => (
               <motion.button
                 key={player.id}
                 onClick={() => { successHaptic(); onVote(player.id) }}
-                className="w-full p-4 rounded-xl text-left flex items-center gap-3 cursor-pointer transition-colors"
+                className="w-full flex items-center gap-3 p-4 rounded-xl text-left"
                 style={{
-                  background: 'var(--color-surface-alt)',
+                  background: 'var(--color-surface)',
                   border: '1px solid var(--color-border)',
+                  cursor: 'pointer',
                 }}
                 initial={{ opacity: 0, x: -15 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.08, duration: 0.3 }}
-                whileHover={{ scale: 1.02, borderColor: 'var(--color-purple)' }}
+                transition={{ delay: i * 0.08, ...MOTION.gentle }}
+                whileHover={{ scale: 1.02, borderColor: 'var(--color-accent)' }}
                 whileTap={{ scale: 0.98 }}
               >
-                <div className="player-avatar">{player.nickname[0]?.toUpperCase()}</div>
+                {/* Avatar */}
+                <div
+                  className="flex items-center justify-center rounded-full shrink-0"
+                  style={{
+                    width: '44px',
+                    height: '44px',
+                    background: getAvatarColor(player.nickname),
+                    color: 'white',
+                    fontWeight: 700,
+                    fontSize: '18px',
+                  }}
+                >
+                  {player.nickname[0]?.toUpperCase()}
+                </div>
+
+                {/* Name + character */}
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
+                    <span style={{ fontWeight: 600, color: 'var(--color-text-primary)', fontSize: '16px' }}>
+                      {player.nickname}
+                    </span>
                     {player.level != null && (
-                      <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'var(--color-purple-bg)', color: 'var(--color-purple)' }}>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          padding: '1px 6px',
+                          borderRadius: '999px',
+                          background: 'var(--color-purple-bg)',
+                          color: 'var(--color-purple)',
+                        }}
+                      >
                         Lv.{player.level}
                       </span>
                     )}
                   </div>
                   {player.assignedCharacter && (
-                    <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>as {player.assignedCharacter}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>
+                      as {player.assignedCharacter}
+                    </div>
                   )}
                 </div>
-                <span className="text-lg">🗳️</span>
+
+                {/* Vote arrow */}
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                  <path d="M7 4L13 10L7 16" stroke="var(--color-text-tertiary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </motion.button>
             ))}
           </div>

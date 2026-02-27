@@ -89,9 +89,10 @@ export function HostLoading({
         transition={{ delay: 0.3 }}
       >
         <div className="flex items-center gap-3">
-          <div className="progress relative flex-1">
+          <div className="relative flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-surface-alt)' }}>
             <motion.div
-              className="progress-bar progress-bar-shimmer"
+              className="h-full rounded-full"
+              style={{ background: 'var(--color-accent)' }}
               initial={{ width: '0%' }}
               animate={{ width: `${Math.min(loadingProgress, 100)}%` }}
               transition={{ duration: 1.5, ease: [0.33, 1, 0.68, 1] }}
@@ -136,14 +137,14 @@ export function HostLoading({
 
       {settings.gameMode === 'SOLO' && (
         <motion.div
-          className="card p-4 mb-8"
+          className="p-4 rounded-xl mb-8"
           style={{ background: 'var(--color-highlight-blue)', border: '1px solid var(--color-accent-2)' }}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
           <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-            Solo mode -- AI characters are joining your performance
+            Solo mode — AI characters are joining your performance
           </p>
         </motion.div>
       )}
@@ -152,13 +153,13 @@ export function HostLoading({
       <AnimatePresence mode="wait">
         {greenRoomQuestion && !scriptGenerationTimedOut && (
           <motion.div
-            className="card card-accent-2 mt-4"
+            className="mt-4 p-5 rounded-xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            style={{ boxShadow: '0 0 0 1px var(--color-accent-2)' }}
+            style={{ background: 'var(--color-highlight-blue)', border: '1px solid var(--color-accent-2)' }}
           >
-            <h3 className="font-display text-lg mb-3" style={{ color: 'var(--color-accent-2)' }}>Green Room</h3>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-accent-2)', marginBottom: '10px' }}>Green Room</h3>
             <p className="text-lg italic" style={{ color: 'var(--color-text-primary)' }}>&ldquo;{greenRoomQuestion}&rdquo;</p>
             <p className="text-xs mt-3" style={{ color: 'var(--color-text-tertiary)' }}>
               Discuss with your fellow performers while the script is being written
@@ -167,7 +168,7 @@ export function HostLoading({
         )}
         {scriptGenerationTimedOut && (
           <motion.div
-            className="card mt-4"
+            className="mt-4 p-5 rounded-xl"
             style={{ background: 'var(--color-highlight-pink)', border: '2px solid var(--color-danger)' }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -175,17 +176,28 @@ export function HostLoading({
           >
             <div className="flex items-center gap-2 mb-3">
               <WarningIcon size={20} color="var(--color-danger)" />
-              <h3 className="font-display text-lg" style={{ color: 'var(--color-danger)' }}>Taking longer than expected</h3>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-danger)' }}>Taking longer than expected</h3>
             </div>
             <p className="mb-4 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
               Script generation is taking longer than usual. You can wait, retry, or go back.
             </p>
             <div className="flex gap-3 justify-center flex-wrap">
-              <motion.button onClick={onRetry} className="btn btn-primary" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <motion.button
+                onClick={onRetry}
+                className="flex items-center gap-2"
+                style={{ padding: '10px 20px', borderRadius: '12px', border: 'none', background: 'var(--color-accent)', color: 'white', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              >
                 <RetryIcon size={16} color="currentColor" /><span>Retry</span>
               </motion.button>
-              <motion.button onClick={onBackToLobby} className="btn btn-ghost" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <span>&larr;</span><span>Back to Lobby</span>
+              <motion.button
+                onClick={onBackToLobby}
+                className="flex items-center gap-2"
+                style={{ padding: '10px 20px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <span>Back to Lobby</span>
               </motion.button>
             </div>
           </motion.div>

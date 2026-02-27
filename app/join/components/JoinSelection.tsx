@@ -4,10 +4,22 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import type { CardSelection, PlayerRole, AvailableCards, Player } from '@/lib/types'
-import { VARIANTS } from '@/lib/animations'
+import { VARIANTS, MOTION } from '@/lib/animations'
 import { tapHaptic } from '@/hooks/useHaptics'
+import { CheckCircleIcon, SpinnerIcon, PopcornIcon } from '@/components/GameIcons'
 
-const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false, loading: () => <div className="card p-8 text-center"><div className="skeleton skeleton-heading mx-auto" /><div className="skeleton skeleton-text mx-auto mt-4" style={{ width: '60%' }} /></div> })
+const CardPicker = dynamic(
+  () => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="p-8 text-center rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+        <div className="h-6 w-40 rounded animate-pulse mx-auto" style={{ background: 'var(--color-border)' }} />
+        <div className="h-4 w-24 rounded animate-pulse mx-auto mt-4" style={{ background: 'var(--color-border)' }} />
+      </div>
+    ),
+  }
+)
 
 export interface JoinSelectionProps {
   myRole: PlayerRole
@@ -32,7 +44,6 @@ export function JoinSelection({
   const prefersReducedMotion = useReducedMotion()
   const [confirmMode, setConfirmMode] = useState(false)
 
-  // Auto-reset confirmMode after 3 seconds
   useEffect(() => {
     if (!confirmMode) return
     const timer = setTimeout(() => setConfirmMode(false), 3000)
@@ -55,19 +66,39 @@ export function JoinSelection({
   // Spectator waiting
   if (myRole === 'SPECTATOR' && !hasSubmitted) {
     return (
-      <motion.div key="spectator-waiting" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-lg text-center">
-        <div className="card">
+      <motion.div
+        key="spectator-waiting"
+        variants={pageTransitionVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="flex flex-col items-center justify-center"
+        style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
+      >
+        <div className="w-full max-w-md text-center">
           <motion.div
-            className="text-7xl mb-5"
+            className="flex justify-center mb-5"
             animate={prefersReducedMotion ? {} : { y: [0, -6, 0] }}
             transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
           >
-            🍿
+            <PopcornIcon size={56} color="var(--color-accent)" />
           </motion.div>
-          <h1 className="text-3xl font-display mb-3" style={{ color: 'var(--color-text-primary)' }}>Grab Some Popcorn</h1>
-          <p className="text-base" style={{ color: 'var(--color-text-secondary)' }}>The actors are picking their cards...</p>
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '28px',
+              fontWeight: 700,
+              color: 'var(--color-text-primary)',
+              marginBottom: '8px',
+            }}
+          >
+            Grab Some Popcorn
+          </h1>
+          <p style={{ fontSize: '16px', color: 'var(--color-text-secondary)' }}>
+            The actors are picking their cards...
+          </p>
           {nonHostPlayers.length > 0 && (
-            <p className="text-sm mt-3 font-medium" style={{ color: 'var(--color-text-tertiary)' }}>
+            <p className="mt-3 font-medium" style={{ fontSize: '14px', color: 'var(--color-text-tertiary)' }}>
               {submittedCount}/{nonHostPlayers.length} players submitted
             </p>
           )}
@@ -75,8 +106,8 @@ export function JoinSelection({
             {[0, 1, 2].map(i => (
               <motion.div
                 key={i}
-                className="w-2 h-2 rounded-full"
-                style={{ background: 'var(--color-accent)' }}
+                className="rounded-full"
+                style={{ width: 8, height: 8, background: 'var(--color-accent)' }}
                 animate={prefersReducedMotion ? { opacity: 0.6 } : { opacity: [0.3, 1, 0.3] }}
                 transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.3 }}
               />
@@ -87,30 +118,45 @@ export function JoinSelection({
     )
   }
 
-  // Submitted waiting — show selected cards
+  // Submitted waiting
   if (hasSubmitted) {
     return (
-      <motion.div key="waiting" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-lg text-center">
-        <div className="card">
+      <motion.div
+        key="waiting"
+        variants={pageTransitionVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        className="flex flex-col items-center justify-center"
+        style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
+      >
+        <div className="w-full max-w-md text-center">
           <motion.div
-            className="text-6xl mb-4"
-            initial={{ scale: 0 }} animate={{ scale: 1 }}
+            className="flex justify-center mb-4"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
             transition={{ type: 'spring', bounce: 0.5 }}
           >
-            ✅
+            <CheckCircleIcon size={56} color="var(--color-success)" />
           </motion.div>
           <motion.h1
-            className="text-3xl font-display mb-2"
-            style={{ color: 'var(--color-success)' }}
-            initial={{ y: 15, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '28px',
+              fontWeight: 700,
+              color: 'var(--color-success)',
+              marginBottom: '6px',
+            }}
+            initial={{ y: 15, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.15 }}
           >
             Cards Submitted!
           </motion.h1>
           <motion.p
-            className="text-base mb-5"
-            style={{ color: 'var(--color-text-secondary)' }}
-            initial={{ y: 15, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+            style={{ fontSize: '15px', color: 'var(--color-text-secondary)', marginBottom: '20px' }}
+            initial={{ y: 15, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.25 }}
           >
             {nonHostPlayers.length > 0
@@ -118,19 +164,44 @@ export function JoinSelection({
               : 'Waiting for others...'}
           </motion.p>
 
-          {/* Show selected cards */}
+          {/* Selected cards recap */}
           {(selection.character || selection.setting || selection.circumstance) && (
             <motion.div
-              className="p-4 rounded-lg text-left"
+              className="p-4 rounded-xl text-left"
               style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
-              initial={{ y: 15, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+              initial={{ y: 15, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.35 }}
             >
-              <p className="text-xs mb-3" style={{ color: 'var(--color-text-tertiary)' }}>YOUR SCENE:</p>
-              <div className="space-y-2 text-sm">
-                {selection.character && <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold" aria-hidden="true">🎭</span> {selection.character}</p>}
-                {selection.setting && <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold" aria-hidden="true">🏛️</span> {selection.setting}</p>}
-                {selection.circumstance && <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold" aria-hidden="true">⚡</span> {selection.circumstance}</p>}
+              <p style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase' as const,
+                color: 'var(--color-text-tertiary)',
+                marginBottom: '10px',
+              }}>
+                Your Scene
+              </p>
+              <div className="flex flex-col gap-2">
+                {selection.character && (
+                  <div className="flex items-start gap-2">
+                    <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Character</span>
+                    <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.character}</span>
+                  </div>
+                )}
+                {selection.setting && (
+                  <div className="flex items-start gap-2">
+                    <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Setting</span>
+                    <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.setting}</span>
+                  </div>
+                )}
+                {selection.circumstance && (
+                  <div className="flex items-start gap-2">
+                    <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Wild Card</span>
+                    <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.circumstance}</span>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -140,8 +211,8 @@ export function JoinSelection({
             {[0, 1, 2].map(i => (
               <motion.div
                 key={i}
-                className="w-2 h-2 rounded-full"
-                style={{ background: 'var(--color-success)' }}
+                className="rounded-full"
+                style={{ width: 8, height: 8, background: 'var(--color-success)' }}
                 animate={prefersReducedMotion ? { opacity: 0.6 } : { opacity: [0.3, 1, 0.3] }}
                 transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.3 }}
               />
@@ -168,44 +239,80 @@ export function JoinSelection({
 
   // Card picker
   return (
-    <motion.div key="selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-2xl">
-      <div className="card">
-        <CardPicker
-          selection={selection}
-          setSelection={(s) => setSelection(s)}
-          isMature={roomIsMature}
-          availableCards={availableCards}
-          onShuffleAll={handleShuffleAll}
-          toast={toast}
-        />
+    <motion.div
+      key="selection"
+      variants={pageTransitionVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      style={{ padding: '24px 16px', background: 'var(--color-bg)' }}
+    >
+      <div className="w-full max-w-2xl mx-auto">
+        <div className="p-5 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+          <CardPicker
+            selection={selection}
+            setSelection={(s) => setSelection(s)}
+            isMature={roomIsMature}
+            availableCards={availableCards}
+            onShuffleAll={handleShuffleAll}
+            toast={toast}
+          />
 
-        {error && (
-          <div className="p-4 rounded-lg mt-4" style={{ background: 'var(--color-danger)', border: '2px solid var(--color-bg)' }}>
-            <p className="text-white text-center font-semibold">⚠️ {error}</p>
-          </div>
-        )}
-
-        <motion.button
-          onClick={handleSubmit}
-          disabled={!allSelected || isSubmitting}
-          className="btn btn-primary btn-large w-full mt-6"
-          style={{
-            opacity: (!allSelected || isSubmitting) ? 0.5 : 1,
-            ...(confirmMode ? { background: 'var(--color-success)', borderColor: 'var(--color-success)' } : {}),
-          }}
-          whileHover={{ scale: isSubmitting ? 1 : 1.02 }} whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
-          animate={(allSelected && !isSubmitting && !confirmMode && !prefersReducedMotion)
-            ? { boxShadow: ['0 0 0 0 rgba(245, 158, 66, 0.1)', '0 0 0 8px rgba(245, 158, 66, 0.15)', '0 0 0 0 rgba(245, 158, 66, 0.1)'] } : {}}
-          transition={(allSelected && !isSubmitting && !confirmMode && !prefersReducedMotion) ? { duration: 2, repeat: Infinity } : {}}
-        >
-          {isSubmitting ? (
-            <><motion.span animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }} aria-hidden="true">⏳</motion.span><span>Submitting...</span></>
-          ) : confirmMode ? (
-            <><span aria-hidden="true">✅</span><span>Tap again to confirm</span></>
-          ) : (
-            <><span aria-hidden="true">✨</span><span>{!allSelected ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)` : 'Submit Cards - Ready!'}</span></>
+          {error && (
+            <div className="p-3 rounded-lg mt-4 text-center" style={{ background: 'var(--color-danger)', color: 'white' }}>
+              <p className="font-semibold text-sm">{error}</p>
+            </div>
           )}
-        </motion.button>
+
+          <motion.button
+            onClick={handleSubmit}
+            disabled={!allSelected || isSubmitting}
+            className="w-full mt-6"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '17px',
+              fontWeight: 600,
+              padding: '16px',
+              borderRadius: '14px',
+              border: 'none',
+              background: confirmMode
+                ? 'var(--color-success)'
+                : allSelected && !isSubmitting
+                ? 'var(--color-accent)'
+                : 'var(--color-surface-alt)',
+              color: allSelected && !isSubmitting ? 'white' : 'var(--color-text-tertiary)',
+              cursor: allSelected && !isSubmitting ? 'pointer' : 'not-allowed',
+              opacity: allSelected && !isSubmitting ? 1 : 0.6,
+              transition: 'background 0.2s, opacity 0.2s',
+            }}
+            whileHover={!isSubmitting && allSelected ? { scale: 1.02 } : {}}
+            whileTap={!isSubmitting && allSelected ? { scale: 0.98 } : {}}
+            animate={(allSelected && !isSubmitting && !confirmMode && !prefersReducedMotion)
+              ? { boxShadow: ['0 0 0 0 rgba(245, 158, 66, 0.1)', '0 0 0 8px rgba(245, 158, 66, 0.15)', '0 0 0 0 rgba(245, 158, 66, 0.1)'] }
+              : {}}
+            transition={(allSelected && !isSubmitting && !confirmMode && !prefersReducedMotion)
+              ? { duration: 2, repeat: Infinity }
+              : {}}
+          >
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <SpinnerIcon size={16} color="currentColor" />
+                Submitting...
+              </span>
+            ) : confirmMode ? (
+              <span className="flex items-center justify-center gap-2">
+                <CheckCircleIcon size={16} color="currentColor" />
+                Tap again to confirm
+              </span>
+            ) : (
+              <span>
+                {!allSelected
+                  ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)`
+                  : 'Submit Cards — Ready!'}
+              </span>
+            )}
+          </motion.button>
+        </div>
       </div>
     </motion.div>
   )

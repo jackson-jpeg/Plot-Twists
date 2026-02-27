@@ -75,18 +75,27 @@ export function HostSelection({
   if (settings.gameMode === 'SOLO' && hasSubmittedSelection) {
     return (
       <motion.div key="solo-waiting" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-lg text-center">
-        <div className="card">
+        <div className="p-6 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <motion.div className="flex justify-center mb-6" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>
             <CheckCircleIcon size={64} color="var(--color-success)" />
           </motion.div>
-          <motion.h1 className="text-4xl font-display mb-4" style={{ color: 'var(--color-success)' }} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>Cards Submitted!</motion.h1>
-          <motion.p className="text-lg mb-6" style={{ color: 'var(--color-text-secondary)' }} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>Generating your scene...</motion.p>
-          <motion.div className="p-4 rounded-lg text-left" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
-            <p className="text-xs mb-3 uppercase tracking-wider font-semibold" style={{ color: 'var(--color-text-tertiary)' }}>YOUR SCENE</p>
-            <div className="space-y-2 text-sm">
-              <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold uppercase text-xs tracking-wide" style={{ color: 'var(--color-text-tertiary)' }}>Character</span> <span className="ml-2">{selection.character}</span></p>
-              <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold uppercase text-xs tracking-wide" style={{ color: 'var(--color-text-tertiary)' }}>Setting</span> <span className="ml-2">{selection.setting}</span></p>
-              <p style={{ color: 'var(--color-text-primary)' }}><span className="font-bold uppercase text-xs tracking-wide" style={{ color: 'var(--color-text-tertiary)' }}>Wild Card</span> <span className="ml-2">{selection.circumstance}</span></p>
+          <motion.h1 className="font-display" style={{ fontSize: '32px', fontWeight: 700, color: 'var(--color-success)', marginBottom: '12px' }} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>Cards Submitted!</motion.h1>
+          <motion.p style={{ fontSize: '17px', color: 'var(--color-text-secondary)', marginBottom: '20px' }} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }}>Generating your scene...</motion.p>
+          <motion.div className="p-4 rounded-xl text-left" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: 'var(--color-text-tertiary)', marginBottom: '10px' }}>Your Scene</p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-start gap-2">
+                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Character</span>
+                <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.character}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Setting</span>
+                <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.setting}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Wild Card</span>
+                <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.circumstance}</span>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -108,11 +117,17 @@ export function HostSelection({
 
     return (
       <motion.div key="solo-selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-2xl">
-        <motion.button onClick={onBackToLobby} className="back-button mb-4" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} whileHover={{ x: -4 }} whileTap={{ scale: 0.95 }}>
-          <span className="back-arrow">&larr;</span><span>Back to Lobby</span>
+        <motion.button
+          onClick={onBackToLobby}
+          className="flex items-center gap-1.5 mb-4"
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', fontSize: '15px', padding: '8px 4px' }}
+          initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} whileHover={{ x: -4 }} whileTap={{ scale: 0.95 }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <span>Back to Lobby</span>
         </motion.button>
 
-        <div className="card">
+        <div className="p-5 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           {availableCards.characters.length === 0 ? (
             <motion.div className="text-center py-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SpinnerIcon size={32} color="var(--color-text-secondary)" className={prefersReducedMotion ? '' : ''} />
@@ -132,21 +147,33 @@ export function HostSelection({
               <motion.button
                 onClick={handleSoloSubmit}
                 disabled={!selection.character || !selection.setting || !selection.circumstance || isSubmittingCards}
-                className="btn btn-primary btn-large w-full mt-6"
+                className="w-full mt-6"
                 style={{
-                  opacity: (!selection.character || !selection.setting || !selection.circumstance || isSubmittingCards) ? 0.6 : 1,
-                  ...(confirmMode ? { background: 'var(--color-success)', borderColor: 'var(--color-success)' } : {}),
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '17px',
+                  fontWeight: 600,
+                  padding: '16px',
+                  borderRadius: '14px',
+                  border: 'none',
+                  background: confirmMode
+                    ? 'var(--color-success)'
+                    : (selection.character && selection.setting && selection.circumstance && !isSubmittingCards)
+                    ? 'var(--color-accent)'
+                    : 'var(--color-surface-alt)',
+                  color: (selection.character && selection.setting && selection.circumstance && !isSubmittingCards) ? 'white' : 'var(--color-text-tertiary)',
+                  cursor: (selection.character && selection.setting && selection.circumstance && !isSubmittingCards) ? 'pointer' : 'not-allowed',
+                  opacity: (selection.character && selection.setting && selection.circumstance && !isSubmittingCards) ? 1 : 0.6,
                 }}
                 whileHover={{ scale: isSubmittingCards ? 1 : 1.02 }} whileTap={{ scale: isSubmittingCards ? 1 : 0.98 }}
                 animate={(selection.character && selection.setting && selection.circumstance && !isSubmittingCards && !confirmMode && !prefersReducedMotion) ? { boxShadow: ['0 0 0 0 rgba(245, 158, 66, 0.1)', '0 0 0 8px rgba(245, 158, 66, 0.15)', '0 0 0 0 rgba(245, 158, 66, 0.1)'] } : {}}
                 transition={(selection.character && selection.setting && selection.circumstance && !isSubmittingCards && !confirmMode && !prefersReducedMotion) ? { duration: 2, repeat: Infinity } : {}}
               >
                 {isSubmittingCards ? (
-                  <><SpinnerIcon size={16} color="currentColor" /><span>Submitting...</span></>
+                  <span className="flex items-center justify-center gap-2"><SpinnerIcon size={16} color="currentColor" />Submitting...</span>
                 ) : confirmMode ? (
-                  <><CheckCircleIcon size={16} color="currentColor" /><span>Tap again to confirm</span></>
+                  <span className="flex items-center justify-center gap-2"><CheckCircleIcon size={16} color="currentColor" />Tap again to confirm</span>
                 ) : (
-                  <span>{(!selection.character || !selection.setting || !selection.circumstance) ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)` : 'Submit Cards -- Ready!'}</span>
+                  <span>{(!selection.character || !selection.setting || !selection.circumstance) ? `Submit Cards (${[selection.character, selection.setting, selection.circumstance].filter(Boolean).length}/3)` : 'Submit Cards — Ready!'}</span>
                 )}
               </motion.button>
             </>
@@ -227,7 +254,7 @@ export function HostSelection({
                   ) : (
                     <StatusDot status="waiting" size={20} />
                   )}
-                  <div className="player-avatar" style={{ width: '32px', height: '32px', fontSize: '13px' }}>{player.nickname[0]?.toUpperCase()}</div>
+                  <div className="flex items-center justify-center rounded-full shrink-0" style={{ width: '32px', height: '32px', fontSize: '13px', fontWeight: 700, background: 'var(--color-accent)', color: 'white' }}>{player.nickname[0]?.toUpperCase()}</div>
                   <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
                 </div>
                 <span
@@ -268,7 +295,7 @@ export function HostSelection({
       {/* Green room question */}
       {greenRoomQuestion && (
         <motion.div
-          className="card mb-4 text-left"
+          className="mb-4 text-left p-4 rounded-xl"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}

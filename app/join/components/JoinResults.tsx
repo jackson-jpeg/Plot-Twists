@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import type { Script, GameResults, XPEvent, LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
 import { SignInButton } from '@clerk/nextjs'
 import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
+import { withTimeout } from '@/lib/socketTimeout'
 import { successHaptic } from '@/hooks/useHaptics'
 import { useConfetti } from '@/hooks/useConfetti'
 import { Modal } from '@/components/Modal'
@@ -73,6 +74,33 @@ export function JoinResults({
     socket.on('directors_review', setDirectorsReview)
     return () => { socket.off('directors_review', setDirectorsReview) }
   }, [socket])
+
+  const handleShareCharacter = async () => {
+    if (!socket || !myPlayerId) return
+    const uid = userUid || myPlayerId
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const historyResponse: any = await withTimeout(
+        (cb) => socket.emit('get_game_history', uid, 1, cb),
+        10000
+      )
+      if (!historyResponse.success || !historyResponse.games?.length) return
+      const gameId = historyResponse.games[0].id
+      const cardUrl = `/api/character-card/${gameId}/${myPlayerId}?format=story`
+
+      const response = await fetch(cardUrl)
+      const blob = await response.blob()
+      const file = new File([blob], 'my-character.png', { type: 'image/png' })
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'My Character — Plot Twists' })
+      } else {
+        window.open(cardUrl, '_blank')
+      }
+    } catch {
+      // User cancelled share or error
+    }
+  }
 
   const handleCopyScript = async () => {
     if (!script) return
@@ -159,6 +187,24 @@ export function JoinResults({
             </div>
           </motion.div>
         )}
+
+        {/* Share My Character */}
+        <motion.div className="flex justify-center mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}>
+          <motion.button
+            onClick={handleShareCharacter}
+            className="btn btn-large w-full"
+            style={{
+              maxWidth: '320px',
+              background: 'var(--color-surface)',
+              border: '1.5px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            Share My Character
+          </motion.button>
+        </motion.div>
 
         {/* Director's Review */}
         {directorsReview && (

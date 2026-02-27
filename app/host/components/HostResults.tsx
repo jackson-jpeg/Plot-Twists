@@ -108,6 +108,32 @@ export function HostResults({
     }
   }
 
+  const handleShareCharacter = async () => {
+    if (!socket || !userUid) return
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const historyResponse: any = await withTimeout(
+        (cb) => socket.emit('get_game_history', userUid, 1, cb),
+        10000
+      )
+      if (!historyResponse.success || !historyResponse.games?.length) return
+      const gameId = historyResponse.games[0].id
+      const cardUrl = `/api/character-card/${gameId}/${userUid}?format=story`
+
+      const response = await fetch(cardUrl)
+      const blob = await response.blob()
+      const file = new File([blob], 'my-character.png', { type: 'image/png' })
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'My Character — Plot Twists' })
+      } else {
+        window.open(cardUrl, '_blank')
+      }
+    } catch {
+      // User cancelled share or error
+    }
+  }
+
   const handleShareScene = async () => {
     if (!socket || !script) return
     if (shareUrl) { triggerShare(shareUrl); return }
@@ -218,6 +244,23 @@ export function HostResults({
               <span>{shareCopied ? '✓' : '🔗'}</span><span>{isSharing ? 'Sharing...' : shareCopied ? 'Link Copied!' : 'Share This Scene'}</span>
             </motion.button>
           )}
+          <motion.button
+            onClick={handleShareCharacter}
+            className="btn btn-large w-full"
+            style={{
+              maxWidth: '320px',
+              background: 'var(--color-surface)',
+              border: '1.5px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            Share My Character
+          </motion.button>
           {script && (
             <motion.button onClick={onRequestSequel} className="btn btn-primary btn-large" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.3 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <span>🎬</span><span>Generate Sequel</span>

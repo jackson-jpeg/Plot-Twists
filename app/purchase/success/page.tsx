@@ -89,7 +89,8 @@ function PurchaseSuccessContent() {
               Something went wrong
             </h1>
             <p className="mb-6 text-[var(--color-text-secondary)]">{error}</p>
-            <button onClick={() => router.push('/')} className="btn btn-primary">
+            <button onClick={() => router.push('/')}
+              style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}>
               Go Home
             </button>
           </motion.div>
@@ -150,12 +151,14 @@ function PurchaseSuccessContent() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                <button onClick={() => router.push('/')} className="btn btn-primary btn-large w-full">
+                <button onClick={() => router.push('/')} className="w-full"
+                  style={{ padding: '14px 24px', borderRadius: '14px', fontSize: '16px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}>
                   Start Playing
                 </button>
                 <button
                   onClick={() => router.push('/profile')}
-                  className="btn btn-ghost w-full"
+                  className="w-full"
+                  style={{ padding: '10px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
                 >
                   View Profile
                 </button>

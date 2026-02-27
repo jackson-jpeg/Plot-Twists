@@ -27,12 +27,14 @@ export default function PurchaseCancelledPage() {
             </p>
 
             <div className="flex flex-col gap-3">
-              <button onClick={() => router.push('/')} className="btn btn-primary w-full">
+              <button onClick={() => router.push('/')} className="w-full"
+                style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}>
                 Back to Home
               </button>
               <button
                 onClick={() => router.back()}
-                className="btn btn-ghost w-full"
+                className="w-full"
+                style={{ padding: '10px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
               >
                 Try Again
               </button>

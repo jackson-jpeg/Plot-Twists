@@ -27,13 +27,15 @@ export default function ProfileError({
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={reset}
-            className="btn btn-primary px-6 py-3 font-semibold"
+            className="px-6 py-3 font-semibold"
+            style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '15px', cursor: 'pointer' }}
           >
             Try Again
           </button>
           <a
             href="/"
-            className="btn btn-secondary px-6 py-3 font-semibold inline-flex items-center justify-center"
+            className="px-6 py-3 font-semibold inline-flex items-center justify-center"
+            style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', borderRadius: '12px', fontSize: '15px', textDecoration: 'none' }}
           >
             Go Home
           </a>

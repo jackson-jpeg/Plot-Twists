@@ -18,7 +18,7 @@ export class GameErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
+        <div className="rounded-xl" style={{ textAlign: 'center', padding: '2rem', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <h2 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
             Scene interrupted!
           </h2>
@@ -27,7 +27,10 @@ export class GameErrorBoundary extends React.Component<Props, State> {
               Something went wrong during {this.props.phaseName}.
             </p>
           )}
-          <button className="btn btn-primary" onClick={this.handleRetry}>
+          <button
+            onClick={this.handleRetry}
+            style={{ background: 'var(--color-accent)', color: '#fff', padding: '10px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+          >
             Try Again
           </button>
         </div>

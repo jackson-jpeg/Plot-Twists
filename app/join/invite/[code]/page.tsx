@@ -149,7 +149,7 @@ export function InvitePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={MOTION.gentle}
         >
-          <div className="card" style={{ padding: '48px 32px' }}>
+          <div className="rounded-xl" style={{ padding: '48px 32px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true" style={{ margin: '0 auto 16px' }}>
               <circle cx="24" cy="24" r="20" stroke="var(--color-text-tertiary)" strokeWidth="2" strokeDasharray="4 4" />
               <path d="M18 18l12 12M30 18L18 30" stroke="var(--color-text-tertiary)" strokeWidth="2" strokeLinecap="round" />
@@ -165,7 +165,8 @@ export function InvitePage() {
             </p>
             <motion.button
               onClick={() => router.push('/join')}
-              className="btn btn-primary btn-large w-full"
+              className="w-full"
+              style={{ padding: '14px 24px', borderRadius: '14px', fontSize: '16px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -371,7 +372,7 @@ export function InvitePage() {
           >
             Your nickname
           </label>
-          <div className="input-wrapper mb-3">
+          <div className="relative mb-3">
             <input
               ref={nicknameRef}
               id="invite-nickname"
@@ -389,18 +390,28 @@ export function InvitePage() {
               maxLength={20}
               autoComplete="off"
               enterKeyHint="go"
-              className={`input text-lg ${nicknameTouched && nicknameError ? 'input-error' : ''} ${isNicknameValid ? 'input-valid' : ''}`}
-              style={{ paddingRight: isNicknameValid ? '44px' : '16px' }}
+              className="text-lg w-full"
+              style={{
+                padding: '14px 16px',
+                paddingRight: isNicknameValid ? '44px' : '16px',
+                borderRadius: '12px',
+                border: nicknameTouched && nicknameError ? '2px solid var(--color-danger)' : isNicknameValid ? '2px solid var(--color-success)' : '1.5px solid var(--color-border)',
+                background: 'var(--color-surface-alt)',
+                color: 'var(--color-text-primary)',
+                fontSize: '18px',
+                outline: 'none',
+              }}
             />
-            {isNicknameValid && <span className="input-check">{'\u2713'}</span>}
+            {isNicknameValid && <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-success)', fontSize: '18px' }}>{'\u2713'}</span>}
           </div>
           {nicknameTouched && nicknameError && (
-            <p className="error-text mb-3">{nicknameError}</p>
+            <p className="mb-3" style={{ fontSize: '13px', color: 'var(--color-danger)' }}>{nicknameError}</p>
           )}
           <motion.button
             type="submit"
             disabled={loading || error}
-            className="btn btn-primary btn-large w-full"
+            className="w-full"
+            style={{ padding: '14px 24px', borderRadius: '14px', fontSize: '16px', fontWeight: 600, background: loading || error ? 'var(--color-surface-alt)' : 'var(--color-accent)', color: loading || error ? 'var(--color-text-tertiary)' : '#fff', border: 'none', cursor: loading || error ? 'not-allowed' : 'pointer' }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

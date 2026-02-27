@@ -13,8 +13,10 @@ import type {
   GameMode,
   ComedyStyle,
   Player,
-  GameResults
+  GameResults,
+  ReactionTimelineEntry,
 } from '../../lib/types'
+import { findClipMoments } from './audience.service'
 import { getDatabase, Collections } from '../db'
 
 // ============================================================
@@ -73,6 +75,7 @@ export async function saveGame(
     duration: number
     audienceReactionCount: number
     plotTwistsUsed: string[]
+    reactionTimeline?: ReactionTimelineEntry[]
   }
 ): Promise<SavedGame> {
   const db = getDatabase()
@@ -112,6 +115,8 @@ export async function saveGame(
     } : undefined,
     audienceReactionCount: metadata.audienceReactionCount,
     plotTwistsUsed: metadata.plotTwistsUsed,
+    reactionTimeline: metadata.reactionTimeline,
+    clipMoments: findClipMoments(metadata.reactionTimeline || []),
     cardPackUsed: metadata.cardPackId || 'standard',
     comedyStyle: metadata.comedyStyle || 'witty',
     isPublic: false,

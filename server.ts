@@ -1083,7 +1083,8 @@ app.prepare().then(async () => {
         room.audienceInteraction,
         reactionType,
         sender.id,
-        sender.nickname
+        sender.nickname,
+        room.currentLineIndex
       )
 
       if (reaction) {

@@ -45,9 +45,24 @@ export interface SpectatorMessage {
   isPreset: boolean
 }
 
+export interface ReactionTimelineEntry {
+  type: AudienceReactionType
+  lineIndex: number
+  timestamp: number
+}
+
+export interface ClipMoment {
+  startTime: number
+  endTime: number
+  lineIndex: number
+  reactionCount: number
+  peakReactionType: AudienceReactionType
+}
+
 export interface AudienceInteractionState {
   reactions: AudienceReaction[]
   reactionCounts: Record<AudienceReactionType, number>
+  reactionTimeline: ReactionTimelineEntry[]
   activePlotTwist?: {
     id: string
     options: PlotTwistOption[]
@@ -557,6 +572,8 @@ export interface SavedGame {
   }
   audienceReactionCount: number
   plotTwistsUsed: string[]
+  reactionTimeline?: ReactionTimelineEntry[]
+  clipMoments?: ClipMoment[]
   cardPackUsed: string
   comedyStyle: ComedyStyle
   isPublic: boolean

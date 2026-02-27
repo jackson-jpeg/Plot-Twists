@@ -10,6 +10,8 @@ import type {
   AudienceReaction,
   AudienceReactionType,
   AudienceInteractionState,
+  ReactionTimelineEntry,
+  ClipMoment,
   PlotTwistOption,
   ScriptLine,
   Script,
@@ -89,6 +91,7 @@ export function initializeAudienceState(): AudienceInteractionState {
       love: 0,
       mindblown: 0
     },
+    reactionTimeline: [],
     plotTwistHistory: [],
     spectatorMessages: []
   }
@@ -110,7 +113,8 @@ export function recordReaction(
   state: AudienceInteractionState,
   type: AudienceReactionType,
   senderId: string,
-  senderName: string
+  senderName: string,
+  currentLineIndex: number = 0
 ): AudienceReaction | null {
   // Runtime validation: prevent arbitrary key injection into reactionCounts
   if (!isValidReactionType(type)) {
@@ -140,6 +144,13 @@ export function recordReaction(
 
   // Update counts
   state.reactionCounts[type]++
+
+  // Track in timeline for clip detection
+  state.reactionTimeline.push({
+    type,
+    lineIndex: currentLineIndex,
+    timestamp: reaction.timestamp,
+  })
 
   return reaction
 }
@@ -354,6 +365,50 @@ export function recordSpectatorMessage(
   return message
 }
 
+/**
+ * Detect clip-worthy moments from the reaction timeline.
+ * A clip moment is a window of 5 seconds containing 3+ reactions.
+ */
+export function findClipMoments(timeline: ReactionTimelineEntry[]): ClipMoment[] {
+  if (timeline.length < 3) return []
+
+  const moments: ClipMoment[] = []
+  const WINDOW_MS = 5000
+  const MIN_REACTIONS = 3
+
+  for (let i = 0; i < timeline.length; i++) {
+    const windowStart = timeline[i].timestamp
+    const windowEnd = windowStart + WINDOW_MS
+
+    const windowReactions = timeline.filter(
+      r => r.timestamp >= windowStart && r.timestamp <= windowEnd
+    )
+
+    if (windowReactions.length >= MIN_REACTIONS) {
+      // Check we haven't already captured a moment overlapping this one
+      const lastMoment = moments[moments.length - 1]
+      if (lastMoment && windowStart - lastMoment.endTime < WINDOW_MS) continue
+
+      // Find the most common reaction type in this window
+      const typeCounts = new Map<AudienceReactionType, number>()
+      for (const r of windowReactions) {
+        typeCounts.set(r.type, (typeCounts.get(r.type) || 0) + 1)
+      }
+      const peakType = [...typeCounts.entries()].sort((a, b) => b[1] - a[1])[0][0]
+
+      moments.push({
+        startTime: windowStart,
+        endTime: windowReactions[windowReactions.length - 1].timestamp,
+        lineIndex: timeline[i].lineIndex,
+        reactionCount: windowReactions.length,
+        peakReactionType: peakType,
+      })
+    }
+  }
+
+  return moments
+}
+
 export function resetReactionCounts(state: AudienceInteractionState): void {
   state.reactionCounts = {
     laugh: 0,
@@ -366,6 +421,7 @@ export function resetReactionCounts(state: AudienceInteractionState): void {
     mindblown: 0
   }
   state.reactions = []
+  state.reactionTimeline = []
   state.spectatorMessages = []
 }
 

@@ -120,7 +120,8 @@ export async function calculateResults(room: Room, io: SocketIOServer<ClientToSe
           comedyStyle: room.scriptCustomization?.comedyStyle || 'witty',
           duration,
           audienceReactionCount: reactionCount,
-          plotTwistsUsed: room.audienceInteraction?.plotTwistHistory || []
+          plotTwistsUsed: room.audienceInteraction?.plotTwistHistory || [],
+          reactionTimeline: room.audienceInteraction?.reactionTimeline || []
         }
       )
 

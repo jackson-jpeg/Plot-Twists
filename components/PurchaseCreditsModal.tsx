@@ -20,11 +20,11 @@ interface PurchaseCreditsModalProps {
 
 const BEST_VALUE_ID = 'studio'
 
-const PACKAGE_META: Record<string, { icon: string; tagline: string }> = {
-  starter: { icon: '🎟️', tagline: 'A taste of the show' },
-  party:   { icon: '🍿', tagline: 'Grab some friends' },
-  pro:     { icon: '🎬', tagline: 'Lights, camera, action' },
-  studio:  { icon: '⭐', tagline: 'The full experience' },
+const PACKAGE_META: Record<string, { tagline: string }> = {
+  starter: { tagline: 'A taste of the show' },
+  party:   { tagline: 'Grab some friends' },
+  pro:     { tagline: 'Lights, camera, action' },
+  studio:  { tagline: 'The full experience' },
 }
 
 export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalProps) {
@@ -127,7 +127,8 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={handleClose}
-          className="purchase-overlay"
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', padding: '16px' }}
         >
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.97 }}
@@ -135,11 +136,24 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ type: 'spring', damping: 28, stiffness: 350 }}
             onClick={e => e.stopPropagation()}
-            className={`purchase-container ${showCheckout ? 'purchase-container-wide' : ''}`}
+            className="relative w-full overflow-hidden rounded-2xl"
+            style={{
+              maxWidth: showCheckout ? '560px' : '420px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              boxShadow: 'var(--shadow-3)',
+            }}
           >
             {/* Close button */}
-            <button onClick={handleClose} className="purchase-close-x" aria-label="Close">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            <button
+              onClick={handleClose}
+              aria-label="Close"
+              className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full z-10"
+              style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
             </button>
 
             <AnimatePresence mode="wait" initial={false}>
@@ -150,30 +164,30 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 40 }}
                   transition={{ duration: 0.2 }}
+                  className="p-5"
                 >
-                  {/* Branded checkout header */}
+                  {/* Back + package info */}
                   <div style={{ marginBottom: '16px' }}>
                     <button
                       onClick={handleBack}
-                      className="flex items-center gap-1.5 text-sm font-medium"
+                      className="flex items-center gap-1.5 text-sm font-medium mb-3"
                       style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}
                     >
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                       Back
                     </button>
                     {selectedPkg && (
-                      <div className="purchase-checkout-pkg">
-                        <span className="purchase-checkout-icon">{PACKAGE_META[selectedPkg.id]?.icon}</span>
-                        <div className="purchase-checkout-details">
-                          <span className="purchase-checkout-name">{selectedPkg.label}</span>
-                          <span className="purchase-checkout-meta">{selectedPkg.scripts} scripts &middot; ${(selectedPkg.price / 100).toFixed(0)}</span>
+                      <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}>
+                        <div>
+                          <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{selectedPkg.label}</span>
+                          <span className="text-xs ml-2" style={{ color: 'var(--color-text-tertiary)' }}>{selectedPkg.scripts} scripts &middot; ${(selectedPkg.price / 100).toFixed(0)}</span>
                         </div>
                       </div>
                     )}
                   </div>
 
                   {/* Embedded Stripe checkout */}
-                  <div className="purchase-checkout-body">
+                  <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
                     <EmbeddedCheckoutProvider
                       stripe={getStripePromise()}
                       options={{ clientSecret }}
@@ -183,8 +197,8 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   </div>
 
                   {/* Trust footer */}
-                  <div className="purchase-checkout-footer">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                  <div className="flex items-center justify-center gap-2 mt-4 text-xs" style={{ color: 'var(--color-text-disabled)' }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                     Secure checkout powered by Stripe
                   </div>
                 </motion.div>
@@ -197,21 +211,16 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   transition={{ duration: 0.2 }}
                 >
                   {/* Header */}
-                  <div className="purchase-header">
-                    <div className="purchase-film-strip" aria-hidden="true">
-                      {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="purchase-film-hole" />
-                      ))}
-                    </div>
-                    <p className="purchase-presents">Plot Twists Presents</p>
-                    <h2 className="purchase-title">Script Credits</h2>
-                    <p className="purchase-subtitle">Buy once, use anytime. Credits never expire.</p>
+                  <div className="text-center pt-6 pb-4 px-5">
+                    <p className="text-xs font-medium uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-disabled)', letterSpacing: '0.1em' }}>Plot Twists Presents</p>
+                    <h2 className="text-xl font-bold font-display" style={{ color: 'var(--color-text-primary)' }}>Script Credits</h2>
+                    <p className="text-sm mt-1" style={{ color: 'var(--color-text-tertiary)' }}>Buy once, use anytime. Credits never expire.</p>
                   </div>
 
                   {/* Success */}
                   {successMessage && (
                     <motion.div
-                      className="purchase-error"
+                      className="mx-5 mb-3 px-3 py-2 rounded-lg text-sm text-center"
                       style={{ background: 'var(--color-success)', color: 'white' }}
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
@@ -223,7 +232,8 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   {/* Error */}
                   {error && (
                     <motion.div
-                      className="purchase-error"
+                      className="mx-5 mb-3 px-3 py-2 rounded-lg text-sm text-center"
+                      style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                     >
@@ -232,9 +242,9 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   )}
 
                   {/* Package list */}
-                  <div className="purchase-packages">
+                  <div className="px-5 space-y-2">
                     {CREDIT_PACKAGES.map((pkg, i) => {
-                      const meta = PACKAGE_META[pkg.id] || { icon: '🎟️', tagline: '' }
+                      const meta = PACKAGE_META[pkg.id] || { tagline: '' }
                       const isBest = pkg.id === BEST_VALUE_ID
                       const perScript = (pkg.price / pkg.scripts / 100).toFixed(2)
                       const isLoading = loading === pkg.id
@@ -245,32 +255,47 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                           key={pkg.id}
                           onClick={() => handlePurchase(pkg.id)}
                           disabled={loading !== null}
-                          className={`purchase-pkg ${isBest ? 'purchase-pkg-best' : ''} ${isDimmed ? 'purchase-pkg-dimmed' : ''}`}
+                          className="w-full flex items-center gap-3 p-3 rounded-xl text-left relative"
+                          style={{
+                            background: isBest ? 'var(--color-accent-light)' : 'var(--color-surface-alt)',
+                            border: isBest ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
+                            cursor: loading ? 'default' : 'pointer',
+                            opacity: isDimmed ? 0.4 : 1,
+                            transition: 'opacity 0.2s',
+                          }}
                           initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
+                          animate={{ opacity: isDimmed ? 0.4 : 1, x: 0 }}
                           transition={{ delay: i * 0.06 + 0.1 }}
                           whileHover={loading ? undefined : { x: 4 }}
                           whileTap={loading ? undefined : { scale: 0.985 }}
                         >
-                          {isBest && <div className="purchase-best-tag">Best Value</div>}
+                          {isBest && (
+                            <span
+                              className="absolute -top-2.5 right-3 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                              style={{ background: 'var(--color-accent)', color: '#fff' }}
+                            >
+                              Best Value
+                            </span>
+                          )}
 
-                          <div className="purchase-pkg-icon">{meta.icon}</div>
-
-                          <div className="purchase-pkg-info">
-                            <div className="purchase-pkg-name">{pkg.label}</div>
-                            <div className="purchase-pkg-tagline">{meta.tagline}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{pkg.label}</div>
+                            <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{meta.tagline}</div>
                           </div>
 
-                          <div className="purchase-pkg-numbers">
-                            <div className="purchase-pkg-scripts">{pkg.scripts} scripts</div>
-                            <div className="purchase-pkg-per">${perScript} each</div>
+                          <div className="text-right shrink-0">
+                            <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{pkg.scripts} scripts</div>
+                            <div className="text-[10px]" style={{ color: 'var(--color-text-disabled)' }}>${perScript} each</div>
                           </div>
 
-                          <div className="purchase-pkg-price-col">
+                          <div className="w-14 text-right shrink-0">
                             {isLoading ? (
-                              <div className="purchase-pkg-spinner" />
+                              <div
+                                className="w-5 h-5 rounded-full border-2 ml-auto"
+                                style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-accent)', animation: 'spin 0.6s linear infinite' }}
+                              />
                             ) : (
-                              <div className="purchase-pkg-price">${(pkg.price / 100).toFixed(0)}</div>
+                              <span className="text-base font-bold" style={{ color: 'var(--color-text-primary)' }}>${(pkg.price / 100).toFixed(0)}</span>
                             )}
                           </div>
                         </motion.button>
@@ -279,8 +304,12 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                   </div>
 
                   {/* Footer */}
-                  <div className="purchase-footer">
-                    <button onClick={handleClose} className="purchase-dismiss">
+                  <div className="text-center py-4 px-5">
+                    <button
+                      onClick={handleClose}
+                      className="text-sm"
+                      style={{ background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}
+                    >
                       Maybe later
                     </button>
                     {isIOSNative() && (
@@ -298,8 +327,8 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
                           setRestoringPurchases(false)
                         }}
                         disabled={restoringPurchases}
-                        className="purchase-dismiss"
-                        style={{ fontSize: '12px', opacity: 0.7, marginTop: '4px' }}
+                        className="block mx-auto mt-1 text-xs"
+                        style={{ background: 'none', border: 'none', color: 'var(--color-text-disabled)', cursor: 'pointer' }}
                       >
                         {restoringPurchases ? 'Restoring...' : 'Restore Purchases'}
                       </button>

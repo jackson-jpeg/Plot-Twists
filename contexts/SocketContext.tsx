@@ -242,13 +242,24 @@ export function ConnectionStatus({ showLabel = true }: { showLabel?: boolean }) 
   const config = stateConfig[connectionState]
 
   return (
-    <div className="connection-indicator" style={{
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '6px',
+      padding: '4px 10px',
+      borderRadius: '9999px',
+      fontSize: '12px',
+      fontWeight: 600,
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
       background: `${config.color}20`,
       color: config.color
     }}>
       <span
-        className="connection-indicator-dot"
         style={{
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
           background: config.color,
           animation: config.animate ? 'pulse-live 2s ease-in-out infinite' : 'none'
         }}

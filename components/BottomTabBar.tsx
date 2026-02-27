@@ -6,11 +6,54 @@ import { motion } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
 import { tapHaptic } from '@/hooks/useHaptics'
 
+function HomeIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6h-6v6H4a1 1 0 01-1-1V10.5z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? 'currentColor' : 'none'}
+        fillOpacity={active ? 0.15 : 0}
+      />
+    </svg>
+  )
+}
+
+function PlayIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" fill={active ? 'currentColor' : 'none'} fillOpacity={active ? 0.15 : 0} />
+      <path d="M10 8.5l6 3.5-6 3.5V8.5z" fill="currentColor" />
+    </svg>
+  )
+}
+
+function ExploreIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" strokeWidth="1.8" fill={active ? 'currentColor' : 'none'} fillOpacity={active ? 0.15 : 0} />
+      <path d="M8 8h3v3H8zM13 8h3v3h-3zM8 13h3v3H8zM13 13h3v3h-3z" fill="currentColor" fillOpacity={active ? 1 : 0.6} />
+    </svg>
+  )
+}
+
+function ProfileIcon({ active }: { active: boolean }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="9" r="4" stroke="currentColor" strokeWidth="1.8" fill={active ? 'currentColor' : 'none'} fillOpacity={active ? 0.15 : 0} />
+      <path d="M5 20c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 const TABS = [
-  { href: '/', label: 'Home', icon: '🏠' },
-  { href: '/play', label: 'Play', icon: '🎮' },
-  { href: '/explore', label: 'Explore', icon: '🎴' },
-  { href: '/profile', label: 'Profile', icon: '👤' },
+  { href: '/', label: 'Home', Icon: HomeIcon },
+  { href: '/play', label: 'Play', Icon: PlayIcon },
+  { href: '/explore', label: 'Explore', Icon: ExploreIcon },
+  { href: '/profile', label: 'Profile', Icon: ProfileIcon },
 ] as const
 
 /** Pages where the tab bar should be visible */
@@ -68,12 +111,11 @@ export function BottomTabBar() {
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   />
                 )}
-                <span className="text-xl leading-none" aria-hidden="true">
-                  {tab.icon}
-                </span>
+                <tab.Icon active={isActive} />
                 <span
-                  className="text-[11px] mt-0.5 font-medium"
+                  className="mt-0.5 font-medium"
                   style={{
+                    fontSize: '11px',
                     color: isActive ? 'var(--color-accent)' : 'var(--color-text-disabled)',
                   }}
                 >

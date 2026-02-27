@@ -25,10 +25,10 @@ function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSel
       transition={{ delay: index * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ scale: 1.03, rotate: 0, y: -4 }}
       whileTap={{ scale: 0.98 }}
-      className="polaroid-card relative w-full text-left cursor-pointer transition-shadow hover:shadow-xl group"
+      className="relative w-full text-left cursor-pointer"
+      style={{ borderRadius: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', overflow: 'hidden' }}
     >
-      <div className="tape-piece tape-top-center" style={{ width: '44px', height: '16px', top: '-8px' }} />
-      <div className="p-4 pt-5">
+      <div className="p-4">
         <div className="flex justify-between items-start mb-1.5">
           <h3 className="text-base font-semibold text-[var(--color-text-primary)] font-display leading-tight">{pack.name}</h3>
           {pack.isMature && (
@@ -43,10 +43,12 @@ function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSel
         </p>
 
         {/* Card type indicators */}
-        <div className="flex items-center gap-3 text-xs text-[var(--color-text-tertiary)] mb-2">
-          <span title="Characters">🎭 {pack.cardCounts.characters}</span>
-          <span title="Settings">🏠 {pack.cardCounts.settings}</span>
-          <span title="Circumstances">🌀 {pack.cardCounts.circumstances}</span>
+        <div className="flex items-center gap-3 text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+          <span title="Characters">{pack.cardCounts.characters} chars</span>
+          <span style={{ opacity: 0.3 }}>|</span>
+          <span title="Settings">{pack.cardCounts.settings} settings</span>
+          <span style={{ opacity: 0.3 }}>|</span>
+          <span title="Circumstances">{pack.cardCounts.circumstances} twists</span>
         </div>
 
         {/* Footer meta */}
@@ -80,9 +82,9 @@ function PackPreviewContent({
   }
 
   const cardCategories = [
-    { label: 'Characters', count: pack.characters.length, icon: '🎭', rotation: -1.5 },
-    { label: 'Settings', count: pack.settings.length, icon: '🏠', rotation: 1 },
-    { label: 'Circumstances', count: pack.circumstances.length, icon: '🌀', rotation: -0.5 },
+    { label: 'Characters', count: pack.characters.length, rotation: -1.5 },
+    { label: 'Settings', count: pack.settings.length, rotation: 1 },
+    { label: 'Circumstances', count: pack.circumstances.length, rotation: -0.5 },
   ]
 
   return (
@@ -99,16 +101,16 @@ function PackPreviewContent({
         {pack.description}
       </p>
 
-      {/* Tags — retro badge style */}
+      {/* Tags */}
       <div className="flex flex-wrap justify-center gap-2">
-        <span className="retro-badge-inline" style={{ transform: 'rotate(-1deg)' }}>
+        <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
           {pack.theme}
         </span>
-        <span className="retro-badge-inline" style={{ transform: 'rotate(0.5deg)' }}>
+        <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
           {pack.downloads} downloads
         </span>
         {pack.rating > 0 && (
-          <span className="retro-badge-inline" style={{ transform: 'rotate(-0.5deg)' }}>
+          <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-accent)', border: '1px solid var(--color-border)' }}>
             ★ {pack.rating.toFixed(1)} ({pack.ratingCount})
           </span>
         )}
@@ -119,20 +121,12 @@ function PackPreviewContent({
         {cardCategories.map((cat) => (
           <motion.div
             key={cat.label}
-            className="polaroid-card text-center p-3 relative"
-            style={{ transform: `rotate(${cat.rotation}deg)` }}
-            whileHover={{ rotate: 0, scale: 1.05 }}
+            className="text-center p-3 rounded-xl"
+            style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+            whileHover={{ scale: 1.05 }}
           >
-            <div className="tape-piece tape-top-center" style={{ width: '28px', height: '12px', top: '-6px' }} />
-            <motion.div
-              className="text-2xl mb-1"
-              animate={{ rotate: [-3, 3, -3] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-            >
-              {cat.icon}
-            </motion.div>
-            <div className="text-lg font-bold text-[var(--color-text-primary)] font-display">{cat.count}</div>
-            <div className="text-[11px] text-[var(--color-text-muted)]">{cat.label}</div>
+            <div className="text-lg font-bold font-display" style={{ color: 'var(--color-text-primary)' }}>{cat.count}</div>
+            <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)' }}>{cat.label}</div>
           </motion.div>
         ))}
       </div>
@@ -163,15 +157,14 @@ function PackPreviewContent({
         </div>
       )}
 
-      {/* CTA — ticket-style button */}
+      {/* CTA */}
       <motion.button
         onClick={handleUseInGame}
-        className="w-full flex items-center justify-center gap-3 py-3.5 rounded-lg font-semibold text-[15px] text-white shadow-lg"
-        style={{ background: 'linear-gradient(135deg, var(--color-purple), var(--color-pink))' }}
-        whileHover={{ scale: 1.02, boxShadow: '0 8px 24px var(--color-purple-glow)' }}
+        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold"
+        style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', fontSize: '15px', cursor: 'pointer' }}
+        whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        <span className="text-xl">🎬</span>
         Use in Next Game
       </motion.button>
     </div>
@@ -245,23 +238,23 @@ export default function ExplorePage() {
   const tabRotations = [-1, 0.5]
 
   return (
-    <main className="page-container has-tab-bar home-nostalgic" style={{ minHeight: '100dvh' }}>
-      <div className="container max-w-2xl xl:max-w-4xl pt-4 pb-8 px-4">
-        {/* Bulletin board header */}
+    <main className="flex flex-col" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="w-full max-w-2xl xl:max-w-4xl mx-auto pt-4 pb-8 px-4">
+        {/* Header */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="bulletin-board-header mb-6"
+          className="mb-6"
         >
-          <div className="header-polaroid" style={{ transform: 'rotate(-1deg)' }}>
-            <h1 className="hero-title-nostalgic text-3xl md:text-4xl">
-              Explore Packs
-              <span className="title-emoji text-4xl ml-2">🎴</span>
-            </h1>
-            <div className="polaroid-caption">
-              Discover card packs to spice up your next game
-            </div>
-          </div>
+          <h1
+            className="font-display"
+            style={{ fontSize: 'clamp(28px, 7vw, 36px)', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '4px' }}
+          >
+            Explore Packs
+          </h1>
+          <p style={{ fontSize: '15px', color: 'var(--color-text-tertiary)' }}>
+            Discover card packs to spice up your next game
+          </p>
         </motion.div>
 
         {/* Search bar — with icon */}
@@ -288,7 +281,8 @@ export default function ExplorePage() {
           <button
             onClick={handleSearch}
             disabled={!searchQuery.trim()}
-            className="btn btn-primary px-5 shrink-0"
+            className="px-5 shrink-0"
+            style={{ borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer', opacity: searchQuery.trim() ? 1 : 0.5 }}
           >
             Search
           </button>

@@ -8,7 +8,7 @@ export default function PurchaseCancelledPage() {
   const router = useRouter()
 
   return (
-    <main className="page-container items-center justify-center">
+    <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
       <div className="max-w-md w-full text-center">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}

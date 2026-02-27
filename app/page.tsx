@@ -132,7 +132,7 @@ export default function Home() {
 
   if (!mounted || loading) {
     return (
-      <main className="page-container has-tab-bar" style={{ alignItems: 'flex-start' }}>
+      <main className="flex flex-col" style={{ alignItems: 'flex-start', minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="container max-w-md" style={{ width: '100%', padding: '0 20px' }}>
           {/* Top bar skeleton */}
           <div className="flex items-center justify-between" style={{ paddingTop: '16px' }}>
@@ -165,7 +165,7 @@ export default function Home() {
   const userInitial = (user?.displayName?.[0] || user?.email?.[0] || '?').toUpperCase()
 
   return (
-    <main className="page-container has-tab-bar" style={{ alignItems: 'flex-start' }}>
+    <main className="flex flex-col" style={{ alignItems: 'flex-start', minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       {/* Credits purchased banner */}
       <AnimatePresence>
         {creditsPurchased && (

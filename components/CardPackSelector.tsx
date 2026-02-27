@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { CardPackMetadata } from '@/lib/types'
 import dynamic from 'next/dynamic'
-const CardPackCreator = dynamic(() => import('./CardPackCreator').then(m => ({ default: m.CardPackCreator })), { ssr: false, loading: () => <div className="card p-6"><div className="skeleton skeleton-heading" /></div> })
+const CardPackCreator = dynamic(() => import('./CardPackCreator').then(m => ({ default: m.CardPackCreator })), { ssr: false, loading: () => <div className="rounded-xl p-6" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}><div className="skeleton skeleton-heading" /></div> })
 import { CardPackEditor } from './CardPackEditor'
 import { DeleteConfirmModal } from './DeleteConfirmModal'
 import { StarRating } from './StarRating'

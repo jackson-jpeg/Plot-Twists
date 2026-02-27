@@ -194,7 +194,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
         className="w-full p-4 flex items-center justify-between text-left hover:bg-[var(--color-surface-alt)] transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="text-2xl">⚙️</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--color-text-tertiary)' }}><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" /><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
           <div>
             <h3 className="font-semibold text-[var(--color-text-primary)] font-display">
               Account Settings
@@ -206,9 +206,9 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
         </div>
         <motion.span
           animate={{ rotate: isExpanded ? 180 : 0 }}
-          className="text-[var(--color-text-tertiary)] text-xl"
+          style={{ color: 'var(--color-text-tertiary)', fontSize: '12px' }}
         >
-          ▼
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </motion.span>
       </button>
 
@@ -225,9 +225,9 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
               {/* Section Tabs */}
               <div className="flex border-b border-[var(--color-border)] overflow-x-auto">
                 {[
-                  { key: 'profile', label: 'Profile', icon: '👤' },
-                  { key: 'preferences', label: 'Prefs', icon: '🎛️' },
-                  { key: 'danger', label: 'Danger', icon: '⚠️' }
+                  { key: 'profile', label: 'Profile' },
+                  { key: 'preferences', label: 'Prefs' },
+                  { key: 'danger', label: 'Danger' }
                 ].map(tab => (
                   <button
                     key={tab.key}
@@ -238,7 +238,6 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                         : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'
                     }`}
                   >
-                    <span className="mr-1">{tab.icon}</span>
                     {tab.label}
                   </button>
                 ))}
@@ -270,7 +269,8 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                             <button
                               onClick={handleUpdateDisplayName}
                               disabled={nameLoading}
-                              className="btn btn-primary"
+                              className="px-3 py-1.5 rounded-lg text-sm font-semibold"
+                              style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
                             >
                               {nameLoading ? '...' : 'Save'}
                             </button>
@@ -280,7 +280,8 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                                 setNewDisplayName(user?.displayName || '')
                                 setNameError('')
                               }}
-                              className="btn btn-ghost"
+                              className="px-3 py-1.5 rounded-lg text-sm font-medium"
+                              style={{ background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
                             >
                               Cancel
                             </button>
@@ -335,9 +336,9 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                         <label className="label">Theme</label>
                         <div className="flex gap-2">
                           {([
-                            { value: 'system', label: 'System', icon: '💻' },
-                            { value: 'light', label: 'Light', icon: '☀️' },
-                            { value: 'dark', label: 'Dark', icon: '🌙' },
+                            { value: 'system', label: 'System' },
+                            { value: 'light', label: 'Light' },
+                            { value: 'dark', label: 'Dark' },
                           ] as const).map((option) => (
                             <button
                               key={option.value}
@@ -348,7 +349,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                                   : 'bg-[var(--color-surface-alt)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:bg-[var(--color-surface-elevated)]'
                               }`}
                             >
-                              {option.icon} {option.label}
+                              {option.label}
                             </button>
                           ))}
                         </div>
@@ -432,8 +433,8 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
 
                       {/* Teleprompter Settings */}
                       <div className="pt-4 border-t border-[var(--color-border)]">
-                        <h4 className="font-semibold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
-                          <span>👁️</span> Teleprompter View
+                        <h4 className="font-semibold text-[var(--color-text-primary)] mb-3">
+                          Teleprompter View
                         </h4>
 
                         <div className="space-y-3">
@@ -519,7 +520,8 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                       <button
                         onClick={handleSavePreferences}
                         disabled={prefsLoading}
-                        className="btn btn-primary w-full"
+                        className="w-full py-2.5 rounded-lg text-sm font-semibold"
+                        style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
                       >
                         {prefsLoading ? 'Saving...' : 'Save Preferences'}
                       </button>
@@ -551,10 +553,12 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                         {!showDeleteConfirm ? (
                           <button
                             onClick={() => setShowDeleteConfirm(true)}
-                            className="btn w-full"
+                            className="w-full py-2.5 rounded-lg text-sm font-semibold"
                             style={{
                               background: 'var(--color-danger)',
-                              color: 'white'
+                              color: 'white',
+                              border: 'none',
+                              cursor: 'pointer',
                             }}
                           >
                             Delete My Account
@@ -577,17 +581,20 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                                   setShowDeleteConfirm(false)
                                   setDeleteConfirmText('')
                                 }}
-                                className="btn btn-ghost flex-1"
+                                className="flex-1 py-2.5 rounded-lg text-sm font-medium"
+                                style={{ background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
                               >
                                 Cancel
                               </button>
                               <button
                                 onClick={handleDeleteAccount}
                                 disabled={deleteConfirmText !== 'DELETE' || deleteLoading}
-                                className="btn flex-1"
+                                className="flex-1 py-2.5 rounded-lg text-sm font-semibold"
                                 style={{
                                   background: deleteConfirmText === 'DELETE' ? 'var(--color-danger)' : 'var(--color-text-disabled)',
-                                  color: 'white'
+                                  color: 'white',
+                                  border: 'none',
+                                  cursor: deleteConfirmText === 'DELETE' ? 'pointer' : 'not-allowed',
                                 }}
                               >
                                 {deleteLoading ? 'Deleting...' : 'Confirm Delete'}

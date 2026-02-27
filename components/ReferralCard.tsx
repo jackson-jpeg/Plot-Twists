@@ -83,7 +83,7 @@ export function ReferralCard() {
     >
       <div className="p-4">
         <h3 className="font-semibold text-[var(--color-text-primary)] font-display flex items-center gap-2 mb-3">
-          <span>🎟️</span> Invite Friends
+          Invite Friends
         </h3>
 
         {loading ? (
@@ -100,13 +100,14 @@ export function ReferralCard() {
                 </div>
                 <motion.button
                   onClick={handleCopy}
-                  className="btn btn-small"
+                  className="px-3 py-1.5 rounded-lg text-sm"
                   style={{
                     background: copied ? 'var(--color-success)' : 'var(--color-accent)',
                     color: 'white',
                     border: 'none',
                     fontWeight: 600,
                     minWidth: '72px',
+                    cursor: 'pointer',
                   }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -179,7 +180,8 @@ export function ReferralCard() {
                     <button
                       onClick={handleRedeem}
                       disabled={redeemLoading || redeemCode.length < 6}
-                      className="btn btn-primary btn-small"
+                      className="px-3 py-1.5 rounded-lg text-sm font-semibold"
+                      style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
                     >
                       {redeemLoading ? '...' : 'Redeem'}
                     </button>

@@ -62,7 +62,7 @@ function PurchaseSuccessContent() {
   const amount = session?.amountTotal ? (session.amountTotal / 100).toFixed(2) : null
 
   return (
-    <main className="page-container items-center justify-center">
+    <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
       <div className="max-w-md w-full text-center">
         {loading ? (
           <motion.div
@@ -174,7 +174,7 @@ function PurchaseSuccessContent() {
 export default function PurchaseSuccessPage() {
   return (
     <Suspense fallback={
-      <main className="page-container items-center justify-center">
+      <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
         <div className="text-center">
           <div className="inline-block text-5xl mb-4 animate-spin">🎬</div>
           <p className="text-[var(--color-text-secondary)]">Verifying your purchase...</p>

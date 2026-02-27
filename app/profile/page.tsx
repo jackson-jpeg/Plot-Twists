@@ -12,7 +12,7 @@ import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 import { StatsSkeleton, Skeleton } from '@/components/EmptyState'
 import { CreditHeaderBadge, useCreditBalance } from '@/components/CreditBadge'
 import dynamic from 'next/dynamic'
-const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false, loading: () => <div className="card p-6"><div className="skeleton skeleton-heading" /><div className="skeleton skeleton-text mt-4" /></div> })
+const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false, loading: () => <div className="rounded-xl p-6" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}><div className="skeleton skeleton-heading" /><div className="skeleton skeleton-text mt-4" /></div> })
 const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
 import { ReferralCard } from '@/components/ReferralCard'
 import { XPBar } from '@/components/XPBar'
@@ -119,8 +119,8 @@ export default function ProfilePage() {
 
   if (!isConnected || authLoading) {
     return (
-      <main className="page-container has-tab-bar home-nostalgic">
-        <div className="container max-w-2xl xl:max-w-3xl pt-4 pb-8 px-4 space-y-6">
+      <main className="flex flex-col" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+        <div className="w-full max-w-2xl xl:max-w-3xl mx-auto pt-4 pb-8 px-4 space-y-6">
           <div className="flex items-center gap-4 mb-5">
             <Skeleton variant="circle" width={64} height={64} />
             <div className="flex-1 space-y-2">
@@ -134,21 +134,21 @@ export default function ProfilePage() {
     )
   }
 
-  const tabs: { id: ProfileTab; label: string; icon: string }[] = [
-    { id: 'profile', label: 'My Profile', icon: '🎭' },
-    { id: 'leaderboard', label: 'Leaderboard', icon: '🏆' },
+  const tabs: { id: ProfileTab; label: string }[] = [
+    { id: 'profile', label: 'My Profile' },
+    { id: 'leaderboard', label: 'Leaderboard' },
   ]
   const tabRotations = [-1, 0.5]
 
   const heroStats = stats && stats.gamesPlayed > 0 ? [
-    { icon: '🎮', label: 'Games', value: stats.gamesPlayed },
-    { icon: '🏆', label: 'Wins', value: stats.gamesWon },
-    { icon: '📈', label: 'Win Rate', value: `${Math.round(stats.winRate)}%` },
-    { icon: '🔥', label: 'Best Streak', value: stats.bestWinStreak },
+    { label: 'Games', value: stats.gamesPlayed },
+    { label: 'Wins', value: stats.gamesWon },
+    { label: 'Win Rate', value: `${Math.round(stats.winRate)}%` },
+    { label: 'Best Streak', value: stats.bestWinStreak },
   ] : null
 
   return (
-    <main className="page-container has-tab-bar home-nostalgic">
+    <main className="flex flex-col" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       {/* Purchase Credits Modal */}
       <PurchaseCreditsModal
         isOpen={showPurchaseModal}
@@ -167,7 +167,7 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      <div className="container max-w-2xl xl:max-w-3xl pt-4 pb-8 px-4">
+      <div className="w-full max-w-2xl xl:max-w-3xl mx-auto pt-4 pb-8 px-4">
         {/* Profile Hero — full stats */}
         {heroStats ? (
           <motion.div
@@ -236,8 +236,9 @@ export default function ProfilePage() {
                       className="text-2xl"
                       animate={{ scale: [1, 1.2, 1] }}
                       transition={{ duration: 1, repeat: Infinity }}
+                      style={{ color: 'var(--color-accent)' }}
                     >
-                      🔥
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" fill="currentColor" /></svg>
                     </motion.span>
                     <div>
                       <p className="font-semibold text-sm" style={{ color: 'var(--color-accent-dark)' }}>On Fire!</p>
@@ -264,7 +265,6 @@ export default function ProfilePage() {
                   transition={{ delay: i * 0.06 }}
                   whileHover={{ scale: 1.04, y: -2 }}
                 >
-                  <div className="text-xl mb-0.5">{stat.icon}</div>
                   <div className="text-lg font-bold text-[var(--color-text-primary)] font-display">{stat.value}</div>
                   <div className="text-xs text-[var(--color-text-tertiary)]">{stat.label}</div>
                 </motion.div>
@@ -298,14 +298,17 @@ export default function ProfilePage() {
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="bulletin-board-header mb-6"
+            className="mb-6"
           >
-            <div className="header-polaroid" style={{ transform: 'rotate(-1deg)' }}>
-              <h1 className="hero-title-nostalgic text-3xl md:text-4xl">
-                Your Profile
-                <span className="title-emoji text-4xl ml-2">🎭</span>
-              </h1>
-            </div>
+            <h1
+              className="font-display"
+              style={{ fontSize: 'clamp(28px, 7vw, 36px)', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '4px' }}
+            >
+              Your Profile
+            </h1>
+            <p style={{ fontSize: '15px', color: 'var(--color-text-tertiary)' }}>
+              Stats, achievements, and settings
+            </p>
           </motion.div>
         )}
 
@@ -331,7 +334,7 @@ export default function ProfilePage() {
                 whileHover={!isActive ? { y: -2, rotate: 0 } : {}}
                 whileTap={{ scale: 0.98 }}
               >
-                {tab.icon} {tab.label}
+                {tab.label}
               </motion.button>
             )
           })}
@@ -432,7 +435,7 @@ export default function ProfilePage() {
                   {/* Inline credit preview when collapsed */}
                   {!accountExpanded && creditBalance && (
                     <span className="text-xs text-[var(--color-text-tertiary)] hidden sm:block">
-                      🎬 {creditBalance.total} script{creditBalance.total !== 1 ? 's' : ''}
+                      {creditBalance.total} script{creditBalance.total !== 1 ? 's' : ''}
                     </span>
                   )}
                   <motion.span
@@ -474,7 +477,7 @@ export default function ProfilePage() {
                       <div className="rounded-lg bg-[var(--color-surface-alt)] border border-[var(--color-border)] p-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <span className="text-2xl">🎬</span>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--color-accent)' }}><rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="1.8" /><path d="M2 8h20M7 4v4M12 4v4M17 4v4" stroke="currentColor" strokeWidth="1.8" /></svg>
                             <div>
                               <p className="text-sm font-semibold text-[var(--color-text-primary)] font-display">
                                 {creditBalance ? `${creditBalance.total} Script${creditBalance.total !== 1 ? 's' : ''}` : 'Loading...'}
@@ -488,7 +491,8 @@ export default function ProfilePage() {
                           </div>
                           <motion.button
                             onClick={() => setShowPurchaseModal(true)}
-                            className="btn btn-primary btn-small"
+                            className="px-3 py-1.5 rounded-lg text-sm font-semibold"
+                            style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
@@ -500,8 +504,8 @@ export default function ProfilePage() {
                       {/* Payment History */}
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-semibold text-sm text-[var(--color-text-primary)] flex items-center gap-2 font-display">
-                            <span>🧾</span> Payment History
+                          <h3 className="font-semibold text-sm text-[var(--color-text-primary)] font-display">
+                            Payment History
                           </h3>
                           {!isIOSNative() && (
                             <motion.button
@@ -542,8 +546,8 @@ export default function ProfilePage() {
                             {transactions.slice(0, 5).map(txn => (
                               <div key={txn.id} className="transaction-row">
                                 <div className="flex items-center gap-3">
-                                  <span className="text-lg">
-                                    {txn.type === 'purchase' ? '💳' : txn.type === 'refund' ? '↩️' : txn.type === 'failed' ? '❌' : '⏱️'}
+                                  <span className="text-sm font-medium" style={{ color: txn.type === 'purchase' ? 'var(--color-success)' : txn.type === 'refund' ? 'var(--color-accent)' : 'var(--color-danger)' }}>
+                                    {txn.type === 'purchase' ? '+' : txn.type === 'refund' ? '←' : txn.type === 'failed' ? '×' : '…'}
                                   </span>
                                   <div>
                                     <p className={`font-medium text-sm transaction-type-${txn.type}`}>
@@ -603,7 +607,8 @@ export default function ProfilePage() {
             </p>
             <SignInButton mode="redirect">
               <motion.button
-                className="btn btn-primary w-full py-3 font-semibold"
+                className="w-full py-3 font-semibold rounded-xl"
+                style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '15px' }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

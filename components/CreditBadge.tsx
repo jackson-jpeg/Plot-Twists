@@ -42,22 +42,40 @@ export function useCreditBalance() {
 export function CreditHeaderBadge({ onClick }: { onClick?: () => void }) {
   const balance = useCreditBalance()
 
+  const pillStyle: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 12px',
+    borderRadius: '999px',
+    fontSize: '13px',
+    fontWeight: 600,
+    cursor: onClick ? 'pointer' : 'default',
+    border: '1px solid var(--color-border)',
+    background: 'var(--color-surface)',
+    color: 'var(--color-text-primary)',
+    transition: 'background 0.15s',
+  }
+
   if (!balance) {
     return (
-      <button onClick={onClick} className="credit-header-badge">
-        <span className="credit-header-badge-icon">🎬</span>
+      <button onClick={onClick} style={pillStyle}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--color-accent)' }}>
+          <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="2" />
+          <path d="M2 8h20M7 4v4M12 4v4M17 4v4" stroke="currentColor" strokeWidth="2" />
+        </svg>
         <span>...</span>
       </button>
     )
   }
 
-  let variant: string
+  let dotColor: string
   if (balance.total === 0) {
-    variant = 'credit-header-badge-empty'
+    dotColor = 'var(--color-danger)'
   } else if (balance.free > 0) {
-    variant = 'credit-header-badge-ok'
+    dotColor = 'var(--color-success)'
   } else {
-    variant = 'credit-header-badge-low'
+    dotColor = 'var(--color-accent)'
   }
 
   return (
@@ -65,9 +83,9 @@ export function CreditHeaderBadge({ onClick }: { onClick?: () => void }) {
       onClick={onClick}
       title={`${balance.free} free + ${balance.banked} banked scripts`}
       aria-label={`${balance.total} scripts available: ${balance.free} free + ${balance.banked} banked`}
-      className={`credit-header-badge ${variant}`}
+      style={pillStyle}
     >
-      <span className="credit-header-badge-icon" aria-hidden="true">🎬</span>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
       <span>{balance.total}</span>
     </button>
   )
@@ -77,35 +95,49 @@ export function CreditHeaderBadge({ onClick }: { onClick?: () => void }) {
 export function CreditBadge({ onClick }: { onClick?: () => void }) {
   const balance = useCreditBalance()
 
+  const rowStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px 12px',
+    fontSize: '13px',
+    color: 'var(--color-text-secondary)',
+    cursor: onClick ? 'pointer' : 'default',
+    background: 'none',
+    border: 'none',
+    width: '100%',
+    textAlign: 'left',
+    transition: 'background 0.15s',
+  }
+
   if (!balance) {
     return (
-      <div className="credit-dropdown-row credit-dropdown-row-loading">
+      <div style={{ ...rowStyle, color: 'var(--color-text-disabled)' }}>
         Loading credits...
       </div>
     )
   }
 
-  let dotClass: string
+  let dotColor: string
   let label: string
 
   if (balance.free > 0) {
-    dotClass = 'credit-dot-ok'
+    dotColor = 'var(--color-success)'
     label = `${balance.free} free script${balance.free !== 1 ? 's' : ''} left`
   } else if (balance.banked > 0) {
-    dotClass = 'credit-dot-low'
+    dotColor = 'var(--color-accent)'
     label = `${balance.banked} banked script${balance.banked !== 1 ? 's' : ''}`
   } else {
-    dotClass = 'credit-dot-empty'
+    dotColor = 'var(--color-danger)'
     label = '0 scripts — buy more'
   }
 
   return (
     <button
       onClick={onClick}
-      className="credit-dropdown-row"
-      data-clickable={onClick ? 'true' : 'false'}
+      style={rowStyle}
     >
-      <span className={`credit-dot ${dotClass}`} />
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
       <span>{label}</span>
     </button>
   )

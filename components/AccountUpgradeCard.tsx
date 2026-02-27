@@ -20,14 +20,13 @@ export function AccountUpgradeCard({ onSuccess }: AccountUpgradeCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card"
+      className="rounded-xl p-4"
       style={{
         background: 'linear-gradient(135deg, var(--color-highlight), var(--color-highlight-pink))',
         border: '2px solid var(--color-accent)'
       }}
     >
       <div className="flex items-start gap-4 mb-4">
-        <span className="text-4xl">💾</span>
         <div className="flex-1">
           <h3 className="text-xl font-display mb-1" style={{ color: 'var(--color-text-primary)' }}>
             Save Your Progress

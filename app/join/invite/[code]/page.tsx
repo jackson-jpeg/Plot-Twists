@@ -142,7 +142,7 @@ export function InvitePage() {
   // Error state
   if (!loading && error) {
     return (
-      <main className="page-container items-center justify-center">
+      <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
         <motion.div
           className="w-full max-w-md text-center"
           initial={{ opacity: 0, y: 20 }}
@@ -179,7 +179,7 @@ export function InvitePage() {
   }
 
   return (
-    <main className="page-container items-center justify-center" style={{ minHeight: '100dvh' }}>
+    <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
       <div className="w-full max-w-md" style={{ padding: '24px 16px' }}>
         {/* Logo + branding */}
         <motion.div

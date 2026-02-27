@@ -68,7 +68,7 @@ export default function PlayPage() {
 
   if (authLoading) {
     return (
-      <main className="page-container has-tab-bar items-center justify-center">
+      <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="container max-w-2xl pt-4 pb-8">
           <div className="text-center mb-6">
             <div className="skeleton mx-auto" style={{ width: 48, height: 48, borderRadius: '50%' }} />
@@ -94,20 +94,19 @@ export default function PlayPage() {
   }
 
   return (
-    <main className="page-container has-tab-bar">
+    <main className="flex flex-col" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       {/* Header */}
       <div className="fixed right-4 z-50" style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}>
         <UserMenu />
       </div>
 
-      <div className="container max-w-2xl pt-4 pb-8">
+      <div className="w-full max-w-2xl mx-auto pt-4 pb-8 px-4">
         {/* Title */}
         <motion.div
           className="mb-6 text-center"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="text-4xl mb-2">🎭</div>
           <h1 className="text-3xl font-bold font-display text-[var(--color-text-primary)]">
             Quick Play
           </h1>
@@ -161,7 +160,7 @@ export default function PlayPage() {
               background: 'transparent',
             }}
           >
-            🌐 Host a Public Game
+            Host a Public Game
           </button>
         </motion.div>
 
@@ -218,7 +217,6 @@ export default function PlayPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <div className="text-4xl mb-3">🎭</div>
               <p className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>No public games right now</p>
               <p className="text-xs mt-1 mb-4" style={{ color: 'var(--color-text-tertiary)' }}>Create the first game and invite friends!</p>
               <button
@@ -226,7 +224,7 @@ export default function PlayPage() {
                 className="px-5 py-2.5 rounded-full text-sm font-semibold cursor-pointer"
                 style={{ background: 'var(--color-purple)', color: 'white' }}
               >
-                🌐 Host Public Game
+                Host Public Game
               </button>
             </motion.div>
           ) : (

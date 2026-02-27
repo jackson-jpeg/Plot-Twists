@@ -296,7 +296,7 @@ function HostPageContent() {
   // Auth loading / unauthenticated
   if (authLoading || !user) {
     return (
-      <div className="page-container items-center justify-center">
+      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
         <div className="text-center">
           <div className="skeleton skeleton-heading" style={{ margin: '0 auto' }} />
           <div className="skeleton skeleton-text" style={{ width: '60%', margin: '1rem auto' }} />
@@ -307,7 +307,7 @@ function HostPageContent() {
 
   if (!isConnected) {
     return (
-      <div className="page-container items-center justify-center">
+      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
         <motion.div {...variants.scaleIn} className="text-center">
           <motion.div className="text-6xl mb-6" animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>⚡</motion.div>
           <p className="text-xl font-display" style={{ color: 'var(--color-text-secondary)' }}>Connecting...</p>
@@ -317,7 +317,7 @@ function HostPageContent() {
   }
 
   return (
-    <div className="page-container">
+    <div className="flex flex-col" style={{ minHeight: '100dvh' }}>
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="host" />
       <PurchaseCreditsModal isOpen={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} />
 
@@ -510,7 +510,7 @@ function HostPageContent() {
 export default function HostPage() {
   return (
     <Suspense fallback={
-      <div className="page-container items-center justify-center">
+      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
         <div className="text-center">
           <div className="skeleton skeleton-heading" style={{ margin: '0 auto' }} />
           <div className="skeleton skeleton-text" style={{ width: '60%', margin: '1rem auto' }} />

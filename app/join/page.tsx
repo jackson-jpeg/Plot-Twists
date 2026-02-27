@@ -175,7 +175,7 @@ function JoinPageContent() {
 
   if (!isConnected) {
     return (
-      <div className="page-container items-center justify-center">
+      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
         <div className="text-center">
           <div className="text-6xl mb-6">⚡</div>
           <p className="text-xl font-display" style={{ color: 'var(--color-text-secondary)' }}>Connecting...</p>
@@ -186,7 +186,7 @@ function JoinPageContent() {
 
   if (!hasJoined) {
     return (
-      <div className="page-container items-center justify-center">
+      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
         <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="join" />
         <AnimatePresence mode="wait">
           <motion.div
@@ -214,7 +214,7 @@ function JoinPageContent() {
   }
 
   return (
-    <div className="page-container">
+    <div className="flex flex-col" style={{ minHeight: '100dvh' }}>
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="join" />
 
       {/* Host Disconnected Overlay */}
@@ -351,7 +351,7 @@ function JoinPageContent() {
 export default function JoinPage() {
   return (
     <Suspense fallback={
-      <div className="page-container items-center justify-center">
+      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
         <p className="text-xl font-display" style={{ color: 'var(--color-text-secondary)' }}>Loading...</p>
       </div>
     }>

@@ -112,25 +112,27 @@ export function InstallPrompt() {
             <div className="install-banner-actions">
               {!isIOSDevice && (
                 <button
-                  className="btn btn-small"
+                  className="px-3 py-1.5 rounded-lg text-sm font-semibold"
                   onClick={handleInstall}
                   style={{
                     background: 'var(--color-accent)',
                     color: 'white',
                     border: 'none',
                     fontWeight: 600,
+                    cursor: 'pointer',
                   }}
                 >
                   Install
                 </button>
               )}
               <button
-                className="btn btn-small"
+                className="px-3 py-1.5 rounded-lg text-sm font-medium"
                 onClick={dismiss}
                 style={{
                   background: 'transparent',
                   color: 'var(--color-text-secondary)',
                   border: '1px solid var(--color-border)',
+                  cursor: 'pointer',
                 }}
               >
                 {isIOSDevice ? 'Got it' : 'Not now'}

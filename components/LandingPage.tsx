@@ -62,7 +62,7 @@ function TheaterMasks() {
 
 export function LandingPage() {
   return (
-    <main className="page-container items-center justify-center">
+    <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
       <div className="container max-w-md">
         {/* Hero */}
         <motion.div

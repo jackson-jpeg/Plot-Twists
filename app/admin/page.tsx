@@ -148,7 +148,7 @@ export default function AdminPage() {
   // Loading state
   if (authLoading || isAdmin === null) {
     return (
-      <main className="page-container home-nostalgic">
+      <main className="flex flex-col" style={{ minHeight: '100dvh' }}>
         <div className="container max-w-4xl pt-20 pb-8 px-4">
           <div className="text-center py-20">
             <motion.div
@@ -182,7 +182,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="page-container home-nostalgic">
+    <main className="flex flex-col" style={{ minHeight: '100dvh' }}>
       {/* Toast container */}
       <div className="fixed left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none" style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}>
         <AnimatePresence>

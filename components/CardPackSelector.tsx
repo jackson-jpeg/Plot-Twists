@@ -257,7 +257,7 @@ export function CardPackSelector({
                         boxShadow: isSelected ? '0 8px 24px rgba(42, 39, 34, 0.15)' : undefined,
                       }}
                     >
-                      {isSelected && <div className="tape-piece tape-top-center" style={{ width: '40px', height: '14px', top: '-7px' }} />}
+                      {isSelected && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full" style={{ background: 'var(--color-accent)' }} />}
                       <button
                         onClick={() => selectPack(pack.id)}
                         disabled={disabled}

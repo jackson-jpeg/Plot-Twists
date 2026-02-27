@@ -92,24 +92,31 @@ export function InstallPrompt() {
     <AnimatePresence>
       {showBanner && (
         <motion.div
-          className="install-banner"
+          className="fixed bottom-0 left-0 right-0 z-50"
+          style={{
+            padding: '16px',
+            paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+            background: 'var(--color-surface)',
+            borderTop: '1px solid var(--color-border)',
+            boxShadow: 'var(--shadow-3)',
+          }}
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 60 }}
           transition={MOTION.spring}
         >
-          <div className="install-banner-content">
-            <div className="install-banner-text">
-              <strong style={{ color: 'var(--color-text-primary)' }}>
+          <div className="flex items-center gap-3 max-w-lg mx-auto">
+            <div className="flex-1 flex flex-col gap-0.5">
+              <strong style={{ color: 'var(--color-text-primary)', fontSize: '14px' }}>
                 Install Plot Twists
               </strong>
-              <span style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+              <span style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>
                 {isIOSDevice
                   ? 'Tap Share \u2192 Add to Home Screen'
                   : 'Add to your home screen for the best experience'}
               </span>
             </div>
-            <div className="install-banner-actions">
+            <div className="flex items-center gap-2 shrink-0">
               {!isIOSDevice && (
                 <button
                   className="px-3 py-1.5 rounded-lg text-sm font-semibold"

@@ -112,7 +112,7 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
     >
       {/* Label */}
       <div className="flex items-center justify-between mb-3">
-        <label id={labelId} className="label flex items-center gap-2">
+        <label id={labelId} className="flex items-center gap-2">
           <span className="text-2xl" aria-hidden="true">{icon}</span>
           <span className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>{label}</span>
         </label>

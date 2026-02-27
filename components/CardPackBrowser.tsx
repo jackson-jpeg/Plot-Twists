@@ -141,7 +141,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="modal-panel w-full max-w-4xl max-h-[90dvh] overflow-hidden flex flex-col"
+          className="w-full max-w-4xl max-h-[90dvh] overflow-hidden flex flex-col rounded-2xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-3)' }}
         >
           {/* Header */}
           <div className="p-6 border-b" style={{ borderColor: 'var(--color-border)' }}>
@@ -165,7 +165,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by name, author, or theme..."
-                className="form-input w-full pl-10 pr-4 py-3"
+                className="w-full pl-10 pr-4 py-3 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
               />
             </div>
 
@@ -177,11 +177,11 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                   <button
                     key={theme.value}
                     onClick={() => setSelectedTheme(theme.value)}
-                    className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${
-                      selectedTheme === theme.value
-                        ? 'pill-active'
-                        : 'pill-inactive'
-                    }`}
+                    className="px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors"
+                    style={selectedTheme === theme.value
+                      ? { background: 'var(--color-accent)', color: '#fff', border: '1px solid var(--color-accent)' }
+                      : { background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }
+                    }
                     aria-label={`Filter by ${theme.label} theme`}
                     aria-pressed={selectedTheme === theme.value}
                   >
@@ -195,7 +195,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="form-input px-3 py-1.5 text-sm"
+                  className="px-3 py-1.5 text-sm rounded-lg" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                 >
                   <option value="rating">Sort by Rating</option>
                   <option value="downloads">Sort by Downloads</option>

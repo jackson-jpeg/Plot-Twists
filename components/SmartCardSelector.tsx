@@ -52,7 +52,7 @@ export function SmartCardSelector({
     <div className="relative">
       {/* Custom Header with Browse Button */}
       <div className="flex items-center justify-between mb-3">
-        <label className="label flex items-center gap-2">
+        <label className="flex items-center gap-2">
           <span className="text-2xl">{icon}</span>
           <span className="font-display text-lg" style={{ color: 'var(--color-text-primary)' }}>
             {label}

@@ -205,7 +205,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="modal-panel rounded-2xl w-full max-w-2xl max-h-[90dvh] overflow-hidden"
+          className="rounded-2xl w-full max-w-2xl max-h-[90dvh] overflow-hidden" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-3)' }}
         >
           {/* Header */}
           <div className="p-6 border-b border-[var(--color-border)]">
@@ -223,9 +223,8 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
               {[1, 2, 3].map(s => (
                 <div
                   key={s}
-                  className={`flex-1 h-2 rounded-full transition-colors progress-step ${
-                    s <= step ? 'progress-step-active' : 'progress-step-inactive'
-                  }`}
+                  className="flex-1 h-2 rounded-full transition-colors"
+                  style={{ background: s <= step ? 'var(--color-accent)' : 'var(--color-border)' }}
                 />
               ))}
             </div>
@@ -248,7 +247,8 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="error-banner"
+                    className="mb-4 px-4 py-3 rounded-lg text-sm"
+                    style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}
                   >
                     {error}
                   </motion.div>
@@ -262,7 +262,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                     className="space-y-4"
                   >
                     <div>
-                      <label className="block form-label">
+                      <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>
                         Pack Name *
                       </label>
                       <input
@@ -271,12 +271,12 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                         onChange={(e) => setPackName(e.target.value)}
                         placeholder="e.g., Superhero Showdown"
                         maxLength={50}
-                        className="w-full form-input"
+                        className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                       />
                     </div>
 
                     <div>
-                      <label className="block form-label">
+                      <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>
                         Description
                       </label>
                       <textarea
@@ -284,12 +284,12 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                         onChange={(e) => setPackDescription(e.target.value)}
                         placeholder="What makes this pack special?"
                         maxLength={200}
-                        className="w-full form-input resize-none h-20"
+                        className="w-full px-3 py-2 rounded-lg text-sm resize-none h-20" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                       />
                     </div>
 
                     <div>
-                      <label className="block form-label">
+                      <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>
                         Author Name *
                       </label>
                       <input
@@ -298,12 +298,12 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                         onChange={(e) => setAuthorName(e.target.value)}
                         placeholder="Pack Author"
                         maxLength={30}
-                        className="w-full form-input"
+                        className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                       />
                     </div>
 
                     <div>
-                      <label className="block form-label">
+                      <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>
                         Theme
                       </label>
                       <div className="grid grid-cols-4 gap-2">
@@ -311,11 +311,11 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                           <button
                             key={theme.value}
                             onClick={() => setPackTheme(theme.value)}
-                            className={`p-2 rounded-lg text-center transition-all ${
-                              packTheme === theme.value
-                                ? 'pill-active'
-                                : 'pill-inactive'
-                            }`}
+                            className="p-2 rounded-lg text-center transition-all"
+                            style={packTheme === theme.value
+                              ? { background: 'var(--color-accent)', color: '#fff', border: '1px solid var(--color-accent)' }
+                              : { background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }
+                            }
                           >
                             <div className="text-xl">{theme.emoji}</div>
                             <div className="text-xs">{theme.label}</div>
@@ -370,7 +370,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                             onChange={(e) => updateCard('characters', index, 'name', e.target.value)}
                             placeholder={`Character ${index + 1} name`}
                             maxLength={50}
-                            className="w-full form-input"
+                            className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                           />
                         </div>
                         <input
@@ -379,7 +379,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                           onChange={(e) => updateCard('characters', index, 'description', e.target.value)}
                           placeholder="Description (optional)"
                           maxLength={100}
-                          className="flex-1 form-input"
+                          className="flex-1 px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                         />
                         {characters.length > 5 && (
                           <button
@@ -423,7 +423,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                             onChange={(e) => updateCard('settings', index, 'name', e.target.value)}
                             placeholder={`Setting ${index + 1}`}
                             maxLength={50}
-                            className="flex-1 form-input"
+                            className="flex-1 px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                           />
                           {settings.length > 3 && (
                             <button
@@ -459,7 +459,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                             onChange={(e) => updateCard('circumstances', index, 'name', e.target.value)}
                             placeholder={`Circumstance ${index + 1}`}
                             maxLength={80}
-                            className="flex-1 form-input"
+                            className="flex-1 px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                           />
                           {circumstances.length > 3 && (
                             <button

@@ -136,20 +136,20 @@ export default function Home() {
         <div className="container max-w-md" style={{ width: '100%', padding: '0 20px' }}>
           {/* Top bar skeleton */}
           <div className="flex items-center justify-between" style={{ paddingTop: '16px' }}>
-            <div className="skeleton" style={{ width: 140, height: 28, borderRadius: 8 }} />
-            <div className="skeleton" style={{ width: 40, height: 40, borderRadius: 20 }} />
+            <div className="animate-pulse" style={{ width: 140, height: 28, borderRadius: 8, background: 'var(--color-surface-alt)' }} />
+            <div className="animate-pulse" style={{ width: 40, height: 40, borderRadius: 20, background: 'var(--color-surface-alt)' }} />
           </div>
           {/* Greeting skeleton */}
           <div style={{ marginTop: 24 }}>
-            <div className="skeleton" style={{ width: 220, height: 40, borderRadius: 8 }} />
-            <div className="skeleton mt-2" style={{ width: 200, height: 16, borderRadius: 6 }} />
+            <div className="animate-pulse" style={{ width: 220, height: 40, borderRadius: 8, background: 'var(--color-surface-alt)' }} />
+            <div className="animate-pulse mt-2" style={{ width: 200, height: 16, borderRadius: 6, background: 'var(--color-surface-alt)' }} />
           </div>
           {/* Solo card skeleton */}
-          <div className="skeleton mt-6" style={{ width: '100%', height: 160, borderRadius: 16 }} />
+          <div className="animate-pulse mt-6" style={{ width: '100%', height: 160, borderRadius: 16, background: 'var(--color-surface-alt)' }} />
           {/* Friends cards skeleton */}
           <div className="flex gap-3 mt-6">
-            <div className="skeleton flex-1" style={{ height: 140, borderRadius: 16 }} />
-            <div className="skeleton flex-1" style={{ height: 140, borderRadius: 16 }} />
+            <div className="animate-pulse flex-1" style={{ height: 140, borderRadius: 16, background: 'var(--color-surface-alt)' }} />
+            <div className="animate-pulse flex-1" style={{ height: 140, borderRadius: 16, background: 'var(--color-surface-alt)' }} />
           </div>
         </div>
       </main>

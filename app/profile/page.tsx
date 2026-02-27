@@ -12,7 +12,7 @@ import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 import { StatsSkeleton, Skeleton } from '@/components/EmptyState'
 import { CreditHeaderBadge, useCreditBalance } from '@/components/CreditBadge'
 import dynamic from 'next/dynamic'
-const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false, loading: () => <div className="rounded-xl p-6" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}><div className="skeleton skeleton-heading" /><div className="skeleton skeleton-text mt-4" /></div> })
+const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false, loading: () => <div className="rounded-xl p-6" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}><div className="animate-pulse" style={{ width: 200, height: 24, borderRadius: 6, background: 'var(--color-surface-alt)' }} /><div className="animate-pulse mt-4" style={{ width: '80%', height: 14, borderRadius: 6, background: 'var(--color-surface-alt)' }} /></div> })
 const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
 import { ReferralCard } from '@/components/ReferralCard'
 import { XPBar } from '@/components/XPBar'
@@ -544,13 +544,13 @@ export default function ProfilePage() {
                         ) : (
                           <div className="border border-[var(--color-border)] rounded-lg overflow-hidden">
                             {transactions.slice(0, 5).map(txn => (
-                              <div key={txn.id} className="transaction-row">
+                              <div key={txn.id} className="flex items-center justify-between px-3 py-2.5" style={{ borderBottom: '1px solid var(--color-border)' }}>
                                 <div className="flex items-center gap-3">
                                   <span className="text-sm font-medium" style={{ color: txn.type === 'purchase' ? 'var(--color-success)' : txn.type === 'refund' ? 'var(--color-accent)' : 'var(--color-danger)' }}>
                                     {txn.type === 'purchase' ? '+' : txn.type === 'refund' ? '←' : txn.type === 'failed' ? '×' : '…'}
                                   </span>
                                   <div>
-                                    <p className={`font-medium text-sm transaction-type-${txn.type}`}>
+                                    <p className="font-medium text-sm" style={{ color: txn.type === 'purchase' ? 'var(--color-success)' : txn.type === 'refund' ? 'var(--color-accent)' : txn.type === 'failed' ? 'var(--color-danger)' : 'var(--color-text-secondary)' }}>
                                       {txn.type === 'purchase' ? txn.packageLabel : txn.type.charAt(0).toUpperCase() + txn.type.slice(1)}
                                     </p>
                                     <p className="text-xs text-[var(--color-text-tertiary)]">

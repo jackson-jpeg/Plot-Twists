@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { CardPackMetadata } from '@/lib/types'
 import dynamic from 'next/dynamic'
-const CardPackCreator = dynamic(() => import('./CardPackCreator').then(m => ({ default: m.CardPackCreator })), { ssr: false, loading: () => <div className="rounded-xl p-6" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}><div className="skeleton skeleton-heading" /></div> })
+const CardPackCreator = dynamic(() => import('./CardPackCreator').then(m => ({ default: m.CardPackCreator })), { ssr: false, loading: () => <div className="rounded-xl p-6" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}><div className="animate-pulse" style={{ width: 200, height: 24, borderRadius: 6, background: 'var(--color-surface-alt)' }} /></div> })
 import { CardPackEditor } from './CardPackEditor'
 import { DeleteConfirmModal } from './DeleteConfirmModal'
 import { StarRating } from './StarRating'
@@ -270,12 +270,12 @@ export function CardPackSelector({
                             <h4 className="font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
                               {pack.name}
                               {pack.isBuiltIn && (
-                                <span className="annotation" style={{ fontSize: 11, transform: 'rotate(-1deg)' }}>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ fontSize: 11, background: 'var(--color-surface)', color: 'var(--color-text-tertiary)' }}>
                                   Default
                                 </span>
                               )}
                               {pack.isMature && (
-                                <span className="annotation" style={{ fontSize: 11, transform: 'rotate(1deg)', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ fontSize: 11, background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
                                   18+
                                 </span>
                               )}
@@ -296,9 +296,9 @@ export function CardPackSelector({
                         <div className="flex justify-between items-center text-xs">
                           <span style={{ color: 'var(--color-text-tertiary)' }}>By {pack.author}</span>
                           <div className="flex gap-1.5">
-                            <span className="pack-count-pill pack-count-characters">🎭 {pack.cardCounts.characters}</span>
-                            <span className="pack-count-pill pack-count-settings">🏠 {pack.cardCounts.settings}</span>
-                            <span className="pack-count-pill pack-count-circumstances">⚡ {pack.cardCounts.circumstances}</span>
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ background: 'var(--color-surface)', color: 'var(--color-text-secondary)' }}>{pack.cardCounts.characters}C</span>
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ background: 'var(--color-surface)', color: 'var(--color-text-secondary)' }}>{pack.cardCounts.settings}S</span>
+                            <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ background: 'var(--color-surface)', color: 'var(--color-text-secondary)' }}>{pack.cardCounts.circumstances}X</span>
                           </div>
                         </div>
                       </button>

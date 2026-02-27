@@ -134,11 +134,12 @@ export function MoviePosterSkeleton({ maxWidth = 320 }: { maxWidth?: number }) {
   return (
     <div className="mx-auto mb-6 flex flex-col items-center">
       <div
-        className="movie-poster-frame skeleton"
+        className="animate-pulse rounded-lg"
         style={{
           maxWidth,
           width: '100%',
           aspectRatio: '2/3',
+          background: 'var(--color-surface-alt)',
         }}
       />
     </div>

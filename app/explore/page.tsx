@@ -274,7 +274,7 @@ export default function ExplorePage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSearch() }}
               placeholder="Search packs..."
-              className="input w-full pl-10"
+              className="w-full pl-10 px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
               aria-label="Search card packs"
             />
           </div>

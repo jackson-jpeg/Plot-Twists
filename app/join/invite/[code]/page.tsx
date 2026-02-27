@@ -366,9 +366,9 @@ export function InvitePage() {
           transition={{ delay: 0.15, ...MOTION.gentle }}
         >
           <label
-            className="label"
+            className="block text-xs font-semibold uppercase tracking-wider mb-1"
             htmlFor="invite-nickname"
-            style={{ marginBottom: '6px' }}
+            style={{ color: 'var(--color-text-secondary)', marginBottom: '6px' }}
           >
             Your nickname
           </label>

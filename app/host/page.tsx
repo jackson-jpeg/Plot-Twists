@@ -298,8 +298,8 @@ function HostPageContent() {
     return (
       <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
         <div className="text-center">
-          <div className="skeleton skeleton-heading" style={{ margin: '0 auto' }} />
-          <div className="skeleton skeleton-text" style={{ width: '60%', margin: '1rem auto' }} />
+          <div className="animate-pulse" style={{ width: 200, height: 28, borderRadius: 8, background: 'var(--color-surface-alt)', margin: '0 auto' }} />
+          <div className="animate-pulse" style={{ width: '60%', height: 16, borderRadius: 6, background: 'var(--color-surface-alt)', margin: '1rem auto' }} />
         </div>
       </div>
     )
@@ -512,8 +512,8 @@ export default function HostPage() {
     <Suspense fallback={
       <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
         <div className="text-center">
-          <div className="skeleton skeleton-heading" style={{ margin: '0 auto' }} />
-          <div className="skeleton skeleton-text" style={{ width: '60%', margin: '1rem auto' }} />
+          <div className="animate-pulse" style={{ width: 200, height: 28, borderRadius: 8, background: 'var(--color-surface-alt)', margin: '0 auto' }} />
+          <div className="animate-pulse" style={{ width: '60%', height: 16, borderRadius: 6, background: 'var(--color-surface-alt)', margin: '1rem auto' }} />
         </div>
       </div>
     }>

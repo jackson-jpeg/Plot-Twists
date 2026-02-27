@@ -125,8 +125,8 @@ export function CardBrowseModal({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name, source, or tags..."
-            className="input w-full"
-            style={{ paddingLeft: '44px' }}
+            className="w-full px-3 py-2 rounded-lg text-sm"
+            style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none', paddingLeft: '44px' }}
           />
           <span
             className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl"

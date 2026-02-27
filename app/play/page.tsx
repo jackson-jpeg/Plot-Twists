@@ -71,17 +71,17 @@ export default function PlayPage() {
       <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="container max-w-2xl pt-4 pb-8">
           <div className="text-center mb-6">
-            <div className="skeleton mx-auto" style={{ width: 48, height: 48, borderRadius: '50%' }} />
-            <div className="skeleton mx-auto mt-3" style={{ width: 180, height: 28, borderRadius: 8 }} />
-            <div className="skeleton mx-auto mt-2" style={{ width: 260, height: 16, borderRadius: 6 }} />
+            <div className="animate-pulse mx-auto" style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--color-surface-alt)' }} />
+            <div className="animate-pulse mx-auto mt-3" style={{ width: 180, height: 28, borderRadius: 8, background: 'var(--color-surface-alt)' }} />
+            <div className="animate-pulse mx-auto mt-2" style={{ width: 260, height: 16, borderRadius: 6, background: 'var(--color-surface-alt)' }} />
           </div>
           <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="skeleton" style={{ height: 100, borderRadius: 16 }} />
-            <div className="skeleton" style={{ height: 100, borderRadius: 16 }} />
+            <div className="animate-pulse" style={{ height: 100, borderRadius: 16, background: 'var(--color-surface-alt)' }} />
+            <div className="animate-pulse" style={{ height: 100, borderRadius: 16, background: 'var(--color-surface-alt)' }} />
           </div>
           <div className="flex flex-col gap-3">
-            <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
-            <div className="skeleton" style={{ height: 72, borderRadius: 12 }} />
+            <div className="animate-pulse" style={{ height: 72, borderRadius: 12, background: 'var(--color-surface-alt)' }} />
+            <div className="animate-pulse" style={{ height: 72, borderRadius: 12, background: 'var(--color-surface-alt)' }} />
           </div>
         </div>
       </main>

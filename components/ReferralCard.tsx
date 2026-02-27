@@ -175,7 +175,7 @@ export function ReferralCard() {
                       }}
                       placeholder="Enter code"
                       maxLength={6}
-                      className="input flex-1 text-center tracking-widest font-bold uppercase"
+                      className="flex-1 text-center tracking-widest font-bold uppercase px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                     />
                     <button
                       onClick={handleRedeem}

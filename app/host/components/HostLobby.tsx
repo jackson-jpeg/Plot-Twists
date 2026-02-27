@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
-const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => ({ default: m.QRCodeSVG })), { ssr: false, loading: () => <div className="skeleton" style={{ width: 140, height: 140, borderRadius: '8px' }} /> })
+const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => ({ default: m.QRCodeSVG })), { ssr: false, loading: () => <div className="animate-pulse" style={{ width: 140, height: 140, borderRadius: '8px', background: 'var(--color-surface-alt)' }} /> })
 import type { Player, RoomSettings, ScriptCustomization, AudioSettings, GameMode } from '@/lib/types'
 const ScriptCustomizationPanel = dynamic(() => import('@/components/ScriptCustomizationPanel').then(m => ({ default: m.ScriptCustomizationPanel })), { ssr: false, loading: () => null })
 const CardPackSelector = dynamic(() => import('@/components/CardPackSelector').then(m => ({ default: m.CardPackSelector })), { ssr: false, loading: () => null })
@@ -203,7 +203,7 @@ export function HostLobby({
               )}
             </>
           ) : (
-            <div className="skeleton" style={{ width: '280px', height: '72px', display: 'inline-block' }} />
+            <div className="animate-pulse" style={{ width: '280px', height: '72px', display: 'inline-block', borderRadius: 12, background: 'var(--color-surface-alt)' }} />
           )}
         </motion.div>
 
@@ -223,7 +223,7 @@ export function HostLobby({
               <QRCodeSVG value={joinUrl} size={120} level="H" />
             </div>
           ) : (
-            <div className="skeleton flex-shrink-0" style={{ width: '136px', height: '136px', borderRadius: '8px' }} />
+            <div className="animate-pulse flex-shrink-0" style={{ width: '136px', height: '136px', borderRadius: '8px', background: 'var(--color-surface-alt)' }} />
           )}
           <div>
             <p style={{

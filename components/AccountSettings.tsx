@@ -256,14 +256,14 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                       className="space-y-4"
                     >
                       <div>
-                        <label className="label">Display Name</label>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>Display Name</label>
                         {editingName ? (
                           <div className="flex gap-2">
                             <input
                               type="text"
                               value={newDisplayName}
                               onChange={(e) => setNewDisplayName(e.target.value)}
-                              className="input flex-1"
+                              className="flex-1 w-full px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                               placeholder="Enter display name"
                             />
                             <button
@@ -299,7 +299,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                             </button>
                           </div>
                         )}
-                        {nameError && <p className="error-text mt-1">{nameError}</p>}
+                        {nameError && <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{nameError}</p>}
                         {nameSuccess && (
                           <p className="text-[var(--color-success)] text-sm mt-1">
                             Display name updated!
@@ -308,14 +308,14 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                       </div>
 
                       <div>
-                        <label className="label">Phone</label>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>Phone</label>
                         <p className="text-[var(--color-text-primary)]">
                           {user?.phoneNumber || 'No phone linked'}
                         </p>
                       </div>
 
                       <div>
-                        <label className="label">Account Type</label>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>Account Type</label>
                         <p className="text-[var(--color-text-primary)]">
                           {user?.isAnonymous ? 'Anonymous (Guest)' : 'Registered'}
                         </p>
@@ -333,7 +333,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                       className="space-y-4"
                     >
                       <div>
-                        <label className="label">Theme</label>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>Theme</label>
                         <div className="flex gap-2">
                           {([
                             { value: 'system', label: 'System' },
@@ -353,30 +353,30 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                             </button>
                           ))}
                         </div>
-                        <p className="help-text">Choose light, dark, or follow your device setting</p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--color-text-disabled)' }}>Choose light, dark, or follow your device setting</p>
                       </div>
 
                       <div>
-                        <label className="label">Default Nickname</label>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>Default Nickname</label>
                         <input
                           type="text"
                           value={preferences.defaultNickname || ''}
                           onChange={(e) => setPreferences({ ...preferences, defaultNickname: e.target.value })}
-                          className="input"
+                          className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                           placeholder="Your in-game nickname"
                         />
-                        <p className="help-text">Used when joining games</p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--color-text-disabled)' }}>Used when joining games</p>
                       </div>
 
                       <div>
-                        <label className="label">Preferred Game Mode</label>
+                        <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>Preferred Game Mode</label>
                         <select
                           value={preferences.preferredGameMode || ''}
                           onChange={(e) => setPreferences({
                             ...preferences,
                             preferredGameMode: e.target.value as GameMode || undefined
                           })}
-                          className="input"
+                          className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                         >
                           <option value="">No preference</option>
                           <option value="solo">Solo</option>
@@ -439,7 +439,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
 
                         <div className="space-y-3">
                           <div>
-                            <label className="label">View Mode</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>View Mode</label>
                             <select
                               value={teleprompterSettings.visibilityMode}
                               onChange={(e) => {
@@ -453,7 +453,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                                   setTeleprompterPreset(mode)
                                 }
                               }}
-                              className="input"
+                              className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                             >
                               <option value="focused">Focused (1 past, 1 upcoming)</option>
                               <option value="balanced">Balanced (2 past, 3 upcoming)</option>
@@ -465,7 +465,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                           {teleprompterSettings.visibilityMode === 'custom' && (
                             <div className="grid grid-cols-2 gap-3 pl-4 border-l-2 border-[var(--color-border)]">
                               <div>
-                                <label className="label">Past Lines</label>
+                                <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>Past Lines</label>
                                 <input
                                   type="number"
                                   min="0"
@@ -475,11 +475,11 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                                     parseInt(e.target.value) || 0,
                                     teleprompterSettings.upcomingLinesVisible
                                   )}
-                                  className="input"
+                                  className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                                 />
                               </div>
                               <div>
-                                <label className="label">Upcoming Lines</label>
+                                <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--color-text-secondary)' }}>Upcoming Lines</label>
                                 <input
                                   type="number"
                                   min="1"
@@ -489,7 +489,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                                     teleprompterSettings.pastLinesVisible,
                                     parseInt(e.target.value) || 1
                                   )}
-                                  className="input"
+                                  className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                                 />
                               </div>
                             </div>
@@ -572,7 +572,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                               type="text"
                               value={deleteConfirmText}
                               onChange={(e) => setDeleteConfirmText(e.target.value)}
-                              className="input"
+                              className="w-full px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
                               placeholder='Type "DELETE"'
                             />
                             <div className="flex gap-2">

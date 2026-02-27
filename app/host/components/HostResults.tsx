@@ -108,16 +108,25 @@ export function HostResults({
     }
   }
 
-  const handleShareCharacter = async () => {
-    if (!socket || !userUid) return
+  const getGameId = async (): Promise<string | null> => {
+    if (!socket || !userUid) return null
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const historyResponse: any = await withTimeout(
         (cb) => socket.emit('get_game_history', userUid, 1, cb),
         10000
       )
-      if (!historyResponse.success || !historyResponse.games?.length) return
-      const gameId = historyResponse.games[0].id
+      if (!historyResponse.success || !historyResponse.games?.length) return null
+      return historyResponse.games[0].id
+    } catch {
+      return null
+    }
+  }
+
+  const handleShareCharacter = async () => {
+    const gameId = await getGameId()
+    if (!gameId) return
+    try {
       const cardUrl = `/api/character-card/${gameId}/${userUid}?format=story`
 
       const response = await fetch(cardUrl)
@@ -131,6 +140,25 @@ export function HostResults({
       }
     } catch {
       // User cancelled share or error
+    }
+  }
+
+  const handleSharePoster = async (format: 'story' | 'feed' = 'story') => {
+    const gameId = await getGameId()
+    if (!gameId) return
+    const posterUrl = `/api/poster-story/${gameId}?format=${format}`
+    try {
+      const response = await fetch(posterUrl)
+      const blob = await response.blob()
+      const file = new File([blob], `poster-${format}.png`, { type: 'image/png' })
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: script?.title || 'Plot Twists' })
+      } else {
+        window.open(posterUrl, '_blank')
+      }
+    } catch {
+      window.open(posterUrl, '_blank')
     }
   }
 
@@ -261,15 +289,32 @@ export function HostResults({
           >
             Share My Character
           </motion.button>
+          <motion.button
+            onClick={() => handleSharePoster('story')}
+            className="btn btn-large w-full"
+            style={{
+              maxWidth: '320px',
+              background: 'var(--color-surface)',
+              border: '1.5px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            Share Poster
+          </motion.button>
           {script && (
-            <motion.button onClick={onRequestSequel} className="btn btn-primary btn-large" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.3 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <motion.button onClick={onRequestSequel} className="btn btn-primary btn-large" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.4 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <span>🎬</span><span>Generate Sequel</span>
             </motion.button>
           )}
-          <motion.button onClick={() => onRequestNewGame(false)} className="btn btn-secondary btn-large" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.button onClick={() => onRequestNewGame(false)} className="btn btn-secondary btn-large" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <span>🔄</span><span>New Round — Same Players</span>
           </motion.button>
-          <motion.button onClick={() => router.push('/')} className="btn btn-ghost" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.6 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.button onClick={() => router.push('/')} className="btn btn-ghost" style={{ maxWidth: '320px', width: '100%' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.7 }} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <span>🚪</span><span>Exit to Home</span>
           </motion.button>
         </div>

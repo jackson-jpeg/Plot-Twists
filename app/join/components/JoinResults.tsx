@@ -75,17 +75,26 @@ export function JoinResults({
     return () => { socket.off('directors_review', setDirectorsReview) }
   }, [socket])
 
-  const handleShareCharacter = async () => {
-    if (!socket || !myPlayerId) return
+  const getGameId = async (): Promise<string | null> => {
     const uid = userUid || myPlayerId
+    if (!socket || !uid) return null
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const historyResponse: any = await withTimeout(
         (cb) => socket.emit('get_game_history', uid, 1, cb),
         10000
       )
-      if (!historyResponse.success || !historyResponse.games?.length) return
-      const gameId = historyResponse.games[0].id
+      if (!historyResponse.success || !historyResponse.games?.length) return null
+      return historyResponse.games[0].id
+    } catch {
+      return null
+    }
+  }
+
+  const handleShareCharacter = async () => {
+    const gameId = await getGameId()
+    if (!gameId) return
+    try {
       const cardUrl = `/api/character-card/${gameId}/${myPlayerId}?format=story`
 
       const response = await fetch(cardUrl)
@@ -99,6 +108,25 @@ export function JoinResults({
       }
     } catch {
       // User cancelled share or error
+    }
+  }
+
+  const handleSharePoster = async (format: 'story' | 'feed' = 'story') => {
+    const gameId = await getGameId()
+    if (!gameId) return
+    const posterUrl = `/api/poster-story/${gameId}?format=${format}`
+    try {
+      const response = await fetch(posterUrl)
+      const blob = await response.blob()
+      const file = new File([blob], `poster-${format}.png`, { type: 'image/png' })
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: script?.title || 'Plot Twists' })
+      } else {
+        window.open(posterUrl, '_blank')
+      }
+    } catch {
+      window.open(posterUrl, '_blank')
     }
   }
 
@@ -188,8 +216,8 @@ export function JoinResults({
           </motion.div>
         )}
 
-        {/* Share My Character */}
-        <motion.div className="flex justify-center mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}>
+        {/* Share My Character + Share Poster */}
+        <motion.div className="flex flex-col items-center gap-3 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}>
           <motion.button
             onClick={handleShareCharacter}
             className="btn btn-large w-full"
@@ -203,6 +231,23 @@ export function JoinResults({
             whileTap={{ scale: 0.98 }}
           >
             Share My Character
+          </motion.button>
+          <motion.button
+            onClick={() => handleSharePoster('story')}
+            className="btn btn-large w-full"
+            style={{
+              maxWidth: '320px',
+              background: 'var(--color-surface)',
+              border: '1.5px solid var(--color-border)',
+              color: 'var(--color-text-primary)',
+            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            Share Poster
           </motion.button>
         </motion.div>
 

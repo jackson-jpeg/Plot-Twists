@@ -38,7 +38,8 @@ export function registerApiRoutes(app: Express): void {
         setting: game.setting,
         circumstance: game.circumstance,
         playedAt: game.playedAt,
-        comedyStyle: game.comedyStyle
+        comedyStyle: game.comedyStyle,
+        posterUrl: game.script?.imageUrl || null
       })
     } catch (error) {
       logger.error('Error fetching game metadata:', error)

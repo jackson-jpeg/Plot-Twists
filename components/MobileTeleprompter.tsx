@@ -278,10 +278,16 @@ export function MobileTeleprompter({
           <motion.button
             onClick={() => { tapHaptic(); onPreviousLine() }}
             disabled={currentLineIndex === 0}
-            className="btn btn-ghost"
             style={{
               opacity: currentLineIndex === 0 ? 0.5 : 1,
-              padding: '12px 20px'
+              padding: '12px 20px',
+              borderRadius: '10px',
+              border: '1px solid var(--color-border)',
+              background: 'transparent',
+              color: 'var(--color-text-secondary)',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
             }}
             whileHover={currentLineIndex > 0 ? { scale: 1.05, x: -2 } : {}}
             whileTap={currentLineIndex > 0 ? { scale: 0.95 } : {}}
@@ -296,10 +302,16 @@ export function MobileTeleprompter({
           <motion.button
             onClick={() => { tapHaptic(); onNextLine() }}
             disabled={currentLineIndex >= script.lines.length - 1}
-            className="btn btn-ghost"
             style={{
               opacity: currentLineIndex >= script.lines.length - 1 ? 0.5 : 1,
-              padding: '12px 20px'
+              padding: '12px 20px',
+              borderRadius: '10px',
+              border: '1px solid var(--color-border)',
+              background: 'transparent',
+              color: 'var(--color-text-secondary)',
+              fontSize: '14px',
+              fontWeight: 600,
+              cursor: 'pointer',
             }}
             whileHover={currentLineIndex < script.lines.length - 1 ? { scale: 1.05, x: 2 } : {}}
             whileTap={currentLineIndex < script.lines.length - 1 ? { scale: 0.95 } : {}}

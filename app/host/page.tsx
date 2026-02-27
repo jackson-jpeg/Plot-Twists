@@ -337,8 +337,8 @@ function HostPageContent() {
           <div className="flex flex-col gap-2">
             <motion.button
               onClick={confirmMatureMode}
-              className="btn btn-primary w-full"
-              style={{ background: 'var(--color-purple)' }}
+              className="w-full"
+              style={{ background: 'var(--color-purple)', color: '#fff', padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -358,14 +358,18 @@ function HostPageContent() {
       {/* Insufficient Credits Modal */}
       <Modal isOpen={showInsufficientCredits} onClose={() => setShowInsufficientCredits(false)} title="Out of scripts!" maxWidth="380px">
         <div className="text-center">
-          <div className="text-5xl mb-3">🎬</div>
+          <div className="text-5xl mb-3" style={{ fontSize: '48px' }}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="var(--color-text-tertiary)" strokeWidth="1.5"/><path d="M10 8l6 4-6 4V8z" fill="var(--color-text-tertiary)"/></svg>
+          </div>
           <p className="text-sm mb-5" style={{ color: 'var(--color-text-secondary)' }}>Buy more credits to keep the show going.</p>
           <button onClick={() => { setShowInsufficientCredits(false); setShowPurchaseModal(true) }}
-            className="btn btn-primary w-full mb-2">
+            className="w-full mb-2"
+            style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}>
             Buy Credits
           </button>
           <button onClick={() => setShowInsufficientCredits(false)}
-            className="btn btn-ghost w-full text-sm">
+            className="w-full text-sm"
+            style={{ padding: '10px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
             Dismiss
           </button>
         </div>

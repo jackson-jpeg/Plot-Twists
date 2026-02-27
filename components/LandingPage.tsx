@@ -109,13 +109,16 @@ export function LandingPage() {
           <SignInButton mode="redirect">
             <motion.button
               onClick={() => analytics.landingCtaClicked('clerk')}
-              className="btn btn-primary btn-large w-full"
+              className="w-full"
               style={{
                 background: 'var(--color-accent)',
+                color: '#fff',
+                border: 'none',
                 borderRadius: '14px',
                 fontSize: '17px',
                 fontWeight: 600,
                 padding: '16px 24px',
+                cursor: 'pointer',
               }}
               whileTap={{ scale: 0.98 }}
             >

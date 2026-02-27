@@ -630,7 +630,7 @@ export function HostLobby({
         <motion.button
           onClick={() => { successHaptic(); onStartGame() }}
           disabled={!canStartGame}
-          className="btn btn-large w-full mb-6"
+          className="w-full mb-6"
           style={{
             background: canStartGame ? 'var(--color-accent)' : 'var(--color-surface-alt)',
             color: canStartGame ? 'white' : 'var(--color-text-tertiary)',

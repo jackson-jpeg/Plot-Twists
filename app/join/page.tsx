@@ -224,16 +224,21 @@ function JoinPageContent() {
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ background: 'rgba(0, 0, 0, 0.8)' }}>
             <motion.div {...variants.scaleIn}
-              className="card max-w-md w-full text-center">
-              <div className="text-6xl mb-4">😢</div>
+              className="max-w-md w-full text-center"
+              style={{ padding: '32px 24px', borderRadius: '20px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <div className="mb-4 flex justify-center">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none"><path d="M9.17 14.83a4 4 0 015.66 0" stroke="var(--color-text-tertiary)" strokeWidth="1.5" strokeLinecap="round"/><circle cx="9" cy="10" r="1" fill="var(--color-text-tertiary)"/><circle cx="15" cy="10" r="1" fill="var(--color-text-tertiary)"/><circle cx="12" cy="12" r="10" stroke="var(--color-text-tertiary)" strokeWidth="1.5"/></svg>
+              </div>
               <h2 className="text-2xl font-display mb-4" style={{ color: 'var(--color-text-primary)' }}>Host Disconnected</h2>
               <p className="mb-6" style={{ color: 'var(--color-text-secondary)' }}>
                 The host has left the game. You can wait for them to reconnect or return to the home page.
               </p>
               <div className="flex flex-col gap-3">
-                <motion.button onClick={() => setHostDisconnected(false)} className="btn btn-secondary w-full"
+                <motion.button onClick={() => setHostDisconnected(false)} className="w-full"
+                  style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-surface-alt)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>Wait for Reconnection</motion.button>
-                <motion.button onClick={() => router.push('/')} className="btn btn-primary w-full"
+                <motion.button onClick={() => router.push('/')} className="w-full"
+                  style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>Return Home</motion.button>
               </div>
             </motion.div>

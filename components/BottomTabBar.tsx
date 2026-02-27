@@ -8,16 +8,17 @@ import { tapHaptic } from '@/hooks/useHaptics'
 
 const TABS = [
   { href: '/', label: 'Home' },
-  { href: '/play', label: 'Play' },
-  { href: '/explore', label: 'Explore' },
+  { href: '/host', label: 'Host' },
+  { href: '/join', label: 'Join' },
   { href: '/profile', label: 'Profile' },
 ] as const
 
 /** Pages where the tab bar should be visible */
-const TAB_PAGES = new Set(['/', '/play', '/explore', '/profile'])
+const TAB_PAGES = new Set(['/', '/host', '/join', '/profile'])
 
 function shouldShowTabBar(pathname: string): boolean {
   if (TAB_PAGES.has(pathname)) return true
+  if (pathname === '/play' || pathname === '/explore') return true
   if (pathname.startsWith('/replay/')) return true
   return false
 }

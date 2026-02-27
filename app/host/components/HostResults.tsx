@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import type { Script, GameResults, XPEvent, LevelInfo } from '@/lib/types'
+import type { Script, GameResults, XPEvent, LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
 import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { VARIANTS } from '@/lib/animations'
@@ -14,6 +14,7 @@ import { useConfetti } from '@/hooks/useConfetti'
 import { XPGainAnimation } from '@/components/XPGainAnimation'
 import { XPBar } from '@/components/XPBar'
 import { LevelUpCelebration } from '@/components/LevelUpCelebration'
+import { DirectorsReview } from '@/components/DirectorsReview'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -47,6 +48,7 @@ export function HostResults({
   const [isSharing, setIsSharing] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
+  const [directorsReview, setDirectorsReview] = useState<DirectorsReviewType | null>(null)
 
   // Fire confetti on results reveal
   useEffect(() => {
@@ -65,6 +67,13 @@ export function HostResults({
       if (response.success && response.levelInfo) setLevelInfo(response.levelInfo)
     })
   }, [socket, userUid])
+
+  // Listen for AI Director's Review
+  useEffect(() => {
+    if (!socket) return
+    socket.on('directors_review', setDirectorsReview)
+    return () => { socket.off('directors_review', setDirectorsReview) }
+  }, [socket])
 
   const handleCopyScript = async () => {
     if (!script) return
@@ -192,6 +201,13 @@ export function HostResults({
               </div>
             </details>
           </motion.div>
+        )}
+
+        {/* Director's Review */}
+        {directorsReview && (
+          <div className="flex justify-center mt-8">
+            <DirectorsReview review={directorsReview} delay={1.0} />
+          </div>
         )}
 
         {/* Actions */}

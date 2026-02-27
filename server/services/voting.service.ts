@@ -8,6 +8,7 @@ import type { Room, Script, ClientToServerEvents, ServerToClientEvents } from '.
 import * as roomService from './room.service'
 import { saveGame } from './gameHistory.service'
 import { recordGameResult } from './playerStats.service'
+import { generateDirectorsReview } from './directorsReview.service'
 import {
   awardXP,
   computeGameXPEvents,
@@ -64,6 +65,30 @@ export async function calculateResults(room: Room, io: SocketIOServer<ClientToSe
     highlights
   })
   io.to(room.code).emit('game_state_change', 'RESULTS')
+
+  // Fire-and-forget director's review
+  generateDirectorsReview({
+    title: room.script?.title || 'Untitled',
+    synopsis: room.script?.synopsis || '',
+    cast: [...room.players.values()]
+      .filter(p => !p.isHost || p.role === 'PLAYER')
+      .filter(p => p.role === 'PLAYER')
+      .map(p => ({
+        nickname: p.nickname,
+        character: p.assignedCharacter || 'Unknown',
+        isWinner: p.id === winner?.playerId,
+      })),
+    reactionCount: room.audienceInteraction?.reactionCounts
+      ? Object.values(room.audienceInteraction.reactionCounts).reduce((a: number, b: number) => a + b, 0)
+      : 0,
+    plotTwists: room.audienceInteraction?.plotTwistHistory || [],
+  }).then(review => {
+    if (review) {
+      room.directorsReview = review
+      roomService.updateRoom(room)
+      io.to(room.code).emit('directors_review', review)
+    }
+  }).catch(() => {})
 
   // Save game to history and update player stats
   try {

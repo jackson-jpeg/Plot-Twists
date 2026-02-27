@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import type { Script, GameResults, XPEvent, LevelInfo } from '@/lib/types'
+import type { Script, GameResults, XPEvent, LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
 import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
 import { successHaptic } from '@/hooks/useHaptics'
 import { useConfetti } from '@/hooks/useConfetti'
@@ -12,6 +12,7 @@ import { VARIANTS } from '@/lib/animations'
 import { XPGainAnimation } from '@/components/XPGainAnimation'
 import { XPBar } from '@/components/XPBar'
 import { LevelUpCelebration } from '@/components/LevelUpCelebration'
+import { DirectorsReview } from '@/components/DirectorsReview'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -43,6 +44,7 @@ export function JoinResults({
   const confettiFiredRef = useRef(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
+  const [directorsReview, setDirectorsReview] = useState<DirectorsReviewType | null>(null)
 
   // Fire confetti on results reveal
   useEffect(() => {
@@ -62,6 +64,13 @@ export function JoinResults({
       if (response.success && response.levelInfo) setLevelInfo(response.levelInfo)
     })
   }, [socket, userUid, myPlayerId])
+
+  // Listen for AI Director's Review
+  useEffect(() => {
+    if (!socket) return
+    socket.on('directors_review', setDirectorsReview)
+    return () => { socket.off('directors_review', setDirectorsReview) }
+  }, [socket])
 
   const handleCopyScript = async () => {
     if (!script) return
@@ -147,6 +156,13 @@ export function JoinResults({
               <motion.button onClick={handleCopyScript} className="btn btn-ghost" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}><span>{copySuccess ? '✓' : '📋'}</span><span>{copySuccess ? 'Copied!' : 'Copy Script'}</span></motion.button>
             </div>
           </motion.div>
+        )}
+
+        {/* Director's Review */}
+        {directorsReview && (
+          <div className="flex justify-center mb-6">
+            <DirectorsReview review={directorsReview} delay={1.0} />
+          </div>
         )}
 
         {/* Waiting for host */}

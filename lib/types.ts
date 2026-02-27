@@ -59,6 +59,17 @@ export interface AudienceInteractionState {
 }
 
 // ============================================================
+// AI Director's Review
+// ============================================================
+
+export interface DirectorsReview {
+  rating: number       // 3-5 stars (always generous)
+  headline: string     // e.g. "A Masterclass in Burrito Surgery"
+  review: string       // 3-4 sentences of absurd film-critic prose
+  bestMoment: string   // One specific funny highlight
+}
+
+// ============================================================
 // FEATURE 2: AI Script Customization Engine
 // ============================================================
 
@@ -282,6 +293,8 @@ export interface Room {
   isPublic?: boolean
   publicTitle?: string
   autoStart?: boolean
+  // AI Director's Review
+  directorsReview?: DirectorsReview
 }
 
 export interface RoomSettings {
@@ -419,6 +432,9 @@ export interface ServerToClientEvents {
   // Feature 8: Public Games Events
   public_rooms_update: (rooms: PublicRoomListing[]) => void
   auto_start_countdown: (seconds: number) => void
+
+  // AI Director's Review
+  directors_review: (review: DirectorsReview) => void
 }
 
 export interface ClientToServerEvents {
@@ -546,6 +562,7 @@ export interface SavedGame {
   shareCode?: string
   views: number
   likes: number
+  directorsReview?: DirectorsReview
 }
 
 export interface GameHistoryFilters {

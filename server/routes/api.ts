@@ -7,6 +7,9 @@ import { authenticateRequest } from '../middleware/auth'
 import { gameMetadataLimiter } from '../middleware/rateLimiter'
 import { getGame, getGameByShareCode } from '../services/gameHistory.service'
 import { deleteUser } from '../services/user.service'
+import * as roomService from '../services/room.service'
+import { isValidRoomCode } from '../utils/validation'
+import { MAX_PLAYERS } from '../utils/constants'
 import { logger } from '../../lib/logger'
 
 export function registerApiRoutes(app: Express): void {
@@ -41,6 +44,28 @@ export function registerApiRoutes(app: Express): void {
       logger.error('Error fetching game metadata:', error)
       res.status(500).json({ error: 'Failed to load game' })
     }
+  })
+
+  // Room preview (used by SSR invite landing page)
+  app.get('/api/room-preview/:code', (req, res) => {
+    const code = req.params.code?.toUpperCase()
+    if (!code || !isValidRoomCode(code)) { res.status(400).json({ error: 'Invalid room code' }); return }
+
+    const room = roomService.getRoomFromCache(code)
+    if (!room) { res.status(404).json({ error: 'Room not found' }); return }
+
+    const activePlayers = [...room.players.values()].filter(p =>
+      room.gameMode === 'SOLO' ? p.isHost : (p.role === 'PLAYER' && !p.isHost)
+    )
+    res.json({
+      gameMode: room.gameMode,
+      playerCount: activePlayers.length,
+      maxPlayers: MAX_PLAYERS[room.gameMode],
+      hostName: room.host.nickname,
+      isMature: room.isMature,
+      gameState: room.gameState,
+      players: activePlayers.slice(0, 6).map(p => ({ nickname: p.nickname })),
+    })
   })
 
   // Account deletion

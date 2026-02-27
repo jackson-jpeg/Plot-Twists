@@ -36,7 +36,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
   const [nicknameTouched, setNicknameTouched] = useState(false)
   const [shakeInvalid, setShakeInvalid] = useState(false)
   const [roomPreview, setRoomPreview] = useState<{
-    gameMode: GameMode; playerCount: number; maxPlayers: number; isMature: boolean; gameState: string
+    gameMode: GameMode; playerCount: number; maxPlayers: number; isMature: boolean; gameState: string; hostName: string; players: { nickname: string }[]
   } | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
 
@@ -150,7 +150,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
         <div className="card card-accent">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-4xl font-display" style={{ color: 'var(--color-text-primary)', marginBottom: 0 }}>Join Game</h1>
-            <button onClick={onShowOnboarding} className="btn btn-ghost" style={{ padding: '8px 12px', fontSize: '14px' }} aria-label="How to play"><span>❓</span></button>
+            <button onClick={onShowOnboarding} className="btn btn-ghost" style={{ padding: '10px 14px', fontSize: '14px', minHeight: '44px' }} aria-label="How to play">How to Play</button>
           </div>
 
           <div className="stack">
@@ -163,7 +163,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
                   style={{ paddingRight: isRoomCodeValid ? '44px' : '16px' }} />
                 {isRoomCodeValid && <span className="input-check">✓</span>}
               </div>
-              {roomCodeTouched && roomCodeError && <p className="error-text">⚠️ {roomCodeError}</p>}
+              {roomCodeTouched && roomCodeError && <p className="error-text">{roomCodeError}</p>}
 
               {/* Room Preview */}
               <AnimatePresence>
@@ -196,7 +196,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
                             {roomPreview.gameMode === 'SOLO' ? 'Solo Mode' : roomPreview.gameMode === 'HEAD_TO_HEAD' ? 'Head-to-Head' : 'Ensemble'}
                           </span>
                           <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                            {roomPreview.gameMode === 'SOLO' ? 'You vs. AI' : roomPreview.gameMode === 'HEAD_TO_HEAD' ? '1v1 showdown' : 'Group improv'}
+                            Hosted by {roomPreview.hostName}
                           </span>
                         </div>
                       </div>
@@ -207,6 +207,11 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
                         {roomPreview.isMature && <span className="px-2 py-1 rounded text-xs font-bold" style={{ background: 'var(--color-danger)', color: 'white' }}>18+</span>}
                       </div>
                     </div>
+                    {roomPreview.players.length > 0 && (
+                      <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+                        {roomPreview.players.map(p => p.nickname).join(', ')}{roomPreview.playerCount > 6 ? ` +${roomPreview.playerCount - 6} more` : ''}
+                      </p>
+                    )}
                     {roomPreview.playerCount >= roomPreview.maxPlayers && (
                       <motion.p className="text-sm text-center p-2 rounded" style={{ background: 'var(--color-surface)', color: 'var(--color-warning)', border: '1px solid var(--color-border)' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>👁️ Room is full — you'll join as a spectator</motion.p>
                     )}
@@ -229,14 +234,13 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
                 {isNicknameValid && <span className="input-check">✓</span>}
               </div>
               <div className="flex justify-between items-center">
-                {nicknameTouched && nicknameError ? <p className="error-text">⚠️ {nicknameError}</p> : <span />}
+                {nicknameTouched && nicknameError ? <p className="error-text">{nicknameError}</p> : <span />}
                 {nickname.length > 12 && <span className="text-xs" style={{ color: nickname.length >= 20 ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>{nickname.length}/20</span>}
               </div>
             </div>
 
             {error && (
               <motion.div className="error-banner p-4 rounded-lg flex items-center gap-3 justify-center" style={{ background: 'var(--color-danger)' }} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} role="alert" aria-live="polite">
-                <span className="text-2xl" aria-hidden="true">{error.includes('not found') ? '🔍' : error.includes('full') ? '🚫' : error.includes('timeout') ? '⏱️' : '⚠️'}</span>
                 <p className="text-white font-semibold">{error}</p>
               </motion.div>
             )}
@@ -244,9 +248,9 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
             <div>
               <button onClick={handleJoin} disabled={!isFormValid() || isJoining} className={`btn btn-primary btn-large w-full ${shakeInvalid ? 'shake' : ''}`}>
                 {isJoining ? (
-                  <><motion.span animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>⏳</motion.span><span>Joining...</span></>
+                  <span>Joining...</span>
                 ) : (
-                  <><span>🚀</span><span>Join</span></>
+                  <span>Join Game</span>
                 )}
               </button>
               {!isFormValid() && !isJoining && <p className="btn-helper-text">Fill in all fields to continue</p>}

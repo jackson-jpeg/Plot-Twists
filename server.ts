@@ -955,7 +955,9 @@ app.prepare().then(async () => {
             playerCount: activePlayers.length,
             maxPlayers,
             isMature: room.isMature,
-            gameState: room.gameState
+            gameState: room.gameState,
+            hostName: room.host.nickname,
+            players: activePlayers.slice(0, 6).map(p => ({ nickname: p.nickname }))
           }
         })
       } catch (error) {

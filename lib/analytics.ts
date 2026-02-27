@@ -64,4 +64,14 @@ export const analytics = {
   creditInsufficient: () => {
     track('credit_insufficient', {})
   },
+
+  /** Invite landing page viewed */
+  invitePageViewed: (roomCode: string) => {
+    track('invite_page_viewed', { roomCode })
+  },
+
+  /** Join clicked from invite page */
+  inviteJoinClicked: (roomCode: string) => {
+    track('invite_join_clicked', { roomCode })
+  },
 }

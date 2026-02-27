@@ -16,6 +16,7 @@ export interface JoinFormProps {
   socket: AppSocket | null
   isConnected: boolean
   initialRoomCode: string
+  initialNickname?: string
   toast: { success: (m: string) => void; error: (m: string) => void; info: (m: string) => void }
   onJoinSuccess: (data: { players: Player[]; myPlayerId: string; myRole: PlayerRole; roomCode: string; roomIsMature: boolean }) => void
   onShowOnboarding: () => void
@@ -24,9 +25,10 @@ export interface JoinFormProps {
 
 const VALID_ROOM_CODE_REGEX = /^[A-HJ-NP-Y2-9]{4}$/
 
-export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSuccess, onShowOnboarding, onNavigateHome }: JoinFormProps) {
+export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname = '', toast, onJoinSuccess, onShowOnboarding, onNavigateHome }: JoinFormProps) {
   const [roomCode, setRoomCode] = useState(initialRoomCode)
-  const [nickname, setNickname] = useState('')
+  const [nickname, setNickname] = useState(initialNickname)
+  const hasAutoSubmitted = useRef(false)
   const nicknameInputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState('')
   const [roomCodeError, setRoomCodeError] = useState('')
@@ -85,6 +87,21 @@ export function JoinForm({ socket, isConnected, initialRoomCode, toast, onJoinSu
       }
     })
   }, [socket, isConnected, roomCode])
+
+  // Auto-submit when arriving from invite page with both code and nickname
+  useEffect(() => {
+    if (hasAutoSubmitted.current) return
+    if (!socket || !isConnected) return
+    if (!initialRoomCode || !initialNickname) return
+    const roomErr = validateRoomCode(initialRoomCode)
+    const nickErr = validateNickname(initialNickname)
+    if (roomErr || nickErr) return
+    hasAutoSubmitted.current = true
+    // Small delay to let socket preview load
+    const timer = setTimeout(() => handleJoin(), 300)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, isConnected])
 
   const handleJoin = () => {
     const roomErr = validateRoomCode(roomCode)

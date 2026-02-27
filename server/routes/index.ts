@@ -27,7 +27,7 @@ export async function registerRoutes(
         details: [
           {
             appID: '2MU4PC84GZ.com.plottwists.app',
-            paths: ['/join', '/join?code=*', '/replay/*', '/explore', '/play'],
+            paths: ['/join', '/join?code=*', '/join/invite/*', '/replay/*', '/explore', '/play'],
           },
         ],
       },

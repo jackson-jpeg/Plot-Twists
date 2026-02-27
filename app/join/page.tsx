@@ -37,6 +37,7 @@ function JoinPageContent() {
   const { socket, isConnected } = useSocket()
   const searchParams = useSearchParams()
   const codeFromUrl = searchParams.get('code')
+  const nicknameFromUrl = searchParams.get('nickname')
   const toast = useToast()
   const achievementToasts = useAchievementToasts()
   const confetti = useConfetti()
@@ -199,6 +200,7 @@ function JoinPageContent() {
               <JoinForm
                 socket={socket} isConnected={isConnected}
                 initialRoomCode={codeFromUrl || ''}
+                initialNickname={nicknameFromUrl || ''}
                 toast={toast}
                 onJoinSuccess={handleJoinSuccess}
                 onShowOnboarding={() => setShowOnboarding(true)}

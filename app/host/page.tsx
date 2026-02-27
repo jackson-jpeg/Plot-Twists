@@ -291,7 +291,7 @@ function HostPageContent() {
   const requestSequel = () => { setGameState('LOADING'); socket?.emit('request_sequel', roomCode) }
   const requestNewGame = (keepSelections: boolean = false) => { socket?.emit('request_new_game', roomCode, { keepSelections }) }
 
-  const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join?code=${roomCode}` : ''
+  const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join/invite/${roomCode}` : ''
 
   // Auth loading / unauthenticated
   if (authLoading || !user) {

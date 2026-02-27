@@ -116,26 +116,14 @@ export function HostPerforming({
           >
             Line {currentLineIndex + 1} of {script.lines.length}
           </span>
-          {networkLatency !== null && (
-            <motion.div
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs shrink-0"
-              style={{
-                background: networkLatency < 100 ? 'rgba(76, 175, 80, 0.2)' : networkLatency < 300 ? 'rgba(245, 158, 66, 0.2)' : 'rgba(215, 122, 122, 0.2)',
-                color: networkLatency < 100 ? '#82B682' : networkLatency < 300 ? '#F59E42' : '#D77A7A',
-              }}
-              initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-              title={`Network latency: ${networkLatency}ms`}
-              aria-label={`Network latency: ${networkLatency}ms, ${networkLatency < 100 ? 'good' : networkLatency < 300 ? 'moderate' : 'poor'}`}
-            >
-              <span
-                style={{
-                  width: 6, height: 6, borderRadius: '50%', display: 'inline-block',
-                  background: networkLatency < 100 ? '#82B682' : networkLatency < 300 ? '#F59E42' : '#D77A7A',
-                }}
-              />
-              <span>{networkLatency}ms</span>
-            </motion.div>
-          )}
+          <motion.div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs shrink-0"
+            style={{ background: 'rgba(76, 175, 80, 0.2)', color: '#82B682' }}
+            initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
+          >
+            <span style={{ width: 6, height: 6, borderRadius: '50%', display: 'inline-block', background: '#4CAF50' }} />
+            <span>LIVE</span>
+          </motion.div>
         </div>
 
         {/* Title */}
@@ -253,116 +241,101 @@ export function HostPerforming({
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3 flex-wrap">
-          <motion.button
-            onClick={() => { tapHaptic(); onPreviousLine() }}
-            disabled={currentLineIndex === 0}
-            className="flex items-center gap-1"
-            style={{
-              padding: '10px 18px',
-              borderRadius: '12px',
-              fontSize: '14px',
-              fontWeight: 600,
-              opacity: currentLineIndex === 0 ? 0.3 : 0.8,
-              color: 'var(--color-theater-text)',
-              background: 'transparent',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              cursor: currentLineIndex === 0 ? 'not-allowed' : 'pointer',
-            }}
-            whileHover={{ scale: currentLineIndex === 0 ? 1 : 1.05, x: currentLineIndex === 0 ? 0 : -2 }}
-            whileTap={{ scale: currentLineIndex === 0 ? 1 : 0.95 }}
-            aria-label="Previous line"
-          >
-            <span className="hidden sm:inline">&larr; </span>Prev
-          </motion.button>
-
-          {/* Play/Pause circle button */}
+        {/* Two equal dark buttons: Pause + Skip */}
+        <div className="flex gap-3 mb-3">
           <motion.button
             onClick={() => { tapHaptic(); onTogglePlayPause() }}
-            className="flex items-center justify-center rounded-full"
+            className="flex-1 flex items-center justify-center gap-2"
             style={{
-              width: '52px',
-              height: '52px',
-              background: '#F59E42',
-              color: 'var(--color-theater-bg)',
-              border: 'none',
+              padding: '14px',
+              borderRadius: '12px',
+              fontSize: '15px',
+              fontWeight: 600,
+              color: 'var(--color-theater-text)',
+              background: 'rgba(253, 252, 250, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               cursor: 'pointer',
             }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
             aria-label={isPlaying ? 'Pause teleprompter' : 'Play teleprompter'}
           >
-            {isPlaying ? <PauseIcon size={22} color="#1A1714" /> : <PlayIcon size={22} color="#1A1714" />}
+            {isPlaying ? <PauseIcon size={18} color="currentColor" /> : <PlayIcon size={18} color="currentColor" />}
+            {isPlaying ? 'Pause' : 'Play'}
           </motion.button>
 
           <motion.button
-            onClick={onTriggerChaos}
-            disabled={chaosCooldown}
-            className={`relative overflow-hidden flex items-center justify-center ${chaosShaking ? 'animate-chaos-shake' : ''}`}
+            onClick={() => { tapHaptic(); onNextLine() }}
+            disabled={currentLineIndex >= script.lines.length - 1}
+            className="flex-1 flex items-center justify-center gap-2"
             style={{
-              padding: '10px 18px',
+              padding: '14px',
               borderRadius: '12px',
-              fontSize: '14px',
+              fontSize: '15px',
               fontWeight: 600,
+              opacity: currentLineIndex >= script.lines.length - 1 ? 0.4 : 1,
+              color: 'var(--color-theater-text)',
+              background: 'rgba(253, 252, 250, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              cursor: currentLineIndex >= script.lines.length - 1 ? 'not-allowed' : 'pointer',
+            }}
+            whileHover={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 1.02 }}
+            whileTap={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 0.97 }}
+            aria-label="Skip to next line"
+          >
+            <PlayIcon size={18} color="currentColor" />
+            Skip &rarr;
+          </motion.button>
+        </div>
+
+        {/* Full-width PLOT TWIST button — hidden in solo or on cooldown */}
+        {!isSoloMode && (
+          <motion.button
+            onClick={() => { tapHaptic(); onTriggerChaos() }}
+            disabled={chaosCooldown}
+            className={`w-full relative overflow-hidden flex items-center justify-center gap-2 mb-3 ${chaosShaking ? 'animate-chaos-shake' : ''}`}
+            style={{
+              padding: '14px',
+              borderRadius: '12px',
+              fontSize: '16px',
+              fontWeight: 700,
               background: chaosCooldown ? 'rgba(155, 149, 144, 0.15)' : 'linear-gradient(135deg, var(--color-purple), var(--color-pink))',
               color: 'white',
               opacity: chaosCooldown ? 0.5 : 1,
               border: 'none',
               cursor: chaosCooldown ? 'not-allowed' : 'pointer',
             }}
-            whileHover={!chaosCooldown ? { scale: 1.05 } : {}}
-            whileTap={!chaosCooldown ? { scale: 0.95 } : {}}
-            animate={!chaosCooldown ? { boxShadow: ['0 0 10px rgba(168, 85, 247, 0.2)', '0 0 25px rgba(168, 85, 247, 0.4)', '0 0 10px rgba(168, 85, 247, 0.2)'] } : {}}
-            transition={!chaosCooldown ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
+            whileHover={!chaosCooldown ? { scale: 1.02 } : {}}
+            whileTap={!chaosCooldown ? { scale: 0.97 } : {}}
           >
             {chaosCooldown ? (
-              <span className="flex items-center gap-2">
-                <ChaosIcon size={16} color="white" /> {Math.ceil(chaosCooldownRemaining)}s
-              </span>
+              <>
+                <ChaosIcon size={18} color="white" />
+                Plot Twist ({Math.ceil(chaosCooldownRemaining)}s)
+              </>
             ) : (
-              <span className="flex items-center gap-2">
-                <ChaosIcon size={16} color="white" />{isSoloMode ? 'TWIST' : 'CHAOS'}
-              </span>
+              <>
+                <ChaosIcon size={18} color="white" />
+                ★ PLOT TWIST!
+              </>
             )}
             {chaosCooldown && (
               <div className="absolute bottom-0 left-0 h-1 rounded-full" style={{ width: `${(chaosCooldownRemaining / 30) * 100}%`, background: 'linear-gradient(90deg, var(--color-purple), var(--color-pink))', transition: 'width 0.1s linear' }} />
             )}
           </motion.button>
-
-          <motion.button
-            onClick={() => { tapHaptic(); onNextLine() }}
-            disabled={currentLineIndex >= script.lines.length - 1}
-            className="flex items-center gap-1"
-            style={{
-              padding: '10px 18px',
-              borderRadius: '12px',
-              fontSize: '14px',
-              fontWeight: 600,
-              opacity: currentLineIndex >= script.lines.length - 1 ? 0.3 : 0.8,
-              color: 'var(--color-theater-text)',
-              background: 'transparent',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              cursor: currentLineIndex >= script.lines.length - 1 ? 'not-allowed' : 'pointer',
-            }}
-            whileHover={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 1.05, x: currentLineIndex >= script.lines.length - 1 ? 0 : 2 }}
-            whileTap={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 0.95 }}
-            aria-label="Next line"
-          >
-            Next<span className="hidden sm:inline"> &rarr;</span>
-          </motion.button>
-        </div>
+        )}
 
         {currentLineIndex >= script.lines.length - 1 && (
           <motion.button
             onClick={() => { tapHaptic(); onEndPerformance() }}
-            className="w-full mt-3"
+            className="w-full"
             style={{ padding: '14px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, background: '#F59E42', color: 'var(--color-theater-bg)', border: 'none', cursor: 'pointer' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            Finish Scene -- Vote
+            Finish Scene — Vote
           </motion.button>
         )}
 

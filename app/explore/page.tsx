@@ -11,19 +11,15 @@ import type { CardPackMetadata, CardPack } from '@/lib/types'
 
 type Tab = 'featured' | 'search'
 
-const packRotations = [-1.5, 1, -0.5, 1.5, -1, 0.5]
-
 function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSelect: (pack: CardPackMetadata) => void; index?: number }) {
-  const rotation = packRotations[index % packRotations.length]
   const totalCards = pack.cardCounts.characters + pack.cardCounts.settings + pack.cardCounts.circumstances
 
   return (
     <motion.button
       onClick={() => onSelect(pack)}
-      initial={{ opacity: 0, y: 20, rotate: rotation + 3 }}
-      animate={{ opacity: 1, y: 0, rotate: rotation }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ scale: 1.03, rotate: 0, y: -4 }}
       whileTap={{ scale: 0.98 }}
       className="relative w-full text-left cursor-pointer"
       style={{ borderRadius: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', overflow: 'hidden' }}
@@ -235,8 +231,6 @@ export default function ExplorePage() {
     { id: 'featured' as Tab, label: 'Featured', icon: '⭐' },
     ...(searchResults.length > 0 ? [{ id: 'search' as Tab, label: `Results (${searchResults.length})`, icon: '🔍' }] : []),
   ]
-  const tabRotations = [-1, 0.5]
-
   return (
     <main className="flex flex-col" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       <div className="w-full max-w-2xl xl:max-w-4xl mx-auto pt-4 pb-8 px-4">
@@ -248,13 +242,10 @@ export default function ExplorePage() {
         >
           <h1
             className="font-display"
-            style={{ fontSize: 'clamp(28px, 7vw, 36px)', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '4px' }}
+            style={{ fontSize: 'clamp(28px, 7vw, 36px)', fontWeight: 700, color: 'var(--color-text-primary)' }}
           >
             Explore Packs
           </h1>
-          <p style={{ fontSize: '15px', color: 'var(--color-text-tertiary)' }}>
-            Discover card packs to spice up your next game
-          </p>
         </motion.div>
 
         {/* Search bar — with icon */}
@@ -288,28 +279,24 @@ export default function ExplorePage() {
           </button>
         </motion.div>
 
-        {/* Paper tabs */}
-        <div className="flex gap-1 border-b border-[var(--color-border)] pb-0 relative mb-5">
-          {tabs.map((tab, index) => {
+        {/* Pill tabs */}
+        <div className="flex gap-2 mb-5">
+          {tabs.map((tab) => {
             const isActive = activeTab === tab.id
             return (
-              <motion.button
+              <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2.5 rounded-t-lg font-medium transition-all border border-b-0 relative -mb-px text-sm ${
-                  isActive
-                    ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-primary)] z-10'
-                    : 'bg-[var(--color-surface-alt)] border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
-                }`}
+                className="px-4 py-2 rounded-full text-sm font-medium"
                 style={{
-                  transform: isActive ? 'rotate(0deg) translateY(-2px)' : `rotate(${tabRotations[index]}deg)`,
-                  boxShadow: isActive ? 'var(--shadow-2)' : 'none'
+                  background: isActive ? 'var(--color-text-primary)' : 'transparent',
+                  color: isActive ? 'var(--color-bg)' : 'var(--color-text-tertiary)',
+                  border: isActive ? 'none' : '1px solid var(--color-border)',
+                  cursor: 'pointer',
                 }}
-                whileHover={!isActive ? { y: -2, rotate: 0 } : {}}
-                whileTap={{ scale: 0.98 }}
               >
-                {tab.icon} {tab.label}
-              </motion.button>
+                {tab.label}
+              </button>
             )
           })}
         </div>

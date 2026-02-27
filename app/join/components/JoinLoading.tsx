@@ -13,9 +13,9 @@ function getStepStatus(progress: number): [string, string, string] {
 }
 
 const steps = [
-  { label: 'Analyzing cards' },
-  { label: 'Writing dialogue' },
-  { label: 'Generating poster' },
+  { label: 'Gathering everyone\u2019s cards' },
+  { label: 'Assigning characters' },
+  { label: 'Writing the script' },
 ]
 
 export interface JoinLoadingProps {
@@ -82,7 +82,7 @@ export function JoinLoading({ loadingProgress, greenRoomQuestion, loadingTimedOu
         animate={{ opacity: 1 }}
         transition={{ delay: 0.25 }}
       >
-        AI is writing your script. This usually takes 10-15 seconds.
+        Claude is crafting your scene
       </motion.p>
 
       {/* Theatrical progress bar */}
@@ -92,9 +92,9 @@ export function JoinLoading({ loadingProgress, greenRoomQuestion, loadingTimedOu
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
       >
-        <div className="flex items-center gap-3">
+        <div>
           <div
-            className="relative flex-1 overflow-hidden"
+            className="relative overflow-hidden"
             style={{ height: '6px', borderRadius: '3px', background: 'var(--color-surface-alt)' }}
           >
             <motion.div
@@ -124,12 +124,6 @@ export function JoinLoading({ loadingProgress, greenRoomQuestion, loadingTimedOu
               />
             )}
           </div>
-          <span
-            className="font-mono tabular-nums"
-            style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-tertiary)', minWidth: '3ch' }}
-          >
-            {Math.round(Math.min(loadingProgress, 100))}%
-          </span>
         </div>
       </motion.div>
 

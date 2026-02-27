@@ -6,7 +6,7 @@ import type { Player, Script } from '@/lib/types'
 import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { successHaptic } from '@/hooks/useHaptics'
-import { TrophyIcon, CheckCircleIcon } from '@/components/GameIcons'
+import { CheckCircleIcon } from '@/components/GameIcons'
 
 export interface JoinVotingProps {
   players: Player[]
@@ -54,7 +54,9 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex justify-center mb-3">
-            <TrophyIcon size={40} color="var(--color-accent)" />
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+              <path d="M20 2L25 14.5L38 16.5L28.5 25.5L31 38.5L20 32.5L9 38.5L11.5 25.5L2 16.5L15 14.5L20 2Z" fill="#F59E42" />
+            </svg>
           </div>
           <h1
             style={{

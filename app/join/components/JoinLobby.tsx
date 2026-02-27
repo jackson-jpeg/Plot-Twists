@@ -123,7 +123,7 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
             marginBottom: '10px',
             textAlign: 'left',
           }}>
-            Who&apos;s Here
+            Players ({players.length})
           </p>
 
           <div className="flex flex-col gap-2">
@@ -172,13 +172,13 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
                         style={{
                           fontSize: '11px',
                           fontWeight: 700,
-                          padding: '1px 6px',
+                          padding: '2px 8px',
                           borderRadius: '999px',
-                          background: 'var(--color-purple-bg)',
-                          color: 'var(--color-purple)',
+                          background: 'rgba(245, 158, 66, 0.12)',
+                          color: 'var(--color-accent)',
                         }}
                       >
-                        You
+                        YOU
                       </span>
                     )}
                     {player.level != null && (
@@ -198,12 +198,35 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
                   </div>
 
                   {/* Role indicator */}
-                  {player.isHost && <CrownIcon size={16} color="var(--color-accent)" />}
+                  {player.isHost && (
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '999px',
+                      background: 'rgba(139, 92, 246, 0.12)',
+                      color: '#8B5CF6',
+                    }}>
+                      HOST
+                    </span>
+                  )}
                   {player.role === 'SPECTATOR' && <EyeIcon size={16} color="var(--color-text-tertiary)" />}
                 </motion.div>
               )
             })}
           </div>
+        </motion.div>
+
+        {/* Decorative dots */}
+        <motion.div
+          className="flex justify-center gap-2 mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-success)' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-accent)' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-border)' }} />
         </motion.div>
 
         {/* Auto-start countdown */}

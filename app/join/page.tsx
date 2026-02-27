@@ -103,13 +103,17 @@ function JoinPageContent() {
     }
   }, [hostDisconnected, countdown])
 
-  // Reset orchestrator state when returning to LOBBY (new game)
+  // Reset orchestrator state when returning to LOBBY (new game) or SELECTION (generation failure)
   useEffect(() => {
     if (gameState === 'LOBBY') {
       setSelection({ character: '', setting: '', circumstance: '' })
       setHasSubmitted(false)
       setIsSubmitting(false)
       setHasTriggeredSelectionConfetti(false)
+    }
+    if (gameState === 'SELECTION') {
+      setHasSubmitted(false)
+      setIsSubmitting(false)
     }
   }, [gameState])
 

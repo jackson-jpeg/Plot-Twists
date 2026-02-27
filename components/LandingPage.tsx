@@ -104,7 +104,7 @@ export function LandingPage() {
               >
                 {isDesktop
                   ? 'Pick your cards. AI writes the script. You steal the show. The party game where everyone\'s a comedian.'
-                  : 'AI writes the comedy. You bring the chaos.'}
+                  : 'The improv comedy game that writes itself — pick cards, get a script, steal the show.'}
               </p>
             </motion.div>
 
@@ -132,35 +132,35 @@ export function LandingPage() {
                     }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Get Started Free
+                    Get Started
                   </motion.button>
                 </SignInButton>
               </div>
-              <p
-                style={{
-                  fontSize: '13px',
-                  color: 'var(--color-text-tertiary)',
-                  marginTop: '10px',
-                  textAlign: isDesktop ? 'left' : 'center',
-                }}
-              >
-                5 free scripts — no credit card needed
-              </p>
+              {isDesktop && (
+                <p
+                  style={{
+                    fontSize: '13px',
+                    color: 'var(--color-text-tertiary)',
+                    marginTop: '10px',
+                    textAlign: 'left',
+                  }}
+                >
+                  5 free scripts — no credit card needed
+                </p>
+              )}
             </motion.div>
           </div>
 
-          {/* Scene Previews */}
-          <motion.div
+          {/* Scene Previews — desktop only */}
+          {isDesktop && <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
             className="flex gap-3"
             style={{
-              marginTop: isDesktop ? '0' : '36px',
-              padding: isDesktop ? '0' : '0 4px',
-              flexDirection: isDesktop ? 'column' : 'row',
-              flex: isDesktop ? 1 : undefined,
-              maxWidth: isDesktop ? '440px' : undefined,
+              flexDirection: 'column',
+              flex: 1,
+              maxWidth: '440px',
             }}
           >
             {sceneExamples.map((scene, i) => (
@@ -208,7 +208,7 @@ export function LandingPage() {
                 </p>
               </motion.div>
             ))}
-          </motion.div>
+          </motion.div>}
         </div>
 
         {/* How It Works */}
@@ -232,87 +232,118 @@ export function LandingPage() {
           >
             How it works
           </p>
-          <div className="flex gap-4">
-            {[
-              { num: '1', title: 'Pick cards', desc: 'Character + setting + twist' },
-              { num: '2', title: 'AI writes', desc: 'Custom script in seconds' },
-              { num: '3', title: 'Perform', desc: 'Act it out, crown MVP' },
-            ].map((step, i) => (
-              <motion.div
-                key={step.num}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.55 + i * 0.08, ...MOTION.gentle }}
-                className="flex-1 text-center"
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}
-              >
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '18px',
-                    background: 'var(--color-text-primary)',
-                  }}
+          {isDesktop ? (
+            <div className="flex gap-4">
+              {[
+                { num: '1', title: 'Pick cards', desc: 'Character + setting + twist' },
+                { num: '2', title: 'AI writes', desc: 'Custom script in seconds' },
+                { num: '3', title: 'Perform', desc: 'Act it out, crown MVP' },
+              ].map((step, i) => (
+                <motion.div
+                  key={step.num}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.55 + i * 0.08, ...MOTION.gentle }}
+                  className="flex-1 text-center"
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}
                 >
-                  <span
-                    className="font-display"
-                    style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-bg)' }}
+                  <div
+                    className="flex items-center justify-center"
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '18px',
+                      background: 'var(--color-text-primary)',
+                    }}
                   >
-                    {step.num}
-                  </span>
-                </div>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontWeight: 600,
-                    fontSize: '13px',
-                    color: 'var(--color-text-primary)',
-                  }}
+                    <span
+                      className="font-display"
+                      style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-bg)' }}
+                    >
+                      {step.num}
+                    </span>
+                  </div>
+                  <p style={{ fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: '13px', color: 'var(--color-text-primary)' }}>
+                    {step.title}
+                  </p>
+                  <p style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--color-text-tertiary)', lineHeight: '16px' }}>
+                    {step.desc}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5" style={{ padding: '0 4px' }}>
+              {[
+                { num: '1', bg: '#EEF0F8', color: '#5B6AA0', title: 'Pick your cards', desc: 'Choose a character, setting, and wild card from the deck.' },
+                { num: '2', bg: '#E8F5E9', color: '#4CAF50', title: 'AI writes the script', desc: 'Claude crafts a hilarious scene from everyone\u2019s choices.' },
+                { num: '3', bg: '#F0F5E5', color: '#7CB342', title: 'Perform and vote', desc: 'Act it out live, then vote for the MVP of the scene.' },
+              ].map((step, i) => (
+                <motion.div
+                  key={step.num}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.55 + i * 0.08, ...MOTION.gentle }}
+                  className="flex items-start gap-4"
                 >
-                  {step.title}
-                </p>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: '12px',
-                    color: 'var(--color-text-tertiary)',
-                    lineHeight: '16px',
-                  }}
-                >
-                  {step.desc}
-                </p>
-              </motion.div>
-            ))}
-          </div>
+                  <div
+                    className="flex items-center justify-center shrink-0"
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '20px',
+                      background: step.bg,
+                    }}
+                  >
+                    <span
+                      className="font-display"
+                      style={{ fontSize: '16px', fontWeight: 700, color: step.color }}
+                    >
+                      {step.num}
+                    </span>
+                  </div>
+                  <div>
+                    <p style={{ fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: '15px', color: 'var(--color-text-primary)', marginBottom: '2px' }}>
+                      {step.title}
+                    </p>
+                    <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--color-text-tertiary)', lineHeight: '20px' }}>
+                      {step.desc}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </motion.div>
 
-        {/* Social Proof */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.65 }}
-          className="flex justify-center gap-2 flex-wrap"
-          style={{ marginTop: '32px' }}
-        >
-          {['Party Game', 'AI-Powered', 'Free to Start'].map((label) => (
-            <span
-              key={label}
-              style={{
-                fontFamily: 'var(--font-ui)',
-                fontWeight: 500,
-                fontSize: '12px',
-                color: 'var(--color-text-tertiary)',
-                padding: '6px 14px',
-                borderRadius: '20px',
-                border: '1px solid var(--color-border)',
-                background: 'var(--color-surface)',
-              }}
-            >
-              {label}
-            </span>
-          ))}
-        </motion.div>
+        {/* Social Proof — desktop only */}
+        {isDesktop && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.65 }}
+            className="flex justify-center gap-2 flex-wrap"
+            style={{ marginTop: '32px' }}
+          >
+            {['Party Game', 'AI-Powered', 'Free to Start'].map((label) => (
+              <span
+                key={label}
+                style={{
+                  fontFamily: 'var(--font-ui)',
+                  fontWeight: 500,
+                  fontSize: '12px',
+                  color: 'var(--color-text-tertiary)',
+                  padding: '6px 14px',
+                  borderRadius: '20px',
+                  border: '1px solid var(--color-border)',
+                  background: 'var(--color-surface)',
+                }}
+              >
+                {label}
+              </span>
+            ))}
+          </motion.div>
+        )}
       </div>
     </main>
   )

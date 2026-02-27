@@ -4,12 +4,12 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import type { Script, GameResults, XPEvent, LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
-import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
+import { shareScriptText } from '@/lib/scriptUtils'
 import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { analytics } from '@/lib/analytics'
 import { withTimeout } from '@/lib/socketTimeout'
-import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
+import { successHaptic } from '@/hooks/useHaptics'
 import { useConfetti } from '@/hooks/useConfetti'
 import { XPGainAnimation } from '@/components/XPGainAnimation'
 import { XPBar } from '@/components/XPBar'
@@ -31,19 +31,17 @@ export interface HostResultsProps {
   levelUpData: { level: number; title: string } | null
   onDismissLevelUp: () => void
   onShowPosterLightbox: () => void
-  onRequestSequel: () => void
   onRequestNewGame: (keepSelections: boolean) => void
 }
 
 export function HostResults({
   script, gameResults, scriptImageUrl, socket, userUid, toast,
   xpEvents, levelUpData, onDismissLevelUp,
-  onShowPosterLightbox, onRequestSequel, onRequestNewGame,
+  onShowPosterLightbox, onRequestNewGame,
 }: HostResultsProps) {
   const router = useRouter()
   const { fireWinnerConfetti, fireCelebration } = useConfetti()
   const confettiFiredRef = useRef(false)
-  const [copySuccess, setCopySuccess] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [isSharing, setIsSharing] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
@@ -76,12 +74,6 @@ export function HostResults({
     return () => { socket.off('directors_review', setDirectorsReview) }
   }, [socket])
 
-  const handleCopyScript = async () => {
-    if (!script) return
-    const success = await copyScriptToClipboard(script)
-    if (success) { successHaptic(); setCopySuccess(true); setTimeout(() => setCopySuccess(false), 2000) }
-  }
-
   const handleDownloadScript = async () => {
     if (!script) return
     await shareScriptText(script)
@@ -106,60 +98,6 @@ export function HostResults({
       navigator.share({ title: 'Plot Twists', text, url }).catch(() => copyShareUrl(url))
     } else {
       copyShareUrl(url)
-    }
-  }
-
-  const getGameId = async (): Promise<string | null> => {
-    if (!socket || !userUid) return null
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const historyResponse: any = await withTimeout(
-        (cb) => socket.emit('get_game_history', userUid, 1, cb),
-        10000
-      )
-      if (!historyResponse.success || !historyResponse.games?.length) return null
-      return historyResponse.games[0].id
-    } catch {
-      return null
-    }
-  }
-
-  const handleShareCharacter = async () => {
-    const gameId = await getGameId()
-    if (!gameId) return
-    try {
-      const cardUrl = `/api/character-card/${gameId}/${userUid}?format=story`
-
-      const response = await fetch(cardUrl)
-      const blob = await response.blob()
-      const file = new File([blob], 'my-character.png', { type: 'image/png' })
-
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'My Character — Plot Twists' })
-      } else {
-        window.open(cardUrl, '_blank')
-      }
-    } catch {
-      // User cancelled share or error
-    }
-  }
-
-  const handleSharePoster = async (format: 'story' | 'feed' = 'story') => {
-    const gameId = await getGameId()
-    if (!gameId) return
-    const posterUrl = `/api/poster-story/${gameId}?format=${format}`
-    try {
-      const response = await fetch(posterUrl)
-      const blob = await response.blob()
-      const file = new File([blob], `poster-${format}.png`, { type: 'image/png' })
-
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: script?.title || 'Plot Twists' })
-      } else {
-        window.open(posterUrl, '_blank')
-      }
-    } catch {
-      window.open(posterUrl, '_blank')
     }
   }
 
@@ -207,155 +145,135 @@ export function HostResults({
       style={{ background: 'var(--color-theater-bg)' }}
     >
       <div className="w-full mx-auto px-5 py-6 flex flex-col flex-1" style={{ maxWidth: isDesktop ? '1000px' : '512px' }}>
-        {/* Top bar: THAT'S A WRAP + Share */}
-        <motion.div
-          className="flex items-center justify-between mb-6"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <span
-            className="font-display text-sm tracking-widest uppercase"
-            style={{ color: 'var(--color-theater-muted)', letterSpacing: '0.15em' }}
-          >
-            That&apos;s a Wrap
-          </span>
-          {script && (
-            <motion.button
-              onClick={handleShareScene}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium"
-              style={{
-                color: 'var(--color-theater-text)',
-                background: 'transparent',
-                border: '1px solid rgba(155, 149, 144, 0.35)',
-              }}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              disabled={isSharing}
-            >
-              <span style={{ fontSize: 14, lineHeight: 1 }}>+</span>
-              <span>{isSharing ? 'Sharing...' : shareCopied ? 'Copied!' : 'Share'}</span>
-            </motion.button>
-          )}
-        </motion.div>
-
-        {/* Hero Poster */}
-        <motion.div
-          className="relative w-full rounded-2xl overflow-hidden mb-6"
-          style={{ aspectRatio: '3/4', cursor: scriptImageUrl ? 'pointer' : undefined }}
-          onClick={scriptImageUrl ? onShowPosterLightbox : undefined}
-          initial={{ opacity: 0, scale: 0.88 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, ...MOTION.dramatic }}
-        >
-          {scriptImageUrl && !posterError ? (
-            <img
-              src={scriptImageUrl}
-              alt={`${script?.title ?? 'Movie'} Poster`}
-              loading="lazy"
-              onError={() => setPosterError(true)}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                display: 'block',
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                background: 'linear-gradient(135deg, #2A1F3D, #1A1714)',
-              }}
-            />
-          )}
-
-          {/* Gradient overlay at bottom for text */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '55%',
-              background: 'linear-gradient(to top, rgba(26,23,20,0.92) 0%, rgba(26,23,20,0.7) 40%, transparent 100%)',
-              pointerEvents: 'none',
-            }}
-          />
-
-          {/* Title + production + cast overlaid at bottom */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              padding: '24px',
-              pointerEvents: 'none',
-            }}
-          >
-            <motion.h1
-              className="font-display"
-              style={{
-                color: 'var(--color-theater-text)',
-                fontSize: 'clamp(1.75rem, 6vw, 2.5rem)',
-                fontWeight: 700,
-                lineHeight: 1.1,
-                marginBottom: 8,
-              }}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.5 }}
-            >
-              {script?.title ?? 'Performance Complete'}
-            </motion.h1>
-            <motion.p
-              className="uppercase tracking-widest text-xs font-medium"
-              style={{ color: 'var(--color-theater-muted)', letterSpacing: '0.12em', marginBottom: 8 }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-            >
-              A Plot Twists Production
-            </motion.p>
-            {castNames.length > 0 && (
-              <motion.p
-                className="text-sm"
-                style={{ color: 'var(--color-theater-muted)' }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.7 }}
-              >
-                {castNames.join('  /  ')}
-              </motion.p>
-            )}
-          </div>
-        </motion.div>
-
-        {/* MVP line — dramatic drum roll reveal */}
+        {/* MVP Hero — centered star + label + name */}
         {winner && (
           <motion.div
-            className="flex items-center justify-center gap-3 mb-6"
+            className="text-center mb-6"
             variants={VARIANTS.drumRoll}
             initial="initial"
             animate="animate"
             aria-live="polite"
             aria-atomic="true"
           >
-            <div className="flex-1 h-px" style={{ background: 'rgba(155, 149, 144, 0.2)' }} />
-            <svg width="22" height="22" viewBox="0 0 18 18" fill="none">
-              <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="#F59E42" />
-            </svg>
-            <span className="font-display font-bold" style={{ color: '#F59E42', fontSize: isDesktop ? '22px' : '18px' }}>
-              {winner.playerName} is MVP
-            </span>
-            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-theater-muted)' }}>
+            <motion.div
+              className="mx-auto mb-3"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
+            >
+              <svg width="48" height="48" viewBox="0 0 18 18" fill="none">
+                <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="#F59E42" />
+              </svg>
+            </motion.div>
+            <p
+              className="text-xs font-semibold uppercase tracking-widest mb-2"
+              style={{ color: 'var(--color-theater-muted)', letterSpacing: '0.15em' }}
+            >
+              Most Valuable Player
+            </p>
+            <h1
+              className="font-display"
+              style={{ fontSize: isDesktop ? '42px' : '36px', fontWeight: 800, color: '#F59E42', lineHeight: 1.1, marginBottom: '6px' }}
+            >
+              {winner.playerName}
+            </h1>
+            <p style={{ fontSize: '15px', color: 'var(--color-theater-muted)' }}>
               {winner.votes} vote{winner.votes !== 1 ? 's' : ''}
-            </span>
-            <div className="flex-1 h-px" style={{ background: 'rgba(155, 149, 144, 0.2)' }} />
+            </p>
           </motion.div>
         )}
+
+        {!winner && (
+          <motion.div className="text-center mb-6" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+            <h1 className="font-display" style={{ fontSize: '36px', fontWeight: 700, color: 'var(--color-theater-text)', marginBottom: '8px' }}>
+              {script?.title ?? 'Performance Complete'}
+            </h1>
+            <p style={{ fontSize: '15px', color: 'var(--color-theater-muted)' }}>Great show!</p>
+          </motion.div>
+        )}
+
+        {/* Poster — constrained to ~300px */}
+        {scriptImageUrl && !posterError && (
+          <motion.div
+            className="mx-auto mb-6 cursor-pointer overflow-hidden"
+            style={{ maxWidth: '300px', borderRadius: '16px' }}
+            onClick={onShowPosterLightbox}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.4, ...MOTION.dramatic }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="relative">
+              <img
+                src={scriptImageUrl}
+                alt={`${script?.title ?? 'Movie'} Poster`}
+                loading="lazy"
+                onError={() => setPosterError(true)}
+                style={{ width: '100%', display: 'block', borderRadius: '16px' }}
+              />
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px',
+                background: 'linear-gradient(to top, rgba(26,23,20,0.85) 0%, transparent 100%)',
+                borderRadius: '0 0 16px 16px',
+              }}>
+                <p className="font-display font-bold text-sm" style={{ color: 'var(--color-theater-text)' }}>{script?.title}</p>
+                {castNames.length > 0 && (
+                  <p className="text-xs mt-1" style={{ color: 'var(--color-theater-muted)' }}>
+                    Starring {castNames.join(', ')}
+                  </p>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Share Results — full-width orange */}
+        <motion.button
+          onClick={handleShareScene}
+          className="w-full py-4 rounded-2xl font-display text-base font-bold mb-3"
+          style={{ background: '#F59E42', color: '#1A1714', border: 'none', cursor: 'pointer' }}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          disabled={isSharing}
+        >
+          {isSharing ? 'Sharing...' : shareCopied ? 'Copied!' : 'Share Results'}
+        </motion.button>
+
+        {/* Read Script + Play Again — side by side */}
+        <motion.div
+          className="flex gap-3 mb-4"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+        >
+          <motion.button
+            onClick={handleDownloadScript}
+            className="flex-1 py-3.5 rounded-xl font-semibold text-sm"
+            style={{
+              color: 'var(--color-theater-text)',
+              background: 'transparent',
+              border: '1px solid rgba(155, 149, 144, 0.3)',
+              cursor: 'pointer',
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            Read Script
+          </motion.button>
+          <motion.button
+            onClick={() => onRequestNewGame(false)}
+            className="flex-1 py-3.5 rounded-xl font-semibold text-sm"
+            style={{ background: '#F59E42', color: '#1A1714', border: 'none', cursor: 'pointer' }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            Play Again
+          </motion.button>
+        </motion.div>
 
         {/* XP Progression */}
         <XPGainAnimation events={xpEvents} show={xpEvents.length > 0} />
@@ -368,7 +286,7 @@ export function HostResults({
 
         {/* Highlights */}
         {gameResults?.highlights && gameResults.highlights.length > 0 && (
-          <motion.div className="w-full mt-4 mb-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}>
+          <motion.div className="w-full mt-4 mb-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}>
             <details className="rounded-xl overflow-hidden" style={{ background: 'rgba(253, 252, 250, 0.04)', border: '1px solid rgba(155, 149, 144, 0.15)' }}>
               <summary className="p-4 cursor-pointer text-center font-semibold text-sm" style={{ color: 'var(--color-theater-muted)' }}>Game Highlights</summary>
               <div className="px-4 pb-4 grid grid-cols-2 gap-3">
@@ -391,137 +309,14 @@ export function HostResults({
           </div>
         )}
 
-        {/* Action pills: Save, Copy script, Replay */}
-        {script && (
-          <motion.div
-            className="flex gap-3 mt-6 mb-2"
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
-          >
-            <motion.button
-              onClick={handleDownloadScript}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
-              style={{
-                color: 'var(--color-theater-text)',
-                background: 'rgba(253, 252, 250, 0.06)',
-                border: '1px solid rgba(155, 149, 144, 0.2)',
-              }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M2 10V13C2 13.5523 2.44772 14 3 14H13C13.5523 14 14 13.5523 14 13V10" stroke="#9B9590" strokeWidth="1.5" strokeLinecap="round" />
-                <path d="M8 2V10M8 10L5 7M8 10L11 7" stroke="#9B9590" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Save
-            </motion.button>
-            <motion.button
-              onClick={handleCopyScript}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
-              style={{
-                color: 'var(--color-theater-text)',
-                background: 'rgba(253, 252, 250, 0.06)',
-                border: '1px solid rgba(155, 149, 144, 0.2)',
-              }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="#9B9590" strokeWidth="1.5" />
-                <path d="M11 5V3.5C11 2.67157 10.3284 2 9.5 2H3.5C2.67157 2 2 2.67157 2 3.5V9.5C2 10.3284 2.67157 11 3.5 11H5" stroke="#9B9590" strokeWidth="1.5" />
-              </svg>
-              {copySuccess ? 'Copied!' : 'Copy script'}
-            </motion.button>
-            <motion.button
-              onClick={onRequestSequel}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
-              style={{
-                color: 'var(--color-theater-text)',
-                background: 'rgba(253, 252, 250, 0.06)',
-                border: '1px solid rgba(155, 149, 144, 0.2)',
-              }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="6" stroke="#9B9590" strokeWidth="1.5" />
-                <path d="M8 5V8L10 10" stroke="#9B9590" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-              Replay
-            </motion.button>
-          </motion.div>
-        )}
-
-        {/* Share buttons (character + poster) */}
-        <motion.div
-          className="flex gap-3 mt-2 mb-2"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1 }}
-        >
-          <motion.button
-            onClick={handleShareCharacter}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium"
-            style={{
-              color: 'var(--color-theater-muted)',
-              background: 'transparent',
-              border: '1px solid rgba(155, 149, 144, 0.15)',
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            Share Character
-          </motion.button>
-          <motion.button
-            onClick={() => handleSharePoster('story')}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium"
-            style={{
-              color: 'var(--color-theater-muted)',
-              background: 'transparent',
-              border: '1px solid rgba(155, 149, 144, 0.15)',
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            Share Poster
-          </motion.button>
-        </motion.div>
-
-        {/* Spacer to push bottom actions down */}
-        <div className="flex-1" />
-
-        {/* Play again — large amber button */}
-        <motion.button
-          onClick={() => onRequestNewGame(false)}
-          className="w-full py-4 rounded-2xl font-display text-lg font-bold"
-          style={{
-            background: '#F59E42',
-            color: '#1A1714',
-            border: 'none',
-          }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.3 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          Play again
-        </motion.button>
-
         {/* Back to lobby */}
         <motion.button
           onClick={() => router.push('/')}
-          className="w-full py-4 text-sm font-medium"
-          style={{
-            color: 'var(--color-theater-muted)',
-            background: 'transparent',
-            border: 'none',
-          }}
+          className="w-full py-4 mt-4 text-sm font-medium"
+          style={{ color: 'var(--color-theater-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.4 }}
-          whileHover={{ scale: 1.02 }}
+          transition={{ delay: 1.3 }}
           whileTap={{ scale: 0.97 }}
         >
           Back to lobby

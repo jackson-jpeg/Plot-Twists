@@ -138,8 +138,8 @@ export default function ProfilePage() {
 
   const heroStats = stats && stats.gamesPlayed > 0 ? [
     { label: 'Games', value: stats.gamesPlayed, highlight: false },
-    { label: 'MVPs', value: stats.gamesWon, highlight: true },
-    { label: 'Win rate', value: `${Math.round(stats.winRate)}%`, highlight: false },
+    { label: 'MVP Wins', value: stats.gamesWon, highlight: true },
+    { label: 'Votes', value: stats.totalVotesReceived, highlight: false },
   ] : null
 
   return (
@@ -163,27 +163,18 @@ export default function ProfilePage() {
       )}
 
       <div className="w-full max-w-md mx-auto pt-4 pb-8 px-5">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <button
-            onClick={() => router.back()}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--color-text-primary)' }}
-            aria-label="Go back"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </button>
-          <span className="font-display" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)' }}>Profile</span>
-          {user && isAdminUser({ email: user.email, phoneNumber: user.phoneNumber }) && (
+        {/* Admin link (top right, if admin) */}
+        {user && isAdminUser({ email: user.email, phoneNumber: user.phoneNumber }) && (
+          <div className="flex justify-end mb-2">
             <motion.button
               onClick={() => router.push('/admin')}
-              className="ml-auto"
               style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-accent)' }}
               whileTap={{ scale: 0.95 }}
             >
               Admin →
             </motion.button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Profile Hero — centered avatar + name */}
         {heroStats ? (
@@ -198,13 +189,13 @@ export default function ProfilePage() {
                   width: 80,
                   height: 80,
                   borderRadius: '50%',
-                  background: 'var(--color-surface-alt)',
+                  background: '#4A90D9',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '32px',
                   fontWeight: 700,
-                  color: 'var(--color-text-secondary)',
+                  color: '#fff',
                   marginBottom: '12px',
                 }}
                 whileHover={{ scale: 1.05 }}
@@ -221,17 +212,57 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* XP Progress */}
+            {/* XP Progress — compact horizontal */}
             {levelInfo && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.15 }}
-                className="mb-6"
+                className="mb-4"
               >
-                <XPBar levelInfo={levelInfo} />
+                <div className="flex items-center gap-3">
+                  <span className="font-display text-sm font-bold shrink-0" style={{ color: 'var(--color-text-primary)' }}>
+                    Lv. {levelInfo.level}
+                  </span>
+                  <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{
+                        width: `${levelInfo.progressPercent}%`,
+                        background: '#4CAF50',
+                      }}
+                    />
+                  </div>
+                  <span className="text-xs shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>
+                    {levelInfo.currentXP}/{levelInfo.xpForNextLevel}
+                  </span>
+                </div>
               </motion.div>
             )}
+
+            {/* Credits row */}
+            <motion.div
+              className="flex items-center justify-center gap-3 mb-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <span
+                className="px-3 py-1.5 rounded-full text-sm font-semibold"
+                style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)' }}
+              >
+                {creditBalance ? `${creditBalance.total} credit${creditBalance.total !== 1 ? 's' : ''}` : '— credits'}
+              </span>
+              <motion.button
+                onClick={() => setShowPurchaseModal(true)}
+                className="px-3 py-1.5 rounded-full text-sm font-semibold"
+                style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Buy More
+              </motion.button>
+            </motion.div>
 
             {/* Stat cards — 3 in a row */}
             <div className="flex gap-3 mb-6">
@@ -328,13 +359,13 @@ export default function ProfilePage() {
                   width: 80,
                   height: 80,
                   borderRadius: '50%',
-                  background: 'var(--color-surface-alt)',
+                  background: '#4A90D9',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '32px',
                   fontWeight: 700,
-                  color: 'var(--color-text-secondary)',
+                  color: '#fff',
                   marginBottom: '12px',
                 }}
               >

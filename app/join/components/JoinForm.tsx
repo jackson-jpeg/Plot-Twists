@@ -184,62 +184,31 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
       style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
     >
       <div className="w-full" style={{ maxWidth: isDesktop ? '480px' : '448px' }}>
-        {/* Back button */}
-        <motion.button
-          onClick={onNavigateHome}
-          className="flex items-center gap-1.5 mb-8"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: 'var(--color-text-tertiary)',
-            fontSize: '15px',
-            padding: '8px 4px',
-          }}
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          whileHover={{ x: -4 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <BackArrowIcon />
-          <span>Home</span>
-        </motion.button>
-
-        {/* Heading */}
+        {/* Icon + Heading */}
         <motion.div
-          className="mb-8"
+          className="mb-8 text-center"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={MOTION.gentle}
         >
-          <div className="flex items-center justify-between">
-            <h1
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(32px, 8vw, 40px)',
-                fontWeight: 700,
-                color: 'var(--color-text-primary)',
-                lineHeight: 1.1,
-                letterSpacing: '-0.02em',
-              }}
-            >
-              Join a game
-            </h1>
-            <button
-              onClick={onShowOnboarding}
-              style={{
-                background: 'none',
-                border: '1px solid var(--color-border)',
-                borderRadius: '8px',
-                padding: '8px 14px',
-                fontSize: '13px',
-                color: 'var(--color-text-secondary)',
-                cursor: 'pointer',
-              }}
-            >
-              How to Play
-            </button>
+          <div className="flex justify-center mb-3">
+            <span style={{ fontSize: '32px' }}>🎭</span>
           </div>
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'clamp(28px, 7vw, 36px)',
+              fontWeight: 700,
+              color: 'var(--color-text-primary)',
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Join a Game
+          </h1>
+          <p style={{ fontSize: '15px', color: 'var(--color-text-tertiary)', marginTop: '8px' }}>
+            Enter the room code from your host
+          </p>
         </motion.div>
 
         {/* Room code input */}
@@ -346,75 +315,58 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
               className="mb-5"
             >
               <div
-                className="p-4 rounded-xl"
+                className="flex items-center gap-3 p-3 rounded-xl"
                 style={{
-                  background: isFull ? 'rgba(232, 167, 93, 0.06)' : 'rgba(130, 182, 130, 0.06)',
-                  border: isFull ? '1.5px solid var(--color-warning)' : '1.5px solid var(--color-success)',
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
                 }}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-display)',
-                        fontSize: '15px',
-                        fontWeight: 600,
-                        color: 'var(--color-text-primary)',
-                      }}
-                    >
-                      <GameModeLabel mode={roomPreview.gameMode} />
-                    </span>
-                    <span
-                      className="ml-2"
-                      style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}
-                    >
-                      by {roomPreview.hostName}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                      style={{
-                        background: isFull ? 'var(--color-warning)' : 'var(--color-success)',
-                        color: 'white',
-                      }}
-                    >
-                      {roomPreview.playerCount}/{roomPreview.maxPlayers}
-                    </span>
+                <div
+                  className="flex items-center justify-center rounded-full shrink-0"
+                  style={{ width: 40, height: 40, background: 'rgba(245, 158, 66, 0.15)' }}
+                >
+                  <span style={{ fontSize: '18px' }}>🎬</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p style={{ fontWeight: 600, fontSize: '15px', color: 'var(--color-text-primary)' }}>
+                    {roomPreview.hostName}&apos;s Room
+                  </p>
+                  <p style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
+                    {roomPreview.playerCount} player{roomPreview.playerCount !== 1 ? 's' : ''} · <GameModeLabel mode={roomPreview.gameMode} />
                     {roomPreview.isMature && (
-                      <span
-                        style={{ fontSize: '12px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}
-                      >
+                      <span style={{ marginLeft: '6px', fontSize: '11px', fontWeight: 700, padding: '1px 6px', borderRadius: '6px', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
                         18+
                       </span>
                     )}
-                  </div>
-                </div>
-                {roomPreview.players.length > 0 && (
-                  <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                    {roomPreview.players.map(p => p.nickname).join(', ')}
-                    {roomPreview.playerCount > 6 ? ` +${roomPreview.playerCount - 6} more` : ''}
                   </p>
-                )}
-                {isFull && (
-                  <div
-                    className="flex items-center gap-2 mt-2 p-2 rounded-lg text-sm"
-                    style={{ background: 'var(--color-surface)', color: 'var(--color-warning)', border: '1px solid var(--color-border)' }}
-                  >
-                    <EyeIcon size={16} color="var(--color-warning)" />
-                    <span>Room is full — you'll join as a spectator</span>
-                  </div>
-                )}
-                {roomPreview.gameState !== 'LOBBY' && (
-                  <div
-                    className="flex items-center gap-2 mt-2 p-2 rounded-lg text-sm"
-                    style={{ background: 'var(--color-surface)', color: 'var(--color-danger)', border: '1px solid var(--color-border)' }}
-                  >
-                    <WarningIcon size={16} color="var(--color-danger)" />
-                    <span>Game in progress — wait for next round</span>
-                  </div>
-                )}
+                </div>
+                <div
+                  className="shrink-0 rounded-full"
+                  style={{
+                    width: 10,
+                    height: 10,
+                    background: isFull ? 'var(--color-warning)' : 'var(--color-success)',
+                  }}
+                />
               </div>
+              {isFull && (
+                <div
+                  className="flex items-center gap-2 mt-2 p-2 rounded-lg text-sm"
+                  style={{ background: 'var(--color-surface)', color: 'var(--color-warning)', border: '1px solid var(--color-border)' }}
+                >
+                  <EyeIcon size={16} color="var(--color-warning)" />
+                  <span>Room is full — you&apos;ll join as a spectator</span>
+                </div>
+              )}
+              {roomPreview.gameState !== 'LOBBY' && (
+                <div
+                  className="flex items-center gap-2 mt-2 p-2 rounded-lg text-sm"
+                  style={{ background: 'var(--color-surface)', color: 'var(--color-danger)', border: '1px solid var(--color-border)' }}
+                >
+                  <WarningIcon size={16} color="var(--color-danger)" />
+                  <span>Game in progress — wait for next round</span>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -438,7 +390,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
               marginBottom: '6px',
             }}
           >
-            Your Name
+            Nickname
           </label>
           <div style={{ position: 'relative' }}>
             <input
@@ -449,7 +401,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
               onChange={(e) => handleNicknameChange(e.target.value)}
               onBlur={() => { setNicknameTouched(true); setNicknameError(validateNickname(nickname)) }}
               onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300) }}
-              placeholder="Enter your name"
+              placeholder="e.g. Captain Chaos"
               maxLength={20}
               autoComplete="off"
               enterKeyHint="go"

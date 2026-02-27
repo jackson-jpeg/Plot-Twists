@@ -2178,7 +2178,14 @@ app.prepare().then(async () => {
       logger.warn(`Script generation rate limit exceeded for room ${room.code}`)
       io.to(room.code).emit('error', 'Too many script generation requests. Please wait a moment.')
       room.gameState = 'SELECTION'
+      room.selections.clear()
+      for (const player of room.players.values()) {
+        player.hasSubmittedSelection = false
+      }
       io.to(room.code).emit('game_state_change', 'SELECTION')
+      io.to(room.code).emit('players_update', Array.from(room.players.values()))
+      const content = getFilteredContent(room.isMature)
+      io.to(room.code).emit('available_cards', content)
       return
     }
 
@@ -2186,7 +2193,14 @@ app.prepare().then(async () => {
     const creditOk = await deductCreditOrReject(room, io)
     if (!creditOk) {
       room.gameState = 'SELECTION'
+      room.selections.clear()
+      for (const player of room.players.values()) {
+        player.hasSubmittedSelection = false
+      }
       io.to(room.code).emit('game_state_change', 'SELECTION')
+      io.to(room.code).emit('players_update', Array.from(room.players.values()))
+      const content = getFilteredContent(room.isMature)
+      io.to(room.code).emit('available_cards', content)
       return
     }
 

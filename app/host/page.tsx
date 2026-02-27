@@ -126,6 +126,13 @@ function HostPageContent() {
     }
   }, [searchParams])
 
+  // Initialize solo mode from URL param
+  useEffect(() => {
+    if (searchParams.get('mode') === 'solo') {
+      setSettings(prev => ({ ...prev, gameMode: 'SOLO' }))
+    }
+  }, [searchParams])
+
   // Lock body scroll when countdown overlay is visible
   useEffect(() => {
     if (countdown !== null) {
@@ -495,7 +502,6 @@ function HostPageContent() {
             levelUpData={levelUpData}
             onDismissLevelUp={() => setLevelUpData(null)}
             onShowPosterLightbox={() => setShowPosterLightbox(true)}
-            onRequestSequel={requestSequel}
             onRequestNewGame={requestNewGame}
           /></GameErrorBoundary>
         )}

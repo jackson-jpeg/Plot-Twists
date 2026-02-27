@@ -132,12 +132,13 @@ export function HostLobby({
         textTransform: 'uppercase' as const,
         color: 'var(--color-text-tertiary)',
         marginBottom: '8px',
+        textAlign: isDesktop ? 'left' : 'center',
       }}>
         Room Code
       </p>
       {roomCode ? (
         <>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" style={{ justifyContent: isDesktop ? 'flex-start' : 'center' }}>
             <span style={{
               fontFamily: 'var(--font-display)',
               fontSize: isDesktop ? '80px' : '64px',
@@ -172,11 +173,20 @@ export function HostLobby({
               <CopyIcon size={22} />
             </motion.button>
           </div>
+          <p style={{
+            fontSize: 'var(--text-caption)',
+            marginTop: '4px',
+            color: 'var(--color-text-tertiary)',
+            textAlign: isDesktop ? 'left' : 'center',
+          }}>
+            Share this code with your friends
+          </p>
           {creditBalance && (
             <p style={{
               fontSize: 'var(--text-caption)',
-              marginTop: '8px',
+              marginTop: '6px',
               color: creditBalance.total === 0 ? 'var(--color-danger)' : 'var(--color-text-tertiary)',
+              textAlign: isDesktop ? 'left' : 'center',
             }}>
               {creditBalance.total} script{creditBalance.total !== 1 ? 's' : ''} remaining
             </p>
@@ -243,18 +253,18 @@ export function HostLobby({
           textTransform: 'uppercase' as const,
           color: 'var(--color-text-tertiary)',
         }}>
-          Players
+          Players ({nonHostPlayers.length})
         </p>
         <p style={{
           fontSize: 'var(--text-caption)',
           color: 'var(--color-text-tertiary)',
         }}>
-          {getNeededText()}
+          Max {settings.gameMode === 'HEAD_TO_HEAD' ? 2 : 8}
         </p>
       </div>
 
       {/* Player list */}
-      <div>
+      <div className="flex flex-col gap-2">
         <AnimatePresence mode="popLayout">
           {nonHostPlayers.map((player, index) => (
             <motion.div
@@ -265,8 +275,8 @@ export function HostLobby({
               transition={{ type: 'spring', stiffness: 200, damping: 22, delay: index * 0.06 }}
             >
               <div
-                className="flex items-center gap-3 py-4"
-                style={{ borderBottom: '1px solid var(--color-border)' }}
+                className="flex items-center gap-3 p-3 rounded-xl"
+                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
               >
                 <motion.div
                   style={{
@@ -294,33 +304,28 @@ export function HostLobby({
                     fontWeight: 600,
                     fontSize: 'var(--text-body)',
                     color: 'var(--color-text-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
                   }}>
                     {player.nickname}
-                    {player.level != null && (
-                      <span style={{
-                        fontSize: 'var(--text-label)',
-                        fontWeight: 700,
-                        padding: '1px 6px',
-                        borderRadius: '999px',
-                        background: 'var(--color-purple-bg)',
-                        color: 'var(--color-purple)',
-                      }}>
-                        Lv.{player.level}
-                      </span>
-                    )}
                   </p>
                 </div>
 
-                <span style={{
-                  fontSize: 'var(--text-caption)',
-                  fontWeight: 500,
-                  color: player.hasSubmittedSelection ? 'var(--color-success)' : 'var(--color-text-tertiary)',
-                }}>
-                  {player.hasSubmittedSelection ? 'Ready' : 'Joined'}
-                </span>
+                {player.level != null ? (
+                  <span style={{
+                    fontSize: 'var(--text-caption)',
+                    fontWeight: 500,
+                    color: 'var(--color-text-tertiary)',
+                  }}>
+                    Lv.{player.level}
+                  </span>
+                ) : (
+                  <span style={{
+                    fontSize: 'var(--text-caption)',
+                    fontWeight: 500,
+                    color: player.hasSubmittedSelection ? 'var(--color-success)' : 'var(--color-text-tertiary)',
+                  }}>
+                    {player.hasSubmittedSelection ? 'Ready' : 'Joined'}
+                  </span>
+                )}
               </div>
             </motion.div>
           ))}
@@ -369,7 +374,7 @@ export function HostLobby({
           fontWeight: 500,
         }}
       >
-        <span>Customize game settings</span>
+        <span>Game Settings</span>
         <ChevronIcon size={16} direction={settingsOpen ? 'up' : 'down'} />
       </button>
 

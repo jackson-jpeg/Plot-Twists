@@ -11,6 +11,7 @@ import { LandingPage } from '@/components/LandingPage'
 import { XPBar } from '@/components/XPBar'
 import { MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
+import { useCreditBalance } from '@/components/CreditBadge'
 import type { LevelInfo, PlayerStats } from '@/lib/types'
 
 function HostIcon() {
@@ -93,6 +94,7 @@ export default function Home() {
   const [creditsPurchased, setCreditsPurchased] = useState(false)
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
   const [playerStats, setPlayerStats] = useState<PlayerStats | null>(null)
+  const creditBalance = useCreditBalance()
 
   useEffect(() => {
     setMounted(true)
@@ -213,7 +215,7 @@ export default function Home() {
             {firstName ? `Hey, ${firstName}` : 'Plot Twists'}
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--color-text-tertiary)', marginTop: '6px' }}>
-            What are you in the mood for?
+            {/* No subtitle — Paper design has XP bar directly below */}
           </p>
           {levelInfo && (
             <motion.div
@@ -228,321 +230,142 @@ export default function Home() {
           )}
         </motion.div>
 
-        {/* Play Solo card */}
-        <motion.button
-          onClick={() => router.push('/play')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '100%',
-            marginTop: '24px',
-            padding: '24px',
-            background: '#2A2722',
-            borderRadius: '20px',
-            border: 'none',
-            cursor: 'pointer',
-            textAlign: 'left',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, ...MOTION.gentle }}
-          whileHover={canHover ? { y: -3, scale: 1.01 } : undefined}
-          whileTap={{ scale: 0.98 }}
-        >
-          <div style={{ flex: 1 }}>
-            <h2 className="font-display" style={{ fontSize: '22px', fontWeight: 700, color: '#FFFFFF', marginBottom: '6px' }}>
-              Play solo
-            </h2>
-            <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.4, marginBottom: '16px', maxWidth: '220px' }}>
-              Pick cards, get a script, perform it. Just you and the AI.
-            </p>
-            <div className="flex items-center gap-3">
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '8px 20px',
-                  background: 'var(--color-accent)',
-                  color: '#fff',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                }}
-              >
-                Start now
-              </span>
-              <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>~3 min</span>
-            </div>
-          </div>
-          <div style={{ flexShrink: 0, marginLeft: '12px', opacity: 0.5 }}>
-            <SoloPersonIcon />
-          </div>
-        </motion.button>
-
-        {/* WITH FRIENDS section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25 }}
-          style={{ marginTop: '28px', marginBottom: '12px' }}
-        >
-          <span
-            style={{
-              fontSize: '12px',
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              color: 'var(--color-text-tertiary)',
-            }}
-          >
-            With Friends
-          </span>
-        </motion.div>
-
-        <div className="flex gap-3" style={{ flexDirection: isDesktop ? 'row' : 'row' }}>
+        {/* Action cards — full-width rows matching Paper */}
+        <div className="flex flex-col gap-3" style={{ marginTop: '24px' }}>
           <motion.button
             onClick={() => router.push('/host')}
-            className="flex-1"
+            className="w-full flex items-center gap-4"
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              gap: '8px',
               padding: '20px',
               background: 'var(--color-surface)',
               border: '1.5px solid var(--color-border)',
               borderRadius: '16px',
               cursor: 'pointer',
-              color: 'var(--color-text-secondary)',
               textAlign: 'left',
             }}
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, ...MOTION.gentle }}
-            whileHover={canHover ? { y: -3, scale: 1.02 } : undefined}
-            whileTap={{ scale: 0.97 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15, ...MOTION.gentle }}
+            whileHover={canHover ? { y: -2, scale: 1.01 } : undefined}
+            whileTap={{ scale: 0.98 }}
           >
-            <HostIcon />
-            <span className="font-display text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>Host</span>
-            <span style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', lineHeight: 1.3 }}>Cast to TV, run the show</span>
+            <div
+              className="flex items-center justify-center shrink-0 rounded-2xl"
+              style={{ width: 48, height: 48, background: 'rgba(245, 158, 66, 0.1)', color: 'var(--color-accent)' }}
+            >
+              <HostIcon />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-display" style={{ fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                Host a Game
+              </h2>
+              <p style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>
+                Create a room and run the show
+              </p>
+            </div>
+            <div style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }}>
+              <ChevronRightIcon />
+            </div>
           </motion.button>
 
           <motion.button
             onClick={() => router.push('/join')}
-            className="flex-1"
+            className="w-full flex items-center gap-4"
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              gap: '8px',
               padding: '20px',
               background: 'var(--color-surface)',
               border: '1.5px solid var(--color-border)',
               borderRadius: '16px',
               cursor: 'pointer',
-              color: 'var(--color-text-secondary)',
               textAlign: 'left',
             }}
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.35, ...MOTION.gentle }}
-            whileHover={canHover ? { y: -3, scale: 1.02 } : undefined}
-            whileTap={{ scale: 0.97 }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, ...MOTION.gentle }}
+            whileHover={canHover ? { y: -2, scale: 1.01 } : undefined}
+            whileTap={{ scale: 0.98 }}
           >
-            <JoinIcon />
-            <span className="font-display text-lg font-bold" style={{ color: 'var(--color-text-primary)' }}>Join</span>
-            <span style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', lineHeight: 1.3 }}>Enter a room code</span>
+            <div
+              className="flex items-center justify-center shrink-0 rounded-2xl"
+              style={{ width: 48, height: 48, background: 'rgba(139, 92, 246, 0.1)', color: 'var(--color-purple, #8B5CF6)' }}
+            >
+              <JoinIcon />
+            </div>
+            <div className="flex-1">
+              <h2 className="font-display" style={{ fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                Join a Game
+              </h2>
+              <p style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>
+                Enter a room code and play
+              </p>
+            </div>
+            <div style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }}>
+              <ChevronRightIcon />
+            </div>
           </motion.button>
         </div>
 
-        {/* LAST GAME section */}
-        {playerStats && playerStats.gamesPlayed > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            style={{ marginTop: '28px' }}
-          >
-            <span
-              style={{
-                fontSize: '12px',
-                fontWeight: 600,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: 'var(--color-text-tertiary)',
-                display: 'block',
-                marginBottom: '12px',
-              }}
-            >
-              Last Game
-            </span>
-            <Link
-              href="/profile"
-              className="flex items-center gap-3"
-              style={{
-                padding: '16px 20px',
-                background: 'var(--color-surface)',
-                border: '1.5px solid var(--color-border)',
-                borderRadius: '16px',
-                textDecoration: 'none',
-              }}
-            >
-              <div
-                style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '12px',
-                  background: 'var(--color-accent)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  color: '#fff',
-                }}
-              >
-                <StarIcon />
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div className="font-semibold" style={{ fontSize: '15px', color: 'var(--color-text-primary)' }}>
-                  {playerStats.gamesPlayed} game{playerStats.gamesPlayed !== 1 ? 's' : ''} played
-                </div>
-                <div style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>
-                  {playerStats.gamesWon > 0 ? `${playerStats.gamesWon} MVP win${playerStats.gamesWon !== 1 ? 's' : ''}` : 'Keep playing to earn MVP!'}
-                </div>
-              </div>
-              <div style={{ color: 'var(--color-text-tertiary)', flexShrink: 0 }}>
-                <ChevronRightIcon />
-              </div>
-            </Link>
-          </motion.div>
-        )}
-
-        {/* Explore card packs row */}
-        <motion.div
+        {/* Play Solo button */}
+        <motion.button
+          onClick={() => router.push('/host?mode=solo')}
+          className="w-full flex items-center justify-center gap-2"
+          style={{
+            marginTop: '16px',
+            padding: '16px',
+            background: 'var(--color-accent)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '14px',
+            fontSize: '17px',
+            fontWeight: 600,
+            fontFamily: 'var(--font-display)',
+            cursor: 'pointer',
+          }}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.45 }}
-          style={{ marginTop: playerStats && playerStats.gamesPlayed > 0 ? '12px' : '28px' }}
+          transition={{ delay: 0.25, ...MOTION.gentle }}
+          whileHover={canHover ? { scale: 1.02 } : undefined}
+          whileTap={{ scale: 0.98 }}
         >
-          <Link
-            href="/explore"
-            className="flex items-center gap-3"
-            style={{
-              padding: '14px 20px',
-              background: 'var(--color-surface)',
-              border: '1.5px solid var(--color-border)',
-              borderRadius: '16px',
-              textDecoration: 'none',
-            }}
-          >
-            <div style={{ color: 'var(--color-text-secondary)' }}>
-              <ClockIcon />
-            </div>
-            <span style={{ flex: 1, fontSize: '15px', fontWeight: 500, color: 'var(--color-text-primary)' }}>
-              Explore card packs
-            </span>
-            <div style={{ color: 'var(--color-text-tertiary)' }}>
-              <ChevronRightIcon />
-            </div>
-          </Link>
-        </motion.div>
+          <svg width="20" height="20" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+            <circle cx="28" cy="20" r="8" stroke="currentColor" strokeWidth="4" />
+            <path d="M14 44c0-7.732 6.268-14 14-14s14 6.268 14 14" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+          </svg>
+          Play Solo
+        </motion.button>
 
-        {/* How it works -- for new users */}
-        {(!playerStats || playerStats.gamesPlayed === 0) && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-6 rounded-2xl p-6"
-            style={{
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              boxShadow: 'var(--shadow-1)',
-            }}
-          >
-            <div className="grid grid-cols-3 gap-4 items-start">
-              {[
-                { num: '1', title: 'Draw cards', desc: 'Character + setting + a wild twist' },
-                { num: '2', title: 'AI writes', desc: 'A custom comedy script in seconds' },
-                { num: '3', title: 'Perform', desc: 'Act it out, crown the MVP' },
-              ].map((step, i) => (
-                <motion.div
-                  key={step.num}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.55 + i * 0.1, ...MOTION.gentle }}
-                  className="text-center"
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}
-                >
-                  <div
-                    className="flex items-center justify-center"
-                    style={{
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '16px',
-                      background: 'var(--color-text-primary)',
-                    }}
-                  >
-                    <span
-                      className="font-display"
-                      style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-bg)' }}
-                    >
-                      {step.num}
-                    </span>
-                  </div>
-                  <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{step.title}</span>
-                  <p className="text-xs leading-snug" style={{ color: 'var(--color-text-secondary)' }}>{step.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
-        {/* Stats bar at bottom */}
-        {playerStats && playerStats.gamesPlayed > 0 && (
-          <motion.div
-            className="flex items-center justify-center"
-            style={{
-              marginTop: '24px',
-              paddingTop: '16px',
-              borderTop: '1px solid var(--color-border)',
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            {[
-              { label: 'Games', value: playerStats.gamesPlayed },
-              { label: 'MVPs', value: playerStats.gamesWon },
-              { label: 'Streak', value: playerStats.currentWinStreak },
-            ].map((stat, i) => (
-              <div key={stat.label} className="flex items-center">
-                {i > 0 && (
-                  <div
-                    style={{
-                      width: '1px',
-                      height: '28px',
-                      background: 'var(--color-border)',
-                      margin: '0 24px',
-                    }}
-                  />
-                )}
-                <div className="text-center">
-                  <div className="font-display font-bold" style={{ fontSize: '18px', color: 'var(--color-text-primary)' }}>
-                    {stat.value}
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
-                    {stat.label}
-                  </div>
-                </div>
+        {/* Stats row — matching Paper design */}
+        <motion.div
+          className="flex gap-3"
+          style={{ marginTop: '24px' }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+        >
+          {[
+            { label: 'GAMES', value: playerStats?.gamesPlayed ?? 0, color: 'var(--color-text-primary)' },
+            { label: 'MVPS', value: playerStats?.gamesWon ?? 0, color: 'var(--color-accent)' },
+            { label: 'CREDITS', value: creditBalance?.total ?? 0, color: 'var(--color-text-primary)' },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="flex-1 text-center"
+              style={{
+                padding: '16px 8px',
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                borderRadius: '14px',
+              }}
+            >
+              <div className="font-display font-bold" style={{ fontSize: '24px', color: stat.color }}>
+                {stat.value}
               </div>
-            ))}
-          </motion.div>
-        )}
+              <div style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>
+                {stat.label}
+              </div>
+            </div>
+          ))}
+        </motion.div>
 
         {/* Footer */}
         <div className="mt-6 mb-4 text-center text-xs" style={{ color: 'var(--color-text-tertiary)' }}>

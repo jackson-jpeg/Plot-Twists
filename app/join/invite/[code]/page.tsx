@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { MOTION } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import type { GameMode } from '@/lib/types'
 
 interface RoomPreview {
@@ -60,6 +61,7 @@ function SkeletonCard() {
 export function InvitePage() {
   const params = useParams()
   const router = useRouter()
+  const breakpoint = useBreakpoint()
   const code = (params.code as string || '').toUpperCase()
 
   const [preview, setPreview] = useState<RoomPreview | null>(null)
@@ -169,7 +171,7 @@ export function InvitePage() {
 
   return (
     <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
-      <div className="w-full max-w-md" style={{ padding: '24px 20px' }}>
+      <div className="w-full" style={{ maxWidth: breakpoint !== 'mobile' ? 480 : undefined, padding: '24px 20px' }}>
         {/* Logo — centered */}
         <motion.div
           className="flex items-center justify-center gap-2 mb-8"

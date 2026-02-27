@@ -42,7 +42,7 @@ export function PublicRoomCard({ room, index, onJoin }: PublicRoomCardProps) {
             {room.publicTitle || `${room.hostNickname}'s Game`}
           </span>
           {room.isMature && (
-            <span className="text-[11px] px-1.5 py-0.5 rounded bg-[var(--color-pink)]/20 text-[var(--color-pink)] font-bold">
+            <span style={{ fontSize: '12px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
               18+
             </span>
           )}

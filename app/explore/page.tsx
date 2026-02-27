@@ -32,7 +32,7 @@ function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSel
         <div className="flex justify-between items-start mb-1.5">
           <h3 className="text-base font-semibold text-[var(--color-text-primary)] font-display leading-tight">{pack.name}</h3>
           {pack.isMature && (
-            <span className="text-[11px] px-1.5 py-0.5 rounded bg-[var(--color-error)] text-white font-bold shrink-0 ml-2">
+            <span className="shrink-0 ml-2" style={{ fontSize: '12px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
               18+
             </span>
           )}

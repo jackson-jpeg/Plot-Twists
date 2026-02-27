@@ -286,7 +286,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                               <h4 className="font-semibold flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
                                 {pack.name}
                                 {pack.isMature && (
-                                  <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
+                                  <span style={{ fontSize: '12px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
                                     18+
                                   </span>
                                 )}

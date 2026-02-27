@@ -278,7 +278,7 @@ export function CardPackSelector({
                                 </span>
                               )}
                               {pack.isMature && (
-                                <span className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ fontSize: 11, background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
+                                <span style={{ fontSize: '12px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
                                   18+
                                 </span>
                               )}

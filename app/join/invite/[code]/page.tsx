@@ -277,8 +277,8 @@ export function InvitePage() {
                 {getGameModeLabel(preview.gameMode)}
                 {preview.isMature && (
                   <span
-                    className="ml-2 px-2 py-0.5 rounded text-xs font-bold"
-                    style={{ background: 'var(--color-danger)', color: 'white' }}
+                    className="ml-2"
+                    style={{ fontSize: '12px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}
                   >
                     18+
                   </span>

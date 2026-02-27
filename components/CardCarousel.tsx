@@ -118,8 +118,7 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
         </label>
         <motion.button
           onClick={handleShuffle}
-          className="btn btn-ghost shuffle-btn"
-          style={{ padding: 'var(--space-3) var(--space-4)', fontSize: '20px', minWidth: '44px', minHeight: '44px' }}
+          style={{ padding: '12px 16px', fontSize: '20px', minWidth: '44px', minHeight: '44px', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '10px', cursor: 'pointer', color: 'var(--color-text-secondary)' }}
           whileHover={shouldReduceMotion ? {} : { scale: 1.1, rotate: 180 }}
           whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
           aria-label={`Shuffle ${label}`}
@@ -149,7 +148,7 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
             aria-label={hasSelection ? `Selected: ${value}` : 'No selection'}
           >
             <motion.div
-              className="card h-full flex items-center justify-center p-6"
+              className="h-full flex items-center justify-center p-6 rounded-xl"
               style={{
                 borderLeft: hasSelection ? `4px solid ${color}` : '1px solid var(--color-border)',
                 background: hasSelection ? 'var(--color-surface)' : 'var(--color-surface-alt)',
@@ -191,14 +190,21 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
         <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none">
           <motion.button
             onClick={handlePrevious}
-            className="btn btn-secondary pointer-events-auto"
+            className="pointer-events-auto"
             style={{
               width: '48px',
               height: '48px',
               borderRadius: '50%',
               padding: 0,
               fontSize: '24px',
-              marginLeft: '-60px'
+              marginLeft: '-60px',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
             whileHover={shouldReduceMotion ? {} : { scale: 1.1, x: 4 }}
             whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}
@@ -210,14 +216,21 @@ export function CardCarousel({ label, icon, options, value, onChange, color }: C
 
           <motion.button
             onClick={handleNext}
-            className="btn btn-secondary pointer-events-auto"
+            className="pointer-events-auto"
             style={{
               width: '48px',
               height: '48px',
               borderRadius: '50%',
               padding: 0,
               fontSize: '24px',
-              marginRight: '-60px'
+              marginRight: '-60px',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
             whileHover={shouldReduceMotion ? {} : { scale: 1.1, x: -4 }}
             whileTap={shouldReduceMotion ? {} : { scale: 0.9 }}

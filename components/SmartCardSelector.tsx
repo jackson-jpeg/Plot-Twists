@@ -64,8 +64,7 @@ export function SmartCardSelector({
           {!disableBrowse && (
             <motion.button
               onClick={() => setIsBrowseOpen(true)}
-              className="btn btn-ghost"
-              style={{ padding: '10px 16px', fontSize: '14px' }}
+              style={{ padding: '10px 16px', fontSize: '14px', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '10px', cursor: 'pointer', color: 'var(--color-text-secondary)' }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               title="Browse all options"
@@ -181,8 +180,7 @@ function CardCarouselNoLabel({
       <div className="flex justify-end mb-2">
         <motion.button
           onClick={handleShuffle}
-          className="btn btn-ghost"
-          style={{ padding: '8px 12px', fontSize: '20px' }}
+          style={{ padding: '8px 12px', fontSize: '20px', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '10px', cursor: 'pointer', color: 'var(--color-text-secondary)' }}
           whileHover={{ scale: 1.1, rotate: 180 }}
           whileTap={{ scale: 0.9 }}
           title="Shuffle"
@@ -209,7 +207,7 @@ function CardCarouselNoLabel({
           style={{ transformStyle: 'preserve-3d' }}
         >
           <motion.div
-            className="card h-full flex items-center justify-center p-6"
+            className="h-full flex items-center justify-center p-6 rounded-xl"
             style={{
               borderLeft: hasSelection ? `4px solid ${color}` : '1px solid var(--color-border)',
               background: hasSelection ? 'var(--color-surface)' : 'var(--color-surface-alt)',
@@ -250,14 +248,21 @@ function CardCarouselNoLabel({
         <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between pointer-events-none">
           <motion.button
             onClick={handlePrevious}
-            className="btn btn-secondary pointer-events-auto"
+            className="pointer-events-auto"
             style={{
               width: '48px',
               height: '48px',
               borderRadius: '50%',
               padding: 0,
               fontSize: '24px',
-              marginLeft: '-60px'
+              marginLeft: '-60px',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
             whileHover={{ scale: 1.1, x: 4 }}
             whileTap={{ scale: 0.9 }}
@@ -268,14 +273,21 @@ function CardCarouselNoLabel({
 
           <motion.button
             onClick={handleNext}
-            className="btn btn-secondary pointer-events-auto"
+            className="pointer-events-auto"
             style={{
               width: '48px',
               height: '48px',
               borderRadius: '50%',
               padding: 0,
               fontSize: '24px',
-              marginRight: '-60px'
+              marginRight: '-60px',
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
             whileHover={{ scale: 1.1, x: -4 }}
             whileTap={{ scale: 0.9 }}

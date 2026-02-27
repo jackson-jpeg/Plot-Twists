@@ -226,8 +226,8 @@ export function CardPicker({
       {noCardsSelected && !customMode.character && !customMode.setting && !customMode.circumstance && availableCards.characters.length > 0 && (
         <motion.button
           onClick={() => { onShuffleAll(); toast.success('Shuffled! 🎲', { duration: 1500 }) }}
-          className="btn btn-ghost w-full"
-          style={{ background: 'linear-gradient(135deg, var(--color-highlight-pink), var(--color-highlight-yellow))', border: '2px solid var(--color-accent)', fontWeight: 'bold' }}
+          className="w-full"
+          style={{ background: 'linear-gradient(135deg, var(--color-highlight-pink), var(--color-highlight-yellow))', border: '2px solid var(--color-accent)', fontWeight: 'bold', padding: '12px 24px', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', color: 'var(--color-text-primary)' }}
           whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
           initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
         >
@@ -365,8 +365,7 @@ export function CardPicker({
                 </div>
                 <motion.button
                   onClick={shuffleCurrentTab}
-                  className="btn btn-ghost"
-                  style={{ padding: '8px 14px', fontSize: '20px', flexShrink: 0 }}
+                  style={{ padding: '8px 14px', fontSize: '20px', flexShrink: 0, background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '10px', cursor: 'pointer', color: 'var(--color-text-secondary)' }}
                   whileHover={{ scale: 1.1, rotate: 180 }}
                   whileTap={{ scale: 0.9 }}
                   aria-label={`Shuffle ${activeTabConfig.label.toLowerCase()}`}
@@ -453,8 +452,8 @@ export function CardPicker({
                     {(searchQuery || selectedCategories.length > 0) && (
                       <button
                         onClick={() => { setSearchQuery(''); setSelectedCategories([]) }}
-                        className="btn btn-ghost text-xs mt-3"
-                        style={{ color: activeTabConfig.color }}
+                        className="text-xs mt-3"
+                        style={{ color: activeTabConfig.color, background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontWeight: 500 }}
                       >
                         Clear all filters
                       </button>

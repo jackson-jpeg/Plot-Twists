@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import type { Script, GameResults, XPEvent, LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
 import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
-import { VARIANTS } from '@/lib/animations'
+import { VARIANTS, MOTION } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { analytics } from '@/lib/analytics'
 import { withTimeout } from '@/lib/socketTimeout'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
@@ -190,6 +191,8 @@ export function HostResults({
     }
   }
 
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
   const winner = gameResults?.winner
   const castNames = gameResults?.allResults?.map(r => r.playerName) ?? []
 
@@ -201,9 +204,9 @@ export function HostResults({
       animate="animate"
       exit="exit"
       className="min-h-dvh w-full flex flex-col"
-      style={{ background: '#1A1714' }}
+      style={{ background: 'var(--color-theater-bg)' }}
     >
-      <div className="w-full max-w-lg mx-auto px-5 py-6 flex flex-col flex-1">
+      <div className="w-full mx-auto px-5 py-6 flex flex-col flex-1" style={{ maxWidth: isDesktop ? '1000px' : '512px' }}>
         {/* Top bar: THAT'S A WRAP + Share */}
         <motion.div
           className="flex items-center justify-between mb-6"
@@ -213,7 +216,7 @@ export function HostResults({
         >
           <span
             className="font-display text-sm tracking-widest uppercase"
-            style={{ color: '#9B9590', letterSpacing: '0.15em' }}
+            style={{ color: 'var(--color-theater-muted)', letterSpacing: '0.15em' }}
           >
             That&apos;s a Wrap
           </span>
@@ -222,7 +225,7 @@ export function HostResults({
               onClick={handleShareScene}
               className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium"
               style={{
-                color: '#FDFCFA',
+                color: 'var(--color-theater-text)',
                 background: 'transparent',
                 border: '1px solid rgba(155, 149, 144, 0.35)',
               }}
@@ -241,9 +244,9 @@ export function HostResults({
           className="relative w-full rounded-2xl overflow-hidden mb-6"
           style={{ aspectRatio: '3/4', cursor: scriptImageUrl ? 'pointer' : undefined }}
           onClick={scriptImageUrl ? onShowPosterLightbox : undefined}
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.88 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ delay: 0.3, ...MOTION.dramatic }}
         >
           {scriptImageUrl && !posterError ? (
             <img
@@ -276,7 +279,7 @@ export function HostResults({
               left: 0,
               right: 0,
               height: '55%',
-              background: 'linear-gradient(to top, rgba(26,23,20,0.95) 0%, rgba(26,23,20,0.7) 40%, transparent 100%)',
+              background: 'linear-gradient(to top, rgba(26,23,20,0.92) 0%, rgba(26,23,20,0.7) 40%, transparent 100%)',
               pointerEvents: 'none',
             }}
           />
@@ -295,7 +298,7 @@ export function HostResults({
             <motion.h1
               className="font-display"
               style={{
-                color: '#FDFCFA',
+                color: 'var(--color-theater-text)',
                 fontSize: 'clamp(1.75rem, 6vw, 2.5rem)',
                 fontWeight: 700,
                 lineHeight: 1.1,
@@ -309,7 +312,7 @@ export function HostResults({
             </motion.h1>
             <motion.p
               className="uppercase tracking-widest text-xs font-medium"
-              style={{ color: '#9B9590', letterSpacing: '0.12em', marginBottom: 8 }}
+              style={{ color: 'var(--color-theater-muted)', letterSpacing: '0.12em', marginBottom: 8 }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
@@ -319,7 +322,7 @@ export function HostResults({
             {castNames.length > 0 && (
               <motion.p
                 className="text-sm"
-                style={{ color: 'rgba(155, 149, 144, 0.8)' }}
+                style={{ color: 'var(--color-theater-muted)' }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.7 }}
@@ -330,24 +333,24 @@ export function HostResults({
           </div>
         </motion.div>
 
-        {/* MVP line */}
+        {/* MVP line — dramatic drum roll reveal */}
         {winner && (
           <motion.div
-            className="flex items-center justify-center gap-2 mb-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
+            className="flex items-center justify-center gap-3 mb-6"
+            variants={VARIANTS.drumRoll}
+            initial="initial"
+            animate="animate"
             aria-live="polite"
             aria-atomic="true"
           >
             <div className="flex-1 h-px" style={{ background: 'rgba(155, 149, 144, 0.2)' }} />
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <svg width="22" height="22" viewBox="0 0 18 18" fill="none">
               <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="#F59E42" />
             </svg>
-            <span className="font-display font-bold" style={{ color: '#F59E42' }}>
+            <span className="font-display font-bold" style={{ color: '#F59E42', fontSize: isDesktop ? '22px' : '18px' }}>
               {winner.playerName} is MVP
             </span>
-            <span className="text-sm" style={{ color: '#9B9590' }}>
+            <span style={{ fontSize: 'var(--text-caption)', color: 'var(--color-theater-muted)' }}>
               {winner.votes} vote{winner.votes !== 1 ? 's' : ''}
             </span>
             <div className="flex-1 h-px" style={{ background: 'rgba(155, 149, 144, 0.2)' }} />
@@ -367,13 +370,13 @@ export function HostResults({
         {gameResults?.highlights && gameResults.highlights.length > 0 && (
           <motion.div className="w-full mt-4 mb-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}>
             <details className="rounded-xl overflow-hidden" style={{ background: 'rgba(253, 252, 250, 0.04)', border: '1px solid rgba(155, 149, 144, 0.15)' }}>
-              <summary className="p-4 cursor-pointer text-center font-semibold text-sm" style={{ color: '#9B9590' }}>Game Highlights</summary>
+              <summary className="p-4 cursor-pointer text-center font-semibold text-sm" style={{ color: 'var(--color-theater-muted)' }}>Game Highlights</summary>
               <div className="px-4 pb-4 grid grid-cols-2 gap-3">
                 {gameResults.highlights.map((h, i) => (
                   <motion.div key={h.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }} className="text-center p-3 rounded-lg" style={{ background: 'rgba(253, 252, 250, 0.04)', border: '1px solid rgba(155, 149, 144, 0.1)' }}>
                     <div className="text-2xl mb-1">{h.icon}</div>
-                    <div className="text-xs" style={{ color: '#9B9590' }}>{h.label}</div>
-                    <div className="font-semibold text-sm" style={{ color: '#FDFCFA' }}>{h.value}</div>
+                    <div className="text-xs" style={{ color: 'var(--color-theater-muted)' }}>{h.label}</div>
+                    <div className="font-semibold text-sm" style={{ color: 'var(--color-theater-text)' }}>{h.value}</div>
                   </motion.div>
                 ))}
               </div>
@@ -400,7 +403,7 @@ export function HostResults({
               onClick={handleDownloadScript}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
               style={{
-                color: '#FDFCFA',
+                color: 'var(--color-theater-text)',
                 background: 'rgba(253, 252, 250, 0.06)',
                 border: '1px solid rgba(155, 149, 144, 0.2)',
               }}
@@ -417,7 +420,7 @@ export function HostResults({
               onClick={handleCopyScript}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
               style={{
-                color: '#FDFCFA',
+                color: 'var(--color-theater-text)',
                 background: 'rgba(253, 252, 250, 0.06)',
                 border: '1px solid rgba(155, 149, 144, 0.2)',
               }}
@@ -434,7 +437,7 @@ export function HostResults({
               onClick={onRequestSequel}
               className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
               style={{
-                color: '#FDFCFA',
+                color: 'var(--color-theater-text)',
                 background: 'rgba(253, 252, 250, 0.06)',
                 border: '1px solid rgba(155, 149, 144, 0.2)',
               }}
@@ -461,7 +464,7 @@ export function HostResults({
             onClick={handleShareCharacter}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium"
             style={{
-              color: '#9B9590',
+              color: 'var(--color-theater-muted)',
               background: 'transparent',
               border: '1px solid rgba(155, 149, 144, 0.15)',
             }}
@@ -474,7 +477,7 @@ export function HostResults({
             onClick={() => handleSharePoster('story')}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-medium"
             style={{
-              color: '#9B9590',
+              color: 'var(--color-theater-muted)',
               background: 'transparent',
               border: '1px solid rgba(155, 149, 144, 0.15)',
             }}
@@ -511,7 +514,7 @@ export function HostResults({
           onClick={() => router.push('/')}
           className="w-full py-4 text-sm font-medium"
           style={{
-            color: '#9B9590',
+            color: 'var(--color-theater-muted)',
             background: 'transparent',
             border: 'none',
           }}

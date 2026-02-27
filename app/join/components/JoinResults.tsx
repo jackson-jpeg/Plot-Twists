@@ -10,7 +10,8 @@ import { withTimeout } from '@/lib/socketTimeout'
 import { successHaptic } from '@/hooks/useHaptics'
 import { useConfetti } from '@/hooks/useConfetti'
 import { Modal } from '@/components/Modal'
-import { VARIANTS } from '@/lib/animations'
+import { VARIANTS, MOTION } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { TrophyIcon, ShareIcon, CopyIcon, DoorIcon, StarIcon, MedalIcon, SpinnerIcon } from '@/components/GameIcons'
 import { XPGainAnimation } from '@/components/XPGainAnimation'
 import { XPBar } from '@/components/XPBar'
@@ -44,6 +45,8 @@ export function JoinResults({
   onShowPosterLightbox, onClosePosterLightbox,
 }: JoinResultsProps) {
   const router = useRouter()
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
   const { fireWinnerConfetti, fireCelebration } = useConfetti()
   const confettiFiredRef = useRef(false)
   const [copySuccess, setCopySuccess] = useState(false)
@@ -145,7 +148,7 @@ export function JoinResults({
 
   return (
     <motion.div key="results" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" style={{ padding: '24px 16px', background: 'var(--color-bg)' }}>
-      <div className="w-full max-w-lg mx-auto text-center">
+      <div className="w-full mx-auto text-center" style={{ maxWidth: isDesktop ? '720px' : '512px' }}>
         {gameResults?.winner ? (
           <>
             {/* Trophy */}
@@ -168,7 +171,14 @@ export function JoinResults({
               </motion.div>
             )}
 
-            <motion.h1 style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 700, color: 'var(--color-accent)', marginBottom: '6px' }} initial={{ y: -20, opacity: 0, filter: 'blur(8px)' }} animate={{ y: 0, opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 0.5, duration: 0.5 }} aria-live="polite" aria-atomic="true">
+            <motion.h1
+              style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-title)', fontWeight: 700, color: 'var(--color-accent)', marginBottom: '6px' }}
+              variants={VARIANTS.drumRoll}
+              initial="initial"
+              animate="animate"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               {gameResults.winner.playerName} Wins!
             </motion.h1>
             <motion.p style={{ fontSize: '18px', color: 'var(--color-text-secondary)', marginBottom: '28px' }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }}>
@@ -238,7 +248,7 @@ export function JoinResults({
         )}
 
         {/* Share My Character + Share Poster */}
-        <motion.div className="flex flex-col items-center gap-3 mb-6" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}>
+        <motion.div className={`flex ${isDesktop ? 'flex-row justify-center' : 'flex-col items-center'} gap-3 mb-6`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 }}>
           <motion.button
             onClick={handleShareCharacter}
             className="w-full"

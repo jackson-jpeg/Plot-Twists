@@ -4,6 +4,7 @@ import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { Player, PlayerRole } from '@/lib/types'
 import { VARIANTS, MOTION } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { EyeIcon, CrownIcon, CheckCircleIcon } from '@/components/GameIcons'
 import { PushPermissionPrompt } from '@/components/PushPermissionPrompt'
 import { AutoStartCountdown } from '@/app/play/components/AutoStartCountdown'
@@ -32,6 +33,8 @@ function getAvatarColor(name: string): string {
 export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoStartCountdown }: JoinLobbyProps) {
   const prefersReducedMotion = useReducedMotion()
   const isSpectator = myRole === 'SPECTATOR'
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
 
   return (
     <motion.div
@@ -43,7 +46,7 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
       className="flex flex-col items-center justify-center"
       style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
     >
-      <div className="w-full max-w-md text-center">
+      <div className="w-full text-center" style={{ maxWidth: isDesktop ? '520px' : '448px' }}>
         {/* Success icon */}
         <motion.div
           className="flex justify-center mb-4"

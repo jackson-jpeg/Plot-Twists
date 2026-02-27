@@ -13,6 +13,7 @@ import { SpectatorTicker } from '@/components/SpectatorChat'
 import { MoviePosterFrame, MoviePosterSkeleton } from '@/components/MoviePosterFrame'
 import { VARIANTS, MOTION } from '@/lib/animations'
 import { tapHaptic } from '@/hooks/useHaptics'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { PauseIcon, PlayIcon, ChaosIcon } from '@/components/GameIcons'
 
 export interface HostPerformingProps {
@@ -51,6 +52,8 @@ export function HostPerforming({
   onShowPosterLightbox, onEndPerformance,
 }: HostPerformingProps) {
   const scriptContainerRef = useRef<HTMLDivElement | null>(null)
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -79,12 +82,12 @@ export function HostPerforming({
       exit="exit"
       className="w-full max-w-5xl mx-auto px-5"
       style={{
-        background: '#1A1714',
-        color: '#FDFCFA',
+        background: 'var(--color-theater-bg)',
+        color: 'var(--color-theater-text)',
         minHeight: '100vh',
         margin: '0 auto',
-        padding: '1.5rem',
-        borderRadius: '0',
+        padding: isDesktop ? '2rem 3rem' : '1.5rem',
+        maxWidth: isDesktop ? '1000px' : undefined,
       }}
     >
       <SpectatorTicker messages={spectatorMessages} />
@@ -109,7 +112,7 @@ export function HostPerforming({
         <div className="flex items-center justify-between gap-4 mb-2">
           <span
             className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: '#9B9590', letterSpacing: '0.15em' }}
+            style={{ color: 'var(--color-theater-muted)', letterSpacing: '0.15em' }}
           >
             Line {currentLineIndex + 1} of {script.lines.length}
           </span>
@@ -138,18 +141,18 @@ export function HostPerforming({
         {/* Title */}
         <h2
           className="text-2xl sm:text-3xl font-display font-bold min-w-0 truncate mb-1"
-          style={{ color: '#FDFCFA' }}
+          style={{ color: 'var(--color-theater-text)' }}
         >
           {script.title}
         </h2>
-        <p className="text-sm italic mb-4" style={{ color: '#9B9590' }}>{script.synopsis}</p>
-        <p className="text-xs mb-4" style={{ color: '#6B6560' }}>
+        <p className="text-sm italic mb-4" style={{ color: 'var(--color-theater-muted)' }}>{script.synopsis}</p>
+        <p className="text-xs mb-4" style={{ color: 'var(--color-theater-muted)' }}>
           {getCharactersInScene(script).join(' / ')}
         </p>
 
         {/* Progress bar */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(155, 149, 144, 0.2)' }}>
+          <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255, 255, 255, 0.08)' }}>
             <motion.div
               className="h-full rounded-full"
               style={{ background: '#F59E42' }}
@@ -230,7 +233,7 @@ export function HostPerforming({
                     </div>
                     <p
                       className="text-base sm:text-lg leading-relaxed"
-                      style={{ color: isCurrent ? '#FDFCFA' : '#C8C3BE' }}
+                      style={{ color: isCurrent ? 'var(--color-theater-text)' : 'var(--color-theater-muted)' }}
                     >
                       {line.text}
                     </p>
@@ -245,7 +248,7 @@ export function HostPerforming({
       {/* Controls */}
       <motion.div
         className="rounded-xl p-4"
-        style={{ background: 'rgba(253, 252, 250, 0.05)', border: '1px solid rgba(155, 149, 144, 0.15)' }}
+        style={{ background: 'rgba(253, 252, 250, 0.05)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.3 }}
@@ -261,9 +264,9 @@ export function HostPerforming({
               fontSize: '14px',
               fontWeight: 600,
               opacity: currentLineIndex === 0 ? 0.3 : 0.8,
-              color: '#FDFCFA',
+              color: 'var(--color-theater-text)',
               background: 'transparent',
-              border: '1px solid rgba(155, 149, 144, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               cursor: currentLineIndex === 0 ? 'not-allowed' : 'pointer',
             }}
             whileHover={{ scale: currentLineIndex === 0 ? 1 : 1.05, x: currentLineIndex === 0 ? 0 : -2 }}
@@ -281,7 +284,7 @@ export function HostPerforming({
               width: '52px',
               height: '52px',
               background: '#F59E42',
-              color: '#1A1714',
+              color: 'var(--color-theater-bg)',
               border: 'none',
               cursor: 'pointer',
             }}
@@ -336,9 +339,9 @@ export function HostPerforming({
               fontSize: '14px',
               fontWeight: 600,
               opacity: currentLineIndex >= script.lines.length - 1 ? 0.3 : 0.8,
-              color: '#FDFCFA',
+              color: 'var(--color-theater-text)',
               background: 'transparent',
-              border: '1px solid rgba(155, 149, 144, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
               cursor: currentLineIndex >= script.lines.length - 1 ? 'not-allowed' : 'pointer',
             }}
             whileHover={{ scale: currentLineIndex >= script.lines.length - 1 ? 1 : 1.05, x: currentLineIndex >= script.lines.length - 1 ? 0 : 2 }}
@@ -353,7 +356,7 @@ export function HostPerforming({
           <motion.button
             onClick={() => { tapHaptic(); onEndPerformance() }}
             className="w-full mt-3"
-            style={{ padding: '14px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, background: '#F59E42', color: '#1A1714', border: 'none', cursor: 'pointer' }}
+            style={{ padding: '14px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, background: '#F59E42', color: 'var(--color-theater-bg)', border: 'none', cursor: 'pointer' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02 }}
@@ -365,16 +368,16 @@ export function HostPerforming({
 
         <motion.p
           className="hidden sm:flex text-center text-xs items-center justify-center gap-2 mt-3"
-          style={{ color: '#6B6560' }}
+          style={{ color: 'var(--color-theater-muted)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'rgba(155, 149, 144, 0.15)', color: '#9B9590' }}>&larr;</kbd>
+          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'rgba(255, 255, 255, 0.06)', color: 'var(--color-theater-muted)' }}>&larr;</kbd>
           <span>Previous</span>
-          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'rgba(155, 149, 144, 0.15)', color: '#9B9590' }}>Space</kbd>
+          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'rgba(255, 255, 255, 0.06)', color: 'var(--color-theater-muted)' }}>Space</kbd>
           <span>Play/Pause</span>
-          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'rgba(155, 149, 144, 0.15)', color: '#9B9590' }}>&rarr;</kbd>
+          <kbd className="px-1.5 py-0.5 rounded text-[11px]" style={{ background: 'rgba(255, 255, 255, 0.06)', color: 'var(--color-theater-muted)' }}>&rarr;</kbd>
           <span>Next</span>
         </motion.p>
       </motion.div>

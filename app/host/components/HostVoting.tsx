@@ -3,7 +3,8 @@
 import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { Player, Script } from '@/lib/types'
-import { VARIANTS } from '@/lib/animations'
+import { VARIANTS, MOTION } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { CheckCircleIcon, SpinnerIcon } from '@/components/GameIcons'
 
 export interface HostVotingProps {
@@ -13,26 +14,35 @@ export interface HostVotingProps {
 
 export function HostVoting({ players, script }: HostVotingProps) {
   const prefersReducedMotion = useReducedMotion()
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
   const nonHostPlayers = players.filter(p => !p.isHost)
   const votedCount = nonHostPlayers.filter(p => p.hasSubmittedVote).length
 
   return (
-    <motion.div key="voting" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="w-full max-w-4xl mx-auto px-5">
-
+    <motion.div
+      key="voting"
+      variants={VARIANTS.spotlight}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="w-full mx-auto px-5"
+      style={{ maxWidth: isDesktop ? '900px' : '100%' }}
+    >
       {/* Top bar */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <motion.h1
-            className="text-3xl sm:text-4xl font-display font-bold"
-            style={{ color: 'var(--color-text-primary)' }}
+            className="font-display font-bold"
+            style={{ color: 'var(--color-text-primary)', fontSize: 'var(--text-title)' }}
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
           >
             Vote for MVP
           </motion.h1>
           <motion.p
-            className="text-sm mt-1"
-            style={{ color: 'var(--color-text-tertiary)' }}
+            className="mt-1"
+            style={{ color: 'var(--color-text-tertiary)', fontSize: 'var(--text-caption)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
@@ -41,8 +51,9 @@ export function HostVoting({ players, script }: HostVotingProps) {
           </motion.p>
         </div>
         <motion.span
-          className="text-sm font-semibold px-3 py-1.5 rounded-full shrink-0"
+          className="font-semibold px-3 py-1.5 rounded-full shrink-0"
           style={{
+            fontSize: 'var(--text-caption)',
             background: votedCount === nonHostPlayers.length ? 'var(--color-success)' : 'var(--color-surface-alt)',
             color: votedCount === nonHostPlayers.length ? 'white' : 'var(--color-text-secondary)'
           }}
@@ -63,30 +74,26 @@ export function HostVoting({ players, script }: HostVotingProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="flex items-start gap-3">
-            <div>
-              <h4 className="text-lg font-bold font-display" style={{ color: 'var(--color-accent)' }}>{script.title}</h4>
-              {script.synopsis && (
-                <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>{script.synopsis}</p>
-              )}
-            </div>
-          </div>
+          <h4 className="font-bold font-display" style={{ fontSize: '18px', color: 'var(--color-accent)' }}>{script.title}</h4>
+          {script.synopsis && (
+            <p className="mt-1" style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-secondary)' }}>{script.synopsis}</p>
+          )}
         </motion.div>
       )}
 
-      {/* Player cards */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Player cards with card-flip animation */}
+      <div className={`grid gap-4 ${isDesktop ? 'grid-cols-3' : 'grid-cols-2'}`}>
         {nonHostPlayers.map((player, i) => (
           <motion.div
             key={player.id}
             className="flex items-center justify-between p-4 rounded-xl"
             style={{
               background: player.hasSubmittedVote ? 'rgba(245, 158, 66, 0.06)' : 'var(--color-surface-alt)',
-              border: player.hasSubmittedVote ? '2px solid var(--color-accent)' : '1px solid var(--color-border)'
+              border: player.hasSubmittedVote ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
             }}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.08, duration: 0.3 }}
+            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, rotateY: -90 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, rotateY: 0 }}
+            transition={{ delay: i * 0.1, type: 'spring', stiffness: 200, damping: 22 }}
           >
             <div className="flex items-center gap-3">
               <div
@@ -105,12 +112,16 @@ export function HostVoting({ players, script }: HostVotingProps) {
               <div>
                 <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
                 {player.assignedCharacter && (
-                  <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{player.assignedCharacter}</div>
+                  <div style={{ fontSize: 'var(--text-label)', color: 'var(--color-text-tertiary)' }}>{player.assignedCharacter}</div>
                 )}
               </div>
             </div>
             {player.hasSubmittedVote ? (
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>
+              <motion.div
+                initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0, rotate: -180 }}
+                animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, rotate: 0 }}
+                transition={{ type: 'spring', bounce: 0.5, delay: 0.15 }}
+              >
                 <CheckCircleIcon size={24} color="var(--color-accent)" />
               </motion.div>
             ) : (
@@ -124,8 +135,8 @@ export function HostVoting({ players, script }: HostVotingProps) {
 
       {/* Bottom hint */}
       <motion.p
-        className="text-center text-xs mt-6"
-        style={{ color: 'var(--color-text-tertiary)' }}
+        className="text-center mt-6"
+        style={{ color: 'var(--color-text-tertiary)', fontSize: 'var(--text-caption)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}

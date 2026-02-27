@@ -36,6 +36,13 @@ export const MOTION = {
     damping: 20
   },
 
+  // Dramatic spring - for ceremony reveals (title, MVP, etc.)
+  dramatic: {
+    type: 'spring' as const,
+    stiffness: 180,
+    damping: 18
+  },
+
   // Duration presets (in seconds for Framer Motion)
   duration: {
     instant: 0,
@@ -150,6 +157,37 @@ export const VARIANTS = {
     }
   },
 
+  // Drum roll — scale overshoot for MVP / title reveals
+  drumRoll: {
+    initial: { opacity: 0, scale: 0 },
+    animate: {
+      opacity: 1,
+      scale: [0, 1.15, 1],
+      transition: { duration: 0.6, times: [0, 0.7, 1], ease: [0.22, 1, 0.36, 1] as const }
+    },
+    exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } }
+  },
+
+  // Curtain drop — slides down from above with spring
+  curtainDrop: {
+    initial: { opacity: 0, y: '-100%' },
+    animate: {
+      opacity: 1,
+      y: '0%',
+      transition: { type: 'spring' as const, stiffness: 180, damping: 18 }
+    },
+    exit: { opacity: 0, y: '-50%', transition: { duration: 0.3 } }
+  },
+
+  // Countdown pulse — rhythmic scale beat
+  countdownPulse: {
+    initial: { scale: 1 },
+    animate: {
+      scale: [1, 1.08, 1],
+      transition: { duration: 0.8, repeat: Infinity, ease: 'easeInOut' }
+    }
+  },
+
   // Spotlight — brightness reveal for RESULTS state
   spotlight: {
     initial: { opacity: 0, scale: 0.9, filter: 'brightness(0.3)' },
@@ -222,6 +260,23 @@ export const REDUCED_MOTION_VARIANTS = {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 }
+  },
+
+  drumRoll: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 }
+  },
+
+  curtainDrop: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 }
+  },
+
+  countdownPulse: {
+    initial: { scale: 1 },
+    animate: { scale: 1 }
   }
 }
 
@@ -243,7 +298,7 @@ export function getTransition(
     return { duration: 0 }
   }
 
-  if (preset === 'spring' || preset === 'gentle' || preset === 'snappy' || preset === 'bouncy') {
+  if (preset === 'spring' || preset === 'gentle' || preset === 'snappy' || preset === 'bouncy' || preset === 'dramatic') {
     return MOTION[preset]
   }
 

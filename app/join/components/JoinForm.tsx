@@ -8,6 +8,7 @@ import { successHaptic, errorHaptic } from '@/hooks/useHaptics'
 import { isCapacitorNative } from '@/lib/platform'
 import { withTimeout } from '@/lib/socketTimeout'
 import { MOTION } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { EyeIcon, WarningIcon } from '@/components/GameIcons'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
@@ -174,13 +175,15 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
   }
 
   const isFull = roomPreview ? roomPreview.playerCount >= roomPreview.maxPlayers : false
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
 
   return (
     <main
       className="flex flex-col items-center justify-center"
       style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
     >
-      <div className="w-full max-w-md">
+      <div className="w-full" style={{ maxWidth: isDesktop ? '480px' : '448px' }}>
         {/* Back button */}
         <motion.button
           onClick={onNavigateHome}

@@ -5,17 +5,17 @@ import { motion, useReducedMotion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import type { CardSelection, PlayerRole, AvailableCards, Player } from '@/lib/types'
 import { VARIANTS, MOTION } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon, SpinnerIcon, PopcornIcon } from '@/components/GameIcons'
 
-const CardPicker = dynamic(
-  () => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })),
+const CardSwipeStack = dynamic(
+  () => import('@/components/CardSwipeStack').then(m => ({ default: m.CardSwipeStack })),
   {
     ssr: false,
     loading: () => (
-      <div className="p-8 text-center rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-        <div className="h-6 w-40 rounded animate-pulse mx-auto" style={{ background: 'var(--color-border)' }} />
-        <div className="h-4 w-24 rounded animate-pulse mx-auto mt-4" style={{ background: 'var(--color-border)' }} />
+      <div style={{ minHeight: '100dvh', background: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="h-6 w-40 rounded animate-pulse mx-auto" style={{ background: 'rgba(255,255,255,0.1)' }} />
       </div>
     ),
   }
@@ -42,6 +42,8 @@ export function JoinSelection({
 }: JoinSelectionProps) {
   const pageTransitionVariants = VARIANTS.pageTransition
   const prefersReducedMotion = useReducedMotion()
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
   const [confirmMode, setConfirmMode] = useState(false)
 
   useEffect(() => {
@@ -247,9 +249,9 @@ export function JoinSelection({
       exit="exit"
       style={{ padding: '24px 16px', background: 'var(--color-bg)' }}
     >
-      <div className="w-full max-w-2xl mx-auto">
-        <div className="p-5 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <CardPicker
+      <div className="w-full mx-auto" style={{ maxWidth: isDesktop ? '600px' : undefined }}>
+        <div>
+          <CardSwipeStack
             selection={selection}
             setSelection={(s) => setSelection(s)}
             isMature={roomIsMature}

@@ -4,8 +4,9 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import type { Player, RoomSettings, CardSelection, AvailableCards } from '@/lib/types'
 import dynamic from 'next/dynamic'
-const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false, loading: () => <div className="animate-pulse" style={{ height: '300px', borderRadius: '12px', background: 'var(--color-surface-alt)' }} /> })
+const CardSwipeStack = dynamic(() => import('@/components/CardSwipeStack').then(m => ({ default: m.CardSwipeStack })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh', background: '#080808' }} /> })
 import { VARIANTS } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon, SpinnerIcon, StatusDot } from '@/components/GameIcons'
 
@@ -40,6 +41,8 @@ export function HostSelection({
 }: HostSelectionProps) {
   const pageTransitionVariants = VARIANTS.pageTransition
   const prefersReducedMotion = useReducedMotion()
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
   const nonHostPlayers = players.filter(p => !p.isHost)
   const readyCount = nonHostPlayers.filter(p => p.hasSubmittedSelection).length
   const [tipIndex, setTipIndex] = useState(0)
@@ -116,7 +119,7 @@ export function HostSelection({
     }
 
     return (
-      <motion.div key="solo-selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="w-full max-w-2xl mx-auto px-5">
+      <motion.div key="solo-selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="w-full mx-auto px-5" style={{ maxWidth: isDesktop ? '900px' : '672px' }}>
         <motion.button
           onClick={onBackToLobby}
           className="flex items-center gap-1.5 mb-4"
@@ -135,7 +138,7 @@ export function HostSelection({
             </motion.div>
           ) : (
             <>
-              <CardPicker
+              <CardSwipeStack
                 selection={selection}
                 setSelection={(s) => setSelection(s)}
                 isMature={settings.isMature}

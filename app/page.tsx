@@ -10,19 +10,8 @@ import { UserMenu } from '@/components/UserMenu'
 import { LandingPage } from '@/components/LandingPage'
 import { XPBar } from '@/components/XPBar'
 import { MOTION } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import type { LevelInfo, PlayerStats } from '@/lib/types'
-
-function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false)
-  useEffect(() => {
-    const mql = window.matchMedia(query)
-    setMatches(mql.matches)
-    const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
-    mql.addEventListener('change', handler)
-    return () => mql.removeEventListener('change', handler)
-  }, [query])
-  return matches
-}
 
 function HostIcon() {
   return (
@@ -97,7 +86,9 @@ export default function Home() {
   const router = useRouter()
   const { user, loading } = useAuth()
   const { socket, isConnected } = useSocket()
-  const canHover = useMediaQuery('(hover: hover) and (pointer: fine)')
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
+  const canHover = isDesktop
   const [mounted, setMounted] = useState(false)
   const [creditsPurchased, setCreditsPurchased] = useState(false)
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
@@ -133,7 +124,7 @@ export default function Home() {
   if (!mounted || loading) {
     return (
       <main className="flex flex-col" style={{ alignItems: 'flex-start', minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
-        <div className="w-full max-w-md mx-auto px-5" style={{ width: '100%', padding: '0 20px' }}>
+        <div className="w-full mx-auto px-5" style={{ width: '100%', padding: '0 20px', maxWidth: isDesktop ? '720px' : '448px' }}>
           {/* Top bar skeleton */}
           <div className="flex items-center justify-between" style={{ paddingTop: '16px' }}>
             <div className="animate-pulse" style={{ width: 140, height: 28, borderRadius: 8, background: 'var(--color-surface-alt)' }} />
@@ -186,7 +177,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <div className="w-full max-w-md mx-auto px-5" style={{ width: '100%', padding: '0 20px' }}>
+      <div className="w-full mx-auto px-5" style={{ width: '100%', padding: '0 20px', maxWidth: isDesktop ? '720px' : '448px' }}>
         {/* Top bar: branding left, avatar right */}
         <motion.div
           className="flex items-center justify-between"
@@ -312,7 +303,7 @@ export default function Home() {
           </span>
         </motion.div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3" style={{ flexDirection: isDesktop ? 'row' : 'row' }}>
           <motion.button
             onClick={() => router.push('/host')}
             className="flex-1"

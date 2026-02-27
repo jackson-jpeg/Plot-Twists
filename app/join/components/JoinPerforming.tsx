@@ -7,6 +7,7 @@ import type { Script, PlayerRole, SpectatorMessage } from '@/lib/types'
 import { MobileTeleprompter } from '@/components/MobileTeleprompter'
 import { SpectatorChat } from '@/components/SpectatorChat'
 import { VARIANTS } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -31,13 +32,23 @@ export function JoinPerforming({
   script, currentLineIndex, myCharacter, myRole, roomCode,
   spectatorMessages, socket, onNextLine, onPreviousLine,
 }: JoinPerformingProps) {
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
+
   return (
-    <motion.div key="performing" variants={VARIANTS.curtainRise} initial="initial" animate="animate" exit="exit">
+    <motion.div
+      key="performing"
+      variants={VARIANTS.curtainRise}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      style={{ maxWidth: isDesktop ? '900px' : undefined, margin: isDesktop ? '0 auto' : undefined }}
+    >
       <AudienceReactionBar roomCode={roomCode.toUpperCase()} isPerforming={true} isHost={false} />
       <PlotTwistVoting roomCode={roomCode.toUpperCase()} isHost={false} />
 
       {myRole === 'SPECTATOR' && (
-        <div className="mb-3">
+        <div className="mb-3" style={{ maxWidth: isDesktop ? '600px' : undefined, margin: isDesktop ? '0 auto' : undefined }}>
           <SpectatorChat
             messages={spectatorMessages}
             onSendMessage={(text, isPreset) => {

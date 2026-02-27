@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { SignInButton } from '@clerk/nextjs'
 import { analytics } from '@/lib/analytics'
 import { MOTION } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 
 const sceneExamples = [
   { scenario: 'Zombie apocalypse at the office', icon: 'zombie' },
@@ -61,138 +62,161 @@ function TheaterMasks() {
 }
 
 export function LandingPage() {
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
+
   return (
     <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
-      <div className="w-full max-w-md mx-auto px-5">
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={MOTION.gentle}
-          className="text-center"
-          style={{ paddingTop: '24px' }}
-        >
-          <TheaterMasks />
-          <h1
-            className="font-display"
-            style={{
-              fontSize: 'clamp(48px, 12vw, 56px)',
-              fontWeight: 700,
-              color: 'var(--color-text-primary)',
-              letterSpacing: '-0.03em',
-              lineHeight: 1.05,
-              marginTop: '8px',
-            }}
-          >
-            Plot Twists
-          </h1>
-          <p
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: '16px',
-              color: 'var(--color-text-tertiary)',
-              lineHeight: 1.5,
-              marginTop: '8px',
-            }}
-          >
-            AI writes the comedy. You bring the chaos.
-          </p>
-        </motion.div>
-
-        {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, ...MOTION.gentle }}
-          style={{ marginTop: '32px', padding: '0 4px' }}
-        >
-          <SignInButton mode="redirect">
-            <motion.button
-              onClick={() => analytics.landingCtaClicked('clerk')}
-              className="w-full"
-              style={{
-                background: 'var(--color-accent)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '14px',
-                fontSize: '17px',
-                fontWeight: 600,
-                padding: '16px 24px',
-                cursor: 'pointer',
-              }}
-              whileTap={{ scale: 0.98 }}
-            >
-              Get Started
-            </motion.button>
-          </SignInButton>
-          <p
-            className="text-center"
-            style={{
-              fontSize: '13px',
-              color: 'var(--color-text-tertiary)',
-              marginTop: '10px',
-            }}
-          >
-            5 free scripts — no credit card needed
-          </p>
-        </motion.div>
-
-        {/* Scene Previews */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="flex gap-3"
-          style={{ marginTop: '36px', padding: '0 4px' }}
-        >
-          {sceneExamples.map((scene, i) => (
+      <div className="w-full mx-auto px-5" style={{ maxWidth: isDesktop ? '1100px' : '448px' }}>
+        {/* Hero + Scene Previews (side-by-side on desktop) */}
+        <div style={{ display: 'flex', flexDirection: isDesktop ? 'row' : 'column', alignItems: isDesktop ? 'center' : undefined, gap: isDesktop ? '64px' : '0px', paddingTop: isDesktop ? '0' : '24px' }}>
+          <div style={{ flex: isDesktop ? 1 : undefined, maxWidth: isDesktop ? '520px' : undefined }}>
+            {/* Hero */}
             <motion.div
-              key={scene.icon}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 + i * 0.08, ...MOTION.gentle }}
-              className="flex-1"
-              style={{
-                background: 'var(--color-surface)',
-                borderRadius: '10px',
-                padding: '14px 10px 12px',
-                boxShadow: 'var(--shadow-1)',
-              }}
+              transition={MOTION.gentle}
+              style={{ textAlign: isDesktop ? 'left' : 'center' }}
             >
-              <div
-                className="flex items-center justify-center"
+              <TheaterMasks />
+              <h1
+                className="font-display"
                 style={{
-                  width: '100%',
-                  height: '48px',
-                  background: 'var(--color-accent-light)',
-                  borderRadius: '6px',
-                  color: 'var(--color-text-secondary)',
-                  marginBottom: '8px',
+                  fontSize: isDesktop ? '64px' : 'clamp(48px, 12vw, 56px)',
+                  fontWeight: 700,
+                  color: 'var(--color-text-primary)',
+                  letterSpacing: '-0.03em',
+                  lineHeight: 1.05,
+                  marginTop: '8px',
                 }}
               >
-                <SceneIcon type={scene.icon} />
-              </div>
+                {isDesktop ? <>The improv game{'\n'}that writes itself</> : 'Plot Twists'}
+              </h1>
               <p
                 style={{
                   fontFamily: 'var(--font-ui)',
-                  fontSize: '12px',
-                  color: 'var(--color-text-secondary)',
-                  lineHeight: '16px',
-                  textAlign: 'center',
+                  fontSize: isDesktop ? '19px' : '16px',
+                  color: 'var(--color-text-tertiary)',
+                  lineHeight: 1.5,
+                  marginTop: isDesktop ? '16px' : '8px',
+                  maxWidth: isDesktop ? '420px' : undefined,
                 }}
               >
-                {scene.scenario}
+                {isDesktop
+                  ? 'Pick your cards. AI writes the script. You steal the show. The party game where everyone\'s a comedian.'
+                  : 'AI writes the comedy. You bring the chaos.'}
               </p>
             </motion.div>
-          ))}
-        </motion.div>
+
+            {/* CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12, ...MOTION.gentle }}
+              style={{ marginTop: '32px', padding: isDesktop ? '0' : '0 4px' }}
+            >
+              <div style={{ display: 'flex', gap: '12px', flexDirection: isDesktop ? 'row' : 'column' }}>
+                <SignInButton mode="redirect">
+                  <motion.button
+                    onClick={() => analytics.landingCtaClicked('clerk')}
+                    style={{
+                      background: 'var(--color-accent)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 'var(--radius-button)',
+                      fontSize: '17px',
+                      fontWeight: 600,
+                      padding: isDesktop ? '16px 36px' : '16px 24px',
+                      cursor: 'pointer',
+                      width: isDesktop ? 'auto' : '100%',
+                    }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Get Started Free
+                  </motion.button>
+                </SignInButton>
+              </div>
+              <p
+                style={{
+                  fontSize: '13px',
+                  color: 'var(--color-text-tertiary)',
+                  marginTop: '10px',
+                  textAlign: isDesktop ? 'left' : 'center',
+                }}
+              >
+                5 free scripts — no credit card needed
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Scene Previews */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="flex gap-3"
+            style={{
+              marginTop: isDesktop ? '0' : '36px',
+              padding: isDesktop ? '0' : '0 4px',
+              flexDirection: isDesktop ? 'column' : 'row',
+              flex: isDesktop ? 1 : undefined,
+              maxWidth: isDesktop ? '440px' : undefined,
+            }}
+          >
+            {sceneExamples.map((scene, i) => (
+              <motion.div
+                key={scene.icon}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 + i * 0.08, ...MOTION.gentle }}
+                className="flex-1"
+                style={{
+                  background: 'var(--color-surface)',
+                  borderRadius: isDesktop ? '16px' : '10px',
+                  padding: isDesktop ? '16px 20px' : '14px 10px 12px',
+                  boxShadow: 'var(--shadow-1)',
+                  display: isDesktop ? 'flex' : undefined,
+                  alignItems: isDesktop ? 'center' : undefined,
+                  gap: isDesktop ? '16px' : undefined,
+                }}
+              >
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: isDesktop ? '48px' : '100%',
+                    height: '48px',
+                    background: 'var(--color-accent-light)',
+                    borderRadius: isDesktop ? '12px' : '6px',
+                    color: 'var(--color-text-secondary)',
+                    marginBottom: isDesktop ? '0' : '8px',
+                    flexShrink: 0,
+                  }}
+                >
+                  <SceneIcon type={scene.icon} />
+                </div>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: isDesktop ? '15px' : '12px',
+                    color: 'var(--color-text-secondary)',
+                    lineHeight: isDesktop ? '1.4' : '16px',
+                    textAlign: isDesktop ? 'left' : 'center',
+                    fontWeight: isDesktop ? 500 : undefined,
+                  }}
+                >
+                  {scene.scenario}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
 
         {/* How It Works */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          style={{ marginTop: '36px', padding: '0 4px' }}
+          style={{ marginTop: '36px', padding: '0 4px', maxWidth: isDesktop ? '720px' : undefined, margin: isDesktop ? '48px auto 0' : undefined }}
         >
           <p
             style={{

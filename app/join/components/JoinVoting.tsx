@@ -4,6 +4,7 @@ import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { Player, Script } from '@/lib/types'
 import { VARIANTS, MOTION } from '@/lib/animations'
+import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { successHaptic } from '@/hooks/useHaptics'
 import { TrophyIcon, CheckCircleIcon } from '@/components/GameIcons'
 
@@ -30,6 +31,8 @@ function getAvatarColor(name: string): string {
 
 export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }: JoinVotingProps) {
   const prefersReducedMotion = useReducedMotion()
+  const breakpoint = useBreakpoint()
+  const isDesktop = breakpoint === 'desktop'
   const hasVoted = players.find(p => p.id === myPlayerId)?.hasSubmittedVote
   const votablePlayers = players.filter(p => p.role === 'PLAYER' && p.id !== myPlayerId)
 
@@ -43,7 +46,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
       className="flex flex-col items-center justify-center"
       style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
     >
-      <div className="w-full max-w-md">
+      <div className="w-full" style={{ maxWidth: isDesktop ? '720px' : '448px' }}>
         {/* Header */}
         <motion.div
           className="text-center mb-6"
@@ -151,12 +154,12 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
           </motion.div>
         ) : (
           /* Player vote buttons */
-          <div className="flex flex-col gap-3">
+          <div className={`flex ${isDesktop ? 'flex-row flex-wrap' : 'flex-col'} gap-3`}>
             {votablePlayers.map((player, i) => (
               <motion.button
                 key={player.id}
                 onClick={() => { successHaptic(); onVote(player.id) }}
-                className="w-full flex items-center gap-3 p-4 rounded-xl text-left"
+                className={`flex items-center gap-3 p-4 rounded-xl text-left ${isDesktop ? 'flex-1 min-w-[280px]' : 'w-full'}`}
                 style={{
                   background: 'var(--color-surface)',
                   border: '1px solid var(--color-border)',

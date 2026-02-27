@@ -33,6 +33,7 @@ import { SocketRateLimiter } from './server/middleware/rateLimiter'
 import { sanitizeInput as sanitizeUserInput, isValidRoomCode, isValidNickname, validateCardSelection, isValidGameMode, isValidPhoneNumber } from './server/utils/validation'
 import { withErrorHandler } from './server/middleware/socketErrorHandler'
 import { sendPushToUser } from './server/services/push.service'
+import { notifyGameStarting, notifyVotingOpen } from './server/services/notification.service'
 
 // Room Service (write-through Firestore cache)
 import * as roomService from './server/services/room.service'
@@ -238,7 +239,8 @@ app.prepare().then(async () => {
           nickname: isSoloMode ? 'You' : 'Host',
           role: isSoloMode ? 'PLAYER' : 'HOST', // In Solo mode, host is the player
           isHost: true,
-          socketId: socket.id
+          socketId: socket.id,
+          uid: socket.data.userId ?? undefined,
         }
 
         const room: Room = {
@@ -360,6 +362,7 @@ app.prepare().then(async () => {
           role: isRoomFull ? 'SPECTATOR' : 'PLAYER',
           isHost: false,
           socketId: socket.id,
+          uid: socket.data.userId ?? undefined,
           score: 0
         }
 
@@ -489,6 +492,9 @@ app.prepare().then(async () => {
       roomService.updateRoom(room)
       io.to(roomCode).emit('game_state_change', 'SELECTION')
 
+      // Notify players that the game has started
+      notifyGameStarting(room).catch(() => {})
+
       // Send available cards to all players
       const content = getFilteredContent(room.isMature)
       io.to(roomCode).emit('available_cards', content)
@@ -532,6 +538,9 @@ app.prepare().then(async () => {
       if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
         room.gameState = 'VOTING'
         io.to(room.code).emit('game_state_change', 'VOTING')
+
+        // Notify players that voting is open
+        notifyVotingOpen(room).catch(() => {})
 
         const { VOTING_TIMEOUT } = require('./server/utils/constants')
         const votingTimeout = setTimeout(() => {
@@ -1740,6 +1749,7 @@ app.prepare().then(async () => {
           role: 'HOST',
           isHost: true,
           socketId: socket.id,
+          uid: socket.data.userId ?? undefined,
         }
 
         const newRoom: Room = {
@@ -2133,8 +2143,7 @@ app.prepare().then(async () => {
     }))
   })
 
-  // Helper: fire-and-forget push notifications on key state transitions
-  // Currently sends to host only (players don't store UIDs on Player model yet)
+  // Helper: fire-and-forget push notifications to host on key state transitions
   function pushOnStateChange(room: Room, newState: string) {
     if (!room.hostUid) return
 

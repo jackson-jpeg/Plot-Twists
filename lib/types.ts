@@ -231,6 +231,7 @@ export interface Player {
   role: PlayerRole
   isHost: boolean
   socketId: string
+  uid?: string
   hasSubmittedSelection?: boolean
   hasSubmittedVote?: boolean
   assignedCharacter?: string

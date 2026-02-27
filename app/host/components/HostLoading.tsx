@@ -37,7 +37,7 @@ export function HostLoading({
   const stepStatuses = getStepStatus(loadingProgress)
 
   return (
-    <motion.div key="loading" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="container max-w-2xl">
+    <motion.div key="loading" variants={VARIANTS.pageTransition} initial="initial" animate="animate" exit="exit" className="w-full max-w-2xl mx-auto px-5">
 
       {/* Centered typewriter icon */}
       <motion.div

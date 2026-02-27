@@ -88,12 +88,13 @@ export function AudioSettingsPanel({
   }
 
   return (
-    <div className="settings-panel">
+    <div style={{ background: 'var(--color-surface-alt)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         disabled={disabled}
-        className="settings-panel-header disabled:opacity-50"
+        className="disabled:opacity-50"
+        style={{ width: '100%', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'left', cursor: 'pointer', border: 'none', background: 'transparent' }}
       >
         <div className="flex items-center gap-3">
           <span className="text-2xl">🔊</span>
@@ -130,15 +131,15 @@ export function AudioSettingsPanel({
               <button
                 onClick={() => handleChange('soundEffectsEnabled', !local.soundEffectsEnabled)}
                 disabled={disabled}
-                className="toggle-switch disabled:opacity-50"
+                className="disabled:opacity-50"
                 role="switch"
                 aria-checked={local.soundEffectsEnabled}
                 aria-label="Sound effects"
-                data-on={local.soundEffectsEnabled ? 'true' : 'false'}
+                style={{ width: 48, height: 24, borderRadius: '9999px', position: 'relative', cursor: 'pointer', border: 'none', background: local.soundEffectsEnabled ? 'var(--color-accent)' : 'var(--color-border-strong)' }}
               >
                 <motion.div
                   animate={{ x: local.soundEffectsEnabled ? 24 : 2 }}
-                  className="toggle-switch-knob"
+                  style={{ position: 'absolute', top: 2, width: 20, height: 20, background: 'white', borderRadius: '9999px' }}
                 />
               </button>
             </div>
@@ -190,7 +191,7 @@ export function AudioSettingsPanel({
             )}
           </div>
 
-          <div className="divider-accent" />
+          <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, var(--color-accent) 50%, transparent)' }} />
 
           {/* Voice/TTS Section */}
           <div className="space-y-3">
@@ -202,15 +203,15 @@ export function AudioSettingsPanel({
               <button
                 onClick={() => handleChange('voiceEnabled', !local.voiceEnabled)}
                 disabled={disabled}
-                className="toggle-switch disabled:opacity-50"
+                className="disabled:opacity-50"
                 role="switch"
                 aria-checked={local.voiceEnabled}
                 aria-label="Voice narration"
-                data-on={local.voiceEnabled ? 'true' : 'false'}
+                style={{ width: 48, height: 24, borderRadius: '9999px', position: 'relative', cursor: 'pointer', border: 'none', background: local.voiceEnabled ? 'var(--color-accent)' : 'var(--color-border-strong)' }}
               >
                 <motion.div
                   animate={{ x: local.voiceEnabled ? 24 : 2 }}
-                  className="toggle-switch-knob"
+                  style={{ position: 'absolute', top: 2, width: 20, height: 20, background: 'white', borderRadius: '9999px' }}
                 />
               </button>
             </div>
@@ -276,7 +277,7 @@ export function AudioSettingsPanel({
             )}
           </div>
 
-          <div className="divider-accent" />
+          <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, var(--color-accent) 50%, transparent)' }} />
 
           {/* Ambience Section */}
           <div className="space-y-3">
@@ -288,15 +289,15 @@ export function AudioSettingsPanel({
               <button
                 onClick={() => handleChange('ambienceEnabled', !local.ambienceEnabled)}
                 disabled={disabled}
-                className="toggle-switch disabled:opacity-50"
+                className="disabled:opacity-50"
                 role="switch"
                 aria-checked={local.ambienceEnabled}
                 aria-label="Ambient music"
-                data-on={local.ambienceEnabled ? 'true' : 'false'}
+                style={{ width: 48, height: 24, borderRadius: '9999px', position: 'relative', cursor: 'pointer', border: 'none', background: local.ambienceEnabled ? 'var(--color-accent)' : 'var(--color-border-strong)' }}
               >
                 <motion.div
                   animate={{ x: local.ambienceEnabled ? 24 : 2 }}
-                  className="toggle-switch-knob"
+                  style={{ position: 'absolute', top: 2, width: 20, height: 20, background: 'white', borderRadius: '9999px' }}
                 />
               </button>
             </div>
@@ -322,7 +323,7 @@ export function AudioSettingsPanel({
             )}
           </div>
 
-          <div className="divider-accent" />
+          <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, var(--color-accent) 50%, transparent)' }} />
 
           {/* Turn Chime */}
           <div className="flex items-center justify-between">
@@ -333,15 +334,15 @@ export function AudioSettingsPanel({
             <button
               onClick={() => handleChange('turnChimeEnabled', !local.turnChimeEnabled)}
               disabled={disabled}
-              className="toggle-switch disabled:opacity-50"
+              className="disabled:opacity-50"
               role="switch"
               aria-checked={local.turnChimeEnabled}
               aria-label="Turn chime"
-              data-on={local.turnChimeEnabled ? 'true' : 'false'}
+              style={{ width: 48, height: 24, borderRadius: '9999px', position: 'relative', cursor: 'pointer', border: 'none', background: local.turnChimeEnabled ? 'var(--color-accent)' : 'var(--color-border-strong)' }}
             >
               <motion.div
                 animate={{ x: local.turnChimeEnabled ? 24 : 2 }}
-                className="toggle-switch-knob"
+                style={{ position: 'absolute', top: 2, width: 20, height: 20, background: 'white', borderRadius: '9999px' }}
               />
             </button>
           </div>

@@ -149,7 +149,7 @@ export default function AdminPage() {
   if (authLoading || isAdmin === null) {
     return (
       <main className="flex flex-col" style={{ minHeight: '100dvh' }}>
-        <div className="container max-w-4xl pt-20 pb-8 px-4">
+        <div className="w-full max-w-4xl mx-auto px-5 pt-20 pb-8">
           <div className="text-center py-20">
             <motion.div
               animate={{ rotate: 360 }}
@@ -219,7 +219,7 @@ export default function AdminPage() {
         <span className="font-medium text-[var(--color-text-primary)]">Home</span>
       </motion.button>
 
-      <div className="container max-w-4xl pt-20 pb-8 px-4">
+      <div className="w-full max-w-4xl mx-auto px-5 pt-20 pb-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}

@@ -77,7 +77,7 @@ export function HostPerforming({
       initial="initial"
       animate="animate"
       exit="exit"
-      className="container max-w-5xl"
+      className="w-full max-w-5xl mx-auto px-5"
       style={{
         background: '#1A1714',
         color: '#FDFCFA',

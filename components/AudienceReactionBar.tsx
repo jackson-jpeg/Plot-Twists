@@ -170,7 +170,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
           {reactionTypes.map(type => (
             <div key={type} className="flex flex-col items-center">
               <span className="text-xl sm:text-2xl">{REACTION_EMOJIS[type]}</span>
-              <span className={`reaction-count-badge ${bouncingCounts.has(type) ? 'reaction-count-bounce' : ''}`}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255, 255, 255, 0.8)', minWidth: '20px', textAlign: 'center', transform: bouncingCounts.has(type) ? 'scale(1.3)' : 'scale(1)', transition: 'transform 0.3s' }}>
                 {reactionCounts[type]}
               </span>
             </div>

@@ -137,7 +137,7 @@ export function HostLobby({
         </div>
       </motion.div>
 
-      <div className="container max-w-lg px-5">
+      <div className="w-full max-w-lg mx-auto px-5">
         {/* Room Code Section */}
         <motion.div
           className="mb-6"

@@ -72,12 +72,13 @@ export function ScriptCustomizationPanel({
   }
 
   return (
-    <div className="settings-panel">
+    <div style={{ background: 'var(--color-surface-alt)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--color-border)' }}>
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         disabled={disabled}
-        className="settings-panel-header disabled:opacity-50"
+        className="disabled:opacity-50"
+        style={{ width: '100%', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', textAlign: 'left', cursor: 'pointer', border: 'none', background: 'transparent' }}
       >
         <div className="flex items-center gap-3">
           <span className="text-2xl">⚙️</span>
@@ -143,7 +144,7 @@ export function ScriptCustomizationPanel({
             </p>
           </div>
 
-          <div className="divider-accent" />
+          <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, var(--color-accent) 50%, transparent)' }} />
 
           {/* Script Length */}
           <div>
@@ -179,7 +180,7 @@ export function ScriptCustomizationPanel({
             </div>
           </div>
 
-          <div className="divider-accent" />
+          <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, var(--color-accent) 50%, transparent)' }} />
 
           {/* Difficulty */}
           <div>
@@ -215,7 +216,7 @@ export function ScriptCustomizationPanel({
             </div>
           </div>
 
-          <div className="divider-accent" />
+          <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, var(--color-accent) 50%, transparent)' }} />
 
           {/* Physical Comedy */}
           <div>
@@ -250,7 +251,7 @@ export function ScriptCustomizationPanel({
             </div>
           </div>
 
-          <div className="divider-accent" />
+          <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, var(--color-accent) 50%, transparent)' }} />
 
           {/* Enable Callbacks Toggle */}
           <div className="flex items-center justify-between">
@@ -261,17 +262,17 @@ export function ScriptCustomizationPanel({
             <button
               onClick={() => handleChange('enableCallbacks', !local.enableCallbacks)}
               disabled={disabled}
-              className="toggle-switch disabled:opacity-50"
-              data-on={local.enableCallbacks ? 'true' : 'false'}
+              className="disabled:opacity-50"
+              style={{ width: 48, height: 24, borderRadius: '9999px', position: 'relative', cursor: 'pointer', border: 'none', background: local.enableCallbacks ? 'var(--color-accent)' : 'var(--color-border-strong)' }}
             >
               <motion.div
                 animate={{ x: local.enableCallbacks ? 24 : 2 }}
-                className="toggle-switch-knob"
+                style={{ position: 'absolute', top: 2, width: 20, height: 20, background: 'white', borderRadius: '9999px' }}
               />
             </button>
           </div>
 
-          <div className="divider-accent" />
+          <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, var(--color-accent) 50%, transparent)' }} />
 
           {/* Custom Instructions */}
           <div>

@@ -21,18 +21,18 @@ interface CardPackSelectorProps {
 
 const STANDARD_PACK_ID = 'standard'
 
-const THEME_BORDER_CLASS: Record<string, string> = {
-  mixed: 'pack-card-border-mixed',
-  horror: 'pack-card-border-horror',
-  'sci-fi': 'pack-card-border-scifi',
-  scifi: 'pack-card-border-scifi',
-  fantasy: 'pack-card-border-fantasy',
-  romance: 'pack-card-border-romance',
-  mystery: 'pack-card-border-mystery',
+const THEME_BORDER_COLOR: Record<string, string> = {
+  mixed: 'var(--color-accent)',
+  horror: 'var(--color-danger)',
+  'sci-fi': 'var(--color-blue)',
+  scifi: 'var(--color-blue)',
+  fantasy: 'var(--color-purple)',
+  romance: 'var(--color-pink)',
+  mystery: 'var(--color-emerald)',
 }
 
-function getThemeBorderClass(theme: string): string {
-  return THEME_BORDER_CLASS[theme.toLowerCase()] || 'pack-card-border-default'
+function getThemeBorderColor(theme: string): string {
+  return THEME_BORDER_COLOR[theme.toLowerCase()] || 'var(--color-accent-2)'
 }
 
 export function CardPackSelector({
@@ -249,12 +249,15 @@ export function CardPackSelector({
                     <motion.div
                       key={pack.id}
                       whileHover={{ scale: disabled ? 1 : 1.02 }}
-                      className={`pack-card w-full p-4 rounded-xl text-left transition-all ${getThemeBorderClass(pack.theme)} ${isSelected ? 'polaroid-card' : ''}`}
+                      className="w-full p-4 rounded-xl text-left transition-all"
                       style={{
+                        position: 'relative',
                         background: isSelected ? 'var(--color-highlight)' : 'var(--color-surface-alt)',
                         border: isSelected ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
+                        borderTop: `3px solid ${getThemeBorderColor(pack.theme)}`,
                         opacity: disabled ? 0.5 : 1,
                         boxShadow: isSelected ? '0 8px 24px rgba(42, 39, 34, 0.15)' : undefined,
+                        overflow: 'visible',
                       }}
                     >
                       {isSelected && <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full" style={{ background: 'var(--color-accent)' }} />}

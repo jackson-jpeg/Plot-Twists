@@ -539,13 +539,14 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
         <div className="flex items-start gap-3">
           <div className="relative">
             <motion.div
-              className={`text-3xl ${!unlocked ? 'achievement-locked-icon' : ''}`}
+              className="text-3xl"
+              style={!unlocked ? { filter: 'blur(1px) saturate(0.3)', opacity: 0.5 } : undefined}
               animate={unlocked ? { rotate: [-3, 3, -3] } : {}}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
               {achievement.icon}
             </motion.div>
-            {!unlocked && <div className="achievement-lock-indicator">🔒</div>}
+            {!unlocked && <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '16px', zIndex: 1 }}>🔒</div>}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">

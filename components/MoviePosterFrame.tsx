@@ -56,9 +56,8 @@ export function MoviePosterFrame({
         <img
           src={imageUrl}
           alt={`${title ?? 'Movie'} Poster`}
-          className="movie-poster-frame"
           loading="lazy"
-          style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain', aspectRatio: '2/3' }}
+          style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain', aspectRatio: '2/3', borderRadius: '12px', overflow: 'hidden', border: '4px solid #1a1a1a', outline: '2px solid var(--color-accent)', outlineOffset: '-6px', boxShadow: 'inset 0 0 30px rgba(0, 0, 0, 0.3), 0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
           onError={() => setImgError(true)}
         />
       </div>
@@ -91,13 +90,12 @@ export function MoviePosterFrame({
         role={onClick ? 'button' : undefined}
         tabIndex={onClick ? 0 : undefined}
         aria-label={onClick ? `View ${title ?? 'movie'} poster` : undefined}
-        className="movie-poster-frame"
-        style={{ maxWidth, position: 'relative', cursor: onClick ? 'pointer' : undefined }}
+        style={{ maxWidth, position: 'relative', cursor: onClick ? 'pointer' : undefined, borderRadius: '12px', overflow: 'hidden', border: '4px solid #1a1a1a', outline: '2px solid var(--color-accent)', outlineOffset: '-6px', boxShadow: 'inset 0 0 30px rgba(0, 0, 0, 0.3), 0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}
         whileHover={onClick ? { scale: 1.03 } : undefined}
         whileTap={onClick ? { scale: 0.98 } : undefined}
       >
         {showNowShowing && (
-          <div className="movie-poster-ribbon">NOW SHOWING</div>
+          <div style={{ position: 'absolute', top: 16, right: -32, background: 'var(--color-accent)', color: 'white', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 40px', transform: 'rotate(45deg)', zIndex: 2, boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)' }}>NOW SHOWING</div>
         )}
         <img
           src={imageUrl}

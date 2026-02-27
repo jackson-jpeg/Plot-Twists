@@ -209,7 +209,19 @@ export function MobileTeleprompter({
               className="text-center w-full max-w-2xl"
             >
               {isMyTurn && (
-                <div className="script-your-turn mb-6">
+                <div style={{
+                  background: 'var(--color-highlight-pink)',
+                  padding: '12px 16px',
+                  borderRadius: '8px',
+                  textAlign: 'center',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: 'var(--color-text-primary)',
+                  marginBottom: '24px',
+                  borderLeft: '3px solid var(--color-accent)',
+                }}>
                   ★ YOUR TURN
                 </div>
               )}
@@ -243,9 +255,15 @@ export function MobileTeleprompter({
               </motion.div>
 
               <div
-                className={`card p-8 ${isMyTurn ? 'your-turn-enhanced' : ''}`}
                 style={{
-                  borderLeft: isMyTurn ? '3px solid var(--color-accent)' : '1px solid var(--color-border)'
+                  padding: '32px',
+                  borderRadius: '12px',
+                  background: 'var(--color-surface)',
+                  border: isMyTurn ? '3px solid var(--color-accent)' : '1px solid var(--color-border)',
+                  boxShadow: isMyTurn
+                    ? '0 0 10px var(--color-accent), 0 0 25px var(--color-accent), 0 0 40px rgba(245, 158, 66, 0.3)'
+                    : '0 1px 3px rgba(42, 39, 34, 0.08)',
+                  borderLeft: isMyTurn ? '3px solid var(--color-accent)' : '1px solid var(--color-border)',
                 }}
               >
                 <p className="font-script leading-relaxed" style={{

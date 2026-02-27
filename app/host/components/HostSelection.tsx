@@ -74,7 +74,7 @@ export function HostSelection({
   // Solo mode - submitted waiting view
   if (settings.gameMode === 'SOLO' && hasSubmittedSelection) {
     return (
-      <motion.div key="solo-waiting" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-lg text-center">
+      <motion.div key="solo-waiting" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="w-full max-w-lg mx-auto px-5 text-center">
         <div className="p-6 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
           <motion.div className="flex justify-center mb-6" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>
             <CheckCircleIcon size={64} color="var(--color-success)" />
@@ -116,7 +116,7 @@ export function HostSelection({
     }
 
     return (
-      <motion.div key="solo-selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-2xl">
+      <motion.div key="solo-selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="w-full max-w-2xl mx-auto px-5">
         <motion.button
           onClick={onBackToLobby}
           className="flex items-center gap-1.5 mb-4"
@@ -187,7 +187,7 @@ export function HostSelection({
   const currentTip = IMPROV_TIPS[tipIndex]
 
   return (
-    <motion.div key="selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="container max-w-2xl text-center">
+    <motion.div key="selection" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="w-full max-w-2xl mx-auto px-5 text-center">
       <motion.h1
         className="text-3xl sm:text-4xl font-display font-bold mb-2"
         style={{ color: 'var(--color-text-primary)' }}

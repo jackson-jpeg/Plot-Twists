@@ -44,7 +44,7 @@ export function JoinLoading({ loadingProgress, greenRoomQuestion, loadingTimedOu
       initial="initial"
       animate="animate"
       exit="exit"
-      className="container max-w-lg"
+      className="w-full max-w-lg mx-auto px-5"
       style={{ padding: '32px 20px', textAlign: 'center' }}
     >
       {/* Typewriter icon */}

@@ -133,7 +133,7 @@ export default function Home() {
   if (!mounted || loading) {
     return (
       <main className="flex flex-col" style={{ alignItems: 'flex-start', minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
-        <div className="container max-w-md" style={{ width: '100%', padding: '0 20px' }}>
+        <div className="w-full max-w-md mx-auto px-5" style={{ width: '100%', padding: '0 20px' }}>
           {/* Top bar skeleton */}
           <div className="flex items-center justify-between" style={{ paddingTop: '16px' }}>
             <div className="animate-pulse" style={{ width: 140, height: 28, borderRadius: 8, background: 'var(--color-surface-alt)' }} />
@@ -186,7 +186,7 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <div className="container max-w-md" style={{ width: '100%', padding: '0 20px' }}>
+      <div className="w-full max-w-md mx-auto px-5" style={{ width: '100%', padding: '0 20px' }}>
         {/* Top bar: branding left, avatar right */}
         <motion.div
           className="flex items-center justify-between"

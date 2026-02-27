@@ -17,7 +17,7 @@ export function HostVoting({ players, script }: HostVotingProps) {
   const votedCount = nonHostPlayers.filter(p => p.hasSubmittedVote).length
 
   return (
-    <motion.div key="voting" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="container max-w-4xl">
+    <motion.div key="voting" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" className="w-full max-w-4xl mx-auto px-5">
 
       {/* Top bar */}
       <div className="flex items-center justify-between mb-8">

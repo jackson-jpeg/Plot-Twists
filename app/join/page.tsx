@@ -326,6 +326,7 @@ function JoinPageContent() {
               socket={socket}
               myPlayerId={myPlayerId}
               userUid={user?.uid || ''}
+              isGuest={!user}
               xpEvents={xpEvents}
               levelUpData={levelUpData}
               onDismissLevelUp={() => setLevelUpData(null)}

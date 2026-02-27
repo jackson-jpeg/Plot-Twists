@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import type { Script, GameResults, XPEvent, LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
+import { SignInButton } from '@clerk/nextjs'
 import { downloadScript, copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
 import { successHaptic } from '@/hooks/useHaptics'
 import { useConfetti } from '@/hooks/useConfetti'
@@ -26,6 +27,7 @@ export interface JoinResultsProps {
   socket: AppSocket | null
   myPlayerId: string
   userUid: string
+  isGuest?: boolean
   xpEvents: XPEvent[]
   levelUpData: { level: number; title: string } | null
   onDismissLevelUp: () => void
@@ -35,7 +37,7 @@ export interface JoinResultsProps {
 
 export function JoinResults({
   script, gameResults, scriptImageUrl,
-  showPosterLightbox, socket, myPlayerId, userUid,
+  showPosterLightbox, socket, myPlayerId, userUid, isGuest,
   xpEvents, levelUpData, onDismissLevelUp,
   onShowPosterLightbox, onClosePosterLightbox,
 }: JoinResultsProps) {
@@ -163,6 +165,65 @@ export function JoinResults({
           <div className="flex justify-center mb-6">
             <DirectorsReview review={directorsReview} delay={1.0} />
           </div>
+        )}
+
+        {/* Guest signup nudge */}
+        {isGuest && (
+          <motion.div
+            className="w-full rounded-2xl p-6 text-center"
+            style={{
+              background: 'var(--color-highlight)',
+              border: '2px dashed var(--color-accent)',
+              maxWidth: '420px',
+              margin: '0 auto 24px',
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.0 }}
+          >
+            <p
+              className="font-display text-xl"
+              style={{ color: 'var(--color-text-primary)', marginBottom: '8px' }}
+            >
+              Great performance!
+            </p>
+            <p
+              style={{
+                fontSize: '14px',
+                color: 'var(--color-text-secondary)',
+                lineHeight: 1.5,
+                marginBottom: '16px',
+              }}
+            >
+              Sign up to keep your stats, XP, and unlock achievements
+            </p>
+            <SignInButton mode="redirect">
+              <button
+                className="btn btn-primary"
+                style={{
+                  background: 'var(--color-accent)',
+                  color: '#fff',
+                  padding: '12px 32px',
+                  borderRadius: '12px',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Create Account
+              </button>
+            </SignInButton>
+            <p
+              style={{
+                fontSize: '12px',
+                color: 'var(--color-text-tertiary)',
+                marginTop: '10px',
+              }}
+            >
+              Free — takes 30 seconds
+            </p>
+          </motion.div>
         )}
 
         {/* Waiting for host */}

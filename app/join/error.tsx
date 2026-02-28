@@ -33,7 +33,7 @@ export default function JoinError({
             Try Again
           </button>
           <a
-            href="/play"
+            href="/join"
             className="px-6 py-3 font-semibold inline-flex items-center justify-center"
             style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', borderRadius: '12px', fontSize: '15px', textDecoration: 'none' }}
           >

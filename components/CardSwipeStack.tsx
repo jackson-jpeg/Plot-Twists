@@ -74,6 +74,12 @@ function SwipeableCard({
   const keepOpacity = useTransform(x, [0, 100], [0, 1])
   const skipOpacity = useTransform(x, [-100, 0], [1, 0])
 
+  // Box shadow — must be declared here (not inline JSX) to avoid hooks-after-conditional-return violation
+  const boxShadowValue = useTransform(
+    [shadowX, shadowBlur],
+    ([sx, sb]: number[]) => `${sx}px 12px ${sb}px rgba(0,0,0,0.5)`
+  )
+
   const handleDragEnd = useCallback(
     (_: unknown, info: PanInfo) => {
       const offset = info.offset.x
@@ -149,10 +155,7 @@ function SwipeableCard({
           display: 'flex',
           flexDirection: 'column',
           padding: '24px 22px',
-          boxShadow: useTransform(
-            [shadowX, shadowBlur],
-            ([sx, sb]) => `${sx}px 12px ${sb}px rgba(0,0,0,0.5)`
-          ),
+          boxShadow: boxShadowValue,
         }}
       >
         {/* KEEP indicator */}
@@ -317,6 +320,7 @@ export function CardSwipeStack({
 }: CardSwipeStackProps) {
   const [activeTab, setActiveTab] = useState<TabKey>('character')
   const [deckIndex, setDeckIndex] = useState(0)
+  const [hasSwipedOnce, setHasSwipedOnce] = useState(false)
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -375,6 +379,7 @@ export function CardSwipeStack({
       const currentCard = visibleCards[0]
       if (!currentCard) return
 
+      if (!hasSwipedOnce) setHasSwipedOnce(true)
       tapHaptic()
       if ('vibrate' in navigator) navigator.vibrate(direction === 'right' ? [50] : [30, 20, 30])
 
@@ -389,7 +394,7 @@ export function CardSwipeStack({
       // Advance deck
       setDeckIndex((prev) => prev + 1)
     },
-    [visibleCards, selection, setSelection, activeTab, toast, advanceToNextTab]
+    [visibleCards, selection, setSelection, activeTab, toast, advanceToNextTab, hasSwipedOnce]
   )
 
   const handleShuffleAll = useCallback(() => {
@@ -407,6 +412,9 @@ export function CardSwipeStack({
 
   const noCardsLeft = deckIndex >= shuffledDeck.length
 
+  const TAB_LABELS: Record<TabKey, string> = { character: 'Character', setting: 'Setting', circumstance: 'Wild Card' }
+  const TAB_EMOJI: Record<TabKey, string> = { character: '\uD83C\uDFAD', setting: '\uD83C\uDFAC', circumstance: '\uD83C\uDFB2' }
+
   return (
     <div
       style={{
@@ -417,15 +425,82 @@ export function CardSwipeStack({
         flexDirection: 'column',
         position: 'relative',
         overflow: 'hidden',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
       }}
     >
+      {/* Selected card chips — always visible at top */}
+      {selectedCount > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            display: 'flex',
+            gap: 6,
+            padding: '8px 20px 0',
+            flexWrap: 'wrap',
+          }}
+        >
+          {TABS.map((tab) => {
+            const value = selection[tab.key]
+            if (!value) return null
+            return (
+              <motion.div
+                key={tab.key}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  padding: '4px 10px',
+                  borderRadius: 8,
+                  background: 'rgba(245,158,66,0.1)',
+                  border: '1px solid rgba(245,158,66,0.2)',
+                }}
+              >
+                <span style={{ fontSize: 12 }}>{TAB_EMOJI[tab.key]}</span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-ui)',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: '#fff',
+                    maxWidth: 100,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {value}
+                </span>
+                <button
+                  onClick={() => clearCard(tab.key)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.4)',
+                    cursor: 'pointer',
+                    fontSize: 10,
+                    padding: 0,
+                    lineHeight: 1,
+                  }}
+                  aria-label={`Remove ${tab.label}`}
+                >
+                  ✕
+                </button>
+              </motion.div>
+            )
+          })}
+        </motion.div>
+      )}
+
       {/* Header */}
       <div
         style={{
-          padding: '48px 24px 0',
+          padding: selectedCount > 0 ? '12px 24px 0' : '40px 24px 0',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'flex-start',
+          alignItems: 'flex-end',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -454,40 +529,66 @@ export function CardSwipeStack({
             {activeTabConfig.label.toUpperCase()}
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 24 }}>
-          <div style={{ display: 'flex', gap: 5 }}>
-            {TABS.map((tab) => (
-              <motion.div
-                key={tab.key}
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                }}
-                animate={{
-                  backgroundColor: selection[tab.key]
-                    ? '#F59E42'
-                    : activeTab === tab.key
-                      ? 'rgba(255,255,255,0.5)'
-                      : 'rgba(255,255,255,0.15)',
-                }}
-                onClick={() => setActiveTab(tab.key)}
-                transition={{ duration: 0.2 }}
-              />
-            ))}
-          </div>
-          <span
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: 14,
-              fontWeight: 600,
-              color: 'rgba(255,255,255,0.4)',
-            }}
-          >
-            {selectedCount}/3
-          </span>
-        </div>
+        {/* Deck position counter */}
+        <span
+          style={{
+            fontFamily: 'var(--font-ui)',
+            fontSize: 13,
+            fontWeight: 500,
+            color: 'rgba(255,255,255,0.3)',
+            paddingBottom: 4,
+          }}
+        >
+          {Math.min(deckIndex + 1, shuffledDeck.length)} of {shuffledDeck.length}
+        </span>
+      </div>
+
+      {/* Tab pill buttons */}
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+          padding: '14px 24px 0',
+        }}
+      >
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.key
+          const isSelected = !!selection[tab.key]
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              style={{
+                flex: 1,
+                padding: '8px 4px',
+                borderRadius: 10,
+                border: isActive
+                  ? '1.5px solid rgba(255,255,255,0.3)'
+                  : '1px solid rgba(255,255,255,0.08)',
+                background: isActive
+                  ? 'rgba(255,255,255,0.08)'
+                  : 'transparent',
+                color: isSelected
+                  ? '#F59E42'
+                  : isActive
+                    ? '#fff'
+                    : 'rgba(255,255,255,0.4)',
+                fontFamily: 'var(--font-ui)',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 5,
+              }}
+            >
+              {isSelected && <span style={{ fontSize: 10 }}>&#10003;</span>}
+              {TAB_LABELS[tab.key]}
+            </button>
+          )
+        })}
       </div>
 
       {/* Card Stack Area */}
@@ -554,7 +655,7 @@ export function CardSwipeStack({
         )}
       </div>
 
-      {/* Swipe Hints */}
+      {/* Swipe action buttons */}
       <div
         style={{
           display: 'flex',
@@ -650,98 +751,33 @@ export function CardSwipeStack({
         </button>
       </div>
 
-      {/* Bottom: swipe instruction */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: 10,
-          padding: '16px 0 12px',
-        }}
-      >
-        <span
-          style={{
-            fontFamily: 'var(--font-ui)',
-            fontSize: 12,
-            fontWeight: 500,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            color: 'rgba(255,255,255,0.18)',
-          }}
-        >
-          SWIPE TO CHOOSE
-        </span>
-        <svg width="20" height="12" viewBox="0 0 20 12" fill="none">
-          <path d="M2 6h16M14 1l5 5-5 5" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
+      {/* First-time swipe hint — fades after first swipe */}
+      <AnimatePresence>
+        {!hasSwipedOnce && !noCardsLeft && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 24,
+              padding: '12px 0 8px',
+            }}
+          >
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 500, color: 'rgba(255,80,80,0.35)' }}>
+              ← Skip
+            </span>
+            <span style={{ fontFamily: 'var(--font-ui)', fontSize: 12, fontWeight: 500, color: 'rgba(245,158,66,0.5)' }}>
+              Keep →
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Selected cards summary — bottom sheet */}
-      {selectedCount > 0 && (
-        <motion.div
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-          style={{
-            padding: '16px 20px',
-            background: 'rgba(255,255,255,0.04)',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {TABS.map((tab) => {
-              const value = selection[tab.key]
-              if (!value) return null
-              return (
-                <motion.div
-                  key={tab.key}
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    padding: '6px 12px',
-                    borderRadius: 10,
-                    background: 'rgba(245,158,66,0.1)',
-                    border: '1px solid rgba(245,158,66,0.2)',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-ui)',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: '#fff',
-                      maxWidth: 140,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {value}
-                  </span>
-                  <button
-                    onClick={() => clearCard(tab.key)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'rgba(255,255,255,0.4)',
-                      cursor: 'pointer',
-                      fontSize: 12,
-                      padding: 0,
-                      lineHeight: 1,
-                    }}
-                    aria-label={`Remove ${tab.label}`}
-                  >
-                    ✕
-                  </button>
-                </motion.div>
-              )
-            })}
-          </div>
-        </motion.div>
-      )}
+      {/* Bottom padding for safe area */}
+      <div style={{ paddingBottom: 'env(safe-area-inset-bottom, 8px)', minHeight: 8 }} />
     </div>
   )
 }

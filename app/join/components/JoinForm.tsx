@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { Player, PlayerRole, GameMode } from '@/lib/types'
+import type { Player, PlayerRole, GameMode, PublicRoomListing } from '@/lib/types'
 import { analytics } from '@/lib/analytics'
 import { successHaptic, errorHaptic } from '@/hooks/useHaptics'
 import { isCapacitorNative } from '@/lib/platform'
@@ -10,6 +10,7 @@ import { withTimeout } from '@/lib/socketTimeout'
 import { MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { EyeIcon, WarningIcon } from '@/components/GameIcons'
+import { PublicRoomCard } from './PublicRoomCard'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -61,6 +62,11 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
     gameMode: GameMode; playerCount: number; maxPlayers: number; isMature: boolean; gameState: string; hostName: string; players: { nickname: string }[]
   } | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+
+  // Public games state
+  const [publicRooms, setPublicRooms] = useState<PublicRoomListing[]>([])
+  const [isMatching, setIsMatching] = useState(false)
+  const [matchError, setMatchError] = useState<string | null>(null)
 
   const validateRoomCode = (code: string): string => {
     if (!code) return 'Room code is required'
@@ -121,6 +127,53 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, isConnected])
+
+  // Subscribe to public rooms
+  useEffect(() => {
+    if (!socket || !isConnected) return
+
+    socket.emit('list_public_rooms', undefined, (res) => {
+      if (res.success && res.rooms) setPublicRooms(res.rooms)
+    })
+
+    socket.emit('subscribe_public_rooms')
+    socket.on('public_rooms_update', (updatedRooms) => {
+      setPublicRooms(updatedRooms)
+    })
+
+    return () => {
+      socket.emit('unsubscribe_public_rooms')
+      socket.off('public_rooms_update')
+    }
+  }, [socket, isConnected])
+
+  const handleQuickPlay = useCallback((gameMode: GameMode) => {
+    if (!socket || !isConnected) return
+    setIsMatching(true)
+    setMatchError(null)
+
+    socket.emit('quick_play', { gameMode, isMature: false }, (res) => {
+      setIsMatching(false)
+      if (res.success && res.code) {
+        const code = res.code
+        handleRoomCodeChange(code)
+        if (nickname.trim()) {
+          setTimeout(() => {
+            setRoomCode(code)
+            nicknameInputRef.current?.focus()
+          }, 100)
+        }
+        toast.success(`Found a game! Code: ${code}`)
+      } else {
+        setMatchError(res.error || 'Failed to find a game')
+      }
+    })
+  }, [socket, isConnected, nickname, toast])
+
+  const handleJoinPublicRoom = useCallback((code: string) => {
+    handleRoomCodeChange(code)
+    nicknameInputRef.current?.focus()
+  }, [])
 
   const handleJoin = () => {
     const roomErr = validateRoomCode(roomCode)
@@ -498,6 +551,120 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             </p>
           )}
         </motion.div>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-8">
+          <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+          <span style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
+            or browse public games
+          </span>
+          <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+        </div>
+
+        {/* Quick Play buttons */}
+        <motion.div
+          className="grid grid-cols-2 gap-3 mb-4"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, ...MOTION.gentle }}
+        >
+          <motion.button
+            onClick={() => handleQuickPlay('ENSEMBLE')}
+            disabled={isMatching}
+            className="relative rounded-xl p-4 text-center transition-colors"
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+            }}
+            whileHover={isMatching ? undefined : { y: -2 }}
+            whileTap={isMatching ? undefined : { scale: 0.97 }}
+          >
+            <div style={{ fontSize: '24px', marginBottom: '4px' }}>👥</div>
+            <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>Ensemble</div>
+            <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>3-6 performers</div>
+            {isMatching && (
+              <motion.div
+                className="absolute inset-0 rounded-xl flex items-center justify-center"
+                style={{ background: 'rgba(var(--color-purple-rgb, 139, 92, 246), 0.1)' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-purple)' }}>Matching...</span>
+              </motion.div>
+            )}
+          </motion.button>
+          <motion.button
+            onClick={() => handleQuickPlay('HEAD_TO_HEAD')}
+            disabled={isMatching}
+            className="relative rounded-xl p-4 text-center transition-colors"
+            style={{
+              background: 'var(--color-surface)',
+              border: '1px solid var(--color-border)',
+            }}
+            whileHover={isMatching ? undefined : { y: -2 }}
+            whileTap={isMatching ? undefined : { scale: 0.97 }}
+          >
+            <div style={{ fontSize: '24px', marginBottom: '4px' }}>⚔️</div>
+            <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>Head-to-Head</div>
+            <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>2-player duel</div>
+          </motion.button>
+        </motion.div>
+
+        {/* Match error */}
+        <AnimatePresence>
+          {matchError && (
+            <motion.div
+              className="mb-4 p-3 rounded-lg text-center text-sm"
+              style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-danger)' }}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              {matchError}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Public room list */}
+        <div className="flex flex-col gap-3">
+          {publicRooms.length === 0 ? (
+            <motion.div
+              className="text-center py-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.25 }}
+            >
+              <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>No public games right now</p>
+              <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginTop: '4px', marginBottom: '12px' }}>
+                Create the first one and invite friends!
+              </p>
+              <button
+                onClick={onNavigateHome}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '999px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  border: '1px solid var(--color-purple)',
+                  color: 'var(--color-purple)',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                }}
+              >
+                Host a Public Game
+              </button>
+            </motion.div>
+          ) : (
+            publicRooms.map((room, i) => (
+              <PublicRoomCard
+                key={room.code}
+                room={room}
+                index={i}
+                onJoin={() => handleJoinPublicRoom(room.code)}
+              />
+            ))
+          )}
+        </div>
       </div>
     </main>
   )

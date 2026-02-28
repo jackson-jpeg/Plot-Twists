@@ -32,13 +32,14 @@ export interface JoinSelectionProps {
   error: string
   players: Player[]
   onSubmitCards: () => void
+  onBack?: () => void
   toast: { success: (m: string, opts?: { duration?: number }) => void }
 }
 
 export function JoinSelection({
   myRole, hasSubmitted, isSubmitting, selection, setSelection,
   availableCards, roomIsMature, error, players,
-  onSubmitCards, toast,
+  onSubmitCards, onBack, toast,
 }: JoinSelectionProps) {
   const pageTransitionVariants = VARIANTS.pageTransition
   const prefersReducedMotion = useReducedMotion()
@@ -249,7 +250,34 @@ export function JoinSelection({
       exit="exit"
       style={{ padding: '24px 16px', background: 'var(--color-bg)' }}
     >
-      <div className="w-full mx-auto" style={{ maxWidth: isDesktop ? '600px' : undefined }}>
+      <div className="w-full mx-auto" style={{ maxWidth: isDesktop ? '600px' : undefined, position: 'relative' }}>
+        {onBack && (
+          <button
+            onClick={onBack}
+            style={{
+              position: 'absolute',
+              top: 'calc(12px + env(safe-area-inset-top, 0px))',
+              left: 12,
+              zIndex: 20,
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: 'rgba(255,255,255,0.6)',
+            }}
+            aria-label="Close card picker"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        )}
         <div>
           <CardSwipeStack
             selection={selection}

@@ -11,6 +11,10 @@ export class GameErrorBoundary extends React.Component<Props, State> {
     return { hasError: true }
   }
 
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error(`[GameErrorBoundary] ${this.props.phaseName || 'unknown'}:`, error, errorInfo)
+  }
+
   handleRetry = () => {
     this.setState(prev => ({ hasError: false, key: prev.key + 1 }))
   }

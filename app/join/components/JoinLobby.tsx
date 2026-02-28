@@ -7,7 +7,7 @@ import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { EyeIcon, CrownIcon, CheckCircleIcon } from '@/components/GameIcons'
 import { PushPermissionPrompt } from '@/components/PushPermissionPrompt'
-import { AutoStartCountdown } from '@/app/play/components/AutoStartCountdown'
+import { AutoStartCountdown } from './AutoStartCountdown'
 
 export interface JoinLobbyProps {
   players: Player[]

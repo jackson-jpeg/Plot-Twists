@@ -20,12 +20,14 @@ const steps = [
 
 export interface JoinLoadingProps {
   loadingProgress: number
+  loadingPhase?: string
+  scriptTitlePreview?: string | null
   greenRoomQuestion: string
   loadingTimedOut?: boolean
   onLeave?: () => void
 }
 
-export function JoinLoading({ loadingProgress, greenRoomQuestion, loadingTimedOut, onLeave }: JoinLoadingProps) {
+export function JoinLoading({ loadingProgress, loadingPhase, scriptTitlePreview, greenRoomQuestion, loadingTimedOut, onLeave }: JoinLoadingProps) {
   const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
@@ -84,6 +86,21 @@ export function JoinLoading({ loadingProgress, greenRoomQuestion, loadingTimedOu
       >
         Claude is crafting your scene
       </motion.p>
+
+      {/* Script title reveal */}
+      <AnimatePresence>
+        {scriptTitlePreview && (
+          <motion.p
+            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(20px)', scale: 0.95 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, filter: 'blur(0px)', scale: 1 }}
+            transition={MOTION.dramatic}
+            className="mb-6 font-bold text-center font-display"
+            style={{ color: 'var(--color-accent)', fontSize: isDesktop ? '24px' : '20px' }}
+          >
+            &ldquo;{scriptTitlePreview}&rdquo;
+          </motion.p>
+        )}
+      </AnimatePresence>
 
       {/* Theatrical progress bar */}
       <motion.div
@@ -149,7 +166,7 @@ export function JoinLoading({ loadingProgress, greenRoomQuestion, loadingTimedOu
               }}
             >
               {status === 'done' && <CheckCircleIcon size={20} color="var(--color-success)" />}
-              {status === 'active' && <SpinnerIcon size={20} color="#F59E42" />}
+              {status === 'active' && <SpinnerIcon size={20} color="var(--color-accent)" />}
               {status === 'pending' && <PendingCircleIcon size={20} />}
               <span
                 style={{
@@ -212,9 +229,9 @@ export function JoinLoading({ loadingProgress, greenRoomQuestion, loadingTimedOu
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 p-3 rounded-xl"
-            style={{ background: 'var(--color-warning-light, rgba(245,158,66,0.1))', border: '1px solid var(--color-warning, #F59E42)' }}
+            style={{ background: 'var(--color-warning-light, rgba(245,158,66,0.1))', border: '1px solid var(--color-warning, var(--color-accent))' }}
           >
-            <p style={{ fontSize: 'var(--text-caption)', fontWeight: 500, color: 'var(--color-warning, #F59E42)' }}>
+            <p style={{ fontSize: 'var(--text-caption)', fontWeight: 500, color: 'var(--color-warning, var(--color-accent))' }}>
               Taking longer than expected — hang tight, the AI is crafting something special
             </p>
           </motion.div>

@@ -173,6 +173,7 @@ export default function Home() {
               color: '#fff',
             }}
             role="status"
+            aria-live="polite"
           >
             Credits added to your account!
           </motion.div>
@@ -214,9 +215,6 @@ export default function Home() {
           >
             {firstName ? `Hey, ${firstName}` : 'Plot Twists'}
           </h1>
-          <p style={{ fontSize: '15px', color: 'var(--color-text-tertiary)', marginTop: '6px' }}>
-            {/* No subtitle — Paper design has XP bar directly below */}
-          </p>
           {levelInfo && (
             <motion.div
               className="mt-3"

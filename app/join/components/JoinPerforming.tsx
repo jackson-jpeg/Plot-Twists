@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import type { Script, PlayerRole, SpectatorMessage } from '@/lib/types'
 import { MobileTeleprompter } from '@/components/MobileTeleprompter'
 import { SpectatorChat } from '@/components/SpectatorChat'
+import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { VARIANTS } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import type { Socket } from 'socket.io-client'
@@ -24,13 +25,16 @@ export interface JoinPerformingProps {
   roomCode: string
   spectatorMessages: SpectatorMessage[]
   socket: AppSocket | null
+  scriptImageUrl: string | null
   onNextLine: () => void
   onPreviousLine: () => void
+  onShowPosterLightbox?: () => void
 }
 
 export function JoinPerforming({
   script, currentLineIndex, myCharacter, myRole, roomCode,
-  spectatorMessages, socket, onNextLine, onPreviousLine,
+  spectatorMessages, socket, scriptImageUrl, onNextLine, onPreviousLine,
+  onShowPosterLightbox,
 }: JoinPerformingProps) {
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
@@ -51,8 +55,8 @@ export function JoinPerforming({
         style={{ borderBottom: '1px solid var(--color-border)' }}
       >
         <div className="flex items-center gap-1.5">
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#4CAF50', display: 'inline-block' }} />
-          <span style={{ fontSize: '13px', fontWeight: 600, color: '#4CAF50' }}>LIVE</span>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-success)', display: 'inline-block' }} />
+          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-success)' }}>LIVE</span>
         </div>
         <span className="font-display font-bold truncate mx-4" style={{ fontSize: '15px', color: 'var(--color-text-primary)' }}>
           {script.title}
@@ -61,6 +65,25 @@ export function JoinPerforming({
           {myRole === 'SPECTATOR' ? '◎ Spectating' : `Line ${currentLineIndex + 1}/${script.lines.length}`}
         </span>
       </div>
+
+      {/* Poster — compact for mobile join view */}
+      {scriptImageUrl && (
+        <motion.div
+          className="flex justify-center py-3"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <MoviePosterFrame
+            imageUrl={scriptImageUrl}
+            title={script.title}
+            onClick={onShowPosterLightbox}
+            maxWidth={isDesktop ? 280 : 200}
+            showNowShowing={false}
+            variant="performance"
+          />
+        </motion.div>
+      )}
 
       <AudienceReactionBar roomCode={roomCode.toUpperCase()} isPerforming={true} isHost={false} />
       <PlotTwistVoting roomCode={roomCode.toUpperCase()} isHost={false} />

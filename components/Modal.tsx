@@ -131,7 +131,7 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
             position: 'relative',
             background: 'var(--color-background)',
             borderRadius: '16px',
-            boxShadow: '0 24px 48px rgba(42, 39, 34, 0.2)',
+            boxShadow: 'var(--shadow-modal, 0 24px 48px rgba(42, 39, 34, 0.2))',
             maxWidth,
             width: '100%',
             maxHeight: '90dvh',

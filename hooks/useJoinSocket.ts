@@ -41,6 +41,8 @@ export function useJoinSocket({
   const [countdown, setCountdown] = useState<number | null>(null)
   const [spectatorMessages, setSpectatorMessages] = useState<SpectatorMessage[]>([])
   const [loadingProgress, setLoadingProgress] = useState(0)
+  const [loadingPhase, setLoadingPhase] = useState('')
+  const [scriptTitlePreview, setScriptTitlePreview] = useState<string | null>(null)
   const [loadingTimedOut, setLoadingTimedOut] = useState(false)
   const [error, setError] = useState('')
   const [xpEvents, setXpEvents] = useState<XPEvent[]>([])
@@ -88,6 +90,8 @@ export function useJoinSocket({
   useEffect(() => {
     if (gameState === 'LOADING') {
       setLoadingProgress(0)
+      setLoadingPhase('')
+      setScriptTitlePreview(null)
       setLoadingTimedOut(false)
       loadingIntervalRef.current = setInterval(() => {
         setLoadingProgress(prev => (prev >= 95 ? 95 : prev + Math.random() * 2 + 0.5))
@@ -157,6 +161,15 @@ export function useJoinSocket({
 
     socket.on('available_cards', setAvailableCards)
     socket.on('green_room_prompt', setGreenRoomQuestion)
+    socket.on('script_generation_progress', (data) => {
+      setLoadingProgress(data.percent)
+      setLoadingPhase(data.phase)
+      if (data.title) setScriptTitlePreview(data.title)
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current)
+        loadingIntervalRef.current = null
+      }
+    })
     socket.on('script_ready', (newScript) => {
       setScript(newScript)
       setCurrentLineIndex(0)
@@ -193,6 +206,8 @@ export function useJoinSocket({
       setMyCharacter('')
       setGreenRoomQuestion('')
       setLoadingProgress(0)
+      setLoadingPhase('')
+      setScriptTitlePreview(null)
       setCountdown(null)
       setError('')
       if (countdownIntervalRef.current) {
@@ -221,7 +236,8 @@ export function useJoinSocket({
     return () => {
       socket.off('players_update'); socket.off('player_joined')
       socket.off('game_state_change'); socket.off('available_cards')
-      socket.off('green_room_prompt'); socket.off('script_ready')
+      socket.off('green_room_prompt'); socket.off('script_generation_progress')
+      socket.off('script_ready')
       socket.off('script_image_update'); socket.off('sync_teleprompter')
       socket.off('game_over'); socket.off('achievement_unlocked')
       socket.off('xp_gained'); socket.off('level_up')
@@ -259,6 +275,8 @@ export function useJoinSocket({
     countdown,
     spectatorMessages,
     loadingProgress,
+    loadingPhase,
+    scriptTitlePreview,
     loadingTimedOut,
     error, setError,
     xpEvents,

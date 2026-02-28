@@ -162,7 +162,7 @@ export function HostLoading({
               }}
             >
               {status === 'done' && <CheckCircleIcon size={22} color="var(--color-success)" />}
-              {status === 'active' && <SpinnerIcon size={22} color="#F59E42" />}
+              {status === 'active' && <SpinnerIcon size={22} color="var(--color-accent)" />}
               {status === 'pending' && <PendingCircleIcon size={22} />}
               <span
                 style={{

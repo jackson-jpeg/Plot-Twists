@@ -275,9 +275,9 @@ export function LandingPage() {
           ) : (
             <div className="flex flex-col gap-5" style={{ padding: '0 4px' }}>
               {[
-                { num: '1', bg: '#EEF0F8', color: '#5B6AA0', title: 'Pick your cards', desc: 'Choose a character, setting, and wild card from the deck.' },
-                { num: '2', bg: '#E8F5E9', color: '#4CAF50', title: 'AI writes the script', desc: 'Claude crafts a hilarious scene from everyone\u2019s choices.' },
-                { num: '3', bg: '#F0F5E5', color: '#7CB342', title: 'Perform and vote', desc: 'Act it out live, then vote for the MVP of the scene.' },
+                { num: '1', bg: 'var(--color-highlight-blue, #EEF0F8)', color: 'var(--color-accent-2, #5B6AA0)', title: 'Pick your cards', desc: 'Choose a character, setting, and wild card from the deck.' },
+                { num: '2', bg: 'var(--color-success-bg, #E8F5E9)', color: 'var(--color-success, #4CAF50)', title: 'AI writes the script', desc: 'Claude crafts a hilarious scene from everyone\u2019s choices.' },
+                { num: '3', bg: 'var(--color-success-bg, #F0F5E5)', color: 'var(--color-success, #7CB342)', title: 'Perform and vote', desc: 'Act it out live, then vote for the MVP of the scene.' },
               ].map((step, i) => (
                 <motion.div
                   key={step.num}

@@ -118,10 +118,10 @@ export function HostPerforming({
           </span>
           <motion.div
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs shrink-0"
-            style={{ background: 'rgba(76, 175, 80, 0.2)', color: '#82B682' }}
+            style={{ background: 'var(--color-success-bg, rgba(76, 175, 80, 0.2))', color: 'var(--color-success)' }}
             initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
           >
-            <span style={{ width: 6, height: 6, borderRadius: '50%', display: 'inline-block', background: '#4CAF50' }} />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', display: 'inline-block', background: 'var(--color-success)' }} />
             <span>LIVE</span>
           </motion.div>
         </div>
@@ -143,7 +143,7 @@ export function HostPerforming({
           <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255, 255, 255, 0.08)' }}>
             <motion.div
               className="h-full rounded-full"
-              style={{ background: '#F59E42' }}
+              style={{ background: 'var(--color-accent)' }}
               initial={{ width: '0%' }}
               animate={{ width: `${((currentLineIndex + 1) / script.lines.length) * 100}%` }}
               transition={{ duration: 0.3 }}
@@ -179,7 +179,7 @@ export function HostPerforming({
                 className="py-3 px-4 rounded-lg mb-2"
                 style={{
                   background: isCurrent ? 'rgba(245, 158, 66, 0.08)' : 'transparent',
-                  borderLeft: isCurrent ? '3px solid #F59E42' : '3px solid transparent',
+                  borderLeft: isCurrent ? '3px solid var(--color-accent)' : '3px solid transparent',
                   opacity: isPast ? 0.4 : 1,
                   transition: 'background 0.2s, opacity 0.2s',
                 }}
@@ -198,7 +198,7 @@ export function HostPerforming({
                     <div className="flex items-center justify-between mb-1">
                       <span
                         className="text-xs font-bold uppercase tracking-widest"
-                        style={{ color: '#F59E42', letterSpacing: '0.12em' }}
+                        style={{ color: 'var(--color-accent)', letterSpacing: '0.12em' }}
                       >
                         {line.speaker}
                       </span>
@@ -329,7 +329,7 @@ export function HostPerforming({
           <motion.button
             onClick={() => { tapHaptic(); onEndPerformance() }}
             className="w-full"
-            style={{ padding: '14px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, background: '#F59E42', color: 'var(--color-theater-bg)', border: 'none', cursor: 'pointer' }}
+            style={{ padding: '14px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, background: 'var(--color-accent)', color: 'var(--color-theater-bg)', border: 'none', cursor: 'pointer' }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02 }}

@@ -162,7 +162,7 @@ export function HostResults({
               transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
             >
               <svg width="48" height="48" viewBox="0 0 18 18" fill="none">
-                <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="#F59E42" />
+                <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="var(--color-accent)" />
               </svg>
             </motion.div>
             <p
@@ -173,7 +173,7 @@ export function HostResults({
             </p>
             <h1
               className="font-display"
-              style={{ fontSize: isDesktop ? '42px' : '36px', fontWeight: 800, color: '#F59E42', lineHeight: 1.1, marginBottom: '6px' }}
+              style={{ fontSize: isDesktop ? '42px' : '36px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1.1, marginBottom: '6px' }}
             >
               {winner.playerName}
             </h1>
@@ -232,7 +232,7 @@ export function HostResults({
         <motion.button
           onClick={handleShareScene}
           className="w-full py-4 rounded-2xl font-display text-base font-bold mb-3"
-          style={{ background: '#F59E42', color: '#1A1714', border: 'none', cursor: 'pointer' }}
+          style={{ background: 'var(--color-accent)', color: 'var(--color-theater-bg)', border: 'none', cursor: 'pointer' }}
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
@@ -267,7 +267,7 @@ export function HostResults({
           <motion.button
             onClick={() => onRequestNewGame(false)}
             className="flex-1 py-3.5 rounded-xl font-semibold text-sm"
-            style={{ background: '#F59E42', color: '#1A1714', border: 'none', cursor: 'pointer' }}
+            style={{ background: 'var(--color-accent)', color: 'var(--color-theater-bg)', border: 'none', cursor: 'pointer' }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
           >

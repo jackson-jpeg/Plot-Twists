@@ -75,6 +75,8 @@ function JoinPageContent() {
     countdown,
     spectatorMessages,
     loadingProgress,
+    loadingPhase,
+    scriptTitlePreview,
     loadingTimedOut,
     error,
     autoStartCountdown,
@@ -302,7 +304,7 @@ function JoinPageContent() {
 
         {gameState === 'LOADING' && (
           <GameErrorBoundary phaseName="loading" key="loading-eb">
-            <JoinLoading key="loading" loadingProgress={loadingProgress} greenRoomQuestion={greenRoomQuestion} loadingTimedOut={loadingTimedOut} onLeave={() => router.push('/')} />
+            <JoinLoading key="loading" loadingProgress={loadingProgress} loadingPhase={loadingPhase} scriptTitlePreview={scriptTitlePreview} greenRoomQuestion={greenRoomQuestion} loadingTimedOut={loadingTimedOut} onLeave={() => router.push('/')} />
           </GameErrorBoundary>
         )}
 
@@ -314,7 +316,9 @@ function JoinPageContent() {
               myCharacter={myCharacter} myRole={myRole}
               roomCode={roomCode} spectatorMessages={spectatorMessages}
               socket={socket}
+              scriptImageUrl={scriptImageUrl}
               onNextLine={goToNextLine} onPreviousLine={goToPreviousLine}
+              onShowPosterLightbox={() => setShowPosterLightbox(true)}
             />
           </GameErrorBoundary>
         )}

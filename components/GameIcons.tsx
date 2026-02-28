@@ -24,7 +24,7 @@ export function TypewriterIcon({ size = 48, className = '', color = 'currentColo
   )
 }
 
-export function CheckCircleIcon({ size = 20, className = '', color = '#4CAF50' }: IconProps) {
+export function CheckCircleIcon({ size = 20, className = '', color = 'var(--color-success)' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 20 20" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
       <circle cx="10" cy="10" r="9" fill={color} opacity="0.15" />
@@ -34,7 +34,7 @@ export function CheckCircleIcon({ size = 20, className = '', color = '#4CAF50' }
   )
 }
 
-export function SpinnerIcon({ size = 20, className = '', color = '#F59E42' }: IconProps) {
+export function SpinnerIcon({ size = 20, className = '', color = 'var(--color-accent)' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 20 20" fill="none" className={`animate-spin ${className}`} xmlns="http://www.w3.org/2000/svg">
       <circle cx="10" cy="10" r="8" stroke={color} strokeWidth="2" opacity="0.25" />
@@ -43,7 +43,7 @@ export function SpinnerIcon({ size = 20, className = '', color = '#F59E42' }: Ic
   )
 }
 
-export function PendingCircleIcon({ size = 20, className = '', color = '#9B9590' }: IconProps) {
+export function PendingCircleIcon({ size = 20, className = '', color = 'var(--color-text-tertiary)' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 20 20" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
       <circle cx="10" cy="10" r="8" stroke={color} strokeWidth="1.5" strokeDasharray="3 3" opacity="0.5" />
@@ -68,7 +68,7 @@ export function PlayIcon({ size = 24, className = '', color = 'currentColor' }: 
   )
 }
 
-export function VoteCheckIcon({ size = 24, className = '', color = '#F59E42' }: IconProps) {
+export function VoteCheckIcon({ size = 24, className = '', color = 'var(--color-accent)' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
       <circle cx="12" cy="12" r="10" fill={color} />
@@ -79,9 +79,9 @@ export function VoteCheckIcon({ size = 24, className = '', color = '#F59E42' }: 
 
 export function StatusDot({ status, size = 10 }: { status: 'done' | 'active' | 'waiting'; size?: number }) {
   const colors = {
-    done: '#4CAF50',
-    active: '#F59E42',
-    waiting: '#9B9590',
+    done: 'var(--color-success)',
+    active: 'var(--color-accent)',
+    waiting: 'var(--color-text-tertiary)',
   }
   return (
     <svg width={size} height={size} viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
@@ -119,7 +119,7 @@ export function WarningIcon({ size = 20, className = '', color = 'currentColor' 
   )
 }
 
-export function TrophyIcon({ size = 24, className = '', color = '#F59E42' }: IconProps) {
+export function TrophyIcon({ size = 24, className = '', color = 'var(--color-accent)' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
       <path d="M8 21H16M12 17V21M6 4H18V8C18 11.3137 15.3137 14 12 14C8.68629 14 6 11.3137 6 8V4Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -157,7 +157,7 @@ export function PopcornIcon({ size = 24, className = '', color = 'currentColor' 
   )
 }
 
-export function CrownIcon({ size = 16, className = '', color = '#F59E42' }: IconProps) {
+export function CrownIcon({ size = 16, className = '', color = 'var(--color-accent)' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
       <path d="M2 12L3 5L6 8L8 3L10 8L13 5L14 12H2Z" fill={color} />
@@ -192,7 +192,7 @@ export function CopyIcon({ size = 20, className = '', color = 'currentColor' }: 
   )
 }
 
-export function StarIcon({ size = 20, className = '', color = '#F59E42' }: IconProps) {
+export function StarIcon({ size = 20, className = '', color = 'var(--color-accent)' }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 20 20" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
       <path d="M10 2L12.5 7.5L18 8L14 12L15 18L10 15L5 18L6 12L2 8L7.5 7.5L10 2Z" fill={color} />

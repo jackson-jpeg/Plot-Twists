@@ -9,16 +9,9 @@ import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon, SpinnerIcon, PopcornIcon } from '@/components/GameIcons'
 
-const CardSwipeStack = dynamic(
-  () => import('@/components/CardSwipeStack').then(m => ({ default: m.CardSwipeStack })),
-  {
-    ssr: false,
-    loading: () => (
-      <div style={{ minHeight: '100dvh', background: '#080808', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="h-6 w-40 rounded animate-pulse mx-auto" style={{ background: 'rgba(255,255,255,0.1)' }} />
-      </div>
-    ),
-  }
+const CardPicker = dynamic(
+  () => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })),
+  { ssr: false, loading: () => null }
 )
 
 export interface JoinSelectionProps {
@@ -279,7 +272,7 @@ export function JoinSelection({
           </button>
         )}
         <div>
-          <CardSwipeStack
+          <CardPicker
             selection={selection}
             setSelection={(s) => setSelection(s)}
             isMature={roomIsMature}

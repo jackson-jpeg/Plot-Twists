@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import type { Player, RoomSettings, CardSelection, AvailableCards } from '@/lib/types'
 import dynamic from 'next/dynamic'
-const CardSwipeStack = dynamic(() => import('@/components/CardSwipeStack').then(m => ({ default: m.CardSwipeStack })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh', background: '#080808' }} /> })
+const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false, loading: () => null })
 import { VARIANTS } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic } from '@/hooks/useHaptics'
@@ -138,7 +138,7 @@ export function HostSelection({
             </motion.div>
           ) : (
             <>
-              <CardSwipeStack
+              <CardPicker
                 selection={selection}
                 setSelection={(s) => setSelection(s)}
                 isMature={settings.isMature}

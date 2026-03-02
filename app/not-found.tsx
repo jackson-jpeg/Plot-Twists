@@ -25,7 +25,7 @@ export default function NotFound() {
         <Link
           href="/"
           className="inline-flex items-center gap-2"
-          style={{ background: 'var(--color-accent)', color: '#fff', padding: '14px 28px', borderRadius: '14px', fontSize: '16px', fontWeight: 600, textDecoration: 'none' }}
+          style={{ background: 'var(--color-accent)', color: 'white', padding: '14px 28px', borderRadius: '14px', fontSize: '16px', fontWeight: 600, textDecoration: 'none' }}
         >
           Back to Main Stage
         </Link>

@@ -121,7 +121,7 @@ export function LandingPage() {
                     onClick={() => analytics.landingCtaClicked('clerk')}
                     style={{
                       background: 'var(--color-accent)',
-                      color: '#fff',
+                      color: 'white',
                       border: 'none',
                       borderRadius: 'var(--radius-button)',
                       fontSize: '17px',

@@ -257,7 +257,7 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
                           {isBest && (
                             <span
                               className="absolute -top-2.5 right-4 text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full"
-                              style={{ background: 'var(--color-accent)', color: '#fff', fontSize: '10px', letterSpacing: '0.05em' }}
+                              style={{ background: 'var(--color-accent)', color: 'white', fontSize: '10px', letterSpacing: '0.05em' }}
                             >
                               Best Value
                             </span>
@@ -270,7 +270,7 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
                               width: 48,
                               height: 48,
                               background: isSelected ? 'var(--color-accent)' : 'var(--color-surface-alt)',
-                              color: isSelected ? '#fff' : 'var(--color-text-secondary)',
+                              color: isSelected ? 'white' : 'var(--color-text-secondary)',
                               fontSize: '18px',
                               fontWeight: 700,
                               borderRadius: '12px',
@@ -327,7 +327,7 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
                         fontSize: '17px',
                         fontWeight: 700,
                         background: loading ? 'var(--color-surface-alt)' : 'var(--color-accent)',
-                        color: loading ? 'var(--color-text-tertiary)' : '#fff',
+                        color: loading ? 'var(--color-text-tertiary)' : 'white',
                         border: 'none',
                         cursor: loading ? 'default' : 'pointer',
                       }}

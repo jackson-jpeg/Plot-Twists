@@ -170,7 +170,7 @@ export default function Home() {
             style={{
               top: 'calc(16px + env(safe-area-inset-top, 0px))',
               background: 'var(--color-success)',
-              color: '#fff',
+              color: 'white',
             }}
             role="status"
             aria-live="polite"
@@ -311,7 +311,7 @@ export default function Home() {
             marginTop: '16px',
             padding: '16px',
             background: 'var(--color-accent)',
-            color: '#fff',
+            color: 'white',
             border: 'none',
             borderRadius: '14px',
             fontSize: '17px',

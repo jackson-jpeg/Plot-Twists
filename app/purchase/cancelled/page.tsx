@@ -28,7 +28,7 @@ export default function PurchaseCancelledPage() {
 
             <div className="flex flex-col gap-3">
               <button onClick={() => router.push('/')} className="w-full"
-                style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}>
+                style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}>
                 Back to Home
               </button>
               <button

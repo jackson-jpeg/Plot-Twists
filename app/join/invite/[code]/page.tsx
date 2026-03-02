@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { MOTION } from '@/lib/animations'
 import { analytics } from '@/lib/analytics'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
+import { CAST_COLORS } from '@/lib/avatarColors'
 import type { GameMode } from '@/lib/types'
 
 interface RoomPreview {
@@ -17,11 +18,6 @@ interface RoomPreview {
   gameState: string
   players: { nickname: string }[]
 }
-
-const AVATAR_COLORS = [
-  '#F59E42', '#EC4899', '#3B82F6', '#10B981', '#A855F7',
-  '#EF4444', '#8B5CF6', '#14B8A6', '#F97316', '#6366F1',
-]
 
 function TheaterMasks({ size = 36 }: { size?: number }) {
   return (
@@ -157,7 +153,7 @@ export function InvitePage() {
             <motion.button
               onClick={() => router.push('/join')}
               className="w-full"
-              style={{ padding: '14px 24px', borderRadius: '14px', fontSize: '16px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
+              style={{ padding: '14px 24px', borderRadius: '14px', fontSize: '16px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -300,7 +296,7 @@ export function InvitePage() {
                           style={{
                             width: 32,
                             height: 32,
-                            background: AVATAR_COLORS[i % AVATAR_COLORS.length],
+                            background: CAST_COLORS[i % CAST_COLORS.length],
                             fontSize: '13px',
                             fontWeight: 700,
                             color: 'white',
@@ -401,7 +397,7 @@ export function InvitePage() {
               fontSize: '17px',
               fontWeight: 700,
               background: loading || error ? 'var(--color-surface-alt)' : 'var(--color-accent)',
-              color: loading || error ? 'var(--color-text-tertiary)' : '#fff',
+              color: loading || error ? 'var(--color-text-tertiary)' : 'white',
               border: 'none',
               cursor: loading || error ? 'not-allowed' : 'pointer',
             }}

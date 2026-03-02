@@ -7,6 +7,7 @@ import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { successHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon } from '@/components/GameIcons'
+import { getAvatarColor } from '@/lib/avatarColors'
 
 export interface JoinVotingProps {
   players: Player[]
@@ -14,19 +15,6 @@ export interface JoinVotingProps {
   script: Script | null
   myCharacter: string | null
   onVote: (playerId: string) => void
-}
-
-const AVATAR_COLORS = [
-  '#3B5998', '#7B3F72', '#4A6741', '#8B6914', '#2D6A6A',
-  '#6B4C3B', '#4B0082', '#8B4513', '#2F4F4F', '#3B3B3B',
-]
-
-function getAvatarColor(name: string): string {
-  let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
 }
 
 export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }: JoinVotingProps) {

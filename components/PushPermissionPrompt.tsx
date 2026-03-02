@@ -78,7 +78,7 @@ export function PushPermissionPrompt() {
               onClick={handleEnable}
               style={{
                 background: 'var(--color-accent)',
-                color: '#fff',
+                color: 'white',
                 border: 'none',
                 borderRadius: '8px',
                 fontSize: '14px',

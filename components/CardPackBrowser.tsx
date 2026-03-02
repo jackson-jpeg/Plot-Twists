@@ -179,7 +179,7 @@ export function CardPackBrowser({ isOpen, onClose, onSelectPack, currentPackId }
                     onClick={() => setSelectedTheme(theme.value)}
                     className="px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors"
                     style={selectedTheme === theme.value
-                      ? { background: 'var(--color-accent)', color: '#fff', border: '1px solid var(--color-accent)' }
+                      ? { background: 'var(--color-accent)', color: 'white', border: '1px solid var(--color-accent)' }
                       : { background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }
                     }
                     aria-label={`Filter by ${theme.label} theme`}

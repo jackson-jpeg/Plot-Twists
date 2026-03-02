@@ -157,7 +157,7 @@ function PackPreviewContent({
       <motion.button
         onClick={handleUseInGame}
         className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold"
-        style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', fontSize: '15px', cursor: 'pointer' }}
+        style={{ background: 'var(--color-accent)', color: 'white', border: 'none', fontSize: '15px', cursor: 'pointer' }}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
@@ -273,7 +273,7 @@ export default function ExplorePage() {
             onClick={handleSearch}
             disabled={!searchQuery.trim()}
             className="px-5 shrink-0"
-            style={{ borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer', opacity: searchQuery.trim() ? 1 : 0.5 }}
+            style={{ borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer', opacity: searchQuery.trim() ? 1 : 0.5 }}
           >
             Search
           </button>

@@ -198,7 +198,7 @@ export function JoinResults({
         <motion.button
           onClick={handleShareScript}
           className="w-full py-4 rounded-2xl font-display text-base font-bold mb-3"
-          style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
+          style={{ background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
@@ -280,7 +280,7 @@ export function JoinResults({
               Sign up to keep your stats, XP, and unlock achievements
             </p>
             <SignInButton mode="redirect">
-              <button style={{ background: 'var(--color-accent)', color: '#fff', padding: '12px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+              <button style={{ background: 'var(--color-accent)', color: 'white', padding: '12px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
                 Create Account
               </button>
             </SignInButton>

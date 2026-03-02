@@ -11,6 +11,7 @@ const AudioSettingsPanel = dynamic(() => import('@/components/AudioSettingsPanel
 import { MOTION, VARIANTS } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
+import { getAvatarColor } from '@/lib/avatarColors'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -39,19 +40,6 @@ export interface HostLobbyProps {
   onSetSettings: React.Dispatch<React.SetStateAction<RoomSettings>>
   onShowOnboarding: () => void
   onNavigateHome: () => void
-}
-
-const AVATAR_COLORS = [
-  '#3B3B3B', '#6B4C3B', '#4A6741', '#3B5998', '#7B3F72',
-  '#8B6914', '#2D6A6A', '#8B4513', '#4B0082', '#2F4F4F',
-]
-
-function getAvatarColor(name: string): string {
-  let hash = 0
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length]
 }
 
 function CopyIcon({ size = 20 }: { size?: number }) {

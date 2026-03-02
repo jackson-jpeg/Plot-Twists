@@ -256,7 +256,7 @@ export default function ProfilePage() {
               <motion.button
                 onClick={() => setShowPurchaseModal(true)}
                 className="px-3 py-1.5 rounded-full text-sm font-semibold"
-                style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
+                style={{ background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -569,7 +569,7 @@ export default function ProfilePage() {
                           </div>
                           <motion.button
                             onClick={() => setShowPurchaseModal(true)}
-                            style={{ padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
+                            style={{ padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
@@ -686,7 +686,7 @@ export default function ProfilePage() {
             <SignInButton mode="redirect">
               <motion.button
                 className="w-full"
-                style={{ padding: '14px', fontWeight: 600, borderRadius: '12px', background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '15px' }}
+                style={{ padding: '14px', fontWeight: 600, borderRadius: '12px', background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '15px' }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >

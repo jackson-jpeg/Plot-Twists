@@ -90,7 +90,7 @@ function PurchaseSuccessContent() {
             </h1>
             <p className="mb-6 text-[var(--color-text-secondary)]">{error}</p>
             <button onClick={() => router.push('/')}
-              style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}>
+              style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}>
               Go Home
             </button>
           </motion.div>
@@ -152,7 +152,7 @@ function PurchaseSuccessContent() {
                 transition={{ delay: 0.5 }}
               >
                 <button onClick={() => router.push('/')} className="w-full"
-                  style={{ padding: '14px 24px', borderRadius: '14px', fontSize: '16px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}>
+                  style={{ padding: '14px 24px', borderRadius: '14px', fontSize: '16px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}>
                   Start Playing
                 </button>
                 <button

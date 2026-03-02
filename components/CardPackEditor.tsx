@@ -313,7 +313,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
                             onClick={() => setPackTheme(theme.value)}
                             className="p-2 rounded-lg text-center transition-all"
                             style={packTheme === theme.value
-                              ? { background: 'var(--color-accent)', color: '#fff', border: '1px solid var(--color-accent)' }
+                              ? { background: 'var(--color-accent)', color: 'white', border: '1px solid var(--color-accent)' }
                               : { background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }
                             }
                           >
@@ -506,7 +506,7 @@ export function CardPackEditor({ isOpen, packId, onClose, onUpdated }: CardPackE
             <button
               onClick={handleNext}
               disabled={isSubmitting || isLoading}
-              className="px-4 py-2 rounded-lg text-sm font-semibold" style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
+              className="px-4 py-2 rounded-lg text-sm font-semibold" style={{ background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
             >
               {isSubmitting ? 'Saving...' : step === 3 ? 'Save Changes' : 'Next'}
             </button>

@@ -315,7 +315,7 @@ export function MobileTeleprompter({
               borderRadius: '24px',
               border: 'none',
               background: 'var(--color-accent)',
-              color: '#fff',
+              color: 'white',
               fontSize: '15px',
               fontWeight: 600,
               cursor: currentLineIndex >= script.lines.length - 1 ? 'not-allowed' : 'pointer',

@@ -96,7 +96,7 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
                 fontSize: '13px',
                 fontWeight: 600,
                 background: tab === t ? 'rgba(255,255,255,0.12)' : 'transparent',
-                color: tab === t ? '#fff' : 'rgba(255,255,255,0.5)',
+                color: tab === t ? 'white' : 'rgba(255,255,255,0.5)',
                 border: tab === t ? 'none' : '1px solid rgba(255,255,255,0.12)',
                 cursor: 'pointer',
                 textTransform: 'capitalize' as const,

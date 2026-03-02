@@ -7,12 +7,8 @@ import { useSocket } from '@/contexts/SocketContext'
 import { DirectorsReview } from '@/components/DirectorsReview'
 import { withTimeout } from '@/lib/socketTimeout'
 import { MOTION } from '@/lib/animations'
+import { CAST_COLORS } from '@/lib/avatarColors'
 import type { SavedGame } from '@/lib/types'
-
-const AVATAR_COLORS = [
-  '#F59E42', '#EC4899', '#3B82F6', '#10B981', '#A855F7',
-  '#EF4444', '#8B5CF6', '#14B8A6', '#F97316', '#6366F1',
-]
 
 export default function ReviewPage() {
   const params = useParams()
@@ -228,7 +224,7 @@ export default function ReviewPage() {
                   style={{
                     width: 28,
                     height: 28,
-                    background: AVATAR_COLORS[i % AVATAR_COLORS.length],
+                    background: CAST_COLORS[i % CAST_COLORS.length],
                     fontSize: '12px',
                     fontWeight: 700,
                     color: 'white',

@@ -83,7 +83,7 @@ export function CharacterCardShare({
                 fontSize: '13px',
                 fontWeight: 600,
                 background: format === f ? 'var(--color-accent)' : 'rgba(255,255,255,0.08)',
-                color: format === f ? '#fff' : 'rgba(255,255,255,0.6)',
+                color: format === f ? 'white' : 'rgba(255,255,255,0.6)',
                 border: format === f ? 'none' : '1px solid rgba(255,255,255,0.15)',
                 cursor: 'pointer',
                 textTransform: 'capitalize' as const,

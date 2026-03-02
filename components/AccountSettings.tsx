@@ -270,7 +270,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                               onClick={handleUpdateDisplayName}
                               disabled={nameLoading}
                               className="px-3 py-1.5 rounded-lg text-sm font-semibold"
-                              style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
+                              style={{ background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
                             >
                               {nameLoading ? '...' : 'Save'}
                             </button>
@@ -521,7 +521,7 @@ export function AccountSettings({ onClose }: AccountSettingsProps) {
                         onClick={handleSavePreferences}
                         disabled={prefsLoading}
                         className="w-full py-2.5 rounded-lg text-sm font-semibold"
-                        style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
+                        style={{ background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
                       >
                         {prefsLoading ? 'Saving...' : 'Save Preferences'}
                       </button>

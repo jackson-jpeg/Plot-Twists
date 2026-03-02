@@ -181,7 +181,7 @@ export function ReferralCard() {
                       onClick={handleRedeem}
                       disabled={redeemLoading || redeemCode.length < 6}
                       className="px-3 py-1.5 rounded-lg text-sm font-semibold"
-                      style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
+                      style={{ background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
                     >
                       {redeemLoading ? '...' : 'Redeem'}
                     </button>

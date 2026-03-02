@@ -72,7 +72,7 @@ export function UserMenu() {
         <SignInButton mode="redirect">
           <button
             className="px-4 py-2 rounded-lg text-sm font-semibold"
-            style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}
+            style={{ background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
           >
             Sign In
           </button>
@@ -98,7 +98,7 @@ export function UserMenu() {
             className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
             style={{
               background: 'linear-gradient(to bottom right, var(--color-purple), var(--color-pink))',
-              color: '#fff',
+              color: 'white',
               border: '2px solid var(--color-border)',
             }}
           >

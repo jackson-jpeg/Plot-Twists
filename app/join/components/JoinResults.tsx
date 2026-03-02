@@ -128,7 +128,7 @@ export function JoinResults({
   }
 
   return (
-    <motion.div key="results" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" style={{ padding: '24px 16px', background: 'var(--color-bg)' }}>
+    <motion.div key="results" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" style={{ padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-bg)' }}>
       <div className="w-full mx-auto text-center" style={{ maxWidth: isDesktop ? '720px' : '512px' }}>
         {/* MVP Hero — star + label + name */}
         {gameResults?.winner ? (

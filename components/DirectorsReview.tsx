@@ -78,7 +78,7 @@ export function DirectorsReview({ review, showTitle, date, delay = 0, onShare }:
           style={{
             fontSize: '28px',
             fontWeight: 700,
-            color: '#fff',
+            color: 'white',
             lineHeight: 1.15,
             marginBottom: '4px',
           }}

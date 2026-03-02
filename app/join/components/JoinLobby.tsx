@@ -44,7 +44,7 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
       animate="animate"
       exit="exit"
       className="flex flex-col items-center justify-center"
-      style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
+      style={{ minHeight: '100dvh', padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-bg)' }}
     >
       <div className="w-full text-center" style={{ maxWidth: isDesktop ? '520px' : '448px' }}>
         {/* Success icon */}
@@ -205,7 +205,7 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
                       padding: '2px 8px',
                       borderRadius: '999px',
                       background: 'rgba(139, 92, 246, 0.12)',
-                      color: '#8B5CF6',
+                      color: 'var(--color-purple)',
                     }}>
                       HOST
                     </span>

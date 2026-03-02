@@ -189,13 +189,13 @@ export default function ProfilePage() {
                   width: 80,
                   height: 80,
                   borderRadius: '50%',
-                  background: '#4A90D9',
+                  background: 'var(--color-blue, #4A90D9)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '32px',
                   fontWeight: 700,
-                  color: '#fff',
+                  color: 'white',
                   marginBottom: '12px',
                 }}
                 whileHover={{ scale: 1.05 }}
@@ -229,7 +229,7 @@ export default function ProfilePage() {
                       className="h-full rounded-full transition-all duration-500"
                       style={{
                         width: `${levelInfo.progressPercent}%`,
-                        background: '#4CAF50',
+                        background: 'var(--color-success)',
                       }}
                     />
                   </div>
@@ -359,13 +359,13 @@ export default function ProfilePage() {
                   width: 80,
                   height: 80,
                   borderRadius: '50%',
-                  background: '#4A90D9',
+                  background: 'var(--color-blue, #4A90D9)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '32px',
                   fontWeight: 700,
-                  color: '#fff',
+                  color: 'white',
                   marginBottom: '12px',
                 }}
               >

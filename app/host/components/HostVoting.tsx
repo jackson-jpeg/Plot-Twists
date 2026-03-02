@@ -52,6 +52,8 @@ export function HostVoting({ players, script }: HostVotingProps) {
         </div>
         <motion.span
           className="font-semibold px-3 py-1.5 rounded-full shrink-0"
+          aria-live="polite"
+          aria-atomic="true"
           style={{
             fontSize: 'var(--text-caption)',
             background: votedCount === nonHostPlayers.length ? 'var(--color-success)' : 'var(--color-surface-alt)',

@@ -28,7 +28,7 @@ export default function ExploreError({
           <button
             onClick={reset}
             className="px-6 py-3 font-semibold"
-            style={{ background: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '15px', cursor: 'pointer' }}
+            style={{ background: 'var(--color-accent)', color: 'white', border: 'none', borderRadius: '12px', fontSize: '15px', cursor: 'pointer' }}
           >
             Try Again
           </button>

@@ -82,7 +82,7 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
   const rest = clips.slice(1)
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#0f0f0f', color: '#fff' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--color-theater-bg, #0f0f0f)', color: 'white' }}>
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-8 pb-4">
         <h1 className="font-display" style={{ fontSize: '28px', fontWeight: 700 }}>Clips</h1>
@@ -206,7 +206,7 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
               </div>
               <span
                 className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded"
-                style={{ fontSize: '10px', fontWeight: 600, background: 'rgba(0,0,0,0.6)', color: '#fff' }}
+                style={{ fontSize: '10px', fontWeight: 600, background: 'rgba(0,0,0,0.6)', color: 'white' }}
               >
                 {formatDuration(clip.duration)}
               </span>

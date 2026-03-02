@@ -345,7 +345,7 @@ function HostPageContent() {
             <motion.button
               onClick={confirmMatureMode}
               className="w-full"
-              style={{ background: 'var(--color-purple)', color: '#fff', padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+              style={{ background: 'var(--color-purple)', color: 'white', padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -371,7 +371,7 @@ function HostPageContent() {
           <p className="text-sm mb-5" style={{ color: 'var(--color-text-secondary)' }}>Buy more credits to keep the show going.</p>
           <button onClick={() => { setShowInsufficientCredits(false); setShowPurchaseModal(true) }}
             className="w-full mb-2"
-            style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: '#fff', border: 'none', cursor: 'pointer' }}>
+            style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}>
             Buy Credits
           </button>
           <button onClick={() => setShowInsufficientCredits(false)}
@@ -404,7 +404,9 @@ function HostPageContent() {
                 animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
                 exit={prefersReducedMotion ? { opacity: 0 } : { scale: 2, opacity: 0 }}
                 transition={MOTION.bouncy}
-                className="text-center">
+                className="text-center"
+                role="status"
+                aria-live="assertive">
                 <div style={{ fontSize: '120px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1 }}>{countdown}</div>
                 <div style={{ fontSize: '18px', color: 'var(--color-text-tertiary)', marginTop: '16px' }}>Curtain up!</div>
               </motion.div>

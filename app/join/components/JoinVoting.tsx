@@ -44,7 +44,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
       animate="animate"
       exit="exit"
       className="flex flex-col items-center justify-center"
-      style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
+      style={{ minHeight: '100dvh', padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-bg)' }}
     >
       <div className="w-full" style={{ maxWidth: isDesktop ? '720px' : '448px' }}>
         {/* Header */}
@@ -161,6 +161,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
               <motion.button
                 key={player.id}
                 onClick={() => { successHaptic(); onVote(player.id) }}
+                aria-label={`Vote for ${player.nickname}`}
                 className={`flex items-center gap-3 p-4 rounded-xl text-left ${isDesktop ? 'flex-1 min-w-[280px]' : 'w-full'}`}
                 style={{
                   background: 'var(--color-surface)',

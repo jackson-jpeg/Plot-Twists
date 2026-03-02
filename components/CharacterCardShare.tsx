@@ -66,7 +66,7 @@ export function CharacterCardShare({
   return (
     <div
       className="flex flex-col"
-      style={{ minHeight: '100dvh', background: '#0f0f0f', color: '#fff' }}
+      style={{ minHeight: '100dvh', background: 'var(--color-theater-bg, #0f0f0f)', color: 'white' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-6 pb-4">
@@ -127,7 +127,7 @@ export function CharacterCardShare({
             <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase' as const, marginBottom: '8px' }}>
               Starring
             </p>
-            <h2 className="font-display" style={{ fontSize: '36px', fontWeight: 700, color: '#fff', lineHeight: 1.1, marginBottom: '4px' }}>
+            <h2 className="font-display" style={{ fontSize: '36px', fontWeight: 700, color: 'white', lineHeight: 1.1, marginBottom: '4px' }}>
               {playerName}
             </h2>
             <p style={{ fontSize: '18px', color: 'var(--color-accent)' }}>
@@ -154,7 +154,7 @@ export function CharacterCardShare({
           {/* Stats row */}
           <div className="flex items-center justify-around mt-6 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
             <div className="text-center">
-              <div className="font-display" style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>{votes}</div>
+              <div className="font-display" style={{ fontSize: '24px', fontWeight: 700, color: 'white' }}>{votes}</div>
               <div style={{ fontSize: '10px', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' as const }}>Votes</div>
             </div>
             <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.1)' }} />
@@ -168,21 +168,21 @@ export function CharacterCardShare({
                 </>
               ) : (
                 <>
-                  <div className="font-display" style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>—</div>
+                  <div className="font-display" style={{ fontSize: '24px', fontWeight: 700, color: 'white' }}>—</div>
                   <div style={{ fontSize: '10px', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' as const }}>MVP</div>
                 </>
               )}
             </div>
             <div style={{ width: 1, height: 32, background: 'rgba(255,255,255,0.1)' }} />
             <div className="text-center">
-              <div className="font-display" style={{ fontSize: '24px', fontWeight: 700, color: '#fff' }}>{reactions}</div>
+              <div className="font-display" style={{ fontSize: '24px', fontWeight: 700, color: 'white' }}>{reactions}</div>
               <div style={{ fontSize: '10px', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' as const }}>Reactions</div>
             </div>
           </div>
 
           {/* Show title footer */}
           <div className="text-center mt-4">
-            <p className="font-display" style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>{showTitle}</p>
+            <p className="font-display" style={{ fontSize: '16px', fontWeight: 700, color: 'white' }}>{showTitle}</p>
             <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>plottwists.live</p>
           </div>
         </div>
@@ -200,7 +200,7 @@ export function CharacterCardShare({
             fontSize: '16px',
             fontWeight: 700,
             background: 'var(--color-accent)',
-            color: '#fff',
+            color: 'white',
             border: 'none',
             cursor: sharing ? 'default' : 'pointer',
             opacity: sharing ? 0.7 : 1,

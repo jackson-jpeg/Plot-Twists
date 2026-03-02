@@ -65,7 +65,7 @@ export default function ReviewPage() {
     return (
       <div
         className="min-h-dvh flex items-center justify-center"
-        style={{ background: 'linear-gradient(180deg, #0f1a26 0%, #0a0f14 100%)' }}
+        style={{ background: 'var(--color-cinematic-gradient, linear-gradient(180deg, #0f1a26 0%, #0a0f14 100%))' }}
       >
         <div className="w-full max-w-md mx-auto" style={{ padding: '32px 20px' }}>
           <div className="h-4 w-24 rounded animate-pulse mb-3" style={{ background: 'rgba(255,255,255,0.1)' }} />
@@ -80,7 +80,7 @@ export default function ReviewPage() {
     return (
       <div
         className="min-h-dvh flex items-center justify-center"
-        style={{ background: 'linear-gradient(180deg, #0f1a26 0%, #0a0f14 100%)' }}
+        style={{ background: 'var(--color-cinematic-gradient, linear-gradient(180deg, #0f1a26 0%, #0a0f14 100%))' }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -91,7 +91,7 @@ export default function ReviewPage() {
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎬</div>
           <h1
             className="font-display"
-            style={{ fontSize: '24px', color: '#fff', marginBottom: '8px' }}
+            style={{ fontSize: '24px', color: 'white', marginBottom: '8px' }}
           >
             Review Not Found
           </h1>
@@ -107,7 +107,7 @@ export default function ReviewPage() {
                 fontSize: '15px',
                 fontWeight: 600,
                 background: 'var(--color-accent)',
-                color: '#fff',
+                color: 'white',
                 border: 'none',
                 cursor: 'pointer',
               }}
@@ -122,7 +122,7 @@ export default function ReviewPage() {
                 fontSize: '15px',
                 fontWeight: 600,
                 background: 'rgba(255,255,255,0.1)',
-                color: '#fff',
+                color: 'white',
                 border: 'none',
                 cursor: 'pointer',
               }}
@@ -140,7 +140,7 @@ export default function ReviewPage() {
     return (
       <div
         className="min-h-dvh flex items-center justify-center"
-        style={{ background: 'linear-gradient(180deg, #0f1a26 0%, #0a0f14 100%)' }}
+        style={{ background: 'var(--color-cinematic-gradient, linear-gradient(180deg, #0f1a26 0%, #0a0f14 100%))' }}
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -151,7 +151,7 @@ export default function ReviewPage() {
           <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎬</div>
           <h1
             className="font-display"
-            style={{ fontSize: '24px', color: '#fff', marginBottom: '8px' }}
+            style={{ fontSize: '24px', color: 'white', marginBottom: '8px' }}
           >
             No Review Yet
           </h1>
@@ -166,7 +166,7 @@ export default function ReviewPage() {
               fontSize: '15px',
               fontWeight: 600,
               background: 'var(--color-accent)',
-              color: '#fff',
+              color: 'white',
               border: 'none',
               cursor: 'pointer',
             }}
@@ -182,11 +182,11 @@ export default function ReviewPage() {
     <div
       className="min-h-dvh"
       style={{
-        background: 'linear-gradient(180deg, #0f1a26 0%, #0a0f14 100%)',
+        background: 'var(--color-cinematic-gradient, linear-gradient(180deg, #0f1a26 0%, #0a0f14 100%))',
         paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))',
       }}
     >
-      <div className="w-full max-w-md mx-auto" style={{ padding: '32px 20px' }}>
+      <div className="w-full max-w-md mx-auto" style={{ padding: 'calc(32px + env(safe-area-inset-top, 0px)) 20px 32px' }}>
         {/* Director's Review */}
         <DirectorsReview
           review={game.directorsReview}
@@ -231,13 +231,13 @@ export default function ReviewPage() {
                     background: AVATAR_COLORS[i % AVATAR_COLORS.length],
                     fontSize: '12px',
                     fontWeight: 700,
-                    color: '#fff',
+                    color: 'white',
                   }}
                 >
                   {player.nickname[0]?.toUpperCase()}
                 </div>
                 <div>
-                  <span style={{ fontSize: '14px', fontWeight: 600, color: '#fff' }}>
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: 'white' }}>
                     {player.character}
                   </span>
                   <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginLeft: '6px' }}>

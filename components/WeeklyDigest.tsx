@@ -80,7 +80,7 @@ export function WeeklyDigest({
           style={{
             padding: '20px',
             background: 'var(--color-text-primary)',
-            color: '#fff',
+            color: 'white',
             minHeight: '180px',
           }}
         >
@@ -147,7 +147,7 @@ export function WeeklyDigest({
             <div className="flex items-center gap-2">
               <div
                 className="w-6 h-6 rounded-full"
-                style={{ background: '#EC4899', flexShrink: 0 }}
+                style={{ background: 'var(--color-pink, #EC4899)', flexShrink: 0 }}
               />
               <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
                 You, as {lineOfTheWeek.characterName} — {lineOfTheWeek.showTitle}
@@ -173,7 +173,7 @@ export function WeeklyDigest({
             style={{
               padding: '16px 20px',
               background: 'var(--color-text-primary)',
-              color: '#fff',
+              color: 'white',
             }}
           >
             <div
@@ -211,7 +211,7 @@ export function WeeklyDigest({
             fontSize: '17px',
             fontWeight: 700,
             background: 'var(--color-accent)',
-            color: '#fff',
+            color: 'white',
             border: 'none',
             cursor: 'pointer',
           }}

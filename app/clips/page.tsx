@@ -85,7 +85,7 @@ export default function ClipsPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100dvh', background: '#0f0f0f', color: '#fff', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+      <div style={{ minHeight: '100dvh', background: 'var(--color-theater-bg, #0f0f0f)', color: 'white', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="px-5 pt-8 pb-4">
           <div className="h-7 w-16 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.1)' }} />
         </div>

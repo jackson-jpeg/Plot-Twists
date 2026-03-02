@@ -287,7 +287,7 @@ export function HostLobby({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: '#ffffff',
+                    color: 'white',
                     fontWeight: 700,
                     fontSize: 'var(--text-body)',
                     flexShrink: 0,
@@ -637,11 +637,11 @@ export function HostLobby({
     <>
       {/* Top Bar: Back + Connected */}
       <motion.div
-        className="flex items-center justify-between px-4 pt-4 pb-2"
+        className="flex items-center justify-between px-4 pb-2"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        style={{ maxWidth: isDesktop ? '1200px' : undefined, margin: isDesktop ? '0 auto' : undefined, width: '100%' }}
+        style={{ paddingTop: 'max(16px, env(safe-area-inset-top, 0px))', maxWidth: isDesktop ? '1200px' : undefined, margin: isDesktop ? '0 auto' : undefined, width: '100%' }}
       >
         <button
           onClick={onNavigateHome}
@@ -652,7 +652,7 @@ export function HostLobby({
           <span>Back</span>
         </button>
         <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-caption)', color: isConnected ? 'var(--color-success)' : 'var(--color-danger)' }}>
-          <span style={{ fontSize: '8px' }}>&#9679;</span>
+          <span style={{ fontSize: '8px' }} aria-hidden="true">&#9679;</span>
           <span>{isConnected ? 'Connected' : 'Reconnecting...'}</span>
         </div>
       </motion.div>

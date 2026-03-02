@@ -87,6 +87,7 @@ export function HostPerforming({
         minHeight: '100vh',
         margin: '0 auto',
         padding: isDesktop ? '2rem 3rem' : '1.5rem',
+        paddingTop: isDesktop ? '2rem' : 'max(1.5rem, env(safe-area-inset-top, 0px))',
         maxWidth: isDesktop ? '1000px' : undefined,
       }}
     >

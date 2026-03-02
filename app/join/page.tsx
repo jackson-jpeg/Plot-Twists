@@ -298,6 +298,7 @@ function JoinPageContent() {
               selection={selection} setSelection={setSelection}
               availableCards={availableCards} roomIsMature={roomIsMature}
               error={error} players={players} onSubmitCards={handleSubmitCards} toast={toast}
+              onBack={() => router.push('/')}
             />
           </GameErrorBoundary>
         )}

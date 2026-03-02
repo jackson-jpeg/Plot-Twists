@@ -52,7 +52,7 @@ export function JoinPerforming({
       {/* Header bar: LIVE / Title / Line count or Spectating */}
       <div
         className="flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: '1px solid var(--color-border)' }}
+        style={{ borderBottom: '1px solid var(--color-border)', paddingTop: 'max(12px, env(safe-area-inset-top, 0px))' }}
       >
         <div className="flex items-center gap-1.5">
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-success)', display: 'inline-block' }} />

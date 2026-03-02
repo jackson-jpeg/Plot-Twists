@@ -10,6 +10,15 @@ import { logger } from '../../lib/logger'
 
 const PLACEHOLDER_IMAGE_URL = '/images/default-poster.svg'
 
+// Singleton — reuse across calls
+let genAIInstance: GoogleGenAI | null = null
+function getGenAI(): GoogleGenAI {
+  if (!genAIInstance) {
+    genAIInstance = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
+  }
+  return genAIInstance
+}
+
 /**
  * Generate a movie poster "title card" for a script.
  * Uses Gemini's native image generation to create context-aware posters —
@@ -27,7 +36,7 @@ export async function generateTitleCard(
   }
 
   try {
-    const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+    const genAI = getGenAI()
 
     const characterList = characters.length > 0
       ? characters.join(', ')

@@ -239,7 +239,8 @@ function JoinPageContent() {
         {hostDisconnected && (
           <motion.div {...variants.fade}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(0, 0, 0, 0.8)' }}>
+            style={{ background: 'rgba(0, 0, 0, 0.8)' }}
+            role="alert" aria-live="assertive">
             <motion.div {...variants.scaleIn}
               className="max-w-md w-full text-center"
               style={{ padding: '32px 24px', borderRadius: '20px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
@@ -268,7 +269,8 @@ function JoinPageContent() {
         {countdown !== null && (
           <motion.div {...variants.fade}
             className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ background: 'rgba(0, 0, 0, 0.85)' }}>
+            style={{ background: 'rgba(0, 0, 0, 0.85)' }}
+            role="alert" aria-live="assertive">
             <AnimatePresence mode="wait">
               <motion.div key={countdown}
                 initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0.3, opacity: 0 }}

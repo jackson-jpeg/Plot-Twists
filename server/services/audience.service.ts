@@ -247,11 +247,20 @@ export function votePlotTwist(
     return { success: false }
   }
 
+  // Prevent duplicate votes — track voters in a runtime Set
+  if (!state.activePlotTwist._voters) {
+    state.activePlotTwist._voters = new Set<string>()
+  }
+  if (state.activePlotTwist._voters.has(voterId)) {
+    return { success: false }
+  }
+
   const option = state.activePlotTwist.options.find(o => o.id === optionId)
   if (!option) {
     return { success: false }
   }
 
+  state.activePlotTwist._voters.add(voterId)
   option.votes++
   return { success: true, newCount: option.votes }
 }

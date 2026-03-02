@@ -17,6 +17,9 @@ import { logger } from '../../lib/logger'
 export function startTeleprompterSync(room: Room, io: SocketIOServer): void {
   if (!room.script) return
 
+  // Clear any existing teleprompter timer to prevent concurrent loops
+  roomService.clearRoomTimeout(room.code)
+
   // Calculate reading time for each line individually using smart timing
   const advanceLine = (lineIndex: number) => {
     // Check if paused

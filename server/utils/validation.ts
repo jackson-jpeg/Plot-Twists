@@ -13,8 +13,6 @@ export function sanitizeInput(input: string, maxLength: number = MAX_NICKNAME_LE
     .trim()
     .slice(0, maxLength)
     .replace(/[<>'"]/g, '') // Remove potentially dangerous characters
-    .replace(/&/g, '&amp;')
-    .replace(/\//g, '')
 }
 
 /**

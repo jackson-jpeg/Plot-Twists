@@ -224,6 +224,7 @@ export function useJoinSocket({
       setScriptTitlePreview(null)
       setCountdown(null)
       setError('')
+      setSpectatorMessages([])
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current)
         countdownIntervalRef.current = null

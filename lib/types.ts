@@ -68,6 +68,7 @@ export interface AudienceInteractionState {
     options: PlotTwistOption[]
     expiresAt: number
     isActive: boolean
+    _voters?: Set<string> // Runtime only — tracks who voted to prevent duplicates
   }
   plotTwistHistory: string[] // Winning twist texts from previous rounds
   spectatorMessages: SpectatorMessage[]

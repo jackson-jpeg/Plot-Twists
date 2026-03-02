@@ -190,7 +190,7 @@ export function JoinResults({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} loading="lazy" className="w-full block" style={{ borderRadius: '16px' }} />
+            <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} loading="lazy" className="w-full block" style={{ borderRadius: '16px' }} onError={(e) => { (e.target as HTMLElement).parentElement!.style.display = 'none' }} />
           </motion.div>
         )}
 
@@ -316,7 +316,7 @@ export function JoinResults({
       <Modal isOpen={showPosterLightbox} onClose={onClosePosterLightbox} title={script?.title ?? 'Movie Poster'} maxWidth="600px">
         {scriptImageUrl && (
           <div className="flex justify-center">
-            <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} loading="lazy" style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain', borderRadius: 'var(--radius-lg, 12px)' }} />
+            <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} loading="lazy" style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain', borderRadius: 'var(--radius-lg, 12px)' }} onError={(e) => { (e.target as HTMLElement).style.display = 'none' }} />
           </div>
         )}
       </Modal>

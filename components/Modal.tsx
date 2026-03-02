@@ -75,15 +75,17 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
     }
   }, [isOpen, handleKeyDown, handleFocusTrap])
 
-  if (!isOpen) return null
-
   const motionProps = shouldReduceMotion
     ? { initial: false, animate: { opacity: 1 }, exit: { opacity: 0 } }
     : {}
 
   return (
     <AnimatePresence>
-      <div
+      {!isOpen ? null : <motion.div
+        key="modal-overlay"
+        initial={shouldReduceMotion ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         style={{
           position: 'fixed',
           top: 0,
@@ -211,7 +213,7 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
             {children}
           </div>
         </motion.div>
-      </div>
+      </motion.div>}
     </AnimatePresence>
   )
 }

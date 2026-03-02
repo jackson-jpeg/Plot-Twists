@@ -211,6 +211,9 @@ export function getRoomEntries(): IterableIterator<[string, Room]> {
 // ── Timeout Management ─────────────────────────────────────
 
 export function setRoomTimeout(code: string, timeout: NodeJS.Timeout): void {
+  // Clear any existing timeout to prevent orphaned timers (e.g., double calculateResults)
+  const existing = roomTimeouts.get(code)
+  if (existing) clearTimeout(existing)
   roomTimeouts.set(code, timeout)
 }
 

@@ -21,7 +21,9 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
   const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
-  const hasVoted = players.find(p => p.id === myPlayerId)?.hasSubmittedVote
+  const myPlayer = players.find(p => p.id === myPlayerId)
+  const hasVoted = myPlayer?.hasSubmittedVote
+  const isSpectator = myPlayer?.role === 'SPECTATOR'
   const votablePlayers = players.filter(p => p.role === 'PLAYER' && p.id !== myPlayerId)
 
   return (
@@ -80,7 +82,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
 
         {!myCharacter && !hasVoted && (
           <p className="text-center mb-6" style={{ color: 'var(--color-text-secondary)', fontSize: '15px' }}>
-            Who had the best performance?
+            {isSpectator ? 'Vote for the best performer!' : 'Who had the best performance?'}
           </p>
         )}
 

@@ -46,7 +46,6 @@ import {
   startPlotTwist,
   votePlotTwist,
   finalizePlotTwist,
-  generateTwistInjection,
   resetReactionCounts,
   preGenerateTwistsForRoom,
   regenerateTwistsForRoom,
@@ -96,6 +95,7 @@ import {
 import { generateTitleCard } from './server/services/image.service'
 import { getCredits, addBankedCredits } from './server/services/credit.service'
 import { getReferralInfo, redeemReferralCode } from './server/services/referral.service'
+import { getProgression, getLevelInfo, claimLevelReward } from './server/services/progression.service'
 import { createSocketAuthMiddleware } from './server/middleware/socketAuth'
 import * as matchmakingService from './server/services/matchmaking.service'
 import { logger } from './lib/logger'
@@ -130,6 +130,7 @@ const reactionLimiter = new SocketRateLimiter(60, 60 * 1000) // 60 reactions per
 const cardPackLimiter = new SocketRateLimiter(5, 60 * 1000) // 5 pack operations per minute
 const cardPackReadLimiter = new SocketRateLimiter(30, 60 * 1000) // 30 pack reads per minute
 const spectatorMessageLimiter = new SocketRateLimiter(20, 60 * 1000) // 20 messages per minute
+const dataFetchLimiter = new SocketRateLimiter(60, 60 * 1000) // 60 data fetches per minute
 
 
 // Sanitize user input (use enhanced version from utils)
@@ -461,7 +462,7 @@ app.prepare().then(async () => {
         if (room.gameMode === 'SOLO') {
           const hostPlayer = room.players.get(playerId)
           if (hostPlayer && hostPlayer.isHost && hostPlayer.hasSubmittedSelection) {
-            startScriptGeneration(room, io)
+            startScriptGeneration(room, io).catch(err => logger.error(`Script generation error in room ${room.code}:`, err))
           }
           return
         }
@@ -472,8 +473,7 @@ app.prepare().then(async () => {
           .every(p => p.hasSubmittedSelection)
 
         if (allSubmitted && room.players.size > 1) {
-          // Start script generation
-          startScriptGeneration(room, io)
+          startScriptGeneration(room, io).catch(err => logger.error(`Script generation error in room ${room.code}:`, err))
         }
       } catch (error) {
         logger.error('Error submitting cards:', error)
@@ -578,8 +578,9 @@ app.prepare().then(async () => {
       // Prevent self-voting
       if (voterId === targetPlayerId) return
 
-      // Validate target is an actual player in the room
-      if (!room.players.has(targetPlayerId)) return
+      // Validate target is an actual player in the room with PLAYER role
+      const target = room.players.get(targetPlayerId)
+      if (!target || target.role !== 'PLAYER') return
 
       room.votes.set(voterId, targetPlayerId)
       const voter = room.players.get(voterId)
@@ -629,6 +630,7 @@ app.prepare().then(async () => {
         roomService.clearRoomTimeout(roomCode)
       }
 
+      roomService.updateRoom(room, true)
       logger.debug(`Script paused for room ${roomCode}`)
     }))
 
@@ -641,6 +643,7 @@ app.prepare().then(async () => {
       room.isPaused = false
       room.lastActivity = Date.now()
 
+      roomService.updateRoom(room, true)
       logger.debug(`Script resumed for room ${roomCode}`)
 
       // Restart teleprompter from current line using the service
@@ -723,11 +726,12 @@ app.prepare().then(async () => {
       logger.debug(`Player navigated to line ${lineIndex} in room ${roomCode}`)
 
       // Resume auto-advance from new position after brief delay
-      setTimeout(() => {
+      const resumeTimeout = setTimeout(() => {
         if (room.gameState === 'PERFORMING' && !room.isPaused && room.script) {
           startTeleprompterSync(room, io)
         }
       }, 500)
+      roomService.setRoomTimeout(room.code, resumeTimeout)
     }))
 
     // Request sequel
@@ -1025,7 +1029,7 @@ app.prepare().then(async () => {
         }
       }
       if (settings.publicTitle !== undefined) {
-        room.publicTitle = settings.publicTitle
+        room.publicTitle = settings.publicTitle ? sanitizeUserInput(settings.publicTitle, 100) : undefined
       }
       room.lastActivity = Date.now()
       roomService.updateRoom(room)
@@ -1517,6 +1521,7 @@ app.prepare().then(async () => {
 
     // Get game history for a player
     socket.on('get_game_history', withErrorHandler(socket, 'get_game_history', async (playerId, limit, callback) => {
+      if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
       try {
         const games = await getPlayerGames(playerId, limit)
         callback({ success: true, games })
@@ -1528,6 +1533,7 @@ app.prepare().then(async () => {
 
     // Get specific game details (supports both share codes and UUIDs)
     socket.on('get_game_details', withErrorHandler(socket, 'get_game_details', async (gameId, callback) => {
+      if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
       try {
         // Try share code lookup first (8-char alphanumeric), then fall back to UUID
         let game = await getGameByShareCode(gameId)
@@ -1570,6 +1576,7 @@ app.prepare().then(async () => {
 
     // Get player stats
     socket.on('get_player_stats', withErrorHandler(socket, 'get_player_stats', async (playerId, callback) => {
+      if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
       try {
         const stats = await getPlayerStats(playerId)
         callback({ success: true, stats })
@@ -1581,6 +1588,7 @@ app.prepare().then(async () => {
 
     // Get leaderboard
     socket.on('get_leaderboard', withErrorHandler(socket, 'get_leaderboard', async (category, limit, callback) => {
+      if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
       try {
         const entries = await getLeaderboard(category, limit)
         callback({ success: true, entries })
@@ -1595,6 +1603,7 @@ app.prepare().then(async () => {
     // ============================================================
 
     socket.on('get_credit_balance', withErrorHandler(socket, 'get_credit_balance', async (callback) => {
+      if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
       try {
         const uid = socket.data.uid
         if (!uid) {
@@ -1614,6 +1623,7 @@ app.prepare().then(async () => {
     // ============================================================
 
     socket.on('get_referral_info', withErrorHandler(socket, 'get_referral_info', async (callback) => {
+      if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
       try {
         const uid = socket.data.uid
         if (!uid) {
@@ -1648,8 +1658,8 @@ app.prepare().then(async () => {
     // ============================================================
 
     socket.on('get_progression', withErrorHandler(socket, 'get_progression', async (playerId, callback) => {
+      if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
       try {
-        const { getProgression, getLevelInfo } = await import('./server/services/progression.service')
         const progression = await getProgression(playerId)
         const levelInfo = getLevelInfo(progression.totalXP)
         callback({ success: true, progression, levelInfo })
@@ -1660,13 +1670,13 @@ app.prepare().then(async () => {
     }))
 
     socket.on('get_weekly_challenges', withErrorHandler(socket, 'get_weekly_challenges', async (callback) => {
+      if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
       try {
         const uid = socket.data.uid
         if (!uid) {
           callback({ success: false, error: 'Not authenticated' })
           return
         }
-        const { getProgression } = await import('./server/services/progression.service')
         const progression = await getProgression(uid)
         callback({ success: true, challenges: progression.weeklyChallenges })
       } catch (error) {
@@ -1682,7 +1692,6 @@ app.prepare().then(async () => {
           callback({ success: false, error: 'Not authenticated' })
           return
         }
-        const { claimLevelReward } = await import('./server/services/progression.service')
         const reward = await claimLevelReward(uid, level)
         if (!reward) {
           callback({ success: false, error: 'Reward not available' })
@@ -2004,6 +2013,7 @@ app.prepare().then(async () => {
           playerSocket.disconnect(true)
         }
       }
+      matchmakingService.cleanupRoom(roomCode)
       await roomService.deleteRoom(roomCode)
       logger.info(`[Admin] Closed room ${roomCode} (${room.players.size} players disconnected)`)
       callback({ success: true })
@@ -2054,7 +2064,7 @@ app.prepare().then(async () => {
     // Resync after reconnection
     // ============================================================
 
-    socket.on('request_resync', withErrorHandler(socket, 'request_resync', (roomCode: string, playerId: string, callback: (response: { success: boolean; gameState?: string; players?: Player[]; script?: any; currentLineIndex?: number; hasSubmittedSelection?: boolean; assignedCharacter?: string; selection?: CardSelection; error?: string }) => void) => {
+    socket.on('request_resync', withErrorHandler(socket, 'request_resync', (roomCode: string, playerId: string, callback: (response: { success: boolean; gameState?: string; players?: Player[]; script?: Script; currentLineIndex?: number; hasSubmittedSelection?: boolean; assignedCharacter?: string; selection?: CardSelection; error?: string }) => void) => {
       try {
         const upperCode = roomCode.toUpperCase()
         const room = roomService.getRoomFromCache(upperCode)
@@ -2073,6 +2083,13 @@ app.prepare().then(async () => {
         }
         if (!player) {
           callback({ success: false, error: 'Player not found in room' })
+          return
+        }
+
+        // Verify the requesting socket owns this player (prevent session hijack)
+        const socketUid = socket.data?.uid as string | undefined
+        if (socketUid && player.uid && socketUid !== player.uid) {
+          callback({ success: false, error: 'Unauthorized resync' })
           return
         }
 
@@ -2134,6 +2151,7 @@ app.prepare().then(async () => {
               if (player.isHost && room.gameState === 'LOBBY' && room.players.size === 0) {
                 logger.info(`Deleting empty room ${code}`)
                 roomService.clearAllRoomTimeouts(code)
+                matchmakingService.cleanupRoom(code)
                 roomService.deleteRoom(code)
               } else if (player.isHost) {
                 // Host left during game - notify players with specific event and cleanup timeouts

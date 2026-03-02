@@ -307,6 +307,8 @@ export function CardPicker({
                 onChange={(e) => setSelection({ ...selection, [activeTab]: e.target.value })}
                 placeholder={`Enter custom ${activeTabConfig.label.toLowerCase()}...`}
                 maxLength={activeTabConfig.maxCustomLength}
+                enterKeyHint="done"
+                autoCapitalize="sentences"
                 className="w-full px-3 py-2 rounded-lg font-script text-lg"
                 style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-primary)', outline: 'none', border: `2px solid ${activeTabConfig.color}`, fontStyle: 'italic' }}
                 aria-label={`Custom ${activeTabConfig.label.toLowerCase()}`}
@@ -337,6 +339,8 @@ export function CardPicker({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={`Search ${activeTabConfig.label.toLowerCase()}s...`}
+                    inputMode="search"
+                    enterKeyHint="search"
                     className="w-full px-3 py-2 rounded-lg text-sm"
                     style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-primary)', outline: 'none', paddingLeft: '40px', paddingRight: searchQuery ? '36px' : '12px' }}
                     aria-label={`Search ${activeTabConfig.label.toLowerCase()}s`}

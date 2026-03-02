@@ -23,13 +23,13 @@ import dynamic from 'next/dynamic'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
-const JoinForm = dynamic(() => import('./components/JoinForm').then(m => ({ default: m.JoinForm })), { ssr: false, loading: () => null })
-const JoinLobby = dynamic(() => import('./components/JoinLobby').then(m => ({ default: m.JoinLobby })), { ssr: false, loading: () => null })
-const JoinSelection = dynamic(() => import('./components/JoinSelection').then(m => ({ default: m.JoinSelection })), { ssr: false, loading: () => null })
-const JoinLoading = dynamic(() => import('./components/JoinLoading').then(m => ({ default: m.JoinLoading })), { ssr: false, loading: () => null })
-const JoinPerforming = dynamic(() => import('./components/JoinPerforming').then(m => ({ default: m.JoinPerforming })), { ssr: false, loading: () => null })
-const JoinVoting = dynamic(() => import('./components/JoinVoting').then(m => ({ default: m.JoinVoting })), { ssr: false, loading: () => null })
-const JoinResults = dynamic(() => import('./components/JoinResults').then(m => ({ default: m.JoinResults })), { ssr: false, loading: () => null })
+const JoinForm = dynamic(() => import('./components/JoinForm').then(m => ({ default: m.JoinForm })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
+const JoinLobby = dynamic(() => import('./components/JoinLobby').then(m => ({ default: m.JoinLobby })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
+const JoinSelection = dynamic(() => import('./components/JoinSelection').then(m => ({ default: m.JoinSelection })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
+const JoinLoading = dynamic(() => import('./components/JoinLoading').then(m => ({ default: m.JoinLoading })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
+const JoinPerforming = dynamic(() => import('./components/JoinPerforming').then(m => ({ default: m.JoinPerforming })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
+const JoinVoting = dynamic(() => import('./components/JoinVoting').then(m => ({ default: m.JoinVoting })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
+const JoinResults = dynamic(() => import('./components/JoinResults').then(m => ({ default: m.JoinResults })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
 
 function JoinPageContent() {
   const router = useRouter()
@@ -82,6 +82,7 @@ function JoinPageContent() {
     autoStartCountdown,
     xpEvents,
     levelUpData, setLevelUpData,
+    resyncData,
   } = useJoinSocket({
     socket, isConnected, myPlayerId, myRole,
     selectionCharacter: selection.character,
@@ -114,10 +115,20 @@ function JoinPageContent() {
       setHasTriggeredSelectionConfetti(false)
     }
     if (gameState === 'SELECTION') {
-      setHasSubmitted(false)
-      setIsSubmitting(false)
+      // Don't reset if resync says we already submitted
+      if (!resyncData?.hasSubmittedSelection) {
+        setHasSubmitted(false)
+        setIsSubmitting(false)
+      }
     }
-  }, [gameState])
+  }, [gameState, resyncData])
+
+  // Restore selection state from resync (reconnect during SELECTION)
+  useEffect(() => {
+    if (!resyncData) return
+    if (resyncData.hasSubmittedSelection) setHasSubmitted(true)
+    if (resyncData.selection) setSelection(resyncData.selection)
+  }, [resyncData])
 
   // Confetti on results
   useEffect(() => {
@@ -298,7 +309,6 @@ function JoinPageContent() {
               selection={selection} setSelection={setSelection}
               availableCards={availableCards} roomIsMature={roomIsMature}
               error={error} players={players} onSubmitCards={handleSubmitCards} toast={toast}
-              onBack={() => router.push('/')}
             />
           </GameErrorBoundary>
         )}

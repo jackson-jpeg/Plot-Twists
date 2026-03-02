@@ -523,7 +523,7 @@ export interface ClientToServerEvents {
   redeem_referral: (code: string, callback: (response: { success: boolean, error?: string }) => void) => void
 
   // Resync after reconnection
-  request_resync: (roomCode: string, playerId: string, callback: (response: { success: boolean, gameState?: string, players?: Player[], script?: Script, currentLineIndex?: number, error?: string }) => void) => void
+  request_resync: (roomCode: string, playerId: string, callback: (response: { success: boolean, gameState?: string, players?: Player[], script?: Script, currentLineIndex?: number, hasSubmittedSelection?: boolean, assignedCharacter?: string, selection?: CardSelection, error?: string }) => void) => void
 
   // Feature 7: Progression Events
   get_progression: (playerId: string, callback: (response: { success: boolean, progression?: Progression, levelInfo?: LevelInfo, error?: string }) => void) => void

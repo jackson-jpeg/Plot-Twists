@@ -142,6 +142,8 @@ export function useHostSocket({
         setLoadingProgress(0)
         setLoadingPhase('')
         setScriptTitlePreview(null)
+        if (loadingIntervalRef.current) clearInterval(loadingIntervalRef.current)
+        if (scriptGenerationTimeoutRef.current) clearTimeout(scriptGenerationTimeoutRef.current)
         loadingIntervalRef.current = setInterval(() => {
           setLoadingProgress(prev => (prev >= 15 ? prev : prev + Math.random() * 2 + 0.5))
         }, 500)
@@ -201,6 +203,10 @@ export function useHostSocket({
     socket.on('spectator_message_received', (msg: SpectatorMessage) => {
       setSpectatorMessages(prev => [...prev.slice(-49), msg])
     })
+    socket.on('kicked', (data: { reason: string }) => {
+      toast.error(data.reason || 'You were removed from the game')
+      window.location.href = '/'
+    })
     socket.on('error', (errorMsg: string) => toast.error(errorMsg))
     socket.on('player_left', (playerId: string) => {
       const player = playersRef.current.find(p => p.id === playerId)
@@ -229,6 +235,7 @@ export function useHostSocket({
       socket.off('insufficient_credits')
       socket.off('achievement_unlocked')
       socket.off('xp_gained'); socket.off('level_up')
+      socket.off('kicked')
       socket.off('spectator_message_received'); socket.off('error')
       socket.off('player_left'); socket.off('plot_twist_injected')
       if (scriptGenerationTimeoutRef.current) {

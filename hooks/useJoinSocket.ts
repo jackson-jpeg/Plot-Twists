@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Socket } from 'socket.io-client'
 import type {
-  Player, Script, ScriptLine, GameState, GameResults, PlayerRole,
+  Player, Script, ScriptLine, GameState, GameResults, PlayerRole, RoomSettings,
   TeleprompterSyncData, AvailableCards, Achievement, SpectatorMessage,
   CardSelection, XPEvent, LevelReward,
 } from '@/lib/types'
@@ -48,6 +48,8 @@ export function useJoinSocket({
   const [xpEvents, setXpEvents] = useState<XPEvent[]>([])
   const [levelUpData, setLevelUpData] = useState<{ level: number; title: string; reward?: LevelReward } | null>(null)
   const [autoStartCountdown, setAutoStartCountdown] = useState<number | null>(null)
+  const [roomSettings, setRoomSettings] = useState<RoomSettings | null>(null)
+  const [resyncData, setResyncData] = useState<{ hasSubmittedSelection?: boolean; selection?: CardSelection } | null>(null)
 
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -82,6 +84,13 @@ export function useJoinSocket({
           setScriptImageUrl(response.script.imageUrl || null)
         }
         if (response.currentLineIndex !== undefined) setCurrentLineIndex(response.currentLineIndex)
+        // Restore character from server's assignedCharacter (covers reconnect during PERFORMING)
+        if (response.assignedCharacter) setMyCharacter(response.assignedCharacter)
+        // Expose resync data so orchestrator can restore hasSubmitted + selection
+        setResyncData({
+          hasSubmittedSelection: response.hasSubmittedSelection,
+          selection: response.selection,
+        })
       }
     })
   }, [socket, isConnected])
@@ -192,11 +201,16 @@ export function useJoinSocket({
     socket.on('spectator_message_received', (msg: SpectatorMessage) => {
       setSpectatorMessages(prev => [...prev.slice(-49), msg])
     })
+    socket.on('kicked', (data: { reason: string }) => {
+      toast.error(data.reason || 'You were removed from the game')
+      window.location.href = '/'
+    })
     socket.on('error', (errorMsg: string) => { toast.error(errorMsg); setError(errorMsg) })
     socket.on('host_disconnected', (data) => { toast.error('Host Disconnected'); setError(data.message); setHostDisconnected(true) })
     socket.on('card_pack_selected', (_packId: string, packName: string) => {
       setSelectedPackName(packName)
     })
+    socket.on('room_settings_update', setRoomSettings)
     socket.on('new_game_started', () => {
       setGameState('LOBBY')
       setScript(null)
@@ -242,8 +256,9 @@ export function useJoinSocket({
       socket.off('game_over'); socket.off('achievement_unlocked')
       socket.off('xp_gained'); socket.off('level_up')
       socket.off('auto_start_countdown')
+      socket.off('kicked')
       socket.off('spectator_message_received'); socket.off('error')
-      socket.off('host_disconnected'); socket.off('card_pack_selected')
+      socket.off('host_disconnected'); socket.off('card_pack_selected'); socket.off('room_settings_update')
       socket.off('new_game_started'); socket.off('latency_ping')
       socket.off('latency_pong_response')
       socket.off('player_left'); socket.off('plot_twist_injected')
@@ -282,5 +297,7 @@ export function useJoinSocket({
     xpEvents,
     levelUpData, setLevelUpData,
     autoStartCountdown,
+    resyncData,
+    roomSettings,
   }
 }

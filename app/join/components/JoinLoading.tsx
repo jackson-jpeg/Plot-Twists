@@ -50,7 +50,7 @@ export function JoinLoading({ loadingProgress, loadingPhase, scriptTitlePreview,
       animate="animate"
       exit="exit"
       className="w-full mx-auto px-5"
-      style={{ maxWidth: isDesktop ? '540px' : '100%', padding: '32px 20px', textAlign: 'center' }}
+      style={{ maxWidth: isDesktop ? '540px' : '100%', padding: '32px 20px', paddingBottom: 'calc(32px + env(safe-area-inset-bottom, 0px))', textAlign: 'center' }}
     >
       {/* Typewriter icon */}
       <motion.div

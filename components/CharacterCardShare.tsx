@@ -69,7 +69,7 @@ export function CharacterCardShare({
       style={{ minHeight: '100dvh', background: 'var(--color-theater-bg, #0f0f0f)', color: 'white' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-6 pb-4">
+      <div className="flex items-center justify-between px-5 pb-4" style={{ paddingTop: 'calc(24px + env(safe-area-inset-top, 0px))' }}>
         <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'rgba(255,255,255,0.5)' }}>
           Your Character Card
         </span>

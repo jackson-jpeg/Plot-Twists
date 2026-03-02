@@ -76,6 +76,6 @@ export function startTeleprompterSync(room: Room, io: SocketIOServer): void {
     roomService.setRoomTimeout(room.code, timeout)
   }
 
-  // Start with the first line (index 0)
-  advanceLine(0)
+  // Start from the room's current line (supports resume after pause/reconnect)
+  advanceLine(room.currentLineIndex)
 }

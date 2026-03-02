@@ -184,7 +184,7 @@ export default function Home() {
         {/* Top bar: branding left, avatar right */}
         <motion.div
           className="flex items-center justify-between"
-          style={{ paddingTop: '16px' }}
+          style={{ paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))' }}
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={MOTION.gentle}

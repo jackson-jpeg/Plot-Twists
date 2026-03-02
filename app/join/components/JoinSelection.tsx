@@ -69,7 +69,7 @@ export function JoinSelection({
         animate="animate"
         exit="exit"
         className="flex flex-col items-center justify-center"
-        style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
+        style={{ minHeight: '100dvh', padding: '24px 16px calc(24px + env(safe-area-inset-bottom, 0px))', background: 'var(--color-bg)' }}
       >
         <div className="w-full max-w-md text-center">
           <motion.div
@@ -124,7 +124,7 @@ export function JoinSelection({
         animate="animate"
         exit="exit"
         className="flex flex-col items-center justify-center"
-        style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
+        style={{ minHeight: '100dvh', padding: '24px 16px calc(24px + env(safe-area-inset-bottom, 0px))', background: 'var(--color-bg)' }}
       >
         <div className="w-full max-w-md text-center">
           <motion.div

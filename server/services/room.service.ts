@@ -47,6 +47,7 @@ function startRetryQueue(): void {
       } catch (err) {
         logger.error(`[RoomService] Retry failed for room ${item.code}:`, err)
         // Re-queue for next cycle
+        if (retryQueue.length >= 100) retryQueue.shift()
         retryQueue.push(item)
       }
     }
@@ -62,6 +63,7 @@ async function persistToFirestore(room: Room): Promise<void> {
     await db.set(Collections.ROOMS, room.code, data)
   } catch (err) {
     logger.error(`[RoomService] Firestore write failed for room ${room.code}:`, err)
+    if (retryQueue.length >= 100) retryQueue.shift()
     retryQueue.push({ code: room.code, data: roomToFirestore(room) })
   }
 }

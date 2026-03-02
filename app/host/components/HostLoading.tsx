@@ -47,7 +47,7 @@ export function HostLoading({
       animate="animate"
       exit="exit"
       className="w-full mx-auto px-5"
-      style={{ maxWidth: isDesktop ? '640px' : '100%' }}
+      style={{ maxWidth: isDesktop ? '640px' : '100%', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {/* Centered typewriter icon */}
       <motion.div

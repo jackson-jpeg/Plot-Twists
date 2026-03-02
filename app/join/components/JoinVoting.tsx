@@ -84,7 +84,21 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
           </p>
         )}
 
-        {hasVoted ? (
+        {votablePlayers.length === 0 && !hasVoted ? (
+          <motion.div
+            className="text-center p-8 rounded-xl"
+            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+              No other players to vote for
+            </p>
+            <p style={{ fontSize: '14px', color: 'var(--color-text-tertiary)', marginTop: '6px' }}>
+              Waiting for results...
+            </p>
+          </motion.div>
+        ) : hasVoted ? (
           /* Vote submitted state */
           <motion.div
             className="text-center p-8 rounded-xl"

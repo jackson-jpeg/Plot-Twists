@@ -234,7 +234,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
   return (
     <main
       className="flex flex-col items-center justify-center"
-      style={{ minHeight: '100dvh', padding: '24px 16px', background: 'var(--color-bg)' }}
+      style={{ minHeight: '100dvh', padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px))', background: 'var(--color-bg)' }}
     >
       <div className="w-full" style={{ maxWidth: isDesktop ? '480px' : '448px' }}>
         {/* Icon + Heading */}
@@ -454,6 +454,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
               onChange={(e) => handleNicknameChange(e.target.value)}
               onBlur={() => { setNicknameTouched(true); setNicknameError(validateNickname(nickname)) }}
               onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300) }}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleJoin() }}
               placeholder="e.g. Captain Chaos"
               maxLength={20}
               autoComplete="off"

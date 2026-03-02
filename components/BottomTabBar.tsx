@@ -13,8 +13,8 @@ const TABS = [
   { href: '/profile', label: 'Profile' },
 ] as const
 
-/** Pages where the tab bar should be visible */
-const TAB_PAGES = new Set(['/', '/host', '/join', '/profile'])
+/** Pages where the tab bar should be visible (excludes /host and /join — those are active game sessions) */
+const TAB_PAGES = new Set(['/', '/profile'])
 
 function shouldShowTabBar(pathname: string): boolean {
   if (TAB_PAGES.has(pathname)) return true

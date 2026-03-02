@@ -27,7 +27,7 @@ export function HostVoting({ players, script }: HostVotingProps) {
       animate="animate"
       exit="exit"
       className="w-full mx-auto px-5"
-      style={{ maxWidth: isDesktop ? '900px' : '100%' }}
+      style={{ maxWidth: isDesktop ? '900px' : '100%', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {/* Top bar */}
       <div className="flex items-center justify-between mb-8">

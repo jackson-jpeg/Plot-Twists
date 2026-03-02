@@ -21,7 +21,7 @@ import type {
   UserProfile
 } from './lib/types'
 import { calculateLineDisplayTime } from './server/utils/timing'
-import { DISCONNECT_GRACE_PERIOD, MAX_PLAYERS } from './server/utils/constants'
+import { DISCONNECT_GRACE_PERIOD, MAX_PLAYERS, VOTING_TIMEOUT } from './server/utils/constants'
 import { getFilteredContent, getGreenRoomQuestion } from './lib/content'
 import { v4 as uuidv4 } from 'uuid'
 import { configureSecurityMiddleware, validateEnvironment } from './server/middleware/security'
@@ -542,12 +542,9 @@ app.prepare().then(async () => {
         // Notify players that voting is open
         notifyVotingOpen(room).catch(() => {})
 
-        const { VOTING_TIMEOUT } = require('./server/utils/constants')
         const votingTimeout = setTimeout(() => {
           if (room.gameState !== 'VOTING') return
-          import('./server/services/voting.service').then(({ calculateResults }) => {
-            calculateResults(room, io)
-          }).catch(err => logger.error(`Voting timeout error for room ${room.code}:`, err))
+          calculateResults(room, io)
         }, VOTING_TIMEOUT)
         votingTimeout.unref()
         roomService.setRoomTimeout(room.code, votingTimeout)
@@ -1944,8 +1941,7 @@ app.prepare().then(async () => {
           // Game history query may fail in dev — that's fine
         }
         try {
-          const allUsers = await db.query(Collections.USERS, [], { limit: 10000 })
-          totalRegisteredUsers = allUsers.length
+          totalRegisteredUsers = await db.count(Collections.USERS)
         } catch {
           // Users query may fail in dev
         }
@@ -2058,7 +2054,7 @@ app.prepare().then(async () => {
     // Resync after reconnection
     // ============================================================
 
-    socket.on('request_resync', withErrorHandler(socket, 'request_resync', (roomCode: string, playerId: string, callback: (response: { success: boolean; gameState?: string; players?: Player[]; script?: any; currentLineIndex?: number; error?: string }) => void) => {
+    socket.on('request_resync', withErrorHandler(socket, 'request_resync', (roomCode: string, playerId: string, callback: (response: { success: boolean; gameState?: string; players?: Player[]; script?: any; currentLineIndex?: number; hasSubmittedSelection?: boolean; assignedCharacter?: string; selection?: CardSelection; error?: string }) => void) => {
       try {
         const upperCode = roomCode.toUpperCase()
         const room = roomService.getRoomFromCache(upperCode)
@@ -2067,8 +2063,14 @@ app.prepare().then(async () => {
           return
         }
 
-        // Find the player by persistent playerId
-        const player = room.players.get(playerId)
+        // Find the player by persistent playerId, with fallback uid lookup
+        // (Host sends user.uid but server stores host with id: uuidv4())
+        let player = room.players.get(playerId)
+        if (!player) {
+          for (const p of room.players.values()) {
+            if (p.uid === playerId) { player = p; break }
+          }
+        }
         if (!player) {
           callback({ success: false, error: 'Player not found in room' })
           return
@@ -2085,6 +2087,9 @@ app.prepare().then(async () => {
           players: Array.from(room.players.values()),
           script: room.script || undefined,
           currentLineIndex: room.currentLineIndex ?? 0,
+          hasSubmittedSelection: player.hasSubmittedSelection ?? false,
+          assignedCharacter: player.assignedCharacter || undefined,
+          selection: room.selections.get(player.id) || undefined,
         })
       } catch (error) {
         logger.error('[Resync] Error:', error)
@@ -2120,7 +2125,7 @@ app.prepare().then(async () => {
                 const allSubmitted = remainingPlayers.length > 0 && remainingPlayers.every(p => p.hasSubmittedSelection)
                 if (allSubmitted && room.players.size > 1) {
                   logger.info(`All remaining players submitted after disconnect, starting script generation for room ${code}`)
-                  startScriptGeneration(room, io)
+                  startScriptGeneration(room, io).catch(err => logger.error(`Script generation error after disconnect in room ${code}:`, err))
                 }
               }
 
@@ -2140,7 +2145,7 @@ app.prepare().then(async () => {
             }
           }
         }
-      }, 15000) // 15 second grace period — brief network blips shouldn't remove players mid-performance
+      }, DISCONNECT_GRACE_PERIOD) // Grace period — brief network blips shouldn't remove players mid-performance
     }))
   })
 
@@ -2186,6 +2191,7 @@ app.prepare().then(async () => {
       io.to(room.code).emit('players_update', Array.from(room.players.values()))
       const content = getFilteredContent(room.isMature)
       io.to(room.code).emit('available_cards', content)
+      roomService.updateRoom(room)
       return
     }
 
@@ -2201,6 +2207,7 @@ app.prepare().then(async () => {
       io.to(room.code).emit('players_update', Array.from(room.players.values()))
       const content = getFilteredContent(room.isMature)
       io.to(room.code).emit('available_cards', content)
+      roomService.updateRoom(room)
       return
     }
 
@@ -2270,6 +2277,12 @@ app.prepare().then(async () => {
       room.script = finalScript
       room.gameState = 'PERFORMING'
       room.currentLineIndex = 0
+
+      // Assign characters from selections so voting/history have character names
+      for (const [pid, sel] of room.selections.entries()) {
+        const player = room.players.get(pid)
+        if (player && sel.character) player.assignedCharacter = sel.character
+      }
 
       // Reset audience interaction for new performance
       if (room.audienceInteraction) {

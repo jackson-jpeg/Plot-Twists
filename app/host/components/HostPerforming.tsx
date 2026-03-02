@@ -84,7 +84,7 @@ export function HostPerforming({
       style={{
         background: 'var(--color-theater-bg)',
         color: 'var(--color-theater-text)',
-        minHeight: '100vh',
+        minHeight: '100dvh',
         margin: '0 auto',
         padding: isDesktop ? '2rem 3rem' : '1.5rem',
         paddingTop: isDesktop ? '2rem' : 'max(1.5rem, env(safe-area-inset-top, 0px))',

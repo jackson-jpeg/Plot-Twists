@@ -29,11 +29,11 @@ export function XPGainAnimation({ events, show }: XPGainAnimationProps) {
               transition={{ delay: i * 0.15 + 0.2 }}
             >
               <span className="text-[var(--color-text-secondary)]">{event.description}</span>
-              <span className="font-bold text-[var(--color-purple)]">+{event.amount} XP</span>
+              <span className="font-bold text-[var(--color-accent)]">+{event.amount} XP</span>
             </motion.div>
           ))}
           <motion.div
-            className="mt-2 text-lg font-bold text-[var(--color-purple)]"
+            className="mt-2 text-lg font-bold text-[var(--color-accent)]"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: events.length * 0.15 + 0.3, type: 'spring', stiffness: 200 }}

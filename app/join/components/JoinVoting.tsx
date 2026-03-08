@@ -71,13 +71,13 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
         {myCharacter && (
           <motion.div
             className="flex items-center justify-center gap-2 mb-6 px-4 py-2 rounded-lg mx-auto"
-            style={{ background: 'var(--color-purple-bg)', width: 'fit-content' }}
+            style={{ background: 'var(--color-accent-light, rgba(245, 158, 66, 0.1))', width: 'fit-content' }}
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
             <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>You played as</span>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-purple)' }}>{myCharacter}</span>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--color-accent)' }}>{myCharacter}</span>
           </motion.div>
         )}
 
@@ -145,7 +145,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
                       style={{
                         background: voted === allPlayers.length
                           ? 'var(--color-success)'
-                          : 'linear-gradient(90deg, var(--color-purple), var(--color-accent))',
+                          : 'var(--color-accent)',
                       }}
                       initial={{ width: 0 }}
                       animate={{ width: `${allPlayers.length > 0 ? (voted / allPlayers.length) * 100 : 0}%` }}
@@ -207,8 +207,8 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
                           fontWeight: 700,
                           padding: '1px 6px',
                           borderRadius: '999px',
-                          background: 'var(--color-purple-bg)',
-                          color: 'var(--color-purple)',
+                          background: 'var(--color-accent-light, rgba(245, 158, 66, 0.1))',
+                          color: 'var(--color-accent)',
                         }}
                       >
                         Lv.{player.level}

@@ -40,7 +40,7 @@ export function WeeklyChallenges({ challenges }: WeeklyChallengesProps) {
                 <span className="text-sm font-medium text-[var(--color-text-primary)]">
                   {challenge.completed && '✓ '}{challenge.title}
                 </span>
-                <span className="text-xs font-bold text-[var(--color-purple)]">
+                <span className="text-xs font-bold text-[var(--color-accent)]">
                   +{challenge.xpReward} XP
                 </span>
               </div>
@@ -52,7 +52,7 @@ export function WeeklyChallenges({ challenges }: WeeklyChallengesProps) {
                   <motion.div
                     className="h-full rounded-full"
                     style={{
-                      background: challenge.completed ? 'var(--color-success)' : 'var(--color-purple)',
+                      background: challenge.completed ? 'var(--color-success)' : 'var(--color-accent)',
                     }}
                     initial={{ width: 0 }}
                     animate={{ width: `${progress * 100}%` }}

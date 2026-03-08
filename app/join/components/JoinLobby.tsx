@@ -176,8 +176,8 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
                           fontWeight: 700,
                           padding: '1px 6px',
                           borderRadius: '999px',
-                          background: 'var(--color-purple-bg)',
-                          color: 'var(--color-purple)',
+                          background: 'var(--color-accent-light, rgba(245, 158, 66, 0.1))',
+                          color: 'var(--color-accent)',
                         }}
                       >
                         Lv.{player.level}
@@ -192,8 +192,8 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
                       fontWeight: 700,
                       padding: '2px 8px',
                       borderRadius: '999px',
-                      background: 'rgba(139, 92, 246, 0.12)',
-                      color: 'var(--color-purple)',
+                      background: 'rgba(245, 158, 66, 0.12)',
+                      color: 'var(--color-accent)',
                     }}>
                       HOST
                     </span>

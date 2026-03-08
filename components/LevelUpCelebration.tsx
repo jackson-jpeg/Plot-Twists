@@ -59,7 +59,7 @@ export function LevelUpCelebration({ show, level, title, onClose }: LevelUpCeleb
               <div className="text-sm font-medium text-[var(--color-text-secondary)] uppercase tracking-wider mb-1">
                 Level Up!
               </div>
-              <div className="text-4xl font-bold font-display" style={{ color: 'var(--color-purple)' }}>
+              <div className="text-4xl font-bold font-display" style={{ color: 'var(--color-accent)' }}>
                 Level {level}
               </div>
               <div className="mt-1 text-lg font-medium text-[var(--color-text-primary)]">

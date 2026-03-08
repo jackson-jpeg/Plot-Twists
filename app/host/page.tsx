@@ -338,7 +338,7 @@ function HostPageContent() {
             <motion.button
               onClick={confirmMatureMode}
               className="w-full"
-              style={{ background: 'var(--color-purple)', color: 'white', padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+              style={{ background: 'var(--color-accent)', color: 'white', padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >

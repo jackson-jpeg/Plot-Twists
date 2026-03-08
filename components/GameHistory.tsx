@@ -91,7 +91,7 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
     return (
       <div className="text-center py-8 text-[var(--color-danger)]">
         <p>{error}</p>
-        <button onClick={fetchHistory} className="mt-2 text-[var(--color-purple)] hover:underline">
+        <button onClick={fetchHistory} className="mt-2 text-[var(--color-accent)] hover:underline">
           Try again
         </button>
       </div>
@@ -235,7 +235,7 @@ export function GameHistory({ playerId, limit = 10, showTitle = true }: GameHist
                       <button
                         onClick={() => handleShare(game.id)}
                         disabled={sharingGameId === game.id}
-                        className="px-4 py-2 bg-[var(--color-purple)] hover:bg-[var(--color-purple-hover)] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                        className="px-4 py-2 bg-[var(--color-accent)] hover:opacity-90 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                       >
                         {sharingGameId === game.id ? 'Sharing...' : game.isPublic ? '📋 Copy Link' : '🔗 Share'}
                       </button>

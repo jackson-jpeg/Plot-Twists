@@ -247,7 +247,7 @@ export default function ReplayPage() {
               <button
                 onClick={() => { setError(null); fetchGame(); }}
                 className="px-6 py-3 text-white rounded-lg font-semibold transition-colors"
-                style={{ background: 'var(--color-purple)' }}
+                style={{ background: 'var(--color-accent)' }}
               >
                 Try Again
               </button>
@@ -391,7 +391,7 @@ export default function ReplayPage() {
             <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
               <motion.div
                 className="h-full"
-                style={{ background: 'var(--color-purple)' }}
+                style={{ background: 'var(--color-accent)' }}
                 initial={{ width: 0 }}
                 animate={{ width: `${((currentLineIndex + 1) / game.script.lines.length) * 100}%` }}
                 transition={{ duration: 0.3 }}
@@ -439,7 +439,7 @@ export default function ReplayPage() {
             <button
               onClick={() => setIsPlaying(!isPlaying)}
               className="px-6 py-3 text-white rounded-full font-semibold transition-colors"
-              style={{ background: 'var(--color-purple)' }}
+              style={{ background: 'var(--color-accent)' }}
               aria-label={isPlaying ? 'Pause replay' : 'Play replay'}
             >
               {isPlaying ? '⏸️ Pause' : '▶️ Play'}
@@ -489,7 +489,7 @@ export default function ReplayPage() {
                   }}
                   className="p-3 rounded-lg mb-2 cursor-pointer transition-colors"
                   style={originalIndex === currentLineIndex
-                    ? { background: 'var(--color-purple-bg)', border: '1px solid var(--color-purple-border)' }
+                    ? { background: 'var(--color-accent-light, rgba(245, 158, 66, 0.1))', border: '1px solid var(--color-accent)' }
                     : {}
                   }
                   initial={{ opacity: 0, height: 0 }}
@@ -530,7 +530,7 @@ export default function ReplayPage() {
           <button
             onClick={handleRematch}
             className="px-8 py-4 text-white rounded-xl font-bold text-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
-            style={{ background: 'linear-gradient(to right, var(--color-purple), var(--color-pink))' }}
+            style={{ background: 'var(--color-accent)' }}
           >
             🎭 Play Again with Same Settings
           </button>

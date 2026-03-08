@@ -66,7 +66,7 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
     return (
       <div className="text-center py-12 text-[var(--color-danger)]">
         <p>{error || 'Profile not found'}</p>
-        <button onClick={fetchStats} className="mt-2 text-[var(--color-purple)] hover:underline">
+        <button onClick={fetchStats} className="mt-2 text-[var(--color-accent)] hover:underline">
           Try again
         </button>
       </div>
@@ -146,7 +146,7 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
       {!hideHeader && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-purple)] to-[var(--color-pink)] flex items-center justify-center text-3xl font-bold text-white">
+            <div className="w-16 h-16 rounded-full bg-[var(--color-accent)] flex items-center justify-center text-3xl font-bold text-white">
               {stats.nickname[0]?.toUpperCase()}
             </div>
             <div>
@@ -488,7 +488,7 @@ function ModeStatRow({
       <div className="flex items-center gap-4 text-sm">
         <span className="text-[var(--color-text-tertiary)]">{stats.played} played</span>
         <span className="text-[var(--color-success)]">{stats.won} won</span>
-        <span className="text-[var(--color-purple)]">{winRate}%</span>
+        <span className="text-[var(--color-accent)]">{winRate}%</span>
       </div>
     </div>
   )

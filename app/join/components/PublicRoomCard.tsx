@@ -23,7 +23,7 @@ export function PublicRoomCard({ room, index, onJoin }: PublicRoomCardProps) {
   return (
     <motion.button
       onClick={onJoin}
-      className="w-full text-left rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4 flex items-center gap-4 hover:border-[var(--color-purple)]/50 transition-colors"
+      className="w-full text-left rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-4 flex items-center gap-4 hover:border-[var(--color-accent)]/50 transition-colors"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
@@ -64,7 +64,7 @@ export function PublicRoomCard({ room, index, onJoin }: PublicRoomCardProps) {
             {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'}
           </div>
         </div>
-        <div className="w-8 h-8 rounded-full bg-[var(--color-purple)] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full bg-[var(--color-accent)] flex items-center justify-center">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M5 3l4 4-4 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>

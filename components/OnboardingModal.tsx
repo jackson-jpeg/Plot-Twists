@@ -193,9 +193,7 @@ export function OnboardingModal({ isOpen, onClose, mode = 'join' }: OnboardingMo
               padding: '10px 24px',
               borderRadius: '8px',
               border: 'none',
-              background: step === STEPS.length - 1
-                ? 'linear-gradient(135deg, var(--color-purple), var(--color-pink))'
-                : 'var(--color-accent)',
+              background: 'var(--color-accent)',
               color: 'white',
               fontWeight: 600,
               cursor: 'pointer',

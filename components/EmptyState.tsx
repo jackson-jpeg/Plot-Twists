@@ -88,7 +88,7 @@ export function EmptyState({
         }}
       >
         {/* Glow effect */}
-        <div className="absolute inset-0 blur-xl opacity-30 bg-[var(--color-purple)] rounded-full scale-150" />
+        <div className="absolute inset-0 blur-xl opacity-30 bg-[var(--color-accent)] rounded-full scale-150" />
 
         {/* Main emoji */}
         <span className="relative text-7xl block" aria-hidden="true">{config.emoji}</span>
@@ -118,7 +118,7 @@ export function EmptyState({
       {action && (
         <motion.button
           onClick={action.onClick}
-          className="px-6 py-3 bg-[var(--color-purple)] hover:bg-[var(--color-purple-hover)] text-white rounded-lg font-semibold transition-colors"
+          className="px-6 py-3 bg-[var(--color-accent)] hover:opacity-90 text-white rounded-lg font-semibold transition-colors"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}

@@ -605,7 +605,7 @@ export default function ProfilePage() {
                             <p style={{ fontSize: '14px', color: 'var(--color-danger)', marginBottom: '8px' }}>{transactionError}</p>
                             <button
                               onClick={fetchTransactions}
-                              style={{ fontSize: '14px', color: 'var(--color-purple)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                              style={{ fontSize: '14px', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                             >
                               Try again
                             </button>

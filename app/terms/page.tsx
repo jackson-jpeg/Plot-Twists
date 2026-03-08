@@ -13,7 +13,7 @@ export default function TermsOfServicePage() {
         <Link
           href="/"
           className="inline-flex items-center gap-1 text-sm mb-8 transition-colors"
-          style={{ color: 'var(--color-purple)' }}
+          style={{ color: 'var(--color-accent)' }}
         >
           <span>&larr;</span> Back to Plot Twists
         </Link>

@@ -588,11 +588,11 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             {isMatching && (
               <motion.div
                 className="absolute inset-0 rounded-xl flex items-center justify-center"
-                style={{ background: 'rgba(var(--color-purple-rgb, 139, 92, 246), 0.1)' }}
+                style={{ background: 'rgba(245, 158, 66, 0.1)' }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-purple)' }}>Matching...</span>
+                <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-accent)' }}>Matching...</span>
               </motion.div>
             )}
           </motion.button>
@@ -648,8 +648,8 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                   borderRadius: '999px',
                   fontSize: '13px',
                   fontWeight: 600,
-                  border: '1px solid var(--color-purple)',
-                  color: 'var(--color-purple)',
+                  border: '1px solid var(--color-accent)',
+                  color: 'var(--color-accent)',
                   background: 'transparent',
                   cursor: 'pointer',
                 }}

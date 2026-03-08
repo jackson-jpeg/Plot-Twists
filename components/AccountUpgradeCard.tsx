@@ -41,7 +41,7 @@ export function AccountUpgradeCard({ onSuccess }: AccountUpgradeCardProps) {
         <motion.button
           className="w-full p-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
           style={{
-            background: 'var(--color-purple)',
+            background: 'var(--color-accent)',
             color: 'white',
             border: 'none'
           }}

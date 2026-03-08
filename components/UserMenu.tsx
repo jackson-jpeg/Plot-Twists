@@ -97,7 +97,7 @@ export function UserMenu() {
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
             style={{
-              background: 'linear-gradient(to bottom right, var(--color-purple), var(--color-pink))',
+              background: 'var(--color-accent)',
               color: 'white',
               border: '2px solid var(--color-border)',
             }}

@@ -58,6 +58,7 @@ export function HostPerforming({
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).closest('input, select, textarea, [role="slider"]')) return
       if (e.key === 'ArrowRight') onNextLine()
       else if (e.key === 'ArrowLeft') onPreviousLine()
       else if (e.key === ' ') { e.preventDefault(); onTogglePlayPause() }

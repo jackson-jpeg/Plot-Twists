@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://plottwists.app'
 
   // Fetch game data from HTTP API for dynamic metadata
-  let title = `Plot Twists - Replay ${shareCode}`
+  let title = shareCode ? `Plot Twists - Replay ${shareCode}` : 'Script Not Found | Plot Twists'
   let description = 'Watch this hilarious AI-generated improv scene from Plot Twists!'
   let ogTitle = 'Plot Twists - Watch This Scene!'
 

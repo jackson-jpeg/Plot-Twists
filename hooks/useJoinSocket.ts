@@ -138,7 +138,11 @@ export function useJoinSocket({
   useEffect(() => {
     if (!socket || !isConnected) return
 
-    socket.on('players_update', setPlayers)
+    socket.on('players_update', (players) => {
+      setPlayers(players)
+      // If host reconnected, clear the disconnected overlay
+      setHostDisconnected(false)
+    })
     socket.on('player_joined', (player: Player) => {
       if (gameStateRef.current === 'LOBBY' && player.id !== myPlayerIdRef.current && !player.isHost) {
         toast.success(`${player.nickname} joined!`)

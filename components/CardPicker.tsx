@@ -66,12 +66,14 @@ export function CardPicker({
     setSelectedCategories([])
   }, [activeTab])
 
-  // Scroll selected card into view when revisiting a tab
+  // Scroll selected card into view when revisiting a tab, or reset scroll
   useEffect(() => {
     if (!gridRef.current) return
     const selectedEl = gridRef.current.querySelector('[data-selected="true"]')
     if (selectedEl) {
       selectedEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+    } else {
+      gridRef.current.scrollTop = 0
     }
   }, [activeTab])
 

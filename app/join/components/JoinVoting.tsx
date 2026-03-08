@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { Player, Script } from '@/lib/types'
 import { VARIANTS, MOTION } from '@/lib/animations'
@@ -21,6 +21,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
   const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
+  const [isVoting, setIsVoting] = useState(false)
   const myPlayer = players.find(p => p.id === myPlayerId)
   const hasVoted = myPlayer?.hasSubmittedVote
   const isSpectator = myPlayer?.role === 'SPECTATOR'
@@ -164,7 +165,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
             {votablePlayers.map((player, i) => (
               <motion.button
                 key={player.id}
-                onClick={() => { successHaptic(); onVote(player.id) }}
+                onClick={() => { if (isVoting) return; setIsVoting(true); successHaptic(); onVote(player.id) }}
                 aria-label={`Vote for ${player.nickname}`}
                 className={`flex items-center gap-3 p-4 rounded-xl text-left ${isDesktop ? 'flex-1 min-w-[280px]' : 'w-full'}`}
                 style={{

@@ -94,7 +94,7 @@ export default function RootLayout({
       afterSignOutUrl="/"
       appearance={{
         variables: {
-          colorPrimary: '#A855F7',
+          colorPrimary: '#F59E42',
           colorText: 'var(--color-text-primary)',
           colorTextSecondary: 'var(--color-text-secondary)',
           colorBackground: 'var(--color-surface)',
@@ -108,7 +108,7 @@ export default function RootLayout({
           headerTitle: 'font-display text-[var(--color-text-primary)]',
           headerSubtitle: 'text-[var(--color-text-secondary)]',
           socialButtonsBlockButton: 'border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-alt)]',
-          formButtonPrimary: 'bg-[var(--color-purple)] hover:bg-[var(--color-purple-hover)]',
+          formButtonPrimary: 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)]',
           formFieldInput: 'bg-[var(--color-surface-alt)] border-[var(--color-border)] text-[var(--color-text-primary)]',
           formFieldLabel: 'text-[var(--color-text-secondary)]',
           formFieldErrorText: 'text-[var(--color-danger,#f87171)]',

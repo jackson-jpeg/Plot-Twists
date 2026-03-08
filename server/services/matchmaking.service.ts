@@ -2,6 +2,7 @@
  * Matchmaking Service — Public rooms and Quick Play
  */
 
+import { getFilteredContent } from '../../lib/content'
 import type { Server as SocketIOServer } from 'socket.io'
 import type {
   Room,
@@ -129,8 +130,6 @@ function startAutoCountdown(
         roomService.updateRoom(room)
         io.to(room.code).emit('game_state_change', 'SELECTION')
 
-        // Import content lazily to avoid circular deps
-        const { getFilteredContent } = require('../../lib/content')
         io.to(room.code).emit('available_cards', getFilteredContent(room.isMature))
 
         logger.info(`[Matchmaking] Auto-started game in room ${room.code}`)

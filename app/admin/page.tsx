@@ -45,13 +45,18 @@ export default function AdminPage() {
 
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
+  // Redirect unauthenticated users to sign-in
+  useEffect(() => {
+    if (!authLoading && !user) router.replace('/sign-in')
+  }, [authLoading, user, router])
+
   // Check admin status
   useEffect(() => {
     if (!socket || !isConnected) return
     socket.emit('check_admin', (response) => {
       setIsAdmin(response.isAdmin)
       if (!response.isAdmin) {
-        router.replace('/')
+        router.replace('/sign-in')
       }
     })
   }, [socket, isConnected, router])

@@ -298,7 +298,7 @@ ${customization.scriptLength === 'epic' ? 'Build a complete narrative arc with m
  */
 export function validateCustomization(customization: Partial<ScriptCustomization>): ScriptCustomization {
   const validStyles: ComedyStyle[] = ['witty', 'slapstick', 'absurdist', 'dark', 'sitcom', 'improv']
-  const validLengths: ScriptLength[] = ['quick', 'standard', 'epic']
+  const validLengths: ScriptLength[] = ['lightning', 'quick', 'standard', 'epic']
   const validDifficulties: ScriptDifficulty[] = ['beginner', 'intermediate', 'advanced']
   const validPhysical: PhysicalComedyLevel[] = ['none', 'minimal', 'heavy']
 

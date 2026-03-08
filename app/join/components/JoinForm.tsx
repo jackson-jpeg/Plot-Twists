@@ -89,7 +89,9 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
     const upper = value.toUpperCase()
     setRoomCode(upper)
     setRoomPreview(null)
-    if (roomCodeTouched) setRoomCodeError(validateRoomCode(value))
+    // Always clear error when code becomes valid to prevent stale error display
+    const error = validateRoomCode(upper)
+    if (roomCodeTouched || !error) setRoomCodeError(error)
     if (upper.length === 4 && VALID_ROOM_CODE_REGEX.test(upper)) nicknameInputRef.current?.focus()
   }
 

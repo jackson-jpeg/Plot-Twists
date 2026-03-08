@@ -38,7 +38,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>2. Information We Collect</h2>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Phone number</strong> &mdash; Used for account authentication via SMS verification.</li>
+              <li><strong>Email address</strong> &mdash; Used for account authentication.</li>
               <li><strong>Display name</strong> &mdash; A nickname you choose that is shown to other players.</li>
               <li><strong>Game history</strong> &mdash; Records of games you&apos;ve played including scripts, characters, and votes.</li>
               <li><strong>Player statistics</strong> &mdash; Win/loss records, streaks, and performance data.</li>
@@ -62,10 +62,11 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>4. Third-Party Services</h2>
             <p className="mb-2">We use the following third-party services:</p>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Firebase (Google)</strong> &mdash; Authentication and database. <a href="https://firebase.google.com/support/privacy" className="underline" style={{ color: 'var(--color-purple)' }}>Privacy Policy</a></li>
+              <li><strong>Clerk</strong> &mdash; Authentication. <a href="https://clerk.com/legal/privacy" className="underline" style={{ color: 'var(--color-purple)' }}>Privacy Policy</a></li>
+              <li><strong>Firebase (Google)</strong> &mdash; Database and storage. <a href="https://firebase.google.com/support/privacy" className="underline" style={{ color: 'var(--color-purple)' }}>Privacy Policy</a></li>
               <li><strong>Stripe</strong> &mdash; Payment processing (web only). <a href="https://stripe.com/privacy" className="underline" style={{ color: 'var(--color-purple)' }}>Privacy Policy</a></li>
               <li><strong>Apple</strong> &mdash; In-App Purchase processing (iOS only). <a href="https://www.apple.com/legal/privacy/" className="underline" style={{ color: 'var(--color-purple)' }}>Privacy Policy</a></li>
-              <li><strong>Anthropic / OpenAI</strong> &mdash; AI script generation. Card selections (not personal data) are sent to generate scripts.</li>
+              <li><strong>Anthropic (Claude)</strong> &mdash; AI script generation. Card selections (not personal data) are sent to generate scripts. <a href="https://www.anthropic.com/privacy" className="underline" style={{ color: 'var(--color-purple)' }}>Privacy Policy</a></li>
               <li><strong>Vercel</strong> &mdash; Hosting and anonymous analytics. <a href="https://vercel.com/legal/privacy-policy" className="underline" style={{ color: 'var(--color-purple)' }}>Privacy Policy</a></li>
             </ul>
           </section>

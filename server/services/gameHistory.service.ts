@@ -51,7 +51,7 @@ async function getUniqueShareCode(): Promise<string> {
     attempts++
   }
 
-  return code
+  throw new Error('Failed to generate unique share code after 10 attempts')
 }
 
 // ============================================================

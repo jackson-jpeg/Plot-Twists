@@ -26,11 +26,12 @@ import { successHaptic } from '@/hooks/useHaptics'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
-const HostLobby = dynamic(() => import('./components/HostLobby').then(m => ({ default: m.HostLobby })), { ssr: false, loading: () => null })
-const HostSelection = dynamic(() => import('./components/HostSelection').then(m => ({ default: m.HostSelection })), { ssr: false, loading: () => null })
-const HostLoading = dynamic(() => import('./components/HostLoading').then(m => ({ default: m.HostLoading })), { ssr: false, loading: () => null })
-const HostPerforming = dynamic(() => import('./components/HostPerforming').then(m => ({ default: m.HostPerforming })), { ssr: false, loading: () => null })
-const HostVoting = dynamic(() => import('./components/HostVoting').then(m => ({ default: m.HostVoting })), { ssr: false, loading: () => null })
+const hostLoadingPlaceholder = () => <div style={{ minHeight: '100dvh' }} />
+const HostLobby = dynamic(() => import('./components/HostLobby').then(m => ({ default: m.HostLobby })), { ssr: false, loading: hostLoadingPlaceholder })
+const HostSelection = dynamic(() => import('./components/HostSelection').then(m => ({ default: m.HostSelection })), { ssr: false, loading: hostLoadingPlaceholder })
+const HostLoading = dynamic(() => import('./components/HostLoading').then(m => ({ default: m.HostLoading })), { ssr: false, loading: hostLoadingPlaceholder })
+const HostPerforming = dynamic(() => import('./components/HostPerforming').then(m => ({ default: m.HostPerforming })), { ssr: false, loading: hostLoadingPlaceholder })
+const HostVoting = dynamic(() => import('./components/HostVoting').then(m => ({ default: m.HostVoting })), { ssr: false, loading: hostLoadingPlaceholder })
 const HostResults = dynamic(() => import('./components/HostResults').then(m => ({ default: m.HostResults })), { ssr: false, loading: () => null })
 
 function HostPageContent() {
@@ -47,7 +48,11 @@ function HostPageContent() {
   const achievementToasts = useAchievementToasts()
 
   const [roomCode, setRoomCode] = useState('')
-  const [settings, setSettings] = useState<RoomSettings>({ isMature: false, gameMode: 'ENSEMBLE' })
+  const [settings, setSettings] = useState<RoomSettings>(() => ({
+    isMature: false,
+    gameMode: searchParams.get('mode') === 'solo' ? 'SOLO' : 'ENSEMBLE',
+    isPublic: searchParams.get('public') === 'true' || undefined,
+  }))
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showPosterLightbox, setShowPosterLightbox] = useState(false)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
@@ -108,7 +113,7 @@ function HostPageContent() {
 
   // Auth guard — require signed-in user
   useEffect(() => {
-    if (!authLoading && !user) router.push('/')
+    if (!authLoading && !user) router.push('/sign-in')
   }, [user, authLoading, router])
 
   // Read pack ID from localStorage
@@ -119,19 +124,7 @@ function HostPageContent() {
     } catch { /* ignore */ }
   }, [])
 
-  // Initialize public game from URL param
-  useEffect(() => {
-    if (searchParams.get('public') === 'true') {
-      setSettings(prev => ({ ...prev, isPublic: true }))
-    }
-  }, [searchParams])
-
-  // Initialize solo mode from URL param
-  useEffect(() => {
-    if (searchParams.get('mode') === 'solo') {
-      setSettings(prev => ({ ...prev, gameMode: 'SOLO' }))
-    }
-  }, [searchParams])
+  // URL params (mode, public) are now read synchronously in useState initializer
 
   // Lock body scroll when countdown overlay is visible
   useEffect(() => {

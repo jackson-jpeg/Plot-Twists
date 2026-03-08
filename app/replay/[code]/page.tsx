@@ -192,7 +192,7 @@ export default function ReplayPage() {
 
   if (!isConnected || loading) {
     return (
-      <div className="min-h-dvh" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
+      <div className="min-h-dvh" style={{ background: 'var(--color-bg)' }}>
         {/* Skeleton header */}
         <div className="p-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -232,7 +232,7 @@ export default function ReplayPage() {
 
   if (error || !game) {
     return (
-      <div className="min-h-dvh flex items-center justify-center p-4" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))' }}>
+      <div className="min-h-dvh flex items-center justify-center p-4" style={{ background: 'var(--color-bg)' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -243,13 +243,15 @@ export default function ReplayPage() {
           <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>Script Not Found</h1>
           <p className="mb-6" style={{ color: 'var(--color-text-tertiary)' }}>{error || 'This replay may have expired or been removed.'}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => { setError(null); fetchGame(); }}
-              className="px-6 py-3 text-white rounded-lg font-semibold transition-colors"
-              style={{ background: 'var(--color-purple)' }}
-            >
-              Try Again
-            </button>
+            {error?.includes('timed out') && (
+              <button
+                onClick={() => { setError(null); fetchGame(); }}
+                className="px-6 py-3 text-white rounded-lg font-semibold transition-colors"
+                style={{ background: 'var(--color-purple)' }}
+              >
+                Try Again
+              </button>
+            )}
             <button
               onClick={() => router.push('/')}
               className="px-6 py-3 rounded-lg font-semibold transition-colors text-[var(--color-text-primary)]"
@@ -266,7 +268,7 @@ export default function ReplayPage() {
   const currentLine = game.script.lines[currentLineIndex]
 
   return (
-    <div className="min-h-dvh" style={{ background: 'linear-gradient(to bottom right, var(--color-surface), var(--color-purple-light), var(--color-surface))', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+    <div className="min-h-dvh" style={{ background: 'var(--color-bg)', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       <ReplayJsonLd
         title={game.title}
         synopsis={game.synopsis}

@@ -606,18 +606,25 @@ app.prepare().then(async () => {
     socket.on('advance_script_line', withErrorHandler(socket, 'advance_script_line', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
+      if (room.gameState !== 'PERFORMING') return
       if (!requireHost(room, socket)) return
+      if (room.currentLineIndex >= room.script.lines.length - 1) return
 
       room.currentLineIndex++
       room.lastActivity = Date.now()
       roomService.updateRoom(room, true) // debounced - high frequency
-      io.to(roomCode).emit('sync_teleprompter', room.currentLineIndex)
+      io.to(roomCode).emit('sync_teleprompter', {
+        lineIndex: room.currentLineIndex,
+        serverTimestamp: Date.now(),
+        expectedDuration: calculateLineDisplayTime(room.script.lines[room.currentLineIndex])
+      })
     }))
 
     // Pause script
     socket.on('pause_script', withErrorHandler(socket, 'pause_script', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
+      if (room.gameState !== 'PERFORMING') return
       if (!requireHost(room, socket)) return
 
       room.isPaused = true
@@ -638,6 +645,7 @@ app.prepare().then(async () => {
     socket.on('resume_script', withErrorHandler(socket, 'resume_script', (roomCode) => {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room || !room.script) return
+      if (room.gameState !== 'PERFORMING') return
       if (!requireHost(room, socket)) return
 
       room.isPaused = false
@@ -861,6 +869,19 @@ app.prepare().then(async () => {
         logger.error('Sequel generation failed:', error)
         io.to(roomCode).emit('error', 'Failed to generate sequel. Please try again.')
 
+        // Refund the deducted credit
+        if (room.hostUid) {
+          try {
+            await addBankedCredits(room.hostUid, 1, 0)
+            const balance = await getCredits(room.hostUid)
+            const hostSocket = io.sockets.sockets.get(room.host.socketId)
+            if (hostSocket) hostSocket.emit('credit_balance', balance)
+            logger.info(`[Credits] Refunded 1 credit to host ${room.hostUid} after sequel failure in room ${roomCode}`)
+          } catch (refundErr) {
+            logger.error(`[Credits] Failed to refund credit for room ${roomCode}:`, refundErr)
+          }
+        }
+
         // Reset to results state with clean vote/selection flags
         room.gameState = 'RESULTS'
         room.votes.clear()
@@ -915,6 +936,7 @@ app.prepare().then(async () => {
       for (const player of room.players.values()) {
         player.hasSubmittedVote = false
         player.hasSubmittedSelection = false
+        player.assignedCharacter = undefined
       }
 
       // Optionally keep selections for quick replay
@@ -1063,6 +1085,9 @@ app.prepare().then(async () => {
         return
       }
 
+      // Validate reaction type
+      if (typeof reactionType !== 'string' || !['laugh', 'gasp', 'cheer', 'love', 'mindblown'].includes(reactionType)) return
+
       const room = validateRoom(roomCode, socket)
       if (!room || !room.audienceInteraction) return
       if (!requireRoomMember(room, socket)) return
@@ -1113,9 +1138,12 @@ app.prepare().then(async () => {
       }
       if (!sender) return
 
+      const sanitizedText = sanitizeUserInput(text, 200)
+      if (!sanitizedText) return
+
       const message = recordSpectatorMessage(
         room.audienceInteraction,
-        text,
+        sanitizedText,
         sender.id,
         sender.nickname,
         isPreset
@@ -1270,6 +1298,7 @@ app.prepare().then(async () => {
 
     // Vote on a plot twist option
     socket.on('vote_plot_twist', withErrorHandler(socket, 'vote_plot_twist', (roomCode, optionId) => {
+      if (typeof optionId !== 'string' || !optionId) return
       const room = validateRoom(roomCode, socket)
       if (!room || !room.audienceInteraction) return
       if (!requireRoomMember(room, socket)) return
@@ -1418,8 +1447,10 @@ app.prepare().then(async () => {
     // Search card packs
     socket.on('search_card_packs', withErrorHandler(socket, 'search_card_packs', async (query, callback) => {
       if (!cardPackReadLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests. Please slow down.' }); return }
+      const sanitizedQuery = sanitizeUserInput(query, 100)
+      if (!sanitizedQuery) { callback({ success: false, error: 'Invalid search query' }); return }
       try {
-        const packs = await searchCardPacks(query)
+        const packs = await searchCardPacks(sanitizedQuery)
         callback({ success: true, packs })
       } catch (error) {
         logger.error('Error searching card packs:', error)
@@ -2013,6 +2044,8 @@ app.prepare().then(async () => {
           playerSocket.disconnect(true)
         }
       }
+      roomService.clearRoomTimeout(roomCode)
+      roomService.clearPlotTwistTimeout(roomCode)
       matchmakingService.cleanupRoom(roomCode)
       await roomService.deleteRoom(roomCode)
       logger.info(`[Admin] Closed room ${roomCode} (${room.players.size} players disconnected)`)
@@ -2088,8 +2121,15 @@ app.prepare().then(async () => {
 
         // Verify the requesting socket owns this player (prevent session hijack)
         const socketUid = socket.data?.uid as string | undefined
-        if (socketUid && player.uid && socketUid !== player.uid) {
-          callback({ success: false, error: 'Unauthorized resync' })
+        if (player.uid) {
+          // Authenticated player — require matching uid
+          if (!socketUid || socketUid !== player.uid) {
+            callback({ success: false, error: 'Unauthorized resync' })
+            return
+          }
+        } else if (player.socketId !== socket.id) {
+          // Anonymous player — only allow resync from the same socket (no cross-session hijack)
+          callback({ success: false, error: 'Cannot resync anonymous player from different session' })
           return
         }
 
@@ -2344,6 +2384,19 @@ app.prepare().then(async () => {
     } catch (error) {
       logger.error('Script generation failed:', error)
       io.to(room.code).emit('error', 'Failed to generate script. Please try again.')
+
+      // Refund the deducted credit
+      if (room.hostUid) {
+        try {
+          await addBankedCredits(room.hostUid, 1, 0)
+          const balance = await getCredits(room.hostUid)
+          const hostSocket = io.sockets.sockets.get(room.host.socketId)
+          if (hostSocket) hostSocket.emit('credit_balance', balance)
+          logger.info(`[Credits] Refunded 1 credit to host ${room.hostUid} after script generation failure in room ${room.code}`)
+        } catch (refundErr) {
+          logger.error(`[Credits] Failed to refund credit for room ${room.code}:`, refundErr)
+        }
+      }
 
       // Reset game state to SELECTION so players can try again
       room.gameState = 'SELECTION'

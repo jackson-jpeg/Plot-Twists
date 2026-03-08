@@ -191,6 +191,11 @@ export function useHostSocket({
       setIsPlaying(true)
       setSelection({ character: '', setting: '', circumstance: '' })
       setHasSubmittedSelection(false)
+      setCountdown(null)
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current)
+        countdownIntervalRef.current = null
+      }
     })
     socket.on('latency_ping', (ts: number) => socket.emit('latency_pong', ts, Date.now()))
     socket.on('latency_pong_response', (d) => setNetworkLatency(d.latency))

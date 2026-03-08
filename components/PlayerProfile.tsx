@@ -619,7 +619,7 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
     socket.emit('get_leaderboard', activeCategory, 10, (response) => {
       setLoading(false)
       if (response.success && response.entries) {
-        setEntries(response.entries)
+        setEntries(response.entries.filter(e => e.value > 0))
       }
     })
   }, [socket, activeCategory])

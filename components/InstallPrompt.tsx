@@ -57,6 +57,14 @@ export function InstallPrompt() {
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault()
       deferredPromptRef.current = e as BeforeInstallPromptEvent
+      // Don't show banner if recently dismissed
+      try {
+        const dismissed = localStorage.getItem(DISMISS_KEY)
+        if (dismissed) {
+          const daysSince = (Date.now() - Number(dismissed)) / (1000 * 60 * 60 * 24)
+          if (daysSince < 7) return
+        }
+      } catch { /* localStorage unavailable */ }
       setShowBanner(true)
     }
     window.addEventListener('beforeinstallprompt', handleBeforeInstall)

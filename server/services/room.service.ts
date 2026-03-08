@@ -28,7 +28,7 @@ const debouncedWrites = new Map<string, NodeJS.Timeout>()
 const DEBOUNCE_MS = 5000
 
 // Simple retry queue for failed Firestore writes
-const retryQueue: Array<{ code: string; data: FirestoreRoom }> = []
+const retryQueue: Array<{ code: string; data: FirestoreRoom; retries?: number }> = []
 let retryInterval: NodeJS.Timeout | null = null
 
 // ── Helpers ────────────────────────────────────────────────
@@ -45,10 +45,15 @@ function startRetryQueue(): void {
           await db.set(Collections.ROOMS, item.code, item.data)
         }
       } catch (err) {
-        logger.error(`[RoomService] Retry failed for room ${item.code}:`, err)
-        // Re-queue for next cycle
-        if (retryQueue.length >= 100) retryQueue.shift()
-        retryQueue.push(item)
+        logger.error(`[RoomService] Retry failed for room ${item.code} (attempt ${(item.retries ?? 0) + 1}):`, err)
+        // Re-queue with retry count, drop after 3 attempts
+        const retries = (item.retries ?? 0) + 1
+        if (retries < 3) {
+          if (retryQueue.length >= 100) retryQueue.shift()
+          retryQueue.push({ ...item, retries })
+        } else {
+          logger.warn(`[RoomService] Dropping room ${item.code} after ${retries} failed retries`)
+        }
       }
     }
   }, 10000)
@@ -94,7 +99,9 @@ async function deleteFromFirestore(code: string): Promise<void> {
 /** Generate a unique room code */
 export function generateRoomCode(): string {
   let code = ''
+  let attempts = 0
   do {
+    if (++attempts > 100) throw new Error('Failed to generate unique room code after 100 attempts')
     code = ''
     for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
       code += ROOM_CODE_CHARS.charAt(Math.floor(Math.random() * ROOM_CODE_CHARS.length))
@@ -230,6 +237,8 @@ export function clearRoomTimeout(code: string): void {
 }
 
 export function setPlotTwistTimeout(code: string, timeout: NodeJS.Timeout): void {
+  const existing = plotTwistTimeouts.get(code)
+  if (existing) clearTimeout(existing)
   plotTwistTimeouts.set(code, timeout)
 }
 

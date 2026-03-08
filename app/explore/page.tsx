@@ -174,7 +174,7 @@ export default function ExplorePage() {
   const [featuredPacks, setFeaturedPacks] = useState<CardPackMetadata[]>([])
   const [searchResults, setSearchResults] = useState<CardPackMetadata[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [selectedPackFull, setSelectedPackFull] = useState<CardPack | null>(null)
   const [loadingPack, setLoadingPack] = useState(false)
 
@@ -192,6 +192,13 @@ export default function ExplorePage() {
   useEffect(() => {
     loadFeatured()
   }, [loadFeatured])
+
+  // Reset loading when socket connects but no featured packs load
+  useEffect(() => {
+    if (!isConnected) return
+    const timeout = setTimeout(() => setLoading(false), 5000)
+    return () => clearTimeout(timeout)
+  }, [isConnected])
 
   // Lock body scroll when loading overlay is visible
   useEffect(() => {
@@ -213,6 +220,21 @@ export default function ExplorePage() {
     })
   }, [socket, isConnected, searchQuery])
 
+  // Debounced search on typing
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      if (searchResults.length > 0) {
+        setSearchResults([])
+        setActiveTab('featured')
+      }
+      return
+    }
+    const debounce = setTimeout(() => {
+      handleSearch()
+    }, 400)
+    return () => clearTimeout(debounce)
+  }, [searchQuery]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSelectPack = (pack: CardPackMetadata) => {
     if (!socket) return
     setLoadingPack(true)
@@ -233,7 +255,7 @@ export default function ExplorePage() {
   ]
   return (
     <main className="flex flex-col" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
-      <div className="w-full max-w-2xl xl:max-w-4xl mx-auto pt-4 pb-8 px-4">
+      <div className="w-full max-w-2xl xl:max-w-4xl mx-auto pt-4 pb-8 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}

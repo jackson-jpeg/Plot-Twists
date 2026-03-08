@@ -255,7 +255,7 @@ export default function ExplorePage() {
   ]
   return (
     <main className="flex flex-col" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
-      <div className="w-full max-w-2xl xl:max-w-4xl mx-auto pt-4 pb-8 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-2xl xl:max-w-4xl mx-auto pt-6 sm:pt-8 pb-8 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
@@ -287,15 +287,15 @@ export default function ExplorePage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleSearch() }}
               placeholder="Search packs..."
-              className="w-full pl-10 px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
+              className="w-full pl-10 pr-3 py-2.5 rounded-xl text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
               aria-label="Search card packs"
             />
           </div>
           <button
             onClick={handleSearch}
             disabled={!searchQuery.trim()}
-            className="px-5 shrink-0"
-            style={{ borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer', opacity: searchQuery.trim() ? 1 : 0.5 }}
+            className="px-5 py-2.5 shrink-0 rounded-xl"
+            style={{ fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer', opacity: searchQuery.trim() ? 1 : 0.5 }}
           >
             Search
           </button>

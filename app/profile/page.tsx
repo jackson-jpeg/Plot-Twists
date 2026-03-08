@@ -162,7 +162,7 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      <div className="w-full max-w-md mx-auto pt-8 pb-8 px-5">
+      <div className="w-full max-w-md sm:max-w-lg mx-auto pt-8 pb-8 px-5">
         {/* Admin link (top right, if admin) */}
         {user && isAdminUser({ email: user.email, phoneNumber: user.phoneNumber }) && (
           <div className="flex justify-end mb-2">

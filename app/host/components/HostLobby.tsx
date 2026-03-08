@@ -407,9 +407,9 @@ export function HostLobby({
                       fontSize: 'var(--text-caption)',
                       fontWeight: 600,
                       cursor: 'pointer',
-                      background: gameSetupMode === 'custom' ? 'var(--color-purple)' : 'var(--color-surface-alt)',
+                      background: gameSetupMode === 'custom' ? 'var(--color-accent)' : 'var(--color-surface-alt)',
                       color: gameSetupMode === 'custom' ? 'white' : 'var(--color-text-secondary)',
-                      border: gameSetupMode === 'custom' ? '2px solid var(--color-purple)' : '1px solid var(--color-border)'
+                      border: gameSetupMode === 'custom' ? '2px solid var(--color-accent)' : '1px solid var(--color-border)'
                     }}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}

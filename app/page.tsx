@@ -285,7 +285,7 @@ export default function Home() {
           >
             <div
               className="flex items-center justify-center shrink-0 rounded-2xl"
-              style={{ width: 48, height: 48, background: 'rgba(139, 92, 246, 0.1)', color: 'var(--color-purple, #8B5CF6)' }}
+              style={{ width: 48, height: 48, background: 'rgba(245, 158, 66, 0.1)', color: 'var(--color-accent)' }}
             >
               <JoinIcon />
             </div>

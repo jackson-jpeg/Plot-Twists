@@ -126,8 +126,8 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
         <motion.a
           href="/"
           className="inline-flex items-center gap-2 px-8 py-4 text-white font-semibold rounded-xl shadow-lg"
-          style={{ background: 'linear-gradient(to right, var(--color-purple), var(--color-pink))' }}
-          whileHover={{ scale: 1.05, boxShadow: `0 10px 40px var(--color-purple-glow)` }}
+          style={{ background: 'var(--color-accent)' }}
+          whileHover={{ scale: 1.05, boxShadow: '0 10px 40px rgba(245, 158, 66, 0.3)' }}
           whileTap={{ scale: 0.95 }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

@@ -45,7 +45,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>3. Accounts</h2>
             <p>
-              You may use the Service as a guest or create an account using phone verification. You are responsible for
+              You may use the Service as a guest or create an account using email. You are responsible for
               maintaining the security of your account and for all activity that occurs under it.
             </p>
           </section>

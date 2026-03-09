@@ -1,14 +1,13 @@
 'use client'
 
-import React, { useEffect, useState, Suspense } from 'react'
+import React, { useEffect, useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { RoomSettings, ScriptCustomization, AudioSettings, CardSelection, GameMode } from '@/lib/types'
+import type { RoomSettings, ScriptCustomization, AudioSettings, GameMode } from '@/lib/types'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { VARIANTS, MOTION, getVariants } from '@/lib/animations'
 import { withTimeout } from '@/lib/socketTimeout'
 import { useConfetti } from '@/hooks/useConfetti'
-import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
 import { Modal } from '@/components/Modal'
 import { useToast } from '@/hooks/useToast'
@@ -18,43 +17,34 @@ import dynamic from 'next/dynamic'
 const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
 import { analytics } from '@/lib/analytics'
-import { useHostSocket } from '@/hooks/useHostSocket'
-import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
 import { useSelectionStore } from '@/stores/selectionStore'
-import { useAudienceStore } from '@/stores/audienceStore'
-import { useVotingStore } from '@/stores/votingStore'
-import { useConnectionStore } from '@/stores/connectionStore'
+import { initStoreSubscriptions } from '@/stores/subscriptions'
+import { socketManager } from '@/lib/socketManager'
 import { Button, PageContainer } from '@/components/ui'
 import { Skeleton } from '@/components/EmptyState'
-import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { ReconnectionBanner } from '@/components/ReconnectionBanner'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
-const hostLoadingPlaceholder = () => <div style={{ minHeight: '100dvh' }} />
-const HostLobby = dynamic(() => import('./components/HostLobby').then(m => ({ default: m.HostLobby })), { ssr: false, loading: hostLoadingPlaceholder })
-const HostSelection = dynamic(() => import('./components/HostSelection').then(m => ({ default: m.HostSelection })), { ssr: false, loading: hostLoadingPlaceholder })
-const HostLoading = dynamic(() => import('./components/HostLoading').then(m => ({ default: m.HostLoading })), { ssr: false, loading: hostLoadingPlaceholder })
-const HostPerforming = dynamic(() => import('./components/HostPerforming').then(m => ({ default: m.HostPerforming })), { ssr: false, loading: hostLoadingPlaceholder })
-const HostVoting = dynamic(() => import('./components/HostVoting').then(m => ({ default: m.HostVoting })), { ssr: false, loading: hostLoadingPlaceholder })
-const HostResults = dynamic(() => import('./components/HostResults').then(m => ({ default: m.HostResults })), { ssr: false, loading: () => null })
+import { GameShell } from '@/app/game/GameShell'
 
 function HostPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, getToken } = useAuth()
   const { socket, isConnected, connectionState, reconnectAttempt, setActiveRoom } = useSocket()
   const confetti = useConfetti()
   const prefersReducedMotion = useReducedMotion()
   const variants = getVariants(prefersReducedMotion)
-  useWakeLock()
-  useAudioPlayer({ socket, isConnected })
   const toast = useToast()
   const achievementToasts = useAchievementToasts()
 
-  const [roomCode, setRoomCode] = useState('')
+  // Subscriptions ref to avoid double-init
+  const subscriptionsRef = useRef<(() => void) | null>(null)
+
+  // Host-owned state: room settings, modals, UI
   const [settings, setSettings] = useState<RoomSettings>(() => ({
     isMature: false,
     gameMode: searchParams.get('mode') === 'solo' ? 'SOLO' : 'ENSEMBLE',
@@ -74,59 +64,61 @@ function HostPageContent() {
     soundEffectsEnabled: true, soundEffectsVolume: 0.5,
     ambienceEnabled: false, ambienceVolume: 0.3, turnChimeEnabled: true,
   })
-  const [selectedPackId, setSelectedPackId] = useState('standard')
-  const [gameSetupMode, setGameSetupMode] = useState<'quick' | 'custom'>('quick')
-  const [isSubmittingCards, setIsSubmittingCards] = useState(false)
   const [hasTriggeredSelectionConfetti, setHasTriggeredSelectionConfetti] = useState(false)
-  const roomCreatedRef = React.useRef(false)
+  const roomCreatedRef = useRef(false)
 
-  const {
-    gameState, setGameState,
-    players,
-    script,
-    greenRoomQuestion,
-    gameResults,
-    availableCards,
-    scriptGenerationTimedOut,
-    loadingProgress,
-    loadingPhase,
-    scriptTitlePreview,
-    scriptImageUrl,
-    creditBalance, setCreditBalance,
-    showInsufficientCredits, setShowInsufficientCredits,
-    countdown,
-    selection, setSelection,
-    hasSubmittedSelection, setHasSubmittedSelection,
-    xpEvents,
-    levelUpData, setLevelUpData,
-  } = useHostSocket({ socket, isConnected, settings, roomCode, playerId: user?.uid || '', toast, achievementToasts })
+  // Store selectors
+  const gameState = useGameStore((s) => s.gameState)
+  const players = useGameStore((s) => s.players)
+  const roomCode = useGameStore((s) => s.roomCode)
+  const countdown = useGameStore((s) => s.countdown)
+  const showInsufficientCredits = useGameStore((s) => s.showInsufficientCredits)
+  const setShowInsufficientCredits = useGameStore((s) => s.setShowInsufficientCredits)
+  const script = useScriptStore((s) => s.script)
+  const scriptImageUrl = useScriptStore((s) => s.imageUrl)
+  const selection = useSelectionStore((s) => s.selection)
+  const hasSubmittedSelection = useSelectionStore((s) => s.hasSubmitted)
+  const setHasSubmittedSelection = useSelectionStore((s) => s.setHasSubmitted)
 
-  // ── Bridge: sync hook state → Zustand stores (temporary until Task 14 wires subscriptions) ──
-  useEffect(() => { useGameStore.getState().setGameState(gameState) }, [gameState])
-  useEffect(() => { useGameStore.getState().setPlayers(players) }, [players])
-  useEffect(() => { useGameStore.getState().setRoomCode(roomCode) }, [roomCode])
-  useEffect(() => { useGameStore.getState().setSettings(settings) }, [settings])
-  useEffect(() => { useGameStore.getState().setCreditBalance(creditBalance) }, [creditBalance])
-  useEffect(() => { useGameStore.getState().setCountdown(countdown) }, [countdown])
-  useEffect(() => { useConnectionStore.getState().setIsConnected(isConnected) }, [isConnected])
-  useEffect(() => { useScriptStore.getState().setScript(script) }, [script])
-  useEffect(() => { useScriptStore.getState().setImageUrl(scriptImageUrl) }, [scriptImageUrl])
-  useEffect(() => { useScriptStore.getState().setGenerationProgress(loadingProgress) }, [loadingProgress])
-  useEffect(() => { useScriptStore.getState().setGenerationPhase(loadingPhase) }, [loadingPhase])
-  useEffect(() => { useScriptStore.getState().setTitlePreview(scriptTitlePreview) }, [scriptTitlePreview])
-  useEffect(() => { useScriptStore.getState().setGenerationTimedOut(scriptGenerationTimedOut) }, [scriptGenerationTimedOut])
-  useEffect(() => { useSelectionStore.getState().setSelection(selection) }, [selection])
-  useEffect(() => { useSelectionStore.getState().setHasSubmitted(hasSubmittedSelection) }, [hasSubmittedSelection])
-  useEffect(() => { useSelectionStore.getState().setIsSubmitting(isSubmittingCards) }, [isSubmittingCards])
-  useEffect(() => { useSelectionStore.getState().setAvailableCards(availableCards) }, [availableCards])
-  useEffect(() => { useSelectionStore.getState().setSelectedPackId(selectedPackId) }, [selectedPackId])
-  useEffect(() => { useSelectionStore.getState().setGameSetupMode(gameSetupMode) }, [gameSetupMode])
-  useEffect(() => { useAudienceStore.getState().setGreenRoomQuestion(greenRoomQuestion) }, [greenRoomQuestion])
-  useEffect(() => { if (gameResults) useVotingStore.getState().setResults(gameResults) }, [gameResults])
-  useEffect(() => { useVotingStore.getState().setXpEvents(xpEvents) }, [xpEvents])
-  useEffect(() => { useVotingStore.getState().setLevelUpData(levelUpData) }, [levelUpData])
+  // ── Initialize store subscriptions when socket is ready ──
+  useEffect(() => {
+    if (!socket || !isConnected) return
+    if (subscriptionsRef.current) return
+    // Wire socket events to Zustand stores via socketManager
+    // During migration, socketManager uses SocketContext's raw socket
+    if (!socketManager.raw) {
+      // Connect socketManager using the existing socket's connection info
+      // For now, we bridge by subscribing directly through the socket
+    }
+    subscriptionsRef.current = initStoreSubscriptions(socketManager.raw ? socketManager : {
+      // Adapter: wrap the existing socket to match SocketManager interface
+      on: (event: string, handler: (...args: unknown[]) => void) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        socket.on(event as any, handler as any)
+        return () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          socket.off(event as any, handler as any)
+        }
+      },
+      emit: (event: string, ...args: unknown[]) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(socket as any).emit(event, ...args)
+      },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any, { toast, achievementToasts })
 
-  // Auth guard — require signed-in user
+    // Set role
+    useGameStore.getState().setRole('host')
+
+    return () => {
+      if (subscriptionsRef.current) {
+        subscriptionsRef.current()
+        subscriptionsRef.current = null
+      }
+    }
+  }, [socket, isConnected]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auth guard
   useEffect(() => {
     if (!authLoading && !user) router.push('/sign-in')
   }, [user, authLoading, router])
@@ -135,11 +127,12 @@ function HostPageContent() {
   useEffect(() => {
     try {
       const savedPack = localStorage.getItem('plottwists_selected_pack')
-      if (savedPack) { setSelectedPackId(savedPack); localStorage.removeItem('plottwists_selected_pack') }
+      if (savedPack) {
+        useSelectionStore.getState().setSelectedPackId(savedPack)
+        localStorage.removeItem('plottwists_selected_pack')
+      }
     } catch { /* ignore */ }
   }, [])
-
-  // URL params (mode, public) are now read synchronously in useState initializer
 
   // Lock body scroll when countdown overlay is visible
   useEffect(() => {
@@ -158,7 +151,7 @@ function HostPageContent() {
       (cb) => socket.emit('create_room', settings, cb)
     ).then((response) => {
       if (response.success && response.code) {
-        setRoomCode(response.code)
+        useGameStore.getState().setRoomCode(response.code)
         setActiveRoom(response.code)
         analytics.gameCreated(settings.gameMode)
       }
@@ -167,14 +160,15 @@ function HostPageContent() {
       toast.error('Failed to create room — please refresh')
     })
     socket.emit('get_credit_balance', (response) => {
-      if (response.success && response.balance) setCreditBalance(response.balance)
+      if (response.success && response.balance) {
+        useGameStore.getState().setCreditBalance(response.balance)
+      }
     })
-  }, [socket, isConnected, settings, authLoading, user, setCreditBalance])
+  }, [socket, isConnected, settings, authLoading, user]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Reset orchestrator state when returning to LOBBY (new game)
+  // Reset orchestrator state when returning to LOBBY
   useEffect(() => {
     if (gameState === 'LOBBY') {
-      setIsSubmittingCards(false)
       setHasTriggeredSelectionConfetti(false)
       setShowPosterLightbox(false)
     }
@@ -203,30 +197,26 @@ function HostPageContent() {
 
   // --- Actions ---
   const startGame = () => {
-    const packId = useSelectionStore.getState().selectedPackId || selectedPackId
+    const packId = useSelectionStore.getState().selectedPackId || 'standard'
     socket?.emit('update_room_settings', roomCode, { scriptCustomization, audioSettings, cardPackId: packId })
     socket?.emit('start_game', roomCode)
   }
 
   const handleSubmitSoloCards = () => {
-    const storeSelection = useSelectionStore.getState().selection
-    const sel = storeSelection.character ? storeSelection : selection
+    const sel = useSelectionStore.getState().selection
     if (!socket || !roomCode || !sel.character || !sel.setting || !sel.circumstance) {
       toast.error('Please select all cards'); return
     }
-    setIsSubmittingCards(true)
+    useSelectionStore.getState().setIsSubmitting(true)
     socket.emit('submit_cards', roomCode, sel, (response) => {
-      setIsSubmittingCards(false)
+      useSelectionStore.getState().setIsSubmitting(false)
       if (response.success) { setHasSubmittedSelection(true); toast.success('Cards submitted!') }
       else toast.error(response.error || 'Failed to submit cards')
     })
   }
 
   const toggleMature = () => {
-    if (!settings.isMature) {
-      setShowAgeGate(true)
-      return
-    }
+    if (!settings.isMature) { setShowAgeGate(true); return }
     const newSettings = { ...settings, isMature: false }
     setSettings(newSettings)
     socket?.emit('update_room_settings', roomCode, { isMature: false })
@@ -246,12 +236,12 @@ function HostPageContent() {
   }
 
   const handleSetupModeChange = (mode: 'quick' | 'custom') => {
-    setGameSetupMode(mode)
+    useSelectionStore.getState().setGameSetupMode(mode)
     if (mode === 'quick') {
       const newSettings = { ...settings, gameMode: 'ENSEMBLE' as const }
       setSettings(newSettings)
       socket?.emit('update_room_settings', roomCode, { gameMode: 'ENSEMBLE' })
-      setSelectedPackId('standard')
+      useSelectionStore.getState().setSelectedPackId('standard')
       setScriptCustomization({ comedyStyle: 'witty', scriptLength: 'standard', difficulty: 'intermediate', physicalComedy: 'minimal', enableCallbacks: true })
       setAudioSettings({
         voiceEnabled: false, voiceSettings: { enabled: false, provider: 'browser', speed: 1.0, pitch: 1.0, volume: 0.8 },
@@ -260,10 +250,14 @@ function HostPageContent() {
     }
   }
 
-  const requestSequel = () => { socket?.emit('request_sequel', roomCode) }
-  const requestNewGame = (keepSelections: boolean = false) => { socket?.emit('request_new_game', roomCode, { keepSelections }) }
+  const handleBackToLobby = () => {
+    socket?.emit('request_new_game', roomCode)
+    useGameStore.getState().setGameState('LOBBY')
+  }
 
-  const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join/invite/${roomCode}` : ''
+  const requestNewGame = (keepSelections: boolean = false) => {
+    socket?.emit('request_new_game', roomCode, { keepSelections })
+  }
 
   // Auth loading / unauthenticated
   if (authLoading || !user) {
@@ -294,26 +288,16 @@ function HostPageContent() {
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="host" />
       <PurchaseCreditsModal isOpen={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} />
 
-      {/* Age Gate Modal for After Dark mode */}
+      {/* Age Gate Modal */}
       <Modal isOpen={showAgeGate} onClose={() => setShowAgeGate(false)} title="Age Verification" maxWidth="380px">
         <div className="text-center">
           <div className="text-5xl mb-4">🌙</div>
-          <h3 className="text-lg font-display font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
-            After Dark Mode
-          </h3>
-          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
-            This mode contains adult themes and mature humor. You must be at least 17 years old to enable it.
-          </p>
-          <p className="text-xs mb-6" style={{ color: 'var(--color-text-tertiary)' }}>
-            By continuing, you confirm that you are 17 or older.
-          </p>
+          <h3 className="text-lg font-display font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>After Dark Mode</h3>
+          <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>This mode contains adult themes and mature humor. You must be at least 17 years old to enable it.</p>
+          <p className="text-xs mb-6" style={{ color: 'var(--color-text-tertiary)' }}>By continuing, you confirm that you are 17 or older.</p>
           <div className="flex flex-col gap-2">
-            <Button variant="primary" fullWidth onClick={confirmMatureMode}>
-              I'm 17 or Older — Enable
-            </Button>
-            <Button variant="ghost" fullWidth size="sm" onClick={() => setShowAgeGate(false)}>
-              Cancel
-            </Button>
+            <Button variant="primary" fullWidth onClick={confirmMatureMode}>I'm 17 or Older — Enable</Button>
+            <Button variant="ghost" fullWidth size="sm" onClick={() => setShowAgeGate(false)}>Cancel</Button>
           </div>
         </div>
       </Modal>
@@ -325,23 +309,17 @@ function HostPageContent() {
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="var(--color-text-tertiary)" strokeWidth="1.5"/><path d="M10 8l6 4-6 4V8z" fill="var(--color-text-tertiary)"/></svg>
           </div>
           <p className="text-sm mb-5" style={{ color: 'var(--color-text-secondary)' }}>Buy more credits to keep the show going.</p>
-          <Button variant="primary" fullWidth className="mb-2" onClick={() => { setShowInsufficientCredits(false); setShowPurchaseModal(true) }}>
-            Buy Credits
-          </Button>
-          <Button variant="secondary" fullWidth size="sm" onClick={() => setShowInsufficientCredits(false)}>
-            Dismiss
-          </Button>
+          <Button variant="primary" fullWidth className="mb-2" onClick={() => { setShowInsufficientCredits(false); setShowPurchaseModal(true) }}>Buy Credits</Button>
+          <Button variant="secondary" fullWidth size="sm" onClick={() => setShowInsufficientCredits(false)}>Dismiss</Button>
         </div>
       </Modal>
 
-      {/* Reconnection overlay for mid-game socket drops */}
+      {/* Reconnection overlay */}
       <ReconnectingOverlay gameState={gameState} />
 
       {/* Poster Lightbox */}
       <Modal isOpen={showPosterLightbox} onClose={() => setShowPosterLightbox(false)} title={script?.title ?? 'Movie Poster'} maxWidth="600px">
-        {scriptImageUrl && (
-          <MoviePosterFrame imageUrl={scriptImageUrl} title={script?.title} variant="lightbox" />
-        )}
+        {scriptImageUrl && <MoviePosterFrame imageUrl={scriptImageUrl} title={script?.title} variant="lightbox" />}
       </Modal>
 
       {/* Pre-Performance Countdown */}
@@ -356,9 +334,7 @@ function HostPageContent() {
                 animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
                 exit={prefersReducedMotion ? { opacity: 0 } : { scale: 2, opacity: 0 }}
                 transition={MOTION.bouncy}
-                className="text-center"
-                role="status"
-                aria-live="assertive">
+                className="text-center" role="status" aria-live="assertive">
                 <div style={{ fontSize: '120px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1 }}>{countdown}</div>
                 <div style={{ fontSize: '18px', color: 'var(--color-text-tertiary)', marginTop: '16px' }}>Curtain up!</div>
               </motion.div>
@@ -367,61 +343,28 @@ function HostPageContent() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait">
-        {gameState === 'LOBBY' && (
-          <GameErrorBoundary phaseName="lobby" key="lobby-eb"><HostLobby
-            key="lobby"
-            settings={settings}
-            scriptCustomization={scriptCustomization} audioSettings={audioSettings}
-            toast={toast}
-            onStartGame={startGame} onToggleMature={toggleMature}
-            onUpdateGameMode={updateGameMode} onSetupModeChange={handleSetupModeChange}
-            onSetScriptCustomization={setScriptCustomization}
-            onSetAudioSettings={setAudioSettings}
-            onSetSettings={setSettings}
-            onShowOnboarding={() => setShowOnboarding(true)}
-            onNavigateHome={() => router.push('/')}
-          /></GameErrorBoundary>
-        )}
-
-        {gameState === 'SELECTION' && (
-          <GameErrorBoundary phaseName="selection" key="selection-eb"><HostSelection
-            key="selection"
-            onSubmitSoloCards={handleSubmitSoloCards}
-            onBackToLobby={() => { socket?.emit('request_new_game', roomCode); setGameState('LOBBY') }}
-            toast={toast}
-          /></GameErrorBoundary>
-        )}
-
-        {gameState === 'LOADING' && (
-          <GameErrorBoundary phaseName="loading" key="loading-eb"><HostLoading
-            key="loading"
-            onRetry={() => { socket?.emit('retry_script_generation', roomCode) }}
-            onBackToLobby={() => { socket?.emit('request_new_game', roomCode); setGameState('LOBBY') }}
-          /></GameErrorBoundary>
-        )}
-
-        {gameState === 'PERFORMING' && script && (
-          <GameErrorBoundary phaseName="performing" key="performing-eb"><HostPerforming
-            key="performing"
-            onShowPosterLightbox={() => setShowPosterLightbox(true)}
-          /></GameErrorBoundary>
-        )}
-
-        {gameState === 'VOTING' && (
-          <GameErrorBoundary phaseName="voting" key="voting-eb"><HostVoting key="voting" /></GameErrorBoundary>
-        )}
-
-        {gameState === 'RESULTS' && (
-          <GameErrorBoundary phaseName="results" key="results-eb"><HostResults
-            key="results"
-            userUid={user?.uid || ''}
-            toast={toast}
-            onShowPosterLightbox={() => setShowPosterLightbox(true)}
-            onRequestNewGame={requestNewGame}
-          /></GameErrorBoundary>
-        )}
-      </AnimatePresence>
+      <GameShell
+        role="host"
+        toast={toast}
+        userUid={user.uid}
+        settings={settings}
+        scriptCustomization={scriptCustomization}
+        audioSettings={audioSettings}
+        onSetSettings={setSettings}
+        onSetScriptCustomization={setScriptCustomization}
+        onSetAudioSettings={setAudioSettings}
+        onStartGame={startGame}
+        onToggleMature={toggleMature}
+        onUpdateGameMode={updateGameMode}
+        onSetupModeChange={handleSetupModeChange}
+        onShowOnboarding={() => setShowOnboarding(true)}
+        onNavigateHome={() => router.push('/')}
+        onSubmitSoloCards={handleSubmitSoloCards}
+        onBackToLobby={handleBackToLobby}
+        onRetry={() => socket?.emit('retry_script_generation', roomCode)}
+        onShowPosterLightbox={() => setShowPosterLightbox(true)}
+        onRequestNewGame={requestNewGame}
+      />
 
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       <AchievementToast achievements={achievementToasts.achievements} onDismiss={achievementToasts.dismissAchievement} />

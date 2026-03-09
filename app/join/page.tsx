@@ -1,25 +1,28 @@
 'use client'
 
-import React, { useEffect, useState, useCallback, Suspense } from 'react'
+import React, { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { CardSelection, PlayerRole } from '@/lib/types'
+import type { Player, PlayerRole } from '@/lib/types'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
 import { useConfetti } from '@/hooks/useConfetti'
-import { useWakeLock } from '@/hooks/useWakeLock'
 import { OnboardingModal } from '@/components/OnboardingModal'
 import { Modal } from '@/components/Modal'
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
 import { MOTION, getVariants } from '@/lib/animations'
 import { withTimeout } from '@/lib/socketTimeout'
 import { analytics } from '@/lib/analytics'
-import { useJoinSocket } from '@/hooks/useJoinSocket'
-import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 import { useAuth } from '@/contexts/AuthContext'
+
+import { useGameStore } from '@/stores/gameStore'
+import { useScriptStore } from '@/stores/scriptStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import { useConnectionStore } from '@/stores/connectionStore'
+import { useVotingStore } from '@/stores/votingStore'
+import { initStoreSubscriptions } from '@/stores/subscriptions'
+import { socketManager } from '@/lib/socketManager'
 
 import dynamic from 'next/dynamic'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
@@ -28,13 +31,9 @@ import { ReconnectionBanner } from '@/components/ReconnectionBanner'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { Button } from '@/components/ui/Button'
+import { GameShell } from '@/app/game/GameShell'
+
 const JoinForm = dynamic(() => import('./components/JoinForm').then(m => ({ default: m.JoinForm })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
-const JoinLobby = dynamic(() => import('./components/JoinLobby').then(m => ({ default: m.JoinLobby })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
-const JoinSelection = dynamic(() => import('./components/JoinSelection').then(m => ({ default: m.JoinSelection })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
-const JoinLoading = dynamic(() => import('./components/JoinLoading').then(m => ({ default: m.JoinLoading })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
-const JoinPerforming = dynamic(() => import('./components/JoinPerforming').then(m => ({ default: m.JoinPerforming })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
-const JoinVoting = dynamic(() => import('./components/JoinVoting').then(m => ({ default: m.JoinVoting })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
-const JoinResults = dynamic(() => import('./components/JoinResults').then(m => ({ default: m.JoinResults })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
 
 function JoinPageContent() {
   const router = useRouter()
@@ -48,57 +47,57 @@ function JoinPageContent() {
   const confetti = useConfetti()
   const prefersReducedMotion = useReducedMotion()
   const variants = getVariants(prefersReducedMotion)
-  useWakeLock()
-  useAudioPlayer({ socket, isConnected })
 
-  const [roomCode, setRoomCode] = useState(codeFromUrl || '')
+  // Subscriptions ref
+  const subscriptionsRef = useRef<(() => void) | null>(null)
+
+  // Page-owned state
   const [hasJoined, setHasJoined] = useState(false)
-  const [myPlayerId, setMyPlayerId] = useState('')
-  const [myRole, setMyRole] = useState<PlayerRole>('PLAYER')
-  const [roomIsMature, setRoomIsMature] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showPosterLightbox, setShowPosterLightbox] = useState(false)
-
-  // Selection state now lives in selectionStore — local state kept for orchestrator effects
-  const selection = useSelectionStore((s) => s.selection)
-  const setSelection = useSelectionStore((s) => s.setSelection)
-  const hasSubmitted = useSelectionStore((s) => s.hasSubmitted)
-  const setHasSubmitted = useSelectionStore((s) => s.setHasSubmitted)
-  const isSubmitting = useSelectionStore((s) => s.isSubmitting)
-  const setIsSubmitting = useSelectionStore((s) => s.setIsSubmitting)
-  const hostDisconnected = useConnectionStore((s) => s.hostDisconnected)
-  const setHostDisconnected = useConnectionStore((s) => s.setHostDisconnected)
-
   const [hasTriggeredSelectionConfetti, setHasTriggeredSelectionConfetti] = useState(false)
 
-  const {
-    gameState,
-    players,
-    script,
-    currentLineIndex,
-    myCharacter,
-    greenRoomQuestion,
-    gameResults,
-    availableCards,
-    selectedPackName,
-    scriptImageUrl,
-    countdown,
-    spectatorMessages,
-    loadingProgress,
-    loadingPhase,
-    scriptTitlePreview,
-    loadingTimedOut,
-    error,
-    autoStartCountdown,
-    xpEvents,
-    levelUpData, setLevelUpData,
-    resyncData,
-  } = useJoinSocket({
-    socket, isConnected, myPlayerId, myRole,
-    selectionCharacter: selection.character,
-    roomCode,
-    toast, achievementToasts,
-  })
+  // Store selectors
+  const gameState = useGameStore((s) => s.gameState)
+  const countdown = useGameStore((s) => s.countdown)
+  const roomCode = useGameStore((s) => s.roomCode)
+  const script = useScriptStore((s) => s.script)
+  const scriptImageUrl = useScriptStore((s) => s.imageUrl)
+  const selection = useSelectionStore((s) => s.selection)
+  const hasSubmitted = useSelectionStore((s) => s.hasSubmitted)
+  const setHasSubmitted = useSelectionStore((s) => s.setHasSubmitted)
+  const hostDisconnected = useConnectionStore((s) => s.hostDisconnected)
+  const setHostDisconnected = useConnectionStore((s) => s.setHostDisconnected)
+  const gameResults = useVotingStore((s) => s.gameResults)
+
+  // ── Initialize store subscriptions when socket is ready ──
+  useEffect(() => {
+    if (!socket || !isConnected) return
+    if (subscriptionsRef.current) return
+
+    subscriptionsRef.current = initStoreSubscriptions(socketManager.raw ? socketManager : {
+      on: (event: string, handler: (...args: unknown[]) => void) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        socket.on(event as any, handler as any)
+        return () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          socket.off(event as any, handler as any)
+        }
+      },
+      emit: (event: string, ...args: unknown[]) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(socket as any).emit(event, ...args)
+      },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any, { toast, achievementToasts })
+
+    return () => {
+      if (subscriptionsRef.current) {
+        subscriptionsRef.current()
+        subscriptionsRef.current = null
+      }
+    }
+  }, [socket, isConnected]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-show onboarding for first-time users
   useEffect(() => {
@@ -116,29 +115,15 @@ function JoinPageContent() {
     }
   }, [hostDisconnected, countdown])
 
-  // Reset orchestrator state when returning to LOBBY (new game) or SELECTION (generation failure)
+  // Reset orchestrator state when returning to LOBBY
   useEffect(() => {
     if (gameState === 'LOBBY') {
-      setSelection({ character: '', setting: '', circumstance: '' })
-      setHasSubmitted(false)
-      setIsSubmitting(false)
+      useSelectionStore.getState().setSelection({ character: '', setting: '', circumstance: '' })
+      useSelectionStore.getState().setHasSubmitted(false)
+      useSelectionStore.getState().setIsSubmitting(false)
       setHasTriggeredSelectionConfetti(false)
     }
-    if (gameState === 'SELECTION') {
-      // Don't reset if resync says we already submitted
-      if (!resyncData?.hasSubmittedSelection) {
-        setHasSubmitted(false)
-        setIsSubmitting(false)
-      }
-    }
-  }, [gameState, resyncData, setSelection, setHasSubmitted, setIsSubmitting])
-
-  // Restore selection state from resync (reconnect during SELECTION)
-  useEffect(() => {
-    if (!resyncData) return
-    if (resyncData.hasSubmittedSelection) setHasSubmitted(true)
-    if (resyncData.selection) setSelection(resyncData.selection)
-  }, [resyncData, setHasSubmitted, setSelection])
+  }, [gameState])
 
   // Confetti on results
   useEffect(() => {
@@ -161,28 +146,31 @@ function JoinPageContent() {
   }, [selection])
 
   // --- Actions ---
-  const handleJoinSuccess = (data: { players: typeof players; myPlayerId: string; myRole: PlayerRole; roomCode: string; roomIsMature: boolean }) => {
+  const handleJoinSuccess = (data: { players: Player[]; myPlayerId: string; myRole: PlayerRole; roomCode: string; roomIsMature: boolean }) => {
     setHasJoined(true)
-    setMyPlayerId(data.myPlayerId)
-    setMyRole(data.myRole)
-    setRoomCode(data.roomCode)
+    useGameStore.getState().setMyPlayerId(data.myPlayerId)
+    useGameStore.getState().setMyRole(data.myRole)
+    useGameStore.getState().setRoomCode(data.roomCode)
+    useGameStore.getState().setRoomIsMature(data.roomIsMature)
+    useGameStore.getState().setRole(data.myRole === 'SPECTATOR' ? 'spectator' : 'player')
+    useGameStore.getState().setPlayers(data.players)
     setActiveRoom(data.roomCode)
-    setRoomIsMature(data.roomIsMature)
   }
 
   const handleSubmitCards = () => {
-    if (!socket || !roomCode || !selection.character || !selection.setting || !selection.circumstance) {
+    const sel = useSelectionStore.getState().selection
+    if (!socket || !roomCode || !sel.character || !sel.setting || !sel.circumstance) {
       toast.error('Please select all cards'); return
     }
-    setIsSubmitting(true)
+    useSelectionStore.getState().setIsSubmitting(true)
     withTimeout<{ success: boolean; error?: string }>(
-      (cb) => socket.emit('submit_cards', roomCode, selection, cb)
+      (cb) => socket.emit('submit_cards', roomCode, sel, cb)
     ).then((response) => {
-      setIsSubmitting(false)
+      useSelectionStore.getState().setIsSubmitting(false)
       if (response.success) { setHasSubmitted(true); toast.success('Cards submitted!') }
       else toast.error(response.error || 'Failed to submit cards')
     }).catch(() => {
-      setIsSubmitting(false)
+      useSelectionStore.getState().setIsSubmitting(false)
       toast.error('Request timed out — please try again')
     })
   }
@@ -226,6 +214,8 @@ function JoinPageContent() {
       </PageContainer>
     )
   }
+
+  const myRole = useGameStore.getState().myRole
 
   return (
     <PageContainer size="full" style={{ padding: 0 }}>
@@ -280,70 +270,23 @@ function JoinPageContent() {
         )}
       </AnimatePresence>
 
-      {/* Reconnection overlay for mid-game socket drops */}
+      {/* Reconnection overlay */}
       <ReconnectingOverlay gameState={gameState} />
 
       {/* Poster Lightbox */}
       <Modal isOpen={showPosterLightbox} onClose={() => setShowPosterLightbox(false)} title={script?.title ?? 'Movie Poster'} maxWidth="600px">
-        {scriptImageUrl && (
-          <MoviePosterFrame imageUrl={scriptImageUrl} title={script?.title} variant="lightbox" />
-        )}
+        {scriptImageUrl && <MoviePosterFrame imageUrl={scriptImageUrl} title={script?.title} variant="lightbox" />}
       </Modal>
 
-      <AnimatePresence mode="wait">
-        {gameState === 'LOBBY' && (
-          <GameErrorBoundary phaseName="lobby" key="lobby-eb">
-            <JoinLobby key="lobby" myPlayerId={myPlayerId} myRole={myRole} autoStartCountdown={autoStartCountdown} />
-          </GameErrorBoundary>
-        )}
-
-        {gameState === 'SELECTION' && (
-          <GameErrorBoundary phaseName="selection" key="selection-eb">
-            <JoinSelection
-              key="selection"
-              myRole={myRole}
-              roomIsMature={roomIsMature}
-              onSubmitCards={handleSubmitCards}
-              toast={toast}
-            />
-          </GameErrorBoundary>
-        )}
-
-        {gameState === 'LOADING' && (
-          <GameErrorBoundary phaseName="loading" key="loading-eb">
-            <JoinLoading key="loading" onLeave={() => router.push('/')} />
-          </GameErrorBoundary>
-        )}
-
-        {gameState === 'PERFORMING' && script && (
-          <GameErrorBoundary phaseName="performing" key="performing-eb">
-            <JoinPerforming
-              key="performing"
-              myCharacter={myCharacter}
-              myRole={myRole}
-              onShowPosterLightbox={() => setShowPosterLightbox(true)}
-            />
-          </GameErrorBoundary>
-        )}
-
-        {gameState === 'VOTING' && (
-          <GameErrorBoundary phaseName="voting" key="voting-eb">
-            <JoinVoting key="voting" myPlayerId={myPlayerId} myCharacter={myCharacter} />
-          </GameErrorBoundary>
-        )}
-
-        {gameState === 'RESULTS' && (
-          <GameErrorBoundary phaseName="results" key="results-eb">
-            <JoinResults
-              key="results"
-              myPlayerId={myPlayerId}
-              userUid={user?.uid || ''}
-              isGuest={!user}
-              onShowPosterLightbox={() => setShowPosterLightbox(true)}
-            />
-          </GameErrorBoundary>
-        )}
-      </AnimatePresence>
+      <GameShell
+        role={myRole === 'SPECTATOR' ? 'spectator' : 'player'}
+        toast={toast}
+        userUid={user?.uid || ''}
+        isGuest={!user}
+        onSubmitCards={handleSubmitCards}
+        onLeave={() => router.push('/')}
+        onShowPosterLightbox={() => setShowPosterLightbox(true)}
+      />
 
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       <AchievementToast achievements={achievementToasts.achievements} onDismiss={achievementToasts.dismissAchievement} />

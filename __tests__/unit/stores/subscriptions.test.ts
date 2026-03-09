@@ -47,6 +47,19 @@ function createMockManager() {
   }
 }
 
+// ── Mock callbacks ────────────────────────────────────────────
+
+const mockCallbacks = {
+  toast: {
+    success: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+  },
+  achievementToasts: {
+    addAchievement: jest.fn(),
+  },
+}
+
 // ── Tests ──────────────────────────────────────────────────────
 
 describe('initStoreSubscriptions', () => {
@@ -61,9 +74,10 @@ describe('initStoreSubscriptions', () => {
     useAudienceStore.getState().reset()
     useSelectionStore.getState().reset()
     useVotingStore.getState().reset()
+    jest.clearAllMocks()
 
     manager = createMockManager()
-    cleanup = initStoreSubscriptions(manager)
+    cleanup = initStoreSubscriptions(manager, mockCallbacks)
   })
 
   afterEach(() => {
@@ -83,6 +97,8 @@ describe('initStoreSubscriptions', () => {
       'room_created',
       'credit_balance',
       'room_settings_update',
+      'insufficient_credits',
+      'auto_start_countdown',
       'script_ready',
       'sync_teleprompter',
       'script_generation_progress',
@@ -95,13 +111,16 @@ describe('initStoreSubscriptions', () => {
       'performance_paused',
       'performance_resumed',
       'player_reconnected',
+      'player_disconnected',
       'error',
+      'kicked',
       'spectator_message_received',
       'green_room_prompt',
       'plot_twist_started',
       'game_over',
       'xp_gained',
       'level_up',
+      'achievement_unlocked',
       'new_game_started',
       'latency_ping',
     ]
@@ -289,9 +308,11 @@ describe('initStoreSubscriptions', () => {
 
   // ── Connection Store events ───────────────────────────────
 
-  it('host_disconnected → connectionStore.setHostDisconnected(true)', () => {
+  it('host_disconnected → connectionStore.setHostDisconnected(true) + setError + toast', () => {
     manager._simulate('host_disconnected', { message: 'Host left' })
     expect(useConnectionStore.getState().hostDisconnected).toBe(true)
+    expect(useConnectionStore.getState().error).toBe('Host left')
+    expect(mockCallbacks.toast.error).toHaveBeenCalledWith('Host Disconnected')
   })
 
   it('latency_pong_response → connectionStore.setLatency', () => {
@@ -310,15 +331,17 @@ describe('initStoreSubscriptions', () => {
     expect(useConnectionStore.getState().hostDisconnected).toBe(false)
   })
 
-  it('player_reconnected → connectionStore.setHostDisconnected(false)', () => {
+  it('player_reconnected → connectionStore.setHostDisconnected(false) + toast', () => {
     useConnectionStore.getState().setHostDisconnected(true)
     manager._simulate('player_reconnected', { name: 'Alice', socketId: 's1' })
     expect(useConnectionStore.getState().hostDisconnected).toBe(false)
+    expect(mockCallbacks.toast.success).toHaveBeenCalledWith('Alice reconnected')
   })
 
-  it('error → connectionStore.setError', () => {
+  it('error → connectionStore.setError + toast', () => {
     manager._simulate('error', 'Something went wrong')
     expect(useConnectionStore.getState().error).toBe('Something went wrong')
+    expect(mockCallbacks.toast.error).toHaveBeenCalledWith('Something went wrong')
   })
 
   // ── Audience Store events ─────────────────────────────────

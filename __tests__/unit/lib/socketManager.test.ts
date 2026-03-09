@@ -9,7 +9,7 @@ const mockSocketEmit = jest.fn()
 const mockSocketDisconnect = jest.fn()
 const mockManagerOn = jest.fn()
 
-const mockSocket = {
+const mockSocket: Record<string, any> = {
   on: mockSocketOn,
   off: mockSocketOff,
   emit: mockSocketEmit,

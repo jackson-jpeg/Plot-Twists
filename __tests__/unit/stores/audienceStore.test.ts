@@ -7,6 +7,7 @@ const makeMessage = (id: string): SpectatorMessage => ({
   senderName: `User ${id}`,
   text: `Message ${id}`,
   timestamp: Date.now(),
+  isPreset: false,
 })
 
 beforeEach(() => {

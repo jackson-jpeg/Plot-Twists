@@ -430,6 +430,12 @@ export interface GameWarning {
   details?: string
 }
 
+// ── Socket Response Type ────────────────────────────────────
+
+export type SocketResponse<T = void> =
+  | ({ success: true } & (T extends void ? {} : { data: T }))
+  | { success: false; error: string; code?: ErrorCode; requestId?: string }
+
 // Socket.io Event Interfaces
 export interface ServerToClientEvents {
   room_created: (code: string) => void

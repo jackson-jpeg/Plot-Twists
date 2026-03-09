@@ -385,6 +385,51 @@ export interface AdminStats {
   totalRegisteredUsers: number
 }
 
+// ── Error Types ─────────────────────────────────────────────
+
+export type ErrorCode =
+  | 'SCRIPT_GENERATION_FAILED'
+  | 'SCRIPT_GENERATION_TIMEOUT'
+  | 'IMAGE_GENERATION_FAILED'
+  | 'ROOM_NOT_FOUND'
+  | 'ROOM_FULL'
+  | 'INVALID_GAME_STATE'
+  | 'AUTH_REQUIRED'
+  | 'AUTH_EXPIRED'
+  | 'RATE_LIMITED'
+  | 'CREDIT_INSUFFICIENT'
+  | 'DATABASE_ERROR'
+  | 'NETWORK_TIMEOUT'
+  | 'VALIDATION_ERROR'
+  | 'UNKNOWN'
+
+export type WarningCode =
+  | 'IMAGE_GENERATION_SLOW'
+  | 'PLAYER_RECONNECTING'
+  | 'PLAYER_RECONNECTED'
+  | 'DATABASE_WRITE_DELAYED'
+  | 'FALLBACK_ACTIVATED'
+
+export type ErrorAction =
+  | { type: 'RETRY'; event: string }
+  | { type: 'REDIRECT'; path: string }
+  | { type: 'RELOAD' }
+  | { type: 'DISMISS' }
+
+export interface GameError {
+  code: ErrorCode
+  message: string
+  phase?: GameState
+  recoverable: boolean
+  action?: ErrorAction
+}
+
+export interface GameWarning {
+  code: WarningCode
+  message: string
+  details?: string
+}
+
 // Socket.io Event Interfaces
 export interface ServerToClientEvents {
   room_created: (code: string) => void
@@ -452,6 +497,12 @@ export interface ServerToClientEvents {
 
   // AI Director's Review
   directors_review: (review: DirectorsReview) => void
+
+  // Structured Error & Warning Events
+  game_error: (error: GameError) => void
+  game_warning: (warning: GameWarning) => void
+  player_reconnected: (data: { name: string; socketId: string }) => void
+  player_disconnected: (data: { name: string }) => void
 }
 
 export interface ClientToServerEvents {

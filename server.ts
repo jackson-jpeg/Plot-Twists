@@ -112,7 +112,7 @@ app.prepare().then(async () => {
   await registerRoutes(expressApp, io, port)
 
   // Next.js page handler — must be last (catch-all)
-  expressApp.all('*', (req, res) => {
+  expressApp.all('/{*path}', (req, res) => {
     return handle(req, res)
   })
 

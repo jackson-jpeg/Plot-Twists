@@ -23,6 +23,9 @@ const rooms = new Map<string, Room>()
 const roomTimeouts = new Map<string, NodeJS.Timeout>()
 const plotTwistTimeouts = new Map<string, NodeJS.Timeout>()
 
+// Grace period disconnect timers — keyed by `${roomCode}:${playerId}`
+const disconnectTimers = new Map<string, NodeJS.Timeout>()
+
 // Debounced writes for high-frequency fields
 const debouncedWrites = new Map<string, NodeJS.Timeout>()
 const DEBOUNCE_MS = 5000
@@ -215,6 +218,108 @@ export function getRoomEntries(): IterableIterator<[string, Room]> {
   return rooms.entries()
 }
 
+// ── Disconnect Grace Period ────────────────────────────────
+
+/** Mark a player as disconnected — start grace timer */
+export function markPlayerDisconnected(roomCode: string, socketId: string): { player: Player; room: Room } | null {
+  const room = rooms.get(roomCode)
+  if (!room) return null
+
+  for (const [playerId, player] of room.players.entries()) {
+    if (player.socketId === socketId) {
+      player.connected = false
+      rooms.set(roomCode, room)
+      persistDebounced(room)
+
+      // Store timer key
+      const timerKey = `${roomCode}:${playerId}`
+      // Clear any existing timer for this player
+      const existing = disconnectTimers.get(timerKey)
+      if (existing) clearTimeout(existing)
+
+      return { player, room }
+    }
+  }
+  return null
+}
+
+/** Set the grace period timer for a disconnected player */
+export function setDisconnectTimer(roomCode: string, playerId: string, timer: NodeJS.Timeout): void {
+  const timerKey = `${roomCode}:${playerId}`
+  const existing = disconnectTimers.get(timerKey)
+  if (existing) clearTimeout(existing)
+  disconnectTimers.set(timerKey, timer)
+}
+
+/** Mark a player as reconnected — cancel grace timer, update socketId */
+export function markPlayerReconnected(roomCode: string, playerId: string, newSocketId: string): { player: Player; room: Room } | null {
+  const timerKey = `${roomCode}:${playerId}`
+  const timer = disconnectTimers.get(timerKey)
+  if (timer) {
+    clearTimeout(timer)
+    disconnectTimers.delete(timerKey)
+  }
+
+  const room = rooms.get(roomCode)
+  if (!room) return null
+
+  const player = room.players.get(playerId)
+  if (!player) return null
+
+  player.connected = true
+  player.socketId = newSocketId
+  rooms.set(roomCode, room)
+  persistDebounced(room)
+
+  // If this player is the host, also update room.host
+  if (player.isHost) {
+    room.host = player
+  }
+
+  return { player, room }
+}
+
+/** Find a player across all rooms by userId (uid) */
+export function findPlayerByUserId(userId: string): { room: Room; playerId: string; player: Player } | null {
+  for (const [, room] of rooms.entries()) {
+    for (const [playerId, player] of room.players.entries()) {
+      if (player.uid === userId || playerId === userId) {
+        return { room, playerId, player }
+      }
+    }
+  }
+  return null
+}
+
+/** Find a player in a specific room by userId */
+export function findPlayerInRoomByUserId(roomCode: string, userId: string): { playerId: string; player: Player } | null {
+  const room = rooms.get(roomCode.toUpperCase())
+  if (!room) return null
+  for (const [playerId, player] of room.players.entries()) {
+    if (player.uid === userId || playerId === userId) {
+      return { playerId, player }
+    }
+  }
+  return null
+}
+
+/** Remove a player after grace period expires */
+export function removePlayerAfterGrace(roomCode: string, playerId: string): { player: Player; room: Room } | null {
+  const timerKey = `${roomCode}:${playerId}`
+  disconnectTimers.delete(timerKey)
+
+  const room = rooms.get(roomCode)
+  if (!room) return null
+
+  const player = room.players.get(playerId)
+  if (!player) return null
+  // Only remove if still disconnected
+  if (player.connected !== false) return null
+
+  removePlayer(room, playerId)
+  return { player, room }
+}
+
 // ── Timeout Management ─────────────────────────────────────
 
 export function setRoomTimeout(code: string, timeout: NodeJS.Timeout): void {
@@ -258,6 +363,13 @@ export function clearPlotTwistTimeout(code: string): void {
 export function clearAllRoomTimeouts(code: string): void {
   clearRoomTimeout(code)
   clearPlotTwistTimeout(code)
+  // Clear any disconnect timers for this room
+  for (const [key, timer] of disconnectTimers.entries()) {
+    if (key.startsWith(`${code}:`)) {
+      clearTimeout(timer)
+      disconnectTimers.delete(key)
+    }
+  }
 }
 
 // ── Startup Recovery ───────────────────────────────────────
@@ -364,4 +476,9 @@ export function stopRoomCleanup(): void {
     clearTimeout(timeout)
   }
   plotTwistTimeouts.clear()
+  // Clear all disconnect timers
+  for (const timeout of disconnectTimers.values()) {
+    clearTimeout(timeout)
+  }
+  disconnectTimers.clear()
 }

@@ -17,6 +17,7 @@ interface SocketContextType {
   connectionState: ConnectionState
   reconnectAttempt: number
   socketEmit: <E extends keyof ClientToServerEvents>(event: E, ...args: Parameters<ClientToServerEvents[E]>) => void
+  setActiveRoom: (roomCode: string | null) => void
 }
 
 const SocketContext = createContext<SocketContextType>({
@@ -25,6 +26,7 @@ const SocketContext = createContext<SocketContextType>({
   connectionState: 'disconnected',
   reconnectAttempt: 0,
   socketEmit: () => {},
+  setActiveRoom: () => {},
 })
 
 export function useSocket() {
@@ -35,6 +37,9 @@ export function useSocket() {
 let globalSocket: SocketType | null = null
 const actionQueue = new SocketActionQueue()
 
+// Session storage key for active room
+const ACTIVE_ROOM_KEY = 'plottwists_active_room'
+
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<SocketType | null>(null)
   const [isConnected, setIsConnected] = useState(false)
@@ -42,6 +47,18 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [reconnectAttempt, setReconnectAttempt] = useState(0)
   const initRef = useRef(false)
   const { getToken, userId, isLoaded } = useClerkAuth()
+  const activeRoomRef = useRef<string | null>(null)
+
+  const setActiveRoom = useCallback((roomCode: string | null) => {
+    activeRoomRef.current = roomCode
+    try {
+      if (roomCode) {
+        sessionStorage.setItem(ACTIVE_ROOM_KEY, roomCode)
+      } else {
+        sessionStorage.removeItem(ACTIVE_ROOM_KEY)
+      }
+    } catch { /* sessionStorage unavailable */ }
+  }, [])
 
   const socketEmit = useCallback(<E extends keyof ClientToServerEvents>(event: E, ...args: Parameters<ClientToServerEvents[E]>) => {
     if (globalSocket?.connected) {
@@ -165,6 +182,24 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           setConnectionState('connected')
           setReconnectAttempt(0)
           if (globalSocket) actionQueue.flush(globalSocket)
+
+          // Auto-rejoin active room on reconnect
+          const activeRoom = activeRoomRef.current || (() => {
+            try { return sessionStorage.getItem(ACTIVE_ROOM_KEY) } catch { return null }
+          })()
+          if (activeRoom && userId && globalSocket) {
+            logger.info(`[SocketContext] Auto-rejoining room ${activeRoom}`)
+            globalSocket.emit('rejoin_room', activeRoom, userId, (res) => {
+              if (res.success) {
+                logger.info(`[SocketContext] Successfully rejoined room ${activeRoom}`)
+              } else {
+                logger.warn(`[SocketContext] Failed to rejoin room ${activeRoom}:`, res.error)
+                // Room no longer exists — clear active room
+                activeRoomRef.current = null
+                try { sessionStorage.removeItem(ACTIVE_ROOM_KEY) } catch { /* noop */ }
+              }
+            })
+          }
         })
 
         globalSocket.io.on('reconnect_failed', () => {
@@ -222,7 +257,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   }, [userId, isLoaded, getToken])
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected, connectionState, reconnectAttempt, socketEmit }}>
+    <SocketContext.Provider value={{ socket, isConnected, connectionState, reconnectAttempt, socketEmit, setActiveRoom }}>
       {children}
     </SocketContext.Provider>
   )

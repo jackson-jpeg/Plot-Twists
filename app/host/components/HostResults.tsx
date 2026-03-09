@@ -309,6 +309,39 @@ export function HostResults({
           </div>
         )}
 
+        {/* Watch Replay + Browse Replays */}
+        {shareUrl && (
+          <motion.div
+            className="flex gap-3 mt-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2 }}
+          >
+            <Button
+              variant="secondary"
+              size="md"
+              className="flex-1"
+              onClick={() => {
+                // Extract share code from URL
+                const code = shareUrl.split('/replay/')[1]
+                if (code) router.push(`/replay/${code}`)
+              }}
+              style={{ color: 'var(--color-theater-text)', background: 'transparent', borderColor: 'rgba(155, 149, 144, 0.3)' }}
+            >
+              Watch Replay
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              className="flex-1"
+              onClick={() => router.push('/replays')}
+              style={{ color: 'var(--color-theater-text)', background: 'transparent', borderColor: 'rgba(155, 149, 144, 0.3)' }}
+            >
+              Browse Replays
+            </Button>
+          </motion.div>
+        )}
+
         {/* Back to lobby */}
         <motion.div
           className="mt-4"

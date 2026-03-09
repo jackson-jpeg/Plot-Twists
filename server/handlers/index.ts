@@ -1,9 +1,9 @@
 import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
-import { DISCONNECT_GRACE_PERIOD } from '../utils/constants'
 import { startScriptGeneration } from './game.helpers'
 import * as roomService from '../services/room.service'
 import * as matchmakingService from '../services/matchmaking.service'
+import { CONFIG } from '../utils/config'
 import { logger } from '@/lib/logger'
 
 // Handler module imports
@@ -16,6 +16,7 @@ import { registerCardpackHandlers } from './cardpack.handler'
 import { registerAudioHandlers } from './audio.handler'
 import { registerUserHandlers } from './user.handler'
 import { registerAdminHandlers } from './admin.handler'
+import { registerReconnectionHandlers } from './reconnection.handler'
 
 export function registerAllHandlers(io: AppServer) {
   io.on('connection', (socket: AppSocket) => {
@@ -38,57 +39,70 @@ export function registerAllHandlers(io: AppServer) {
     registerAudioHandlers(io, socket, ctx)
     registerUserHandlers(io, socket, ctx)
     registerAdminHandlers(io, socket, ctx)
+    registerReconnectionHandlers(io, socket, ctx)
 
-    // Handle disconnect
+    // Handle disconnect — grace period before removal
     socket.on('disconnect', withErrorHandler(socket, 'disconnect', (reason) => {
       logger.info('Client disconnected:', socket.id, 'Reason:', reason)
 
-      // Give a grace period before removing players (helps with reconnections)
-      setTimeout(() => {
-        // Check if socket reconnected (if it's connected again, don't remove)
-        const reconnected = io.sockets.sockets.get(socket.id)
-        if (reconnected && reconnected.connected) {
-          logger.debug('Socket reconnected, not removing player:', socket.id)
-          return
-        }
+      // Find the player in any room by their socketId
+      for (const [code, room] of roomService.getRoomEntries()) {
+        for (const [playerId, player] of room.players.entries()) {
+          if (player.socketId !== socket.id) continue
 
-        // Find and remove player from rooms
-        for (const [code, room] of roomService.getRoomEntries()) {
-          for (const [playerId, player] of room.players.entries()) {
-            if (player.socketId === socket.id) {
-              logger.info(`Removing player ${player.nickname} from room ${code}`)
-              roomService.removePlayer(room, playerId)
-              io.to(code).emit('player_left', playerId)
-              io.to(code).emit('players_update', Array.from(room.players.values()))
+          // Mark player as disconnected immediately
+          const result = roomService.markPlayerDisconnected(code, socket.id)
+          if (!result) break
 
-              // If a player disconnected during SELECTION, re-check if remaining players have all submitted
-              if (room.gameState === 'SELECTION' && !player.isHost) {
-                const remainingPlayers = Array.from(room.players.values()).filter(p => p.role === 'PLAYER' && !p.isHost)
-                const allSubmitted = remainingPlayers.length > 0 && remainingPlayers.every(p => p.hasSubmittedSelection)
-                if (allSubmitted && room.players.size > 1) {
-                  logger.info(`All remaining players submitted after disconnect, starting script generation for room ${code}`)
-                  startScriptGeneration(room, io).catch(err => logger.error(`Script generation error after disconnect in room ${code}:`, err))
-                }
-              }
+          logger.info(`Player ${player.nickname} disconnected from room ${code}, starting grace period`)
+          io.to(code).emit('player_disconnected', { name: player.nickname })
+          io.to(code).emit('players_update', Array.from(room.players.values()))
 
-              // If host left and room is still in lobby, allow others to continue
-              // Only delete room if it's empty or has been too long
-              if (player.isHost && room.gameState === 'LOBBY' && room.players.size === 0) {
-                logger.info(`Deleting empty room ${code}`)
-                roomService.clearAllRoomTimeouts(code)
-                matchmakingService.cleanupRoom(code)
-                roomService.deleteRoom(code)
-              } else if (player.isHost) {
-                // Host left during game - notify players with specific event and cleanup timeouts
-                logger.info(`Host disconnected from room ${code}`)
-                roomService.clearAllRoomTimeouts(code)
-                io.to(code).emit('host_disconnected', { message: 'The host has left the game. You can wait for them to reconnect or return to the home page.' })
-              }
-              break
-            }
+          // Auto-pause if host disconnects during PERFORMING
+          if (player.isHost && room.gameState === 'PERFORMING' && !room.isPaused) {
+            room.isPaused = true
+            roomService.updateRoom(room)
+            io.to(code).emit('performance_paused', { reason: 'Host disconnected' })
+            logger.info(`Auto-paused performance in room ${code} — host disconnected`)
           }
+
+          // Start grace period timer
+          const gracePeriodMs = CONFIG.reconnection.gracePeriodMs
+          const timer = setTimeout(() => {
+            const removed = roomService.removePlayerAfterGrace(code, playerId)
+            if (!removed) return // Player reconnected or already removed
+
+            logger.info(`Grace period expired — removing ${removed.player.nickname} from room ${code}`)
+            io.to(code).emit('player_left', playerId)
+            io.to(code).emit('players_update', Array.from(removed.room.players.values()))
+
+            // Check SELECTION auto-start after removal
+            if (removed.room.gameState === 'SELECTION' && !removed.player.isHost) {
+              const remainingPlayers = Array.from(removed.room.players.values()).filter(p => p.role === 'PLAYER' && !p.isHost)
+              const allSubmitted = remainingPlayers.length > 0 && remainingPlayers.every(p => p.hasSubmittedSelection)
+              if (allSubmitted && removed.room.players.size > 1) {
+                logger.info(`All remaining players submitted after grace expiry, starting script generation for room ${code}`)
+                startScriptGeneration(removed.room, io).catch(err => logger.error(`Script generation error in room ${code}:`, err))
+              }
+            }
+
+            // Host removal — cleanup or notify
+            if (removed.player.isHost && removed.room.gameState === 'LOBBY' && removed.room.players.size === 0) {
+              logger.info(`Deleting empty room ${code}`)
+              roomService.clearAllRoomTimeouts(code)
+              matchmakingService.cleanupRoom(code)
+              roomService.deleteRoom(code)
+            } else if (removed.player.isHost) {
+              logger.info(`Host permanently left room ${code}`)
+              roomService.clearAllRoomTimeouts(code)
+              io.to(code).emit('host_disconnected', { message: 'The host has left the game. You can wait for them to reconnect or return to the home page.' })
+            }
+          }, gracePeriodMs)
+
+          roomService.setDisconnectTimer(code, playerId, timer)
+          break
         }
-      }, DISCONNECT_GRACE_PERIOD) // Grace period — brief network blips shouldn't remove players mid-performance
+      }
     }))
   })
 }

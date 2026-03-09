@@ -204,6 +204,10 @@ export function useGameSocket(params: UseGameSocketParams) {
       callbacksRef.current.onPlayerLeft?.(leftPlayerId)
     })
 
+    socket.on('player_disconnected', (data: { name: string }) => {
+      toast.info(`${data.name} disconnected`)
+    })
+
     socket.on('plot_twist_injected', (insertIndex: number, newLines: ScriptLine[]) => {
       setScript(prev => {
         if (!prev) return prev
@@ -224,7 +228,8 @@ export function useGameSocket(params: UseGameSocketParams) {
       socket.off('achievement_unlocked'); socket.off('xp_gained')
       socket.off('level_up'); socket.off('spectator_message_received')
       socket.off('kicked'); socket.off('error')
-      socket.off('player_left'); socket.off('plot_twist_injected')
+      socket.off('player_left'); socket.off('player_disconnected')
+      socket.off('plot_twist_injected')
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current)
         countdownIntervalRef.current = null

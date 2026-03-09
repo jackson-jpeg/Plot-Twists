@@ -7,6 +7,8 @@ import {
   getGame,
   getGameByShareCode,
   shareGame,
+  getPublicGames,
+  getRecentPublicGames,
 } from '../services/gameHistory.service'
 import { getPlayerStats, getLeaderboard } from '../services/playerStats.service'
 import { getCredits, addBankedCredits } from '../services/credit.service'
@@ -194,6 +196,21 @@ export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: Hand
     } catch (error) {
       logger.error('Error claiming level reward:', error)
       callback({ success: false, error: 'Failed to claim reward' })
+    }
+  }))
+
+  // Get public replays (trending or recent)
+  socket.on('get_public_replays', withErrorHandler(socket, 'get_public_replays', async (params, callback) => {
+    if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
+    try {
+      const { tab, limit, offset } = params
+      const games = tab === 'trending'
+        ? await getPublicGames(limit)
+        : await getRecentPublicGames(limit, offset)
+      callback({ success: true, games })
+    } catch (error) {
+      logger.error('Error fetching public replays:', error)
+      callback({ success: false, error: 'Failed to load replays' })
     }
   }))
 }

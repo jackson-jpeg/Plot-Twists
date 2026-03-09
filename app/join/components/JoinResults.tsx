@@ -238,6 +238,47 @@ export function JoinResults({
           </div>
         )}
 
+        {/* Watch Replay + Browse */}
+        <motion.div
+          className="flex gap-3 mb-6"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0 }}
+        >
+          <Button
+            variant="secondary"
+            size="md"
+            className="flex-1"
+            onClick={async () => {
+              const gameId = await getGameId()
+              if (!gameId || !socket) return
+              try {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const shareResponse: any = await withTimeout(
+                  (cb) => socket.emit('share_game', gameId, cb),
+                  10000
+                )
+                if (shareResponse.success && shareResponse.shareUrl) {
+                  const code = shareResponse.shareUrl.split('/replay/')[1]
+                  if (code) router.push(`/replay/${code}`)
+                }
+              } catch { /* noop */ }
+            }}
+            style={{ background: 'transparent' }}
+          >
+            Watch Replay
+          </Button>
+          <Button
+            variant="secondary"
+            size="md"
+            className="flex-1"
+            onClick={() => router.push('/replays')}
+            style={{ background: 'transparent' }}
+          >
+            Browse Replays
+          </Button>
+        </motion.div>
+
         {/* Guest signup nudge */}
         {isGuest && (
           <motion.div

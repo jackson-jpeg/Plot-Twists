@@ -37,7 +37,7 @@ const JoinResults = dynamic(() => import('./components/JoinResults').then(m => (
 function JoinPageContent() {
   const router = useRouter()
   const { user } = useAuth()
-  const { socket, isConnected, connectionState, reconnectAttempt } = useSocket()
+  const { socket, isConnected, connectionState, reconnectAttempt, setActiveRoom } = useSocket()
   const searchParams = useSearchParams()
   const codeFromUrl = searchParams.get('code')
   const nicknameFromUrl = searchParams.get('nickname')
@@ -159,6 +159,7 @@ function JoinPageContent() {
     setMyPlayerId(data.myPlayerId)
     setMyRole(data.myRole)
     setRoomCode(data.roomCode)
+    setActiveRoom(data.roomCode)
     setRoomIsMature(data.roomIsMature)
   }
 
@@ -330,6 +331,7 @@ function JoinPageContent() {
               roomCode={roomCode} spectatorMessages={spectatorMessages}
               socket={socket}
               scriptImageUrl={scriptImageUrl}
+              hostDisconnected={hostDisconnected}
               onNextLine={goToNextLine} onPreviousLine={goToPreviousLine}
               onShowPosterLightbox={() => setShowPosterLightbox(true)}
             />

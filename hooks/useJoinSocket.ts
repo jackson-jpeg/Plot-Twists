@@ -141,11 +141,27 @@ export function useJoinSocket({
     socket.on('room_settings_update', setRoomSettings)
     socket.on('auto_start_countdown', (seconds) => setAutoStartCountdown(seconds))
 
+    // Reconnection-aware events
+    socket.on('performance_paused', () => {
+      setHostDisconnected(true)
+    })
+    socket.on('performance_resumed', () => {
+      setHostDisconnected(false)
+    })
+    socket.on('player_reconnected', (data) => {
+      toast.success(`${data.name} reconnected`)
+      // If the reconnected player is the host, clear host disconnected state
+      setHostDisconnected(false)
+    })
+
     return () => {
       socket.off('host_disconnected')
       socket.off('card_pack_selected')
       socket.off('room_settings_update')
       socket.off('auto_start_countdown')
+      socket.off('performance_paused')
+      socket.off('performance_resumed')
+      socket.off('player_reconnected')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, isConnected])

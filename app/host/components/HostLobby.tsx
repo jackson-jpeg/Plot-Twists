@@ -12,6 +12,7 @@ import { MOTION, VARIANTS, STAGGER } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 import { Button, Card, Badge, Avatar } from '@/components/ui'
+import { PlayerConnectionDot } from '@/components/PlayerConnectionDot'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -268,13 +269,16 @@ export function HostLobby({
                 </motion.div>
 
                 <div className="flex-1">
-                  <p style={{
-                    fontWeight: 600,
-                    fontSize: 'var(--text-body)',
-                    color: 'var(--color-text-primary)',
-                  }}>
-                    {player.nickname}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <PlayerConnectionDot connected={player.connected} />
+                    <p style={{
+                      fontWeight: 600,
+                      fontSize: 'var(--text-body)',
+                      color: player.connected === false ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)',
+                    }}>
+                      {player.nickname}
+                    </p>
+                  </div>
                 </div>
 
                 {player.level != null ? (

@@ -248,6 +248,7 @@ export interface Player {
   isHost: boolean
   socketId: string
   uid?: string
+  connected?: boolean
   hasSubmittedSelection?: boolean
   hasSubmittedVote?: boolean
   assignedCharacter?: string
@@ -509,6 +510,8 @@ export interface ServerToClientEvents {
   game_warning: (warning: GameWarning) => void
   player_reconnected: (data: { name: string; socketId: string }) => void
   player_disconnected: (data: { name: string }) => void
+  performance_paused: (data: { reason: string }) => void
+  performance_resumed: () => void
 }
 
 export interface ClientToServerEvents {
@@ -559,6 +562,7 @@ export interface ClientToServerEvents {
   get_game_history: (playerId: string, limit: number, callback: (response: { success: boolean, games?: SavedGame[], error?: string }) => void) => void
   get_game_details: (gameId: string, callback: (response: { success: boolean, game?: SavedGame, error?: string }) => void) => void
   share_game: (gameId: string, callback: (response: { success: boolean, shareUrl?: string, error?: string }) => void) => void
+  get_public_replays: (params: { tab: 'recent' | 'trending'; limit: number; offset: number }, callback: (response: { success: boolean, games?: SavedGame[], error?: string }) => void) => void
 
   // Feature 6: Player Stats Events
   get_player_stats: (playerId: string, callback: (response: { success: boolean, stats?: PlayerStats, error?: string }) => void) => void
@@ -583,8 +587,8 @@ export interface ClientToServerEvents {
   // Resync after reconnection
   request_resync: (roomCode: string, playerId: string, callback: (response: { success: boolean, gameState?: string, players?: Player[], script?: Script, currentLineIndex?: number, hasSubmittedSelection?: boolean, assignedCharacter?: string, selection?: CardSelection, error?: string }) => void) => void
 
-  // Rejoin room after full disconnect (future use)
-  rejoin_room: (roomCode: string, callback: (res: {
+  // Rejoin room after full disconnect/reconnect
+  rejoin_room: (roomCode: string, userId: string, callback: (res: {
     success: boolean
     error?: string
     snapshot?: {
@@ -594,6 +598,11 @@ export interface ClientToServerEvents {
       currentLineIndex: number
       scriptImageUrl: string | null
       assignedCharacter?: string
+      myRole?: PlayerRole
+      hasSubmittedSelection?: boolean
+      selection?: CardSelection
+      spectatorMessages?: SpectatorMessage[]
+      votingStatus?: { hasVoted: boolean }
     }
   }) => void) => void
 

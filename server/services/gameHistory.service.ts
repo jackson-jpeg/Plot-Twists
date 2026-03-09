@@ -237,6 +237,22 @@ export async function getPublicGames(limit: number = 20): Promise<SavedGame[]> {
 }
 
 /**
+ * Get recent public games (sorted by playedAt descending)
+ */
+export async function getRecentPublicGames(limit: number = 20, offset: number = 0): Promise<SavedGame[]> {
+  const db = getDatabase()
+  // Fetch more than needed to handle offset (Firestore doesn't have native offset)
+  const games = await db.query<SavedGame>(Collections.GAME_HISTORY, [
+    { field: 'isPublic', operator: '==', value: true }
+  ], {
+    orderBy: 'playedAt',
+    orderDirection: 'desc',
+    limit: limit + offset
+  })
+  return games.slice(offset, offset + limit)
+}
+
+/**
  * Share a game (make it publicly accessible)
  */
 export async function shareGame(gameId: string): Promise<{ success: boolean, shareCode?: string, error?: string }> {

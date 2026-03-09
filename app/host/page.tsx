@@ -41,7 +41,7 @@ function HostPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
-  const { socket, isConnected, connectionState, reconnectAttempt } = useSocket()
+  const { socket, isConnected, connectionState, reconnectAttempt, setActiveRoom } = useSocket()
   const confetti = useConfetti()
   const prefersReducedMotion = useReducedMotion()
   const variants = getVariants(prefersReducedMotion)
@@ -147,6 +147,7 @@ function HostPageContent() {
     ).then((response) => {
       if (response.success && response.code) {
         setRoomCode(response.code)
+        setActiveRoom(response.code)
         analytics.gameCreated(settings.gameMode)
       }
     }).catch(() => {

@@ -9,6 +9,7 @@ import { SpectatorChat } from '@/components/SpectatorChat'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { VARIANTS } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
+import { GamePausedOverlay } from '@/components/GamePausedOverlay'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -26,6 +27,7 @@ export interface JoinPerformingProps {
   spectatorMessages: SpectatorMessage[]
   socket: AppSocket | null
   scriptImageUrl: string | null
+  hostDisconnected?: boolean
   onNextLine: () => void
   onPreviousLine: () => void
   onShowPosterLightbox?: () => void
@@ -33,8 +35,8 @@ export interface JoinPerformingProps {
 
 export function JoinPerforming({
   script, currentLineIndex, myCharacter, myRole, roomCode,
-  spectatorMessages, socket, scriptImageUrl, onNextLine, onPreviousLine,
-  onShowPosterLightbox,
+  spectatorMessages, socket, scriptImageUrl, hostDisconnected,
+  onNextLine, onPreviousLine, onShowPosterLightbox,
 }: JoinPerformingProps) {
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
@@ -113,6 +115,8 @@ export function JoinPerforming({
           onPreviousLine={onPreviousLine}
         />
       </div>
+
+      <GamePausedOverlay visible={!!hostDisconnected} reason="Host disconnected" />
     </motion.div>
   )
 }

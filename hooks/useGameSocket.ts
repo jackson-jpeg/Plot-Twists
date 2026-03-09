@@ -8,6 +8,7 @@ import type {
   XPEvent, LevelReward,
 } from '@/lib/types'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
+import { useGameErrors } from './useGameErrors'
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -35,6 +36,9 @@ export function useGameSocket(params: UseGameSocketParams) {
   const {
     socket, isConnected, toast, achievementToasts,
   } = params
+
+  // Error/warning handling for all game sessions
+  useGameErrors({ socket, toast: params.toast })
 
   // Shared state
   const [gameState, setGameState] = useState<GameState>('LOBBY')

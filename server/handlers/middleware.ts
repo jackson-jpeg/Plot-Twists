@@ -1,9 +1,32 @@
 import { z } from 'zod'
 import { logger } from '@/lib/logger'
+import type { GameError, ErrorCode } from '@/lib/types'
 import type { AppSocket, HandlerFn, SocketCallback } from './types'
 
-// withErrorBoundary(eventName, handler) — wraps handler in try/catch, sends error via callback
-export function withErrorBoundary(eventName: string, handler: HandlerFn): HandlerFn {
+function classifyError(eventName: string, error: unknown): GameError {
+  const message = error instanceof Error ? error.message : 'An unexpected error occurred'
+
+  if (message.toLowerCase().includes('insufficient') || message.toLowerCase().includes('credit')) {
+    return { code: 'CREDIT_INSUFFICIENT', message: 'Not enough credits.', recoverable: true, action: { type: 'REDIRECT', path: '/profile' } }
+  }
+  if (message.toLowerCase().includes('not found') || message.toLowerCase().includes('no room')) {
+    return { code: 'ROOM_NOT_FOUND', message: 'Room no longer exists.', recoverable: true, action: { type: 'REDIRECT', path: '/' } }
+  }
+  if (message.toLowerCase().includes('timeout') || message.toLowerCase().includes('timed out')) {
+    return { code: 'NETWORK_TIMEOUT', message: 'Request timed out. Please try again.', recoverable: true, action: { type: 'RETRY', event: eventName } }
+  }
+  if (message.toLowerCase().includes('full')) {
+    return { code: 'ROOM_FULL', message: 'This room is full.', recoverable: true, action: { type: 'REDIRECT', path: '/' } }
+  }
+  if (message.toLowerCase().includes('auth')) {
+    return { code: 'AUTH_REQUIRED', message: 'Please sign in to continue.', recoverable: true, action: { type: 'REDIRECT', path: '/sign-in' } }
+  }
+
+  return { code: 'UNKNOWN', message: 'Something went wrong. Please try again.', recoverable: true, action: { type: 'DISMISS' } }
+}
+
+// withErrorBoundary(eventName, handler, socket?) — wraps handler in try/catch, sends error via callback
+export function withErrorBoundary(eventName: string, handler: HandlerFn, socket?: AppSocket): HandlerFn {
   return async (...args: unknown[]) => {
     const callback = args.find(a => typeof a === 'function') as SocketCallback | undefined
     try {
@@ -15,6 +38,9 @@ export function withErrorBoundary(eventName: string, handler: HandlerFn): Handle
         stack: error instanceof Error ? error.stack : undefined,
       })
       callback?.({ success: false, error: message })
+      if (socket) {
+        socket.emit('game_error', classifyError(eventName, error))
+      }
     }
   }
 }

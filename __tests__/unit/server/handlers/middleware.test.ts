@@ -80,6 +80,71 @@ describe('withErrorBoundary', () => {
     await expect(wrapped('arg1')).resolves.toBeUndefined()
     expect(logger.error).toHaveBeenCalled()
   })
+
+  it('emits game_error on socket when socket is provided', async () => {
+    const handler = jest.fn().mockRejectedValue(new Error('Room not found'))
+    const mockSocket = { emit: jest.fn() } as unknown as AppSocket
+    const wrapped = withErrorBoundary('join_room', handler, mockSocket)
+
+    await wrapped('arg1')
+
+    expect(mockSocket.emit).toHaveBeenCalledWith('game_error', expect.objectContaining({
+      code: 'ROOM_NOT_FOUND',
+      message: 'Room no longer exists.',
+      recoverable: true,
+    }))
+  })
+
+  it('classifies credit errors correctly when socket is provided', async () => {
+    const handler = jest.fn().mockRejectedValue(new Error('Insufficient credits'))
+    const mockSocket = { emit: jest.fn() } as unknown as AppSocket
+    const wrapped = withErrorBoundary('start_game', handler, mockSocket)
+
+    await wrapped('arg1')
+
+    expect(mockSocket.emit).toHaveBeenCalledWith('game_error', expect.objectContaining({
+      code: 'CREDIT_INSUFFICIENT',
+      message: 'Not enough credits.',
+      action: { type: 'REDIRECT', path: '/profile' },
+    }))
+  })
+
+  it('classifies timeout errors correctly when socket is provided', async () => {
+    const handler = jest.fn().mockRejectedValue(new Error('Request timed out'))
+    const mockSocket = { emit: jest.fn() } as unknown as AppSocket
+    const wrapped = withErrorBoundary('generate_script', handler, mockSocket)
+
+    await wrapped('arg1')
+
+    expect(mockSocket.emit).toHaveBeenCalledWith('game_error', expect.objectContaining({
+      code: 'NETWORK_TIMEOUT',
+      action: { type: 'RETRY', event: 'generate_script' },
+    }))
+  })
+
+  it('classifies unknown errors as UNKNOWN when socket is provided', async () => {
+    const handler = jest.fn().mockRejectedValue(new Error('something weird'))
+    const mockSocket = { emit: jest.fn() } as unknown as AppSocket
+    const wrapped = withErrorBoundary('test-event', handler, mockSocket)
+
+    await wrapped('arg1')
+
+    expect(mockSocket.emit).toHaveBeenCalledWith('game_error', expect.objectContaining({
+      code: 'UNKNOWN',
+      action: { type: 'DISMISS' },
+    }))
+  })
+
+  it('does not emit game_error when no socket is provided', async () => {
+    const handler = jest.fn().mockRejectedValue(new Error('some error'))
+    const callback = jest.fn()
+    const wrapped = withErrorBoundary('test-event', handler)
+
+    await wrapped('arg1', callback)
+
+    expect(callback).toHaveBeenCalledWith({ success: false, error: 'some error' })
+    // No socket means no emit — just verifying no crash
+  })
 })
 
 describe('withAuth', () => {

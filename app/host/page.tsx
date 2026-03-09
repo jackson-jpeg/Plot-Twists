@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useCallback, Suspense } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { RoomSettings, ScriptCustomization, AudioSettings, CardSelection, GameMode } from '@/lib/types'
@@ -13,7 +13,6 @@ import { OnboardingModal } from '@/components/OnboardingModal'
 import { Modal } from '@/components/Modal'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
-import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
 import { useAuth } from '@/contexts/AuthContext'
 import dynamic from 'next/dynamic'
 const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
@@ -21,7 +20,6 @@ import { AchievementToast, useAchievementToasts } from '@/components/Achievement
 import { analytics } from '@/lib/analytics'
 import { useHostSocket } from '@/hooks/useHostSocket'
 import { useAudioPlayer } from '@/hooks/useAudioPlayer'
-import { successHaptic } from '@/hooks/useHaptics'
 
 import { Button, PageContainer } from '@/components/ui'
 import { Skeleton } from '@/components/EmptyState'
@@ -74,39 +72,22 @@ function HostPageContent() {
   const [gameSetupMode, setGameSetupMode] = useState<'quick' | 'custom'>('quick')
   const [isSubmittingCards, setIsSubmittingCards] = useState(false)
   const [hasTriggeredSelectionConfetti, setHasTriggeredSelectionConfetti] = useState(false)
-  const [chaosCooldownRemaining, setChaosCooldownRemaining] = useState(0)
-  const [chaosShaking, setChaosShaking] = useState(false)
-
   const roomCreatedRef = React.useRef(false)
-
-  const {
-    settings: teleprompterSettings,
-    setPreset: setTeleprompterPreset,
-    setCustom: setTeleprompterCustom,
-    toggleAutoScroll: toggleTeleprompterAutoScroll,
-    isLoading: teleprompterSettingsLoading,
-  } = useTeleprompterSettings()
 
   const {
     gameState, setGameState,
     players,
     script,
-    currentLineIndex, setCurrentLineIndex,
-    isPlaying, setIsPlaying,
     greenRoomQuestion,
     gameResults,
     availableCards,
-    networkLatency,
     scriptGenerationTimedOut,
     loadingProgress,
     loadingPhase,
     scriptTitlePreview,
     scriptImageUrl,
-    isGeneratingImage,
-    chaosCooldown, setChaosCooldown,
     creditBalance, setCreditBalance,
     showInsufficientCredits, setShowInsufficientCredits,
-    spectatorMessages,
     countdown,
     selection, setSelection,
     hasSubmittedSelection, setHasSubmittedSelection,
@@ -189,19 +170,6 @@ function HostPageContent() {
     if (!selection.character && !selection.setting && !selection.circumstance) setHasTriggeredSelectionConfetti(false)
   }, [selection])
 
-  // CHAOS cooldown timer
-  useEffect(() => {
-    if (!chaosCooldown) return
-    setChaosCooldownRemaining(30)
-    const interval = setInterval(() => {
-      setChaosCooldownRemaining(prev => {
-        if (prev <= 0.1) { setChaosCooldown(false); clearInterval(interval); return 0 }
-        return Math.max(0, prev - 0.1)
-      })
-    }, 100)
-    return () => clearInterval(interval)
-  }, [chaosCooldown, setChaosCooldown])
-
   // --- Actions ---
   const startGame = () => {
     socket?.emit('update_room_settings', roomCode, { scriptCustomization, audioSettings, cardPackId: selectedPackId })
@@ -242,40 +210,6 @@ function HostPageContent() {
     setSettings(newSettings)
     socket?.emit('update_room_settings', roomCode, { gameMode: newMode })
   }
-
-  const nextLine = useCallback(() => {
-    if (script && currentLineIndex < script.lines.length - 1) {
-      const newIndex = currentLineIndex + 1
-      setCurrentLineIndex(newIndex)
-      socket?.emit('jump_to_line', roomCode, newIndex)
-    }
-  }, [script, currentLineIndex, socket, roomCode])
-
-  const previousLine = useCallback(() => {
-    if (currentLineIndex > 0) {
-      const newIndex = currentLineIndex - 1
-      setCurrentLineIndex(newIndex)
-      socket?.emit('jump_to_line', roomCode, newIndex)
-    }
-  }, [currentLineIndex, socket, roomCode])
-
-  const togglePlayPause = useCallback(() => {
-    const newPlayingState = !isPlaying
-    setIsPlaying(newPlayingState)
-    if (newPlayingState) socket?.emit('resume_script', roomCode)
-    else socket?.emit('pause_script', roomCode)
-  }, [isPlaying, socket, roomCode])
-
-  const triggerChaos = useCallback(() => {
-    if (!socket || chaosCooldown) return
-    socket.emit('start_plot_twist', roomCode)
-    setChaosCooldown(true)
-    setChaosShaking(true)
-    setTimeout(() => setChaosShaking(false), 500)
-    successHaptic() // native haptics on iOS; no-op on web
-    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]) // Android web fallback
-    toast.info(settings.gameMode === 'SOLO' ? 'PLOT TWIST incoming!' : 'CHAOS unleashed! Audience is voting on a plot twist...')
-  }, [socket, roomCode, chaosCooldown, toast, setChaosCooldown])
 
   const handleSetupModeChange = (mode: 'quick' | 'custom') => {
     setGameSetupMode(mode)
@@ -450,26 +384,7 @@ function HostPageContent() {
         {gameState === 'PERFORMING' && script && (
           <GameErrorBoundary phaseName="performing" key="performing-eb"><HostPerforming
             key="performing"
-            script={script} currentLineIndex={currentLineIndex}
-            isPlaying={isPlaying} roomCode={roomCode}
-            networkLatency={networkLatency}
-            spectatorMessages={spectatorMessages}
-            scriptImageUrl={scriptImageUrl}
-            isGeneratingImage={isGeneratingImage}
-            chaosCooldown={chaosCooldown}
-            chaosCooldownRemaining={chaosCooldownRemaining}
-            chaosShaking={chaosShaking}
-            isSoloMode={settings.gameMode === 'SOLO'}
-            teleprompterSettings={teleprompterSettings}
-            teleprompterSettingsLoading={teleprompterSettingsLoading}
-            onNextLine={nextLine} onPreviousLine={previousLine}
-            onTogglePlayPause={togglePlayPause}
-            onTriggerChaos={triggerChaos}
-            onSetTeleprompterPreset={setTeleprompterPreset}
-            onSetTeleprompterCustom={setTeleprompterCustom}
-            onToggleTeleprompterAutoScroll={toggleTeleprompterAutoScroll}
             onShowPosterLightbox={() => setShowPosterLightbox(true)}
-            onEndPerformance={() => socket?.emit('end_performance', roomCode)}
           /></GameErrorBoundary>
         )}
 

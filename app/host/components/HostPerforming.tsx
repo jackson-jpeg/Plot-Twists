@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { Script, TeleprompterSettings as TeleprompterSettingsType, SpectatorMessage } from '@/lib/types'
 import { getCharactersInScene } from '@/lib/scriptUtils'
 import { getMoodIndicator, getVisibleLines } from '@/lib/teleprompterUtils'
 import dynamic from 'next/dynamic'
@@ -12,61 +11,117 @@ const PlotTwistVoting = dynamic(() => import('@/components/PlotTwistVoting').the
 import { SpectatorTicker } from '@/components/SpectatorChat'
 import { MoviePosterFrame, MoviePosterSkeleton } from '@/components/MoviePosterFrame'
 import { VARIANTS, MOTION } from '@/lib/animations'
-import { tapHaptic } from '@/hooks/useHaptics'
+import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { PauseIcon, PlayIcon, ChaosIcon } from '@/components/GameIcons'
 import { Button } from '@/components/ui'
+import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
+import { useScriptStore } from '@/stores/scriptStore'
+import { useAudienceStore } from '@/stores/audienceStore'
+import { useGameStore } from '@/stores/gameStore'
+import { socketManager } from '@/lib/socketManager'
 
 export interface HostPerformingProps {
-  script: Script
-  currentLineIndex: number
-  isPlaying: boolean
-  roomCode: string
-  networkLatency: number | null
-  spectatorMessages: SpectatorMessage[]
-  scriptImageUrl: string | null
-  isGeneratingImage: boolean
-  chaosCooldown: boolean
-  chaosCooldownRemaining: number
-  chaosShaking: boolean
-  isSoloMode?: boolean
-  teleprompterSettings: TeleprompterSettingsType
-  teleprompterSettingsLoading: boolean
-  onNextLine: () => void
-  onPreviousLine: () => void
-  onTogglePlayPause: () => void
-  onTriggerChaos: () => void
-  onSetTeleprompterPreset: (mode: 'focused' | 'balanced' | 'full') => void
-  onSetTeleprompterCustom: (past: number | 'all', upcoming: number | 'all') => void
-  onToggleTeleprompterAutoScroll: () => void
   onShowPosterLightbox: () => void
-  onEndPerformance: () => void
 }
 
-export function HostPerforming({
-  script, currentLineIndex, isPlaying, roomCode,
-  networkLatency, spectatorMessages, scriptImageUrl, isGeneratingImage,
-  chaosCooldown, chaosCooldownRemaining, chaosShaking, isSoloMode = false,
-  teleprompterSettings, teleprompterSettingsLoading,
-  onNextLine, onPreviousLine, onTogglePlayPause, onTriggerChaos,
-  onSetTeleprompterPreset, onSetTeleprompterCustom, onToggleTeleprompterAutoScroll,
-  onShowPosterLightbox, onEndPerformance,
-}: HostPerformingProps) {
+export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
   const scriptContainerRef = useRef<HTMLDivElement | null>(null)
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
+
+  // Store selectors
+  const script = useScriptStore((s) => s.script)
+  const currentLineIndex = useScriptStore((s) => s.currentLineIndex)
+  const setCurrentLineIndex = useScriptStore((s) => s.setCurrentLineIndex)
+  const isPlaying = useScriptStore((s) => s.isPlaying)
+  const setIsPlaying = useScriptStore((s) => s.setIsPlaying)
+  const scriptImageUrl = useScriptStore((s) => s.imageUrl)
+  const isGeneratingImage = useScriptStore((s) => s.isGeneratingImage)
+
+  const spectatorMessages = useAudienceStore((s) => s.spectatorMessages)
+  const chaosCooldown = useAudienceStore((s) => s.chaosCooldown)
+  const setChaosCooldown = useAudienceStore((s) => s.setChaosCooldown)
+
+  const roomCode = useGameStore((s) => s.roomCode)
+  const settings = useGameStore((s) => s.settings)
+  const isSoloMode = settings?.gameMode === 'SOLO'
+
+  // Teleprompter settings from hook
+  const {
+    settings: teleprompterSettings,
+    setPreset: onSetTeleprompterPreset,
+    setCustom: onSetTeleprompterCustom,
+    toggleAutoScroll: onToggleTeleprompterAutoScroll,
+    isLoading: teleprompterSettingsLoading,
+  } = useTeleprompterSettings()
+
+  // Local chaos UI state
+  const [chaosCooldownRemaining, setChaosCooldownRemaining] = useState(0)
+  const [chaosShaking, setChaosShaking] = useState(false)
+
+  // Chaos cooldown timer
+  useEffect(() => {
+    if (!chaosCooldown) return
+    setChaosCooldownRemaining(30)
+    const interval = setInterval(() => {
+      setChaosCooldownRemaining(prev => {
+        if (prev <= 0.1) { setChaosCooldown(false); clearInterval(interval); return 0 }
+        return Math.max(0, prev - 0.1)
+      })
+    }, 100)
+    return () => clearInterval(interval)
+  }, [chaosCooldown, setChaosCooldown])
+
+  // Actions
+  const nextLine = useCallback(() => {
+    if (script && currentLineIndex < script.lines.length - 1) {
+      const newIndex = currentLineIndex + 1
+      setCurrentLineIndex(newIndex)
+      socketManager.emit('jump_to_line', roomCode, newIndex)
+    }
+  }, [script, currentLineIndex, roomCode, setCurrentLineIndex])
+
+  const previousLine = useCallback(() => {
+    if (currentLineIndex > 0) {
+      const newIndex = currentLineIndex - 1
+      setCurrentLineIndex(newIndex)
+      socketManager.emit('jump_to_line', roomCode, newIndex)
+    }
+  }, [currentLineIndex, roomCode, setCurrentLineIndex])
+
+  const togglePlayPause = useCallback(() => {
+    const newPlayingState = !isPlaying
+    setIsPlaying(newPlayingState)
+    if (newPlayingState) socketManager.emit('resume_script', roomCode)
+    else socketManager.emit('pause_script', roomCode)
+  }, [isPlaying, roomCode, setIsPlaying])
+
+  const triggerChaos = useCallback(() => {
+    if (chaosCooldown) return
+    socketManager.emit('start_plot_twist', roomCode)
+    setChaosCooldown(true)
+    setChaosShaking(true)
+    setTimeout(() => setChaosShaking(false), 500)
+    successHaptic()
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200])
+  }, [roomCode, chaosCooldown, setChaosCooldown])
+
+  const endPerformance = useCallback(() => {
+    socketManager.emit('end_performance', roomCode)
+  }, [roomCode])
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).closest('input, select, textarea, [role="slider"]')) return
-      if (e.key === 'ArrowRight') onNextLine()
-      else if (e.key === 'ArrowLeft') onPreviousLine()
-      else if (e.key === ' ') { e.preventDefault(); onTogglePlayPause() }
+      if (e.key === 'ArrowRight') nextLine()
+      else if (e.key === 'ArrowLeft') previousLine()
+      else if (e.key === ' ') { e.preventDefault(); togglePlayPause() }
     }
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [onNextLine, onPreviousLine, onTogglePlayPause])
+  }, [nextLine, previousLine, togglePlayPause])
 
   // Auto-scroll
   useEffect(() => {
@@ -74,6 +129,9 @@ export function HostPerforming({
     const el = scriptContainerRef.current.querySelector(`[data-line-index="${currentLineIndex}"]`)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [currentLineIndex, teleprompterSettings.autoScroll])
+
+  // Guard: script must exist (parent checks this too)
+  if (!script) return null
 
   return (
     <motion.div
@@ -247,7 +305,7 @@ export function HostPerforming({
         {/* Two equal dark buttons: Pause + Skip */}
         <div className="flex gap-3 mb-3">
           <motion.button
-            onClick={() => { tapHaptic(); onTogglePlayPause() }}
+            onClick={() => { tapHaptic(); togglePlayPause() }}
             className="flex-1 flex items-center justify-center gap-2"
             style={{
               padding: '14px',
@@ -268,7 +326,7 @@ export function HostPerforming({
           </motion.button>
 
           <motion.button
-            onClick={() => { tapHaptic(); onNextLine() }}
+            onClick={() => { tapHaptic(); nextLine() }}
             disabled={currentLineIndex >= script.lines.length - 1}
             className="flex-1 flex items-center justify-center gap-2"
             style={{
@@ -294,7 +352,7 @@ export function HostPerforming({
         {/* Full-width PLOT TWIST button — hidden in solo or on cooldown */}
         {!isSoloMode && (
           <motion.button
-            onClick={() => { tapHaptic(); onTriggerChaos() }}
+            onClick={() => { tapHaptic(); triggerChaos() }}
             disabled={chaosCooldown}
             className={`w-full relative overflow-hidden flex items-center justify-center gap-2 mb-3 ${chaosShaking ? 'animate-chaos-shake' : ''}`}
             style={{
@@ -337,7 +395,7 @@ export function HostPerforming({
               variant="primary"
               size="lg"
               fullWidth
-              onClick={() => { tapHaptic(); onEndPerformance() }}
+              onClick={() => { tapHaptic(); endPerformance() }}
               style={{ color: 'var(--color-theater-bg)' }}
             >
               Finish Scene — Vote

@@ -22,6 +22,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import dynamic from 'next/dynamic'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
+import { ReconnectionBanner } from '@/components/ReconnectionBanner'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { Button } from '@/components/ui/Button'
@@ -36,7 +37,7 @@ const JoinResults = dynamic(() => import('./components/JoinResults').then(m => (
 function JoinPageContent() {
   const router = useRouter()
   const { user } = useAuth()
-  const { socket, isConnected } = useSocket()
+  const { socket, isConnected, connectionState, reconnectAttempt } = useSocket()
   const searchParams = useSearchParams()
   const codeFromUrl = searchParams.get('code')
   const nicknameFromUrl = searchParams.get('nickname')
@@ -234,6 +235,7 @@ function JoinPageContent() {
 
   return (
     <PageContainer size="full" style={{ padding: 0 }}>
+      <ReconnectionBanner reconnecting={connectionState === 'reconnecting'} attempt={reconnectAttempt} />
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="join" />
 
       {/* Host Disconnected Overlay */}

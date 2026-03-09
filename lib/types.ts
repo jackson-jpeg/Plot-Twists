@@ -577,6 +577,20 @@ export interface ClientToServerEvents {
   // Resync after reconnection
   request_resync: (roomCode: string, playerId: string, callback: (response: { success: boolean, gameState?: string, players?: Player[], script?: Script, currentLineIndex?: number, hasSubmittedSelection?: boolean, assignedCharacter?: string, selection?: CardSelection, error?: string }) => void) => void
 
+  // Rejoin room after full disconnect (future use)
+  rejoin_room: (roomCode: string, callback: (res: {
+    success: boolean
+    error?: string
+    snapshot?: {
+      gameState: GameState
+      players: Player[]
+      script: Script | null
+      currentLineIndex: number
+      scriptImageUrl: string | null
+      assignedCharacter?: string
+    }
+  }) => void) => void
+
   // Feature 7: Progression Events
   get_progression: (playerId: string, callback: (response: { success: boolean, progression?: Progression, levelInfo?: LevelInfo, error?: string }) => void) => void
   get_weekly_challenges: (callback: (response: { success: boolean, challenges?: WeeklyChallenge[], error?: string }) => void) => void

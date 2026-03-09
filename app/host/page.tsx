@@ -27,6 +27,7 @@ import { Button, PageContainer } from '@/components/ui'
 import { Skeleton } from '@/components/EmptyState'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
+import { ReconnectionBanner } from '@/components/ReconnectionBanner'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 const hostLoadingPlaceholder = () => <div style={{ minHeight: '100dvh' }} />
 const HostLobby = dynamic(() => import('./components/HostLobby').then(m => ({ default: m.HostLobby })), { ssr: false, loading: hostLoadingPlaceholder })
@@ -40,7 +41,7 @@ function HostPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: authLoading } = useAuth()
-  const { socket, isConnected } = useSocket()
+  const { socket, isConnected, connectionState, reconnectAttempt } = useSocket()
   const confetti = useConfetti()
   const prefersReducedMotion = useReducedMotion()
   const variants = getVariants(prefersReducedMotion)
@@ -320,6 +321,7 @@ function HostPageContent() {
 
   return (
     <PageContainer size="full" className="flex flex-col" style={{ padding: 0 }}>
+      <ReconnectionBanner reconnecting={connectionState === 'reconnecting'} attempt={reconnectAttempt} />
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="host" />
       <PurchaseCreditsModal isOpen={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} />
 

@@ -68,6 +68,7 @@ function PurchaseSuccessContent() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            className="text-center"
           >
             <motion.div
               animate={{ rotate: 360 }}

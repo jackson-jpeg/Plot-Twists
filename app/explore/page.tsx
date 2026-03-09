@@ -7,7 +7,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/Modal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
-import { EmptyState, CardSkeleton } from '@/components/EmptyState'
+import { EmptyState, Skeleton } from '@/components/EmptyState'
 import { Button, Badge, Card, PageContainer, SectionHeader } from '@/components/ui'
 import type { CardPackMetadata, CardPack } from '@/lib/types'
 
@@ -305,7 +305,9 @@ export default function ExplorePage() {
         {/* Pack grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-            <CardSkeleton count={6} />
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} variant="card" height={180} />
+            ))}
           </div>
         ) : currentPacks.length === 0 ? (
           activeTab === 'search' ? (

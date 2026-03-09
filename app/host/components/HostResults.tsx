@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import type { Script, GameResults, XPEvent, LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
+import type { LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
 import { shareScriptText } from '@/lib/scriptUtils'
 import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
@@ -16,28 +16,19 @@ import { XPBar } from '@/components/XPBar'
 import { LevelUpCelebration } from '@/components/LevelUpCelebration'
 import { DirectorsReview } from '@/components/DirectorsReview'
 import { Button } from '@/components/ui'
-import type { Socket } from 'socket.io-client'
-import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
-
-type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>
+import { useScriptStore } from '@/stores/scriptStore'
+import { useVotingStore } from '@/stores/votingStore'
+import { socketManager } from '@/lib/socketManager'
 
 export interface HostResultsProps {
-  script: Script | null
-  gameResults: GameResults | null
-  scriptImageUrl: string | null
-  socket: AppSocket | null
   userUid: string
   toast: { success: (m: string) => void; error: (m: string) => void }
-  xpEvents: XPEvent[]
-  levelUpData: { level: number; title: string } | null
-  onDismissLevelUp: () => void
   onShowPosterLightbox: () => void
   onRequestNewGame: (keepSelections: boolean) => void
 }
 
 export function HostResults({
-  script, gameResults, scriptImageUrl, socket, userUid, toast,
-  xpEvents, levelUpData, onDismissLevelUp,
+  userUid, toast,
   onShowPosterLightbox, onRequestNewGame,
 }: HostResultsProps) {
   const router = useRouter()
@@ -49,6 +40,14 @@ export function HostResults({
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
   const [directorsReview, setDirectorsReview] = useState<DirectorsReviewType | null>(null)
   const [posterError, setPosterError] = useState(false)
+
+  // Store selectors
+  const script = useScriptStore((s) => s.script)
+  const scriptImageUrl = useScriptStore((s) => s.imageUrl)
+  const gameResults = useVotingStore((s) => s.gameResults)
+  const xpEvents = useVotingStore((s) => s.xpEvents)
+  const levelUpData = useVotingStore((s) => s.levelUpData)
+  const setLevelUpData = useVotingStore((s) => s.setLevelUpData)
 
   // Fire confetti on results reveal
   useEffect(() => {
@@ -62,18 +61,17 @@ export function HostResults({
   }, [gameResults, fireWinnerConfetti, fireCelebration])
 
   useEffect(() => {
-    if (!socket || !userUid) return
-    socket.emit('get_progression', userUid, (response) => {
+    if (!userUid) return
+    socketManager.emit('get_progression', userUid, (response) => {
       if (response.success && response.levelInfo) setLevelInfo(response.levelInfo)
     })
-  }, [socket, userUid])
+  }, [userUid])
 
   // Listen for AI Director's Review
   useEffect(() => {
-    if (!socket) return
-    socket.on('directors_review', setDirectorsReview)
-    return () => { socket.off('directors_review', setDirectorsReview) }
-  }, [socket])
+    const unsub = socketManager.on('directors_review', setDirectorsReview)
+    return unsub
+  }, [])
 
   const handleDownloadScript = async () => {
     if (!script) return
@@ -103,19 +101,19 @@ export function HostResults({
   }
 
   const handleShareScene = async () => {
-    if (!socket || !script) return
+    if (!script) return
     if (shareUrl) { triggerShare(shareUrl); return }
     setIsSharing(true)
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const historyResponse: any = await withTimeout(
-        (cb) => socket.emit('get_game_history', userUid || '', 1, cb),
+        (cb) => socketManager.emit('get_game_history', userUid || '', 1, cb),
         10000
       )
       if (historyResponse.success && historyResponse.games && historyResponse.games.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const shareResponse: any = await withTimeout(
-          (cb) => socket.emit('share_game', historyResponse.games[0].id, cb),
+          (cb) => socketManager.emit('share_game', historyResponse.games[0].id, cb),
           10000
         )
         if (shareResponse.success && shareResponse.shareUrl) {
@@ -282,7 +280,7 @@ export function HostResults({
             <XPBar levelInfo={levelInfo} compact />
           </motion.div>
         )}
-        <LevelUpCelebration show={!!levelUpData} level={levelUpData?.level ?? 0} title={levelUpData?.title ?? ''} onClose={onDismissLevelUp} />
+        <LevelUpCelebration show={!!levelUpData} level={levelUpData?.level ?? 0} title={levelUpData?.title ?? ''} onClose={() => setLevelUpData(null)} />
 
         {/* Highlights */}
         {gameResults?.highlights && gameResults.highlights.length > 0 && (

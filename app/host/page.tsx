@@ -21,6 +21,12 @@ import { analytics } from '@/lib/analytics'
 import { useHostSocket } from '@/hooks/useHostSocket'
 import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 
+import { useGameStore } from '@/stores/gameStore'
+import { useScriptStore } from '@/stores/scriptStore'
+import { useSelectionStore } from '@/stores/selectionStore'
+import { useAudienceStore } from '@/stores/audienceStore'
+import { useVotingStore } from '@/stores/votingStore'
+import { useConnectionStore } from '@/stores/connectionStore'
 import { Button, PageContainer } from '@/components/ui'
 import { Skeleton } from '@/components/EmptyState'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
@@ -94,6 +100,31 @@ function HostPageContent() {
     xpEvents,
     levelUpData, setLevelUpData,
   } = useHostSocket({ socket, isConnected, settings, roomCode, playerId: user?.uid || '', toast, achievementToasts })
+
+  // ── Bridge: sync hook state → Zustand stores (temporary until Task 14 wires subscriptions) ──
+  useEffect(() => { useGameStore.getState().setGameState(gameState) }, [gameState])
+  useEffect(() => { useGameStore.getState().setPlayers(players) }, [players])
+  useEffect(() => { useGameStore.getState().setRoomCode(roomCode) }, [roomCode])
+  useEffect(() => { useGameStore.getState().setSettings(settings) }, [settings])
+  useEffect(() => { useGameStore.getState().setCreditBalance(creditBalance) }, [creditBalance])
+  useEffect(() => { useGameStore.getState().setCountdown(countdown) }, [countdown])
+  useEffect(() => { useConnectionStore.getState().setIsConnected(isConnected) }, [isConnected])
+  useEffect(() => { useScriptStore.getState().setScript(script) }, [script])
+  useEffect(() => { useScriptStore.getState().setImageUrl(scriptImageUrl) }, [scriptImageUrl])
+  useEffect(() => { useScriptStore.getState().setGenerationProgress(loadingProgress) }, [loadingProgress])
+  useEffect(() => { useScriptStore.getState().setGenerationPhase(loadingPhase) }, [loadingPhase])
+  useEffect(() => { useScriptStore.getState().setTitlePreview(scriptTitlePreview) }, [scriptTitlePreview])
+  useEffect(() => { useScriptStore.getState().setGenerationTimedOut(scriptGenerationTimedOut) }, [scriptGenerationTimedOut])
+  useEffect(() => { useSelectionStore.getState().setSelection(selection) }, [selection])
+  useEffect(() => { useSelectionStore.getState().setHasSubmitted(hasSubmittedSelection) }, [hasSubmittedSelection])
+  useEffect(() => { useSelectionStore.getState().setIsSubmitting(isSubmittingCards) }, [isSubmittingCards])
+  useEffect(() => { useSelectionStore.getState().setAvailableCards(availableCards) }, [availableCards])
+  useEffect(() => { useSelectionStore.getState().setSelectedPackId(selectedPackId) }, [selectedPackId])
+  useEffect(() => { useSelectionStore.getState().setGameSetupMode(gameSetupMode) }, [gameSetupMode])
+  useEffect(() => { useAudienceStore.getState().setGreenRoomQuestion(greenRoomQuestion) }, [greenRoomQuestion])
+  useEffect(() => { if (gameResults) useVotingStore.getState().setResults(gameResults) }, [gameResults])
+  useEffect(() => { useVotingStore.getState().setXpEvents(xpEvents) }, [xpEvents])
+  useEffect(() => { useVotingStore.getState().setLevelUpData(levelUpData) }, [levelUpData])
 
   // Auth guard — require signed-in user
   useEffect(() => {
@@ -172,16 +203,19 @@ function HostPageContent() {
 
   // --- Actions ---
   const startGame = () => {
-    socket?.emit('update_room_settings', roomCode, { scriptCustomization, audioSettings, cardPackId: selectedPackId })
+    const packId = useSelectionStore.getState().selectedPackId || selectedPackId
+    socket?.emit('update_room_settings', roomCode, { scriptCustomization, audioSettings, cardPackId: packId })
     socket?.emit('start_game', roomCode)
   }
 
   const handleSubmitSoloCards = () => {
-    if (!socket || !roomCode || !selection.character || !selection.setting || !selection.circumstance) {
+    const storeSelection = useSelectionStore.getState().selection
+    const sel = storeSelection.character ? storeSelection : selection
+    if (!socket || !roomCode || !sel.character || !sel.setting || !sel.circumstance) {
       toast.error('Please select all cards'); return
     }
     setIsSubmittingCards(true)
-    socket.emit('submit_cards', roomCode, selection, (response) => {
+    socket.emit('submit_cards', roomCode, sel, (response) => {
       setIsSubmittingCards(false)
       if (response.success) { setHasSubmittedSelection(true); toast.success('Cards submitted!') }
       else toast.error(response.error || 'Failed to submit cards')
@@ -337,14 +371,11 @@ function HostPageContent() {
         {gameState === 'LOBBY' && (
           <GameErrorBoundary phaseName="lobby" key="lobby-eb"><HostLobby
             key="lobby"
-            roomCode={roomCode} joinUrl={joinUrl} isConnected={isConnected}
-            players={players} settings={settings} creditBalance={creditBalance}
-            gameSetupMode={gameSetupMode} selectedPackId={selectedPackId}
+            settings={settings}
             scriptCustomization={scriptCustomization} audioSettings={audioSettings}
-            socket={socket} toast={toast}
+            toast={toast}
             onStartGame={startGame} onToggleMature={toggleMature}
             onUpdateGameMode={updateGameMode} onSetupModeChange={handleSetupModeChange}
-            onSetSelectedPackId={setSelectedPackId}
             onSetScriptCustomization={setScriptCustomization}
             onSetAudioSettings={setAudioSettings}
             onSetSettings={setSettings}
@@ -356,12 +387,6 @@ function HostPageContent() {
         {gameState === 'SELECTION' && (
           <GameErrorBoundary phaseName="selection" key="selection-eb"><HostSelection
             key="selection"
-            settings={settings} players={players}
-            selection={selection} setSelection={setSelection}
-            hasSubmittedSelection={hasSubmittedSelection}
-            isSubmittingCards={isSubmittingCards}
-            availableCards={availableCards}
-            greenRoomQuestion={greenRoomQuestion}
             onSubmitSoloCards={handleSubmitSoloCards}
             onBackToLobby={() => { socket?.emit('request_new_game', roomCode); setGameState('LOBBY') }}
             toast={toast}
@@ -371,11 +396,6 @@ function HostPageContent() {
         {gameState === 'LOADING' && (
           <GameErrorBoundary phaseName="loading" key="loading-eb"><HostLoading
             key="loading"
-            settings={settings}
-            loadingProgress={loadingProgress} loadingPhase={loadingPhase}
-            scriptTitlePreview={scriptTitlePreview}
-            greenRoomQuestion={greenRoomQuestion}
-            scriptGenerationTimedOut={scriptGenerationTimedOut}
             onRetry={() => { socket?.emit('retry_script_generation', roomCode) }}
             onBackToLobby={() => { socket?.emit('request_new_game', roomCode); setGameState('LOBBY') }}
           /></GameErrorBoundary>
@@ -389,19 +409,14 @@ function HostPageContent() {
         )}
 
         {gameState === 'VOTING' && (
-          <GameErrorBoundary phaseName="voting" key="voting-eb"><HostVoting key="voting" players={players} script={script} /></GameErrorBoundary>
+          <GameErrorBoundary phaseName="voting" key="voting-eb"><HostVoting key="voting" /></GameErrorBoundary>
         )}
 
         {gameState === 'RESULTS' && (
           <GameErrorBoundary phaseName="results" key="results-eb"><HostResults
             key="results"
-            script={script} gameResults={gameResults}
-            scriptImageUrl={scriptImageUrl}
-            socket={socket} userUid={user?.uid || ''}
+            userUid={user?.uid || ''}
             toast={toast}
-            xpEvents={xpEvents}
-            levelUpData={levelUpData}
-            onDismissLevelUp={() => setLevelUpData(null)}
             onShowPosterLightbox={() => setShowPosterLightbox(true)}
             onRequestNewGame={requestNewGame}
           /></GameErrorBoundary>

@@ -4,38 +4,29 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
 const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => ({ default: m.QRCodeSVG })), { ssr: false, loading: () => <div className="animate-pulse" style={{ width: 140, height: 140, borderRadius: '8px', background: 'var(--color-surface-alt)' }} /> })
-import type { Player, RoomSettings, ScriptCustomization, AudioSettings, GameMode } from '@/lib/types'
+import type { RoomSettings, ScriptCustomization, AudioSettings, GameMode } from '@/lib/types'
 const ScriptCustomizationPanel = dynamic(() => import('@/components/ScriptCustomizationPanel').then(m => ({ default: m.ScriptCustomizationPanel })), { ssr: false, loading: () => null })
 const CardPackSelector = dynamic(() => import('@/components/CardPackSelector').then(m => ({ default: m.CardPackSelector })), { ssr: false, loading: () => null })
 const AudioSettingsPanel = dynamic(() => import('@/components/AudioSettingsPanel').then(m => ({ default: m.AudioSettingsPanel })), { ssr: false, loading: () => null })
-import { MOTION, VARIANTS, STAGGER } from '@/lib/animations'
+import { MOTION, STAGGER } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 import { Button, Card, Badge, Avatar } from '@/components/ui'
 import { PlayerConnectionDot } from '@/components/PlayerConnectionDot'
-import type { Socket } from 'socket.io-client'
-import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
-
-type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>
+import { useGameStore } from '@/stores/gameStore'
+import { useConnectionStore } from '@/stores/connectionStore'
+import { useSelectionStore } from '@/stores/selectionStore'
+import { socketManager } from '@/lib/socketManager'
 
 export interface HostLobbyProps {
-  roomCode: string
-  joinUrl: string
-  isConnected: boolean
-  players: Player[]
   settings: RoomSettings
-  creditBalance: { free: number; banked: number; total: number } | null
-  gameSetupMode: 'quick' | 'custom'
-  selectedPackId: string
   scriptCustomization: ScriptCustomization
   audioSettings: AudioSettings
-  socket: AppSocket | null
   toast: { success: (m: string) => void; error: (m: string) => void; info: (m: string) => void }
   onStartGame: () => void
   onToggleMature: () => void
   onUpdateGameMode: (mode: GameMode) => void
   onSetupModeChange: (mode: 'quick' | 'custom') => void
-  onSetSelectedPackId: (id: string) => void
   onSetScriptCustomization: React.Dispatch<React.SetStateAction<ScriptCustomization>>
   onSetAudioSettings: React.Dispatch<React.SetStateAction<AudioSettings>>
   onSetSettings: React.Dispatch<React.SetStateAction<RoomSettings>>
@@ -68,17 +59,25 @@ function ChevronIcon({ size = 16, direction = 'down' }: { size?: number; directi
 }
 
 export function HostLobby({
-  roomCode, joinUrl, isConnected, players, settings,
-  creditBalance, gameSetupMode, selectedPackId,
-  scriptCustomization, audioSettings, socket, toast,
+  settings, scriptCustomization, audioSettings, toast,
   onStartGame, onToggleMature, onUpdateGameMode,
-  onSetupModeChange, onSetSelectedPackId,
-  onSetScriptCustomization, onSetAudioSettings, onSetSettings,
+  onSetupModeChange, onSetScriptCustomization,
+  onSetAudioSettings, onSetSettings,
   onShowOnboarding, onNavigateHome,
 }: HostLobbyProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
+
+  // Store selectors
+  const roomCode = useGameStore((s) => s.roomCode)
+  const players = useGameStore((s) => s.players)
+  const creditBalance = useGameStore((s) => s.creditBalance)
+  const isConnected = useConnectionStore((s) => s.isConnected)
+  const selectedPackId = useSelectionStore((s) => s.selectedPackId)
+  const gameSetupMode = useSelectionStore((s) => s.gameSetupMode)
+
+  const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join/invite/${roomCode}` : ''
   const nonHostPlayers = players.filter(p => !p.isHost)
 
   const canStartGame =
@@ -456,7 +455,7 @@ export function HostLobby({
                       </Button>
                     </div>
                   </Card>
-                  <CardPackSelector roomCode={roomCode} selectedPackId={selectedPackId} onSelect={onSetSelectedPackId} showCreateButton={true} />
+                  <CardPackSelector roomCode={roomCode} selectedPackId={selectedPackId} onSelect={(id) => useSelectionStore.getState().setSelectedPackId(id)} showCreateButton={true} />
                   <Card variant="surface" padding="sm">
                     <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>Quick Themes</p>
                     <div className="flex gap-1.5 flex-wrap">
@@ -475,7 +474,7 @@ export function HostLobby({
                             if (theme.mature !== settings.isMature) {
                               const newSettings = { ...settings, isMature: theme.mature }
                               onSetSettings(newSettings)
-                              socket?.emit('update_room_settings', roomCode, { isMature: theme.mature })
+                              socketManager.emit('update_room_settings', roomCode, { isMature: theme.mature })
                             }
                             toast.success(`${theme.label} theme activated!`)
                           }}
@@ -511,7 +510,7 @@ export function HostLobby({
                       <Button variant="secondary" size="sm" onClick={() => {
                         const newPublic = !settings.isPublic
                         onSetSettings(prev => ({ ...prev, isPublic: newPublic }))
-                        socket?.emit('update_room_settings', roomCode, { isPublic: newPublic })
+                        socketManager.emit('update_room_settings', roomCode, { isPublic: newPublic })
                         tapHaptic()
                       }}>
                         {settings.isPublic ? 'Make Private' : 'Make Public'}

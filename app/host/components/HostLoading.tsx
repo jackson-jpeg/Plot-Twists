@@ -2,11 +2,13 @@
 
 import React from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import type { RoomSettings } from '@/lib/types'
 import { VARIANTS, MOTION, STAGGER } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { TypewriterIcon, CheckCircleIcon, SpinnerIcon, PendingCircleIcon, RetryIcon, WarningIcon } from '@/components/GameIcons'
 import { Button } from '@/components/ui'
+import { useGameStore } from '@/stores/gameStore'
+import { useScriptStore } from '@/stores/scriptStore'
+import { useAudienceStore } from '@/stores/audienceStore'
 
 function getStepStatus(progress: number): [string, string, string] {
   if (progress >= 80) return ['done', 'done', 'active']
@@ -21,23 +23,21 @@ const steps = [
 ]
 
 export interface HostLoadingProps {
-  settings: RoomSettings
-  loadingProgress: number
-  loadingPhase: string
-  scriptTitlePreview: string | null
-  greenRoomQuestion: string
-  scriptGenerationTimedOut: boolean
   onRetry: () => void
   onBackToLobby: () => void
 }
 
-export function HostLoading({
-  settings, loadingProgress, loadingPhase, scriptTitlePreview,
-  greenRoomQuestion, scriptGenerationTimedOut, onRetry, onBackToLobby,
-}: HostLoadingProps) {
+export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
   const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
+
+  const settings = useGameStore((s) => s.settings)
+  const loadingProgress = useScriptStore((s) => s.generationProgress)
+  const scriptTitlePreview = useScriptStore((s) => s.titlePreview)
+  const scriptGenerationTimedOut = useScriptStore((s) => s.generationTimedOut)
+  const greenRoomQuestion = useAudienceStore((s) => s.greenRoomQuestion)
+
   const stepStatuses = getStepStatus(loadingProgress)
 
   return (
@@ -183,7 +183,7 @@ export function HostLoading({
         })}
       </motion.div>
 
-      {settings.gameMode === 'SOLO' && (
+      {settings?.gameMode === 'SOLO' && (
         <motion.div
           className="p-4 rounded-xl mb-8"
           style={{ background: 'var(--color-highlight-blue)', border: '1px solid var(--color-accent-2)' }}

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import type { Player, RoomSettings, CardSelection, AvailableCards } from '@/lib/types'
 import dynamic from 'next/dynamic'
 const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false, loading: () => null })
 import { VARIANTS, MOTION, STAGGER } from '@/lib/animations'
@@ -10,6 +9,9 @@ import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon, SpinnerIcon, StatusDot } from '@/components/GameIcons'
 import { Card, Avatar } from '@/components/ui'
+import { useGameStore } from '@/stores/gameStore'
+import { useSelectionStore } from '@/stores/selectionStore'
+import { useAudienceStore } from '@/stores/audienceStore'
 
 const IMPROV_TIPS = [
   { tip: '"Yes, and..." -- always build on what your scene partner gives you.' },
@@ -21,33 +23,36 @@ const IMPROV_TIPS = [
 ]
 
 export interface HostSelectionProps {
-  settings: RoomSettings
-  players: Player[]
-  selection: CardSelection
-  setSelection: React.Dispatch<React.SetStateAction<CardSelection>>
-  hasSubmittedSelection: boolean
-  isSubmittingCards: boolean
-  availableCards: AvailableCards
-  greenRoomQuestion: string | null
   onSubmitSoloCards: () => void
   onBackToLobby: () => void
   toast: { success: (m: string, opts?: { duration?: number }) => void }
 }
 
 export function HostSelection({
-  settings, players, selection, setSelection,
-  hasSubmittedSelection, isSubmittingCards, availableCards,
-  greenRoomQuestion,
   onSubmitSoloCards, onBackToLobby, toast,
 }: HostSelectionProps) {
   const pageTransitionVariants = VARIANTS.pageTransition
   const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
+
+  // Store selectors
+  const settings = useGameStore((s) => s.settings)
+  const players = useGameStore((s) => s.players)
+  const selection = useSelectionStore((s) => s.selection)
+  const setSelection = useSelectionStore((s) => s.setSelection)
+  const hasSubmittedSelection = useSelectionStore((s) => s.hasSubmitted)
+  const isSubmittingCards = useSelectionStore((s) => s.isSubmitting)
+  const availableCards = useSelectionStore((s) => s.availableCards)
+  const greenRoomQuestion = useAudienceStore((s) => s.greenRoomQuestion)
+
   const nonHostPlayers = players.filter(p => !p.isHost)
   const readyCount = nonHostPlayers.filter(p => p.hasSubmittedSelection).length
   const [tipIndex, setTipIndex] = useState(0)
   const [confirmMode, setConfirmMode] = useState(false)
+
+  const gameMode = settings?.gameMode ?? 'ENSEMBLE'
+  const isMature = settings?.isMature ?? false
 
   // Auto-reset confirmMode after 3 seconds
   useEffect(() => {
@@ -68,15 +73,15 @@ export function HostSelection({
 
   // Cycle through improv tips
   useEffect(() => {
-    if (settings.gameMode === 'SOLO') return
+    if (gameMode === 'SOLO') return
     const interval = setInterval(() => {
       setTipIndex(prev => (prev + 1) % IMPROV_TIPS.length)
     }, 6000)
     return () => clearInterval(interval)
-  }, [settings.gameMode])
+  }, [gameMode])
 
   // Solo mode - submitted waiting view
-  if (settings.gameMode === 'SOLO' && hasSubmittedSelection) {
+  if (gameMode === 'SOLO' && hasSubmittedSelection) {
     return (
       <motion.div key="solo-waiting" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="w-full max-w-lg mx-auto px-5 text-center">
         <Card padding="lg">
@@ -108,9 +113,9 @@ export function HostSelection({
   }
 
   // Solo mode - card picker
-  if (settings.gameMode === 'SOLO') {
+  if (gameMode === 'SOLO') {
     const handleShuffleAll = () => {
-      if (availableCards.characters.length && availableCards.settings.length && availableCards.circumstances.length) {
+      if (availableCards && availableCards.characters.length && availableCards.settings.length && availableCards.circumstances.length) {
         setSelection({
           character: availableCards.characters[Math.floor(Math.random() * availableCards.characters.length)],
           setting: availableCards.settings[Math.floor(Math.random() * availableCards.settings.length)],
@@ -132,7 +137,7 @@ export function HostSelection({
         </motion.button>
 
         <Card padding="lg">
-          {availableCards.characters.length === 0 ? (
+          {!availableCards || availableCards.characters.length === 0 ? (
             <motion.div className="text-center py-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SpinnerIcon size={32} color="var(--color-text-secondary)" className={prefersReducedMotion ? '' : ''} />
               <p className="mt-4" style={{ color: 'var(--color-text-secondary)' }}>Loading cards...</p>
@@ -142,7 +147,7 @@ export function HostSelection({
               <CardPicker
                 selection={selection}
                 setSelection={(s) => setSelection(s)}
-                isMature={settings.isMature}
+                isMature={isMature}
                 availableCards={availableCards}
                 onShuffleAll={handleShuffleAll}
                 toast={toast}
@@ -276,7 +281,7 @@ export function HostSelection({
       </div>
 
       {/* Deck stats */}
-      {availableCards.characters.length > 0 && (
+      {availableCards && availableCards.characters.length > 0 && (
         <motion.div
           className="flex justify-center gap-3 mb-4"
           initial={{ opacity: 0 }}

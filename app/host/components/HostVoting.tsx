@@ -2,21 +2,21 @@
 
 import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import type { Player, Script } from '@/lib/types'
 import { VARIANTS, MOTION, STAGGER } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { CheckCircleIcon, SpinnerIcon } from '@/components/GameIcons'
 import { Avatar, Badge, SectionHeader, Card } from '@/components/ui'
+import { useGameStore } from '@/stores/gameStore'
+import { useScriptStore } from '@/stores/scriptStore'
 
-export interface HostVotingProps {
-  players: Player[]
-  script: Script | null
-}
-
-export function HostVoting({ players, script }: HostVotingProps) {
+export function HostVoting() {
   const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
+
+  const players = useGameStore((s) => s.players)
+  const script = useScriptStore((s) => s.script)
+
   const nonHostPlayers = players.filter(p => !p.isHost)
   const votedCount = nonHostPlayers.filter(p => p.hasSubmittedVote).length
 

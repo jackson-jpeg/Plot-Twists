@@ -317,18 +317,12 @@ export function LandingPage() {
                     >
                       <line
                         x1="0"
-                        y1="0"
+                        y1="1"
                         x2="100%"
-                        y2="0"
+                        y2="1"
                         stroke="var(--color-border)"
                         strokeWidth="2"
                         strokeDasharray="6 4"
-                      />
-                      {/* Arrow at end */}
-                      <polygon
-                        points="-6,-4 0,0 -6,4"
-                        fill="var(--color-border)"
-                        transform="translate(100%, 0)"
                       />
                     </svg>
                   )}

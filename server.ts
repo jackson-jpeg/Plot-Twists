@@ -2421,6 +2421,10 @@ app.prepare().then(async () => {
   // Register all HTTP routes (Stripe, Auth, Apple, API)
   await registerRoutes(expressApp, io, port)
 
+  // Next.js page handler — must be last (catch-all)
+  expressApp.all('*', (req, res) => {
+    return handle(req, res)
+  })
 
   server.listen(port, () => {
     logger.info(`> Ready on http://${hostname}:${port}`)

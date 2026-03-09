@@ -1,16 +1,62 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { SignInButton } from '@clerk/nextjs'
 import { analytics } from '@/lib/analytics'
-import { MOTION } from '@/lib/animations'
+import { MOTION, VARIANTS } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
+import { Button, Card, Badge, PageContainer, SectionHeader } from '@/components/ui'
 
 const sceneExamples = [
   { scenario: 'Zombie apocalypse at the office', icon: 'zombie' },
   { scenario: 'Cooking show gone horribly wrong', icon: 'chef' },
   { scenario: 'Detectives accusing each other', icon: 'detective' },
 ]
+
+const tickerScenes = [
+  'A pirate captain... at a job interview... who can only speak in questions',
+  'A dramatic soap opera doctor... at a fast food drive-thru... with a secret identity',
+  'A overly enthusiastic gym teacher... on a first date... who narrates everything',
+  'A Shakespearean villain... at IKEA... who keeps breaking character',
+  'A nervous astronaut... at a talent show... who communicates through interpretive dance',
+  'A conspiracy theorist grandma... at a cooking competition... who rhymes every sentence',
+]
+
+function SceneTicker() {
+  const [index, setIndex] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % tickerScenes.length)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <div style={{ height: '60px', position: 'relative', overflow: 'hidden', marginTop: '16px' }}>
+      <AnimatePresence mode="wait">
+        <motion.p
+          key={index}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -12 }}
+          transition={{ duration: 0.35 }}
+          style={{
+            fontFamily: 'var(--font-handwritten)',
+            fontSize: '15px',
+            color: 'var(--color-accent)',
+            lineHeight: 1.4,
+            textAlign: 'center',
+            padding: '0 8px',
+          }}
+        >
+          &ldquo;{tickerScenes[index]}&rdquo;
+        </motion.p>
+      </AnimatePresence>
+    </div>
+  )
+}
 
 function SceneIcon({ type }: { type: string }) {
   const size = 28
@@ -66,8 +112,8 @@ export function LandingPage() {
   const isDesktop = breakpoint === 'desktop'
 
   return (
-    <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
-      <div className="w-full mx-auto px-5" style={{ maxWidth: isDesktop ? '1100px' : '448px' }}>
+    <PageContainer size="wide" centered style={{ padding: isDesktop ? undefined : '24px 20px' }}>
+      <div className="w-full mx-auto" style={{ maxWidth: isDesktop ? '1100px' : '448px' }}>
         {/* Hero + Scene Previews (side-by-side on desktop) */}
         <div style={{ display: 'flex', flexDirection: isDesktop ? 'row' : 'column', alignItems: isDesktop ? 'center' : undefined, gap: isDesktop ? '64px' : '0px', paddingTop: isDesktop ? '0' : '24px' }}>
           <div style={{ flex: isDesktop ? 1 : undefined, maxWidth: isDesktop ? '520px' : undefined }}>
@@ -78,7 +124,15 @@ export function LandingPage() {
               transition={MOTION.gentle}
               style={{ textAlign: isDesktop ? 'left' : 'center' }}
             >
-              <TheaterMasks />
+              {/* Animated Theater Masks */}
+              <motion.div
+                variants={VARIANTS.drumRoll}
+                initial="initial"
+                animate="animate"
+                style={{ display: 'inline-block' }}
+              >
+                <TheaterMasks />
+              </motion.div>
               <h1
                 className="font-display"
                 style={{
@@ -92,6 +146,21 @@ export function LandingPage() {
               >
                 {isDesktop ? <>The improv game{'\n'}that writes itself</> : 'Plot Twists'}
               </h1>
+
+              {/* Handwritten tagline */}
+              <p
+                style={{
+                  fontFamily: 'var(--font-handwritten)',
+                  fontSize: isDesktop ? '20px' : '17px',
+                  color: 'var(--color-accent)',
+                  marginTop: '6px',
+                  transform: 'rotate(-2deg)',
+                  display: 'inline-block',
+                }}
+              >
+                where everyone&rsquo;s a star
+              </p>
+
               <p
                 style={{
                   fontFamily: 'var(--font-ui)',
@@ -106,6 +175,9 @@ export function LandingPage() {
                   ? 'Pick your cards. AI writes the script. You steal the show. The party game where everyone\'s a comedian.'
                   : 'The improv comedy game that writes itself — pick cards, get a script, steal the show.'}
               </p>
+
+              {/* Scene Ticker — mobile only */}
+              {!isDesktop && <SceneTicker />}
             </motion.div>
 
             {/* CTA */}
@@ -117,23 +189,15 @@ export function LandingPage() {
             >
               <div style={{ display: 'flex', gap: '12px', flexDirection: isDesktop ? 'row' : 'column' }}>
                 <SignInButton mode="redirect">
-                  <motion.button
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    fullWidth={!isDesktop}
                     onClick={() => analytics.landingCtaClicked('clerk')}
-                    style={{
-                      background: 'var(--color-accent)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: 'var(--radius-button)',
-                      fontSize: '17px',
-                      fontWeight: 600,
-                      padding: isDesktop ? '16px 36px' : '16px 24px',
-                      cursor: 'pointer',
-                      width: isDesktop ? 'auto' : '100%',
-                    }}
-                    whileTap={{ scale: 0.98 }}
+                    style={isDesktop ? { padding: '16px 36px' } : undefined}
                   >
                     Get Started
-                  </motion.button>
+                  </Button>
                 </SignInButton>
               </div>
               {isDesktop && (
@@ -170,42 +234,43 @@ export function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.35 + i * 0.08, ...MOTION.gentle }}
                 className="flex-1"
-                style={{
-                  background: 'var(--color-surface)',
-                  borderRadius: isDesktop ? '16px' : '10px',
-                  padding: isDesktop ? '16px 20px' : '14px 10px 12px',
-                  boxShadow: 'var(--shadow-1)',
-                  display: isDesktop ? 'flex' : undefined,
-                  alignItems: isDesktop ? 'center' : undefined,
-                  gap: isDesktop ? '16px' : undefined,
-                }}
               >
-                <div
-                  className="flex items-center justify-center"
+                <Card
+                  variant="elevated"
+                  padding="none"
                   style={{
-                    width: isDesktop ? '48px' : '100%',
-                    height: '48px',
-                    background: 'var(--color-accent-light)',
-                    borderRadius: isDesktop ? '12px' : '6px',
-                    color: 'var(--color-text-secondary)',
-                    marginBottom: isDesktop ? '0' : '8px',
-                    flexShrink: 0,
+                    padding: '16px 20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '16px',
                   }}
                 >
-                  <SceneIcon type={scene.icon} />
-                </div>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: isDesktop ? '15px' : '12px',
-                    color: 'var(--color-text-secondary)',
-                    lineHeight: isDesktop ? '1.4' : '16px',
-                    textAlign: isDesktop ? 'left' : 'center',
-                    fontWeight: isDesktop ? 500 : undefined,
-                  }}
-                >
-                  {scene.scenario}
-                </p>
+                  <div
+                    className="flex items-center justify-center"
+                    style={{
+                      width: '48px',
+                      height: '48px',
+                      background: 'var(--color-accent-light)',
+                      borderRadius: '12px',
+                      color: 'var(--color-text-secondary)',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <SceneIcon type={scene.icon} />
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-ui)',
+                      fontSize: '15px',
+                      color: 'var(--color-text-secondary)',
+                      lineHeight: '1.4',
+                      textAlign: 'left',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {scene.scenario}
+                  </p>
+                </Card>
               </motion.div>
             ))}
           </motion.div>}
@@ -218,22 +283,11 @@ export function LandingPage() {
           transition={{ delay: 0.5 }}
           style={{ marginTop: '36px', padding: '0 4px', maxWidth: isDesktop ? '720px' : undefined, margin: isDesktop ? '48px auto 0' : undefined }}
         >
-          <p
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontWeight: 600,
-              fontSize: '11px',
-              color: 'var(--color-text-tertiary)',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase' as const,
-              textAlign: 'center',
-              marginBottom: '20px',
-            }}
-          >
-            How it works
-          </p>
+          <div style={{ marginBottom: '20px' }}>
+            <SectionHeader title="How it works" align="center" />
+          </div>
           {isDesktop ? (
-            <div className="flex gap-4">
+            <div className="flex gap-4" style={{ position: 'relative', alignItems: 'flex-start' }}>
               {[
                 { num: '1', title: 'Pick cards', desc: 'Character + setting + twist' },
                 { num: '2', title: 'AI writes', desc: 'Custom script in seconds' },
@@ -245,8 +299,39 @@ export function LandingPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.55 + i * 0.08, ...MOTION.gentle }}
                   className="flex-1 text-center"
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', position: 'relative' }}
                 >
+                  {/* Connecting line to next step */}
+                  {i < 2 && (
+                    <svg
+                      style={{
+                        position: 'absolute',
+                        top: '18px',
+                        left: 'calc(50% + 24px)',
+                        width: 'calc(100% - 48px)',
+                        height: '2px',
+                        overflow: 'visible',
+                        pointerEvents: 'none',
+                      }}
+                      aria-hidden="true"
+                    >
+                      <line
+                        x1="0"
+                        y1="0"
+                        x2="100%"
+                        y2="0"
+                        stroke="var(--color-border)"
+                        strokeWidth="2"
+                        strokeDasharray="6 4"
+                      />
+                      {/* Arrow at end */}
+                      <polygon
+                        points="-6,-4 0,0 -6,4"
+                        fill="var(--color-border)"
+                        transform="translate(100%, 0)"
+                      />
+                    </svg>
+                  )}
                   <div
                     className="flex items-center justify-center"
                     style={{
@@ -254,6 +339,8 @@ export function LandingPage() {
                       height: '36px',
                       borderRadius: '18px',
                       background: 'var(--color-text-primary)',
+                      position: 'relative',
+                      zIndex: 1,
                     }}
                   >
                     <span
@@ -284,67 +371,54 @@ export function LandingPage() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.55 + i * 0.08, ...MOTION.gentle }}
-                  className="flex items-start gap-4"
                 >
-                  <div
-                    className="flex items-center justify-center shrink-0"
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '20px',
-                      background: step.bg,
-                    }}
-                  >
-                    <span
-                      className="font-display"
-                      style={{ fontSize: '16px', fontWeight: 700, color: step.color }}
+                  <Card variant="elevated" padding="md" style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+                    <div
+                      className="flex items-center justify-center shrink-0"
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '20px',
+                        background: step.bg,
+                      }}
                     >
-                      {step.num}
-                    </span>
-                  </div>
-                  <div>
-                    <p style={{ fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: '15px', color: 'var(--color-text-primary)', marginBottom: '2px' }}>
-                      {step.title}
-                    </p>
-                    <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--color-text-tertiary)', lineHeight: '20px' }}>
-                      {step.desc}
-                    </p>
-                  </div>
+                      <span
+                        className="font-display"
+                        style={{ fontSize: '16px', fontWeight: 700, color: step.color }}
+                      >
+                        {step.num}
+                      </span>
+                    </div>
+                    <div>
+                      <p style={{ fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: '15px', color: 'var(--color-text-primary)', marginBottom: '2px' }}>
+                        {step.title}
+                      </p>
+                      <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--color-text-tertiary)', lineHeight: '20px' }}>
+                        {step.desc}
+                      </p>
+                    </div>
+                  </Card>
                 </motion.div>
               ))}
             </div>
           )}
         </motion.div>
 
-        {/* Social Proof — desktop only */}
-        {isDesktop && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.65 }}
-            className="flex justify-center gap-2 flex-wrap"
-            style={{ marginTop: '32px' }}
-          >
-            {['Party Game', 'AI-Powered', 'Free to Start'].map((label) => (
-              <span
-                key={label}
-                style={{
-                  fontFamily: 'var(--font-ui)',
-                  fontWeight: 500,
-                  fontSize: '12px',
-                  color: 'var(--color-text-tertiary)',
-                  padding: '6px 14px',
-                  borderRadius: '20px',
-                  border: '1px solid var(--color-border)',
-                  background: 'var(--color-surface)',
-                }}
-              >
-                {label}
-              </span>
-            ))}
-          </motion.div>
-        )}
+        {/* Social Proof — now shows on both mobile and desktop */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.65 }}
+          className="flex justify-center gap-2 flex-wrap"
+          style={{ marginTop: '32px' }}
+        >
+          {['Party Game', 'AI-Powered', 'Free to Start'].map((label) => (
+            <Badge key={label} variant="default" size="md" style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid var(--color-border)' }}>
+              {label}
+            </Badge>
+          ))}
+        </motion.div>
       </div>
-    </main>
+    </PageContainer>
   )
 }

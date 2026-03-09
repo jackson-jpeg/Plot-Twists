@@ -8,6 +8,7 @@ import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { successHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon } from '@/components/GameIcons'
 import { getAvatarColor } from '@/lib/avatarColors'
+import { Avatar, Badge, Card, SectionHeader } from '@/components/ui'
 
 export interface JoinVotingProps {
   players: Player[]
@@ -49,22 +50,11 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
               <path d="M20 2L25 14.5L38 16.5L28.5 25.5L31 38.5L20 32.5L9 38.5L11.5 25.5L2 16.5L15 14.5L20 2Z" fill="var(--color-accent)" />
             </svg>
           </div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '32px',
-              fontWeight: 700,
-              color: 'var(--color-text-primary)',
-              marginBottom: '4px',
-            }}
-          >
-            Vote for MVP
-          </h1>
-          {script && (
-            <p style={{ fontSize: '14px', color: 'var(--color-accent)', fontWeight: 600 }}>
-              {script.title}
-            </p>
-          )}
+          <SectionHeader
+            title="Vote for MVP"
+            subtitle={script?.title ?? undefined}
+            align="center"
+          />
         </motion.div>
 
         {/* Your character reminder */}
@@ -89,31 +79,30 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
 
         {votablePlayers.length === 0 && !hasVoted ? (
           <motion.div
-            className="text-center p-8 rounded-xl"
-            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
-              No other players to vote for
-            </p>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-tertiary)', marginTop: '6px' }}>
-              Waiting for results...
-            </p>
+            <Card padding="lg" className="text-center">
+              <p style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+                No other players to vote for
+              </p>
+              <p style={{ fontSize: '14px', color: 'var(--color-text-tertiary)', marginTop: '6px' }}>
+                Waiting for results...
+              </p>
+            </Card>
           </motion.div>
         ) : hasVoted ? (
           /* Vote submitted state */
           <motion.div
-            className="text-center p-8 rounded-xl"
-            style={{ background: 'var(--color-highlight)', border: '1px solid var(--color-border)' }}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
           >
+          <Card padding="lg" className="text-center" style={{ background: 'var(--color-highlight)' }}>
             <motion.div
               className="flex justify-center mb-4"
               initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0 }}
               animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1 }}
-              transition={{ type: 'spring', bounce: 0.5 }}
+              transition={MOTION.bouncy}
             >
               <CheckCircleIcon size={56} color="var(--color-success)" />
             </motion.div>
@@ -158,6 +147,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
                 </>
               )
             })()}
+          </Card>
           </motion.div>
         ) : (
           /* Player vote buttons */
@@ -180,19 +170,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
                 whileTap={{ scale: 0.98 }}
               >
                 {/* Avatar */}
-                <div
-                  className="flex items-center justify-center rounded-full shrink-0"
-                  style={{
-                    width: '44px',
-                    height: '44px',
-                    background: getAvatarColor(player.nickname),
-                    color: 'white',
-                    fontWeight: 700,
-                    fontSize: '18px',
-                  }}
-                >
-                  {player.nickname[0]?.toUpperCase()}
-                </div>
+                <Avatar name={player.nickname} size="md" />
 
                 {/* Name + character */}
                 <div className="flex-1">
@@ -201,18 +179,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
                       {player.nickname}
                     </span>
                     {player.level != null && (
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '1px 6px',
-                          borderRadius: '999px',
-                          background: 'var(--color-accent-light, rgba(245, 158, 66, 0.1))',
-                          color: 'var(--color-accent)',
-                        }}
-                      >
-                        Lv.{player.level}
-                      </span>
+                      <Badge variant="accent" size="sm">Lv.{player.level}</Badge>
                     )}
                   </div>
                   {player.assignedCharacter && (

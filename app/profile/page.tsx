@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
+import { STAGGER } from '@/lib/animations'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { PlayerProfile, Leaderboard } from '@/components/PlayerProfile'
@@ -17,6 +18,7 @@ const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsM
 import { ReferralCard } from '@/components/ReferralCard'
 import { XPBar } from '@/components/XPBar'
 import { WeeklyChallenges } from '@/components/WeeklyChallenges'
+import { Button, Card, Avatar, PageContainer } from '@/components/ui'
 import type { PaymentTransaction, PlayerStats, Progression, LevelInfo, WeeklyChallenge as WeeklyChallengeType } from '@/lib/types'
 import { getApiBaseUrl } from '@/lib/api'
 import { isAdminUser } from '@/lib/admin'
@@ -118,8 +120,8 @@ export default function ProfilePage() {
 
   if (!isConnected || authLoading) {
     return (
-      <main className="flex flex-col" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
-        <div className="w-full max-w-md mx-auto pt-4 pb-8 px-5 space-y-6">
+      <PageContainer size="narrow" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+        <div className="pt-4 pb-8 space-y-6">
           <div className="flex flex-col items-center gap-3 pt-8">
             <Skeleton variant="circle" width={80} height={80} />
             <Skeleton variant="text" width="40%" height={28} />
@@ -127,7 +129,7 @@ export default function ProfilePage() {
           </div>
           <StatsSkeleton />
         </div>
-      </main>
+      </PageContainer>
     )
   }
 
@@ -143,7 +145,7 @@ export default function ProfilePage() {
   ] : null
 
   return (
-    <main className="flex flex-col" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+    <PageContainer size="medium" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       {/* Purchase Credits Modal */}
       <PurchaseCreditsModal
         isOpen={showPurchaseModal}
@@ -162,7 +164,7 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      <div className="w-full max-w-md sm:max-w-lg mx-auto pt-8 pb-8 px-5">
+      <div className="pt-8 pb-8">
         {/* Admin link (top right, if admin) */}
         {user && isAdminUser({ email: user.email, phoneNumber: user.phoneNumber }) && (
           <div className="flex justify-end mb-2">
@@ -184,24 +186,9 @@ export default function ProfilePage() {
           >
             {/* Avatar */}
             <div className="flex flex-col items-center mb-6">
-              <motion.div
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  background: 'var(--color-blue, #4A90D9)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '32px',
-                  fontWeight: 700,
-                  color: 'white',
-                  marginBottom: '12px',
-                }}
-                whileHover={{ scale: 1.05 }}
-              >
-                {stats!.nickname[0]?.toUpperCase()}
-              </motion.div>
+              <div style={{ marginBottom: '12px' }}>
+                <Avatar name={stats!.nickname} size="lg" style={{ width: 80, height: 80, fontSize: '32px' }} />
+              </div>
               <h1 className="font-display" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '4px' }}>
                 {stats!.nickname}
               </h1>
@@ -253,15 +240,9 @@ export default function ProfilePage() {
               >
                 {creditBalance ? `${creditBalance.total} credit${creditBalance.total !== 1 ? 's' : ''}` : '— credits'}
               </span>
-              <motion.button
-                onClick={() => setShowPurchaseModal(true)}
-                className="px-3 py-1.5 rounded-full text-sm font-semibold"
-                style={{ background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <Button variant="primary" size="sm" onClick={() => setShowPurchaseModal(true)}>
                 Buy More
-              </motion.button>
+              </Button>
             </motion.div>
 
             {/* Stat cards — 3 in a row */}
@@ -278,7 +259,7 @@ export default function ProfilePage() {
                   }}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.06 }}
+                  transition={{ delay: i * STAGGER.fast }}
                 >
                   <div className="font-display" style={{
                     fontSize: '24px',
@@ -354,22 +335,8 @@ export default function ProfilePage() {
             className="mb-6"
           >
             <div className="flex flex-col items-center mb-6">
-              <div
-                style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: '50%',
-                  background: 'var(--color-blue, #4A90D9)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '32px',
-                  fontWeight: 700,
-                  color: 'white',
-                  marginBottom: '12px',
-                }}
-              >
-                ?
+              <div style={{ marginBottom: '12px' }}>
+                <Avatar name="?" size="lg" style={{ width: 80, height: 80, fontSize: '32px' }} />
               </div>
               <h1 className="font-display" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text-primary)' }}>
                 Your Profile
@@ -419,9 +386,8 @@ export default function ProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.15 }}
-              style={{ borderRadius: '12px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
             >
-              <div className="p-5">
+              <Card variant="surface" padding="lg">
                 {playerId ? (
                   <PlayerProfile playerId={playerId} hideHeader />
                 ) : (
@@ -429,7 +395,7 @@ export default function ProfilePage() {
                     <p style={{ color: 'var(--color-text-secondary)' }}>Sign in to see your stats and achievements.</p>
                   </div>
                 )}
-              </div>
+              </Card>
             </motion.div>
           ) : (
             <motion.div
@@ -438,11 +404,10 @@ export default function ProfilePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.15 }}
-              style={{ borderRadius: '12px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
             >
-              <div className="p-5">
+              <Card variant="surface" padding="lg">
                 <Leaderboard />
-              </div>
+              </Card>
             </motion.div>
           )}
         </AnimatePresence>
@@ -541,14 +506,9 @@ export default function ProfilePage() {
                         <span style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
                           Signed in as <span style={{ fontWeight: 500, color: 'var(--color-text-primary)' }}>{user.displayName || user.email || user.phoneNumber}</span>
                         </span>
-                        <motion.button
-                          onClick={handleSignOut}
-                          style={{ padding: '6px 12px', fontSize: '13px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: 'transparent', color: 'var(--color-text-secondary)' }}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
+                        <Button variant="ghost" size="sm" onClick={handleSignOut}>
                           Sign Out
-                        </motion.button>
+                        </Button>
                       </div>
 
                       {/* Credit wallet */}
@@ -567,14 +527,9 @@ export default function ProfilePage() {
                               )}
                             </div>
                           </div>
-                          <motion.button
-                            onClick={() => setShowPurchaseModal(true)}
-                            style={{ padding: '8px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
+                          <Button variant="primary" size="sm" onClick={() => setShowPurchaseModal(true)}>
                             Buy More
-                          </motion.button>
+                          </Button>
                         </div>
                       </div>
 
@@ -585,15 +540,9 @@ export default function ProfilePage() {
                             Payment History
                           </h3>
                           {!isIOSNative() && (
-                            <motion.button
-                              onClick={openCustomerPortal}
-                              disabled={portalLoading}
-                              style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                            >
-                              {portalLoading ? 'Opening...' : 'View Receipts'}
-                            </motion.button>
+                            <Button variant="secondary" size="sm" onClick={openCustomerPortal} loading={portalLoading}>
+                              View Receipts
+                            </Button>
                           )}
                         </div>
                         {portalError && (
@@ -684,18 +633,13 @@ export default function ProfilePage() {
               Save your stats, compete on leaderboards, and sync across devices.
             </p>
             <SignInButton mode="redirect">
-              <motion.button
-                className="w-full"
-                style={{ padding: '14px', fontWeight: 600, borderRadius: '12px', background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '15px' }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <Button variant="primary" size="lg" fullWidth>
                 Create Free Account
-              </motion.button>
+              </Button>
             </SignInButton>
           </motion.div>
         )}
       </div>
-    </main>
+    </PageContainer>
   )
 }

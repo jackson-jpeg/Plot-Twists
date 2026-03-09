@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { STAGGER } from '@/lib/animations'
 import { useSocket } from '@/contexts/SocketContext'
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/Modal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { EmptyState, CardSkeleton } from '@/components/EmptyState'
+import { Button, Badge, Card, PageContainer, SectionHeader } from '@/components/ui'
 import type { CardPackMetadata, CardPack } from '@/lib/types'
 
 type Tab = 'featured' | 'search'
@@ -15,48 +17,47 @@ function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSel
   const totalCards = pack.cardCounts.characters + pack.cardCounts.settings + pack.cardCounts.circumstances
 
   return (
-    <motion.button
-      onClick={() => onSelect(pack)}
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      whileTap={{ scale: 0.98 }}
-      className="relative w-full text-left cursor-pointer"
-      style={{ borderRadius: '16px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', overflow: 'hidden' }}
+      transition={{ delay: index * STAGGER.fast, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="relative w-full text-left"
     >
-      <div className="p-4">
-        <div className="flex justify-between items-start mb-1.5">
-          <h3 className="text-base font-semibold text-[var(--color-text-primary)] font-display leading-tight">{pack.name}</h3>
-          {pack.isMature && (
-            <span className="shrink-0 ml-2" style={{ fontSize: '12px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
-              18+
-            </span>
-          )}
-        </div>
-        <p className="text-xs text-[var(--color-text-muted)] font-handwritten mb-2">by {pack.author}</p>
-        <p className="text-[13px] text-[var(--color-text-secondary)] mb-3 leading-relaxed line-clamp-2">
-          {pack.description}
-        </p>
+      <Card variant="interactive" padding="none" onClick={() => onSelect(pack)} style={{ overflow: 'hidden' }}>
+        <div className="p-4">
+          <div className="flex justify-between items-start mb-1.5">
+            <h3 className="text-base font-semibold text-[var(--color-text-primary)] font-display leading-tight">{pack.name}</h3>
+            {pack.isMature && (
+              <Badge variant="danger" size="md" className="shrink-0 ml-2">18+</Badge>
+            )}
+          </div>
+          <p className="text-xs text-[var(--color-text-muted)] font-handwritten mb-2">by {pack.author}</p>
+          <p className="text-[13px] text-[var(--color-text-secondary)] mb-3 leading-relaxed line-clamp-2">
+            {pack.description}
+          </p>
 
-        {/* Card type indicators */}
-        <div className="flex items-center gap-3 text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
-          <span title="Characters">{pack.cardCounts.characters} chars</span>
-          <span style={{ opacity: 0.3 }}>|</span>
-          <span title="Settings">{pack.cardCounts.settings} settings</span>
-          <span style={{ opacity: 0.3 }}>|</span>
-          <span title="Circumstances">{pack.cardCounts.circumstances} twists</span>
-        </div>
+          {/* Card type indicators */}
+          <div className="flex items-center gap-3 text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>
+            <span title="Characters">{pack.cardCounts.characters} chars</span>
+            <span style={{ opacity: 0.3 }}>|</span>
+            <span title="Settings">{pack.cardCounts.settings} settings</span>
+            <span style={{ opacity: 0.3 }}>|</span>
+            <span title="Circumstances">{pack.cardCounts.circumstances} twists</span>
+          </div>
 
-        {/* Footer meta */}
-        <div className="flex items-center justify-between text-[11px] text-[var(--color-text-disabled)] pt-2 border-t border-[var(--color-border)]">
-          <span>{totalCards} cards</span>
-          <div className="flex items-center gap-2">
-            <span>{pack.downloads} downloads</span>
-            {pack.rating > 0 && <span className="text-[var(--color-accent)]">{'★'.repeat(Math.round(pack.rating))} {pack.rating.toFixed(1)}</span>}
+          {/* Footer meta */}
+          <div className="flex items-center justify-between text-[11px] text-[var(--color-text-disabled)] pt-2 border-t border-[var(--color-border)]">
+            <span>{totalCards} cards</span>
+            <div className="flex items-center gap-2">
+              <span>{pack.downloads} downloads</span>
+              {pack.rating > 0 && (
+                <Badge variant="accent" size="sm">{'★'.repeat(Math.round(pack.rating))} {pack.rating.toFixed(1)}</Badge>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </motion.button>
+      </Card>
+    </motion.div>
   )
 }
 
@@ -99,16 +100,10 @@ function PackPreviewContent({
 
       {/* Tags */}
       <div className="flex flex-wrap justify-center gap-2">
-        <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
-          {pack.theme}
-        </span>
-        <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}>
-          {pack.downloads} downloads
-        </span>
+        <Badge variant="default" size="md">{pack.theme}</Badge>
+        <Badge variant="default" size="md">{pack.downloads} downloads</Badge>
         {pack.rating > 0 && (
-          <span className="px-3 py-1 rounded-full text-xs font-medium" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-accent)', border: '1px solid var(--color-border)' }}>
-            ★ {pack.rating.toFixed(1)} ({pack.ratingCount})
-          </span>
+          <Badge variant="accent" size="md">★ {pack.rating.toFixed(1)} ({pack.ratingCount})</Badge>
         )}
       </div>
 
@@ -154,15 +149,9 @@ function PackPreviewContent({
       )}
 
       {/* CTA */}
-      <motion.button
-        onClick={handleUseInGame}
-        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold"
-        style={{ background: 'var(--color-accent)', color: 'white', border: 'none', fontSize: '15px', cursor: 'pointer' }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
+      <Button variant="primary" size="lg" fullWidth onClick={handleUseInGame}>
         Use in Next Game
-      </motion.button>
+      </Button>
     </div>
   )
 }
@@ -254,20 +243,15 @@ export default function ExplorePage() {
     ...(searchResults.length > 0 ? [{ id: 'search' as Tab, label: `Results (${searchResults.length})`, icon: '🔍' }] : []),
   ]
   return (
-    <main className="flex flex-col" style={{ minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
-      <div className="w-full max-w-2xl xl:max-w-4xl mx-auto pt-6 sm:pt-8 pb-8 px-4 sm:px-6 lg:px-8">
+    <PageContainer size="wide" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="pt-6 sm:pt-8 pb-8">
         {/* Header */}
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="mb-6"
         >
-          <h1
-            className="font-display"
-            style={{ fontSize: 'clamp(28px, 7vw, 36px)', fontWeight: 700, color: 'var(--color-text-primary)' }}
-          >
-            Explore Packs
-          </h1>
+          <SectionHeader title="Explore Packs" align="left" />
         </motion.div>
 
         {/* Search bar — with icon */}
@@ -291,14 +275,9 @@ export default function ExplorePage() {
               aria-label="Search card packs"
             />
           </div>
-          <button
-            onClick={handleSearch}
-            disabled={!searchQuery.trim()}
-            className="px-5 py-2.5 shrink-0 rounded-xl"
-            style={{ fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer', opacity: searchQuery.trim() ? 1 : 0.5 }}
-          >
+          <Button onClick={handleSearch} disabled={!searchQuery.trim()} size="md" className="shrink-0">
             Search
-          </button>
+          </Button>
         </motion.div>
 
         {/* Pill tabs */}
@@ -353,6 +332,7 @@ export default function ExplorePage() {
       </div>
 
       {/* Loading overlay when fetching pack details */}
+
       <AnimatePresence>
         {loadingPack && (
           <motion.div
@@ -385,6 +365,6 @@ export default function ExplorePage() {
           />
         )}
       </Modal>
-    </main>
+    </PageContainer>
   )
 }

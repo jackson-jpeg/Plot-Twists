@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { MOTION } from '@/lib/animations'
 import { useAuth } from '@/contexts/AuthContext'
 import { tapHaptic } from '@/hooks/useHaptics'
 
@@ -66,7 +67,7 @@ export function BottomTabBar() {
                   layoutId="tab-indicator"
                   className="absolute top-0 left-1/2 -translate-x-1/2 rounded-full"
                   style={{ width: 24, height: 2, background: 'var(--color-text-primary)' }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  transition={MOTION.snappy}
                 />
               )}
               {tab.label}

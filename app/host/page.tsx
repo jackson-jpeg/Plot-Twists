@@ -23,6 +23,8 @@ import { useHostSocket } from '@/hooks/useHostSocket'
 import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 import { successHaptic } from '@/hooks/useHaptics'
 
+import { Button, PageContainer } from '@/components/ui'
+import { Skeleton } from '@/components/EmptyState'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
@@ -296,28 +298,28 @@ function HostPageContent() {
   // Auth loading / unauthenticated
   if (authLoading || !user) {
     return (
-      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
+      <PageContainer centered>
         <div className="text-center">
-          <div className="animate-pulse" style={{ width: 200, height: 28, borderRadius: 8, background: 'var(--color-surface-alt)', margin: '0 auto' }} />
-          <div className="animate-pulse" style={{ width: '60%', height: 16, borderRadius: 6, background: 'var(--color-surface-alt)', margin: '1rem auto' }} />
+          <Skeleton variant="rect" width={200} height={28} className="mx-auto" />
+          <Skeleton variant="text" width="60%" height={16} className="mx-auto mt-4" />
         </div>
-      </div>
+      </PageContainer>
     )
   }
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
+      <PageContainer centered>
         <motion.div {...variants.scaleIn} className="text-center">
           <motion.div className="text-6xl mb-6" animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>⚡</motion.div>
           <p className="text-xl font-display" style={{ color: 'var(--color-text-secondary)' }}>Connecting...</p>
         </motion.div>
-      </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="flex flex-col" style={{ minHeight: '100dvh' }}>
+    <PageContainer size="full" className="flex flex-col" style={{ padding: 0 }}>
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="host" />
       <PurchaseCreditsModal isOpen={showPurchaseModal} onClose={() => setShowPurchaseModal(false)} />
 
@@ -335,22 +337,12 @@ function HostPageContent() {
             By continuing, you confirm that you are 17 or older.
           </p>
           <div className="flex flex-col gap-2">
-            <motion.button
-              onClick={confirmMatureMode}
-              className="w-full"
-              style={{ background: 'var(--color-accent)', color: 'white', padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
+            <Button variant="primary" fullWidth onClick={confirmMatureMode}>
               I'm 17 or Older — Enable
-            </motion.button>
-            <button
-              onClick={() => setShowAgeGate(false)}
-              className="text-sm py-2 cursor-pointer"
-              style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)' }}
-            >
+            </Button>
+            <Button variant="ghost" fullWidth size="sm" onClick={() => setShowAgeGate(false)}>
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>
@@ -362,16 +354,12 @@ function HostPageContent() {
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="var(--color-text-tertiary)" strokeWidth="1.5"/><path d="M10 8l6 4-6 4V8z" fill="var(--color-text-tertiary)"/></svg>
           </div>
           <p className="text-sm mb-5" style={{ color: 'var(--color-text-secondary)' }}>Buy more credits to keep the show going.</p>
-          <button onClick={() => { setShowInsufficientCredits(false); setShowPurchaseModal(true) }}
-            className="w-full mb-2"
-            style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}>
+          <Button variant="primary" fullWidth className="mb-2" onClick={() => { setShowInsufficientCredits(false); setShowPurchaseModal(true) }}>
             Buy Credits
-          </button>
-          <button onClick={() => setShowInsufficientCredits(false)}
-            className="w-full text-sm"
-            style={{ padding: '10px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}>
+          </Button>
+          <Button variant="secondary" fullWidth size="sm" onClick={() => setShowInsufficientCredits(false)}>
             Dismiss
-          </button>
+          </Button>
         </div>
       </Modal>
 
@@ -504,19 +492,19 @@ function HostPageContent() {
 
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       <AchievementToast achievements={achievementToasts.achievements} onDismiss={achievementToasts.dismissAchievement} />
-    </div>
+    </PageContainer>
   )
 }
 
 export default function HostPage() {
   return (
     <Suspense fallback={
-      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
+      <PageContainer centered>
         <div className="text-center">
-          <div className="animate-pulse" style={{ width: 200, height: 28, borderRadius: 8, background: 'var(--color-surface-alt)', margin: '0 auto' }} />
-          <div className="animate-pulse" style={{ width: '60%', height: 16, borderRadius: 6, background: 'var(--color-surface-alt)', margin: '1rem auto' }} />
+          <Skeleton variant="rect" width={200} height={28} className="mx-auto" />
+          <Skeleton variant="text" width="60%" height={16} className="mx-auto mt-4" />
         </div>
-      </div>
+      </PageContainer>
     }>
       <HostPageContent />
     </Suspense>

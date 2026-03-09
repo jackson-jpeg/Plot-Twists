@@ -13,6 +13,7 @@ import { Modal } from '@/components/Modal'
 import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { DoorIcon, StarIcon, SpinnerIcon } from '@/components/GameIcons'
+import { Button, Card } from '@/components/ui'
 import { XPGainAnimation } from '@/components/XPGainAnimation'
 import { XPBar } from '@/components/XPBar'
 import { LevelUpCelebration } from '@/components/LevelUpCelebration'
@@ -144,7 +145,7 @@ export function JoinResults({
               className="mx-auto mb-3"
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
+              transition={{ ...MOTION.bouncy, delay: 0.3 }}
             >
               <svg width="48" height="48" viewBox="0 0 18 18" fill="none">
                 <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="var(--color-accent)" />
@@ -168,7 +169,7 @@ export function JoinResults({
           </motion.div>
         ) : (
           <motion.div className="mb-6" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            <motion.div className="mx-auto mb-3" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>
+            <motion.div className="mx-auto mb-3" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={MOTION.bouncy}>
               <StarIcon size={48} color="var(--color-accent-2)" />
             </motion.div>
             <h1 className="font-display" style={{ fontSize: '36px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
@@ -195,18 +196,16 @@ export function JoinResults({
         )}
 
         {/* Share Results — full-width accent */}
-        <motion.button
-          onClick={handleShareScript}
-          className="w-full py-4 rounded-2xl font-display text-base font-bold mb-3"
-          style={{ background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
+        <motion.div
+          className="mb-3"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
         >
-          Share Results
-        </motion.button>
+          <Button variant="primary" size="lg" fullWidth onClick={handleShareScript}>
+            Share Results
+          </Button>
+        </motion.div>
 
         {/* Read Script + secondary button */}
         <motion.div
@@ -215,34 +214,12 @@ export function JoinResults({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
         >
-          <motion.button
-            onClick={handleCopyScript}
-            className="flex-1 py-3.5 rounded-xl font-semibold text-sm"
-            style={{
-              color: 'var(--color-text-primary)',
-              background: 'transparent',
-              border: '1px solid var(--color-border)',
-              cursor: 'pointer',
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-          >
+          <Button variant="secondary" size="md" className="flex-1" onClick={handleCopyScript} style={{ background: 'transparent' }}>
             {copySuccess ? 'Copied!' : 'Read Script'}
-          </motion.button>
-          <motion.button
-            onClick={handleShareCharacter}
-            className="flex-1 py-3.5 rounded-xl font-semibold text-sm"
-            style={{
-              color: 'var(--color-text-primary)',
-              background: 'transparent',
-              border: '1px solid var(--color-border)',
-              cursor: 'pointer',
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-          >
+          </Button>
+          <Button variant="secondary" size="md" className="flex-1" onClick={handleShareCharacter} style={{ background: 'transparent' }}>
             Share Character
-          </motion.button>
+          </Button>
         </motion.div>
 
         {/* XP Progression */}
@@ -280,35 +257,37 @@ export function JoinResults({
               Sign up to keep your stats, XP, and unlock achievements
             </p>
             <SignInButton mode="redirect">
-              <button style={{ background: 'var(--color-accent)', color: 'white', padding: '12px 32px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}>
+              <Button variant="primary" size="md">
                 Create Account
-              </button>
+              </Button>
             </SignInButton>
           </motion.div>
         )}
 
         {/* Waiting for host */}
         <motion.div
-          className="text-center p-6 rounded-xl"
-          style={{ background: 'var(--color-highlight)', border: '1px solid var(--color-accent)' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
         >
-          <motion.div className="flex justify-center mb-3" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-            <SpinnerIcon size={32} color="var(--color-accent)" />
-          </motion.div>
-          <p style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '4px' }}>Waiting for Host</p>
-          <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>The host will start the next round</p>
-          <motion.button
-            onClick={() => router.push('/')}
-            className="flex items-center gap-2 mx-auto"
-            style={{ padding: '10px 20px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <DoorIcon size={16} color="currentColor" />
-            Leave Game
-          </motion.button>
+          <Card padding="lg" className="text-center" style={{ background: 'var(--color-highlight)', borderColor: 'var(--color-accent)' }}>
+            <motion.div className="flex justify-center mb-3" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
+              <SpinnerIcon size={32} color="var(--color-accent)" />
+            </motion.div>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '4px' }}>Waiting for Host</p>
+            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>The host will start the next round</p>
+            <div className="flex justify-center">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<DoorIcon size={16} color="currentColor" />}
+                onClick={() => router.push('/')}
+                style={{ background: 'transparent' }}
+              >
+                Leave Game
+              </Button>
+            </div>
+          </Card>
         </motion.div>
       </div>
 

@@ -8,6 +8,7 @@ import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon, SpinnerIcon, PopcornIcon } from '@/components/GameIcons'
+import { Card } from '@/components/ui'
 
 const CardPicker = dynamic(
   () => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })),
@@ -131,7 +132,7 @@ export function JoinSelection({
             className="flex justify-center mb-4"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ type: 'spring', bounce: 0.5 }}
+            transition={MOTION.bouncy}
           >
             <CheckCircleIcon size={56} color="var(--color-success)" />
           </motion.div>
@@ -163,42 +164,43 @@ export function JoinSelection({
           {/* Selected cards recap */}
           {(selection.character || selection.setting || selection.circumstance) && (
             <motion.div
-              className="p-4 rounded-xl text-left"
-              style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+              className="text-left"
               initial={{ y: 15, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.35 }}
             >
-              <p style={{
-                fontSize: '11px',
-                fontWeight: 600,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase' as const,
-                color: 'var(--color-text-tertiary)',
-                marginBottom: '10px',
-              }}>
-                Your Scene
-              </p>
-              <div className="flex flex-col gap-2">
-                {selection.character && (
-                  <div className="flex items-start gap-2">
-                    <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Character</span>
-                    <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.character}</span>
-                  </div>
-                )}
-                {selection.setting && (
-                  <div className="flex items-start gap-2">
-                    <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Setting</span>
-                    <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.setting}</span>
-                  </div>
-                )}
-                {selection.circumstance && (
-                  <div className="flex items-start gap-2">
-                    <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Wild Card</span>
-                    <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.circumstance}</span>
-                  </div>
-                )}
-              </div>
+              <Card style={{ background: 'var(--color-surface-alt)' }}>
+                <p style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase' as const,
+                  color: 'var(--color-text-tertiary)',
+                  marginBottom: '10px',
+                }}>
+                  Your Scene
+                </p>
+                <div className="flex flex-col gap-2">
+                  {selection.character && (
+                    <div className="flex items-start gap-2">
+                      <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Character</span>
+                      <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.character}</span>
+                    </div>
+                  )}
+                  {selection.setting && (
+                    <div className="flex items-start gap-2">
+                      <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Setting</span>
+                      <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.setting}</span>
+                    </div>
+                  )}
+                  {selection.circumstance && (
+                    <div className="flex items-start gap-2">
+                      <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', color: 'var(--color-text-tertiary)', minWidth: '70px' }}>Wild Card</span>
+                      <span style={{ fontSize: '14px', color: 'var(--color-text-primary)' }}>{selection.circumstance}</span>
+                    </div>
+                  )}
+                </div>
+              </Card>
             </motion.div>
           )}
 

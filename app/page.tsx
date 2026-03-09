@@ -12,6 +12,8 @@ import { XPBar } from '@/components/XPBar'
 import { MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { useCreditBalance } from '@/components/CreditBadge'
+import { Skeleton } from '@/components/EmptyState'
+import { PageContainer } from '@/components/ui'
 import type { LevelInfo, PlayerStats } from '@/lib/types'
 
 function HostIcon() {
@@ -125,27 +127,25 @@ export default function Home() {
 
   if (!mounted || loading) {
     return (
-      <main className="flex flex-col" style={{ alignItems: 'flex-start', minHeight: '100dvh', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
-        <div className="w-full mx-auto px-5" style={{ width: '100%', padding: '0 20px', maxWidth: isDesktop ? '720px' : '448px' }}>
-          {/* Top bar skeleton */}
-          <div className="flex items-center justify-between" style={{ paddingTop: '16px' }}>
-            <div className="animate-pulse" style={{ width: 140, height: 28, borderRadius: 8, background: 'var(--color-surface-alt)' }} />
-            <div className="animate-pulse" style={{ width: 40, height: 40, borderRadius: 20, background: 'var(--color-surface-alt)' }} />
-          </div>
-          {/* Greeting skeleton */}
-          <div style={{ marginTop: 24 }}>
-            <div className="animate-pulse" style={{ width: 220, height: 40, borderRadius: 8, background: 'var(--color-surface-alt)' }} />
-            <div className="animate-pulse mt-2" style={{ width: 200, height: 16, borderRadius: 6, background: 'var(--color-surface-alt)' }} />
-          </div>
-          {/* Solo card skeleton */}
-          <div className="animate-pulse mt-6" style={{ width: '100%', height: 160, borderRadius: 16, background: 'var(--color-surface-alt)' }} />
-          {/* Friends cards skeleton */}
-          <div className="flex gap-3 mt-6">
-            <div className="animate-pulse flex-1" style={{ height: 140, borderRadius: 16, background: 'var(--color-surface-alt)' }} />
-            <div className="animate-pulse flex-1" style={{ height: 140, borderRadius: 16, background: 'var(--color-surface-alt)' }} />
-          </div>
+      <PageContainer size={isDesktop ? 'medium' : 'narrow'}>
+        {/* Top bar skeleton */}
+        <div className="flex items-center justify-between" style={{ paddingTop: '16px' }}>
+          <Skeleton variant="rect" width={140} height={28} />
+          <Skeleton variant="circle" width={40} height={40} />
         </div>
-      </main>
+        {/* Greeting skeleton */}
+        <div style={{ marginTop: 24 }}>
+          <Skeleton variant="rect" width={220} height={40} />
+          <Skeleton variant="text" width={200} height={16} className="mt-2" />
+        </div>
+        {/* Solo card skeleton */}
+        <Skeleton variant="card" width="100%" height={160} className="mt-6" />
+        {/* Friends cards skeleton */}
+        <div className="flex gap-3 mt-6">
+          <Skeleton variant="card" width="100%" height={140} className="flex-1" />
+          <Skeleton variant="card" width="100%" height={140} className="flex-1" />
+        </div>
+      </PageContainer>
     )
   }
 

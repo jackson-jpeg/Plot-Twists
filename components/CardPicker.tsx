@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { CardSelection, AvailableCards } from '@/lib/types'
 import { ContentItem, CATEGORIES } from '@/lib/content-types'
 import { getFilteredContentRich } from '@/lib/content'
-import { MOTION } from '@/lib/animations'
+import { MOTION, STAGGER } from '@/lib/animations'
 import { tapHaptic } from '@/hooks/useHaptics'
 
 type TabKey = 'character' | 'setting' | 'circumstance'
@@ -216,7 +216,7 @@ export function CardPicker({
                   backgroundColor: selection[tab.key] ? 'var(--color-success)' : 'var(--color-border)',
                   scale: selection[tab.key] ? 1 : 0.75,
                 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                transition={MOTION.bouncy}
               />
             ))}
           </div>
@@ -263,7 +263,7 @@ export function CardPicker({
                     background: 'var(--color-surface)',
                     boxShadow: 'var(--shadow-2)',
                   }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  transition={MOTION.snappy}
                 />
               )}
               <span className="relative z-10" aria-hidden="true">{tab.icon}</span>
@@ -273,7 +273,7 @@ export function CardPicker({
                 <motion.span
                   className="relative z-10"
                   initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                  transition={MOTION.bouncy}
                   style={{ color: 'var(--color-success)', fontSize: '12px' }}
                   aria-hidden="true"
                 >
@@ -361,7 +361,7 @@ export function CardPicker({
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center justify-center rounded-full"
                       style={{ width: '36px', height: '36px', background: 'var(--color-surface-alt)', color: 'var(--color-text-tertiary)', fontSize: '14px', border: 'none', cursor: 'pointer' }}
                       initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                      transition={MOTION.bouncy}
                       whileTap={{ scale: 0.85 }}
                       aria-label="Clear search"
                     >
@@ -503,7 +503,7 @@ export function CardPicker({
                               className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
                               style={{ background: activeTabConfig.color }}
                               initial={{ scale: 0 }} animate={{ scale: 1 }}
-                              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                              transition={MOTION.bouncy}
                             >
                               <span className="text-white" style={{ fontSize: '10px', lineHeight: 1 }} aria-hidden="true">✓</span>
                             </motion.div>
@@ -532,7 +532,7 @@ export function CardPicker({
               className="text-xs font-semibold px-2 py-0.5 rounded-full"
               style={{ background: 'var(--color-success-light)', color: 'var(--color-success)' }}
               initial={{ scale: 0 }} animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+              transition={MOTION.bouncy}
             >
               Ready!
             </motion.span>

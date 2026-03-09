@@ -61,10 +61,10 @@ export default function GlobalError({
               onClick={reset}
               style={{
                 padding: '12px 24px',
-                background: '#7C6BC4',
+                background: '#F59E42',
                 color: 'white',
                 border: 'none',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 fontWeight: 600,
                 fontSize: '16px',
                 cursor: 'pointer',
@@ -79,7 +79,7 @@ export default function GlobalError({
                 background: '#F0EDE8',
                 color: '#2D2A26',
                 border: '1px solid #D9D4CE',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 fontWeight: 600,
                 fontSize: '16px',
                 textDecoration: 'none',

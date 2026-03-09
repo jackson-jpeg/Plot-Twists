@@ -3,6 +3,7 @@
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ReactNode, useEffect, useRef, useCallback, useId } from 'react'
 import { MOTION } from '@/lib/animations'
+import { Button } from '@/components/ui'
 
 interface ModalProps {
   isOpen: boolean
@@ -165,38 +166,20 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
               >
                 {title}
               </h2>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={onClose}
-                aria-label="Close modal"
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--color-text-tertiary)',
-                  cursor: 'pointer',
-                  fontSize: '24px',
                   minWidth: '44px',
                   minHeight: '44px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  fontSize: '24px',
+                  padding: 0,
                   borderRadius: 'var(--radius-md)',
-                  transition: 'color 0.2s, background 0.2s'
-                }}
-                onPointerDown={(e) => {
-                  e.currentTarget.style.color = 'var(--color-text-primary)'
-                  e.currentTarget.style.background = 'var(--color-surface-alt)'
-                }}
-                onPointerUp={(e) => {
-                  e.currentTarget.style.color = 'var(--color-text-tertiary)'
-                  e.currentTarget.style.background = 'transparent'
-                }}
-                onPointerLeave={(e) => {
-                  e.currentTarget.style.color = 'var(--color-text-tertiary)'
-                  e.currentTarget.style.background = 'transparent'
                 }}
               >
                 ×
-              </button>
+              </Button>
             </div>
           )}
 

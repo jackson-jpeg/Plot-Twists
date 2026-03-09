@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { STAGGER } from '@/lib/animations'
 import { useSocket } from '@/contexts/SocketContext'
 import type { PlayerStats, Achievement, LeaderboardEntry, LeaderboardCategory } from '@/lib/types'
 import { GameHistory } from './GameHistory'
 import { StatsSkeleton } from './EmptyState'
+import { Button, Card, Avatar, Badge } from '@/components/ui'
 
 interface PlayerProfileProps {
   playerId: string
@@ -66,9 +68,9 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
     return (
       <div className="text-center py-12 text-[var(--color-danger)]">
         <p>{error || 'Profile not found'}</p>
-        <button onClick={fetchStats} className="mt-2 text-[var(--color-accent)] hover:underline">
+        <Button variant="ghost" size="sm" onClick={fetchStats} className="mt-2" style={{ color: 'var(--color-accent)' }}>
           Try again
-        </button>
+        </Button>
       </div>
     )
   }
@@ -123,19 +125,20 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
           </motion.div>
         </div>
 
-        <motion.a
-          href="/"
-          className="inline-flex items-center gap-2 px-8 py-4 text-white font-semibold rounded-xl shadow-lg"
-          style={{ background: 'var(--color-accent)' }}
-          whileHover={{ scale: 1.05, boxShadow: '0 10px 40px rgba(245, 158, 66, 0.3)' }}
-          whileTap={{ scale: 0.95 }}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <span className="text-xl">🎬</span>
-          <span>Start Playing</span>
-        </motion.a>
+          <Button
+            variant="primary"
+            size="lg"
+            icon={<span className="text-xl">🎬</span>}
+            onClick={() => { window.location.href = '/' }}
+          >
+            Start Playing
+          </Button>
+        </motion.div>
       </div>
     )
   }
@@ -146,9 +149,7 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
       {!hideHeader && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-[var(--color-accent)] flex items-center justify-center text-3xl font-bold text-white">
-              {stats.nickname[0]?.toUpperCase()}
-            </div>
+            <Avatar name={stats.nickname} size="lg" style={{ width: 64, height: 64, fontSize: '30px' }} />
             <div>
               <h2 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats.nickname}</h2>
               <p className="text-[var(--color-text-secondary)]">
@@ -157,12 +158,9 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
             </div>
           </div>
           {onClose && (
-            <button
-              onClick={onClose}
-              className="text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] text-2xl"
-            >
+            <Button variant="ghost" size="sm" onClick={onClose} style={{ fontSize: '24px', padding: 0 }}>
               ×
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -271,14 +269,12 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
             {/* Favorite Character */}
             {stats.favoriteCharacter && (
               <motion.div
-                className="relative rounded-xl"
-                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
                 whileHover={{ scale: 1.02 }}
               >
-                <div className="p-5">
+                <Card variant="surface" padding="lg">
                   <h3 className="text-sm text-[var(--color-text-tertiary)] mb-2 font-display">Favorite Character</h3>
                   <div className="flex items-center gap-3">
                     <motion.span
@@ -295,20 +291,18 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
                       </p>
                     </div>
                   </div>
-                </div>
+                </Card>
               </motion.div>
             )}
 
             {/* Game Mode Breakdown */}
             <motion.div
-              className="relative rounded-xl"
-              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               whileHover={{ scale: 1.02 }}
             >
-              <div className="p-5">
+              <Card variant="surface" padding="lg">
                 <h3 className="text-sm text-[var(--color-text-tertiary)] mb-3 font-display">Game Mode Performance</h3>
                 <div className="space-y-3">
                   <ModeStatRow
@@ -327,19 +321,17 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
                     stats={stats.gameModeStats.ensemble}
                   />
                 </div>
-              </div>
+              </Card>
             </motion.div>
 
             {/* Audience Love */}
             <motion.div
-              className="relative rounded-xl"
-              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
               whileHover={{ scale: 1.02 }}
             >
-              <div className="p-5">
+              <Card variant="surface" padding="lg">
                 <h3 className="text-sm text-[var(--color-text-tertiary)] mb-2 font-display">Audience Reactions</h3>
                 <div className="flex items-center gap-4">
                   <motion.div
@@ -354,7 +346,7 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
                     <p className="text-sm text-[var(--color-text-secondary)]">total reactions received</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </motion.div>
           </motion.div>
         )}
@@ -419,7 +411,7 @@ const staggerContainer = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1
+      staggerChildren: STAGGER.slow
     }
   }
 }
@@ -553,15 +545,15 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
               <h4 className={`font-semibold truncate ${unlocked ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-disabled)]'}`}>
                 {achievement.name}
               </h4>
-              <span
-                className="text-xs px-1.5 py-0.5 rounded font-medium"
+              <Badge
+                size="sm"
                 style={{
                   background: RARITY_BADGE_BG[achievement.rarity] || 'var(--color-text-tertiary)',
                   color: achievement.rarity === 'legendary' ? 'var(--color-text-primary)' : 'white',
                 }}
               >
                 {achievement.rarity}
-              </span>
+              </Badge>
             </div>
             <p className={`text-xs mt-1 ${unlocked ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-text-disabled)]'}`}>
               {achievement.description}
@@ -588,14 +580,9 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
                 <p className="text-xs text-[var(--color-text-tertiary)] font-handwritten">
                   {new Date(achievement.unlockedAt).toLocaleDateString()}
                 </p>
-                <motion.button
-                  onClick={handleShare}
-                  className="text-xs px-2 py-0.5 rounded-md text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-alt)] transition-colors"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
+                <Button variant="ghost" size="sm" onClick={handleShare} style={{ fontSize: '12px', padding: '2px 8px' }}>
                   Share
-                </motion.button>
+                </Button>
               </div>
             )}
           </div>

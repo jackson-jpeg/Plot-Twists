@@ -154,7 +154,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
                   initial={{ opacity: 0, scale: 0.3, y: 50, x: Math.random() * 100, rotate: rotation }}
                   animate={{ opacity: 1, scale: 1, y: -100, rotate: rotation }}
                   exit={{ opacity: 0, scale: 0.6 }}
-                  transition={{ duration: 2, scale: { duration: 0.3, type: 'spring', stiffness: 400, damping: 15 } }}
+                  transition={{ duration: 2, scale: { duration: 0.3, ...MOTION.bouncy } }}
                   className="absolute"
                   style={{ fontSize: `${size}px` }}
                 >

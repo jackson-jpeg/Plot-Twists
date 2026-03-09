@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Modal } from './Modal'
+import { Button } from '@/components/ui/Button'
 import { MOTION } from '@/lib/animations'
 
 interface OnboardingModalProps {
@@ -169,41 +170,18 @@ export function OnboardingModal({ isOpen, onClose, mode = 'join' }: OnboardingMo
 
         {/* Navigation */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handlePrev}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '8px',
-              border: '1px solid var(--color-border)',
-              background: 'transparent',
-              color: 'var(--color-text-secondary)',
-              cursor: step > 0 ? 'pointer' : 'default',
-              opacity: step > 0 ? 1 : 0,
-              transition: 'all 0.2s',
-              fontSize: '14px',
-              minHeight: '44px',
-            }}
             disabled={step === 0}
+            style={{ opacity: step > 0 ? 1 : 0 }}
           >
             Back
-          </button>
-          <button
-            onClick={handleNext}
-            style={{
-              padding: '10px 24px',
-              borderRadius: '8px',
-              border: 'none',
-              background: 'var(--color-accent)',
-              color: 'white',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontSize: '16px',
-              transition: 'all 0.2s',
-              minHeight: '44px',
-            }}
-          >
+          </Button>
+          <Button variant="primary" onClick={handleNext}>
             {step === STEPS.length - 1 ? "Let's Play!" : 'Next'}
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { VARIANTS, MOTION, STAGGER } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { TypewriterIcon, CheckCircleIcon, SpinnerIcon, PendingCircleIcon, DoorIcon, WarningIcon } from '@/components/GameIcons'
+import { Button } from '@/components/ui'
 
 function getStepStatus(progress: number): [string, string, string] {
   if (progress >= 80) return ['done', 'done', 'active']
@@ -203,24 +204,17 @@ export function JoinLoading({ loadingProgress, loadingPhase, scriptTitlePreview,
               </span>
             </div>
             {onLeave && (
-              <button
-                onClick={onLeave}
-                className="flex items-center gap-2 mx-auto"
-                style={{
-                  marginTop: '12px',
-                  padding: '10px 20px',
-                  borderRadius: 'var(--radius-button)',
-                  border: '1px solid var(--color-border)',
-                  background: 'transparent',
-                  color: 'var(--color-text-secondary)',
-                  fontSize: 'var(--text-caption)',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                <DoorIcon size={16} color="currentColor" />
-                Leave Game
-              </button>
+              <div className="flex justify-center" style={{ marginTop: '12px' }}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={<DoorIcon size={16} color="currentColor" />}
+                  onClick={onLeave}
+                  style={{ background: 'transparent' }}
+                >
+                  Leave Game
+                </Button>
+              </div>
             )}
           </motion.div>
         ) : isDelayed ? (

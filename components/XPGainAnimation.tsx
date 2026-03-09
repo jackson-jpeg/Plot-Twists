@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
+import { MOTION } from '@/lib/animations'
 import type { XPEvent } from '@/lib/types'
 
 interface XPGainAnimationProps {
@@ -36,7 +37,7 @@ export function XPGainAnimation({ events, show }: XPGainAnimationProps) {
             className="mt-2 text-lg font-bold text-[var(--color-accent)]"
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: events.length * 0.15 + 0.3, type: 'spring', stiffness: 200 }}
+            transition={{ delay: events.length * 0.15 + 0.3, ...MOTION.gentle }}
           >
             +{totalXP} XP Total
           </motion.div>

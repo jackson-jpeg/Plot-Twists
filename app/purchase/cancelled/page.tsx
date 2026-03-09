@@ -3,13 +3,13 @@
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { MOTION } from '@/lib/animations'
+import { Button, PageContainer } from '@/components/ui'
 
 export default function PurchaseCancelledPage() {
   const router = useRouter()
 
   return (
-    <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
-      <div className="max-w-md w-full text-center">
+    <PageContainer size="narrow" centered>
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -27,17 +27,12 @@ export default function PurchaseCancelledPage() {
             </p>
 
             <div className="flex flex-col gap-3">
-              <button onClick={() => router.push('/')} className="w-full"
-                style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}>
+              <Button variant="primary" size="md" fullWidth onClick={() => router.push('/')}>
                 Back to Home
-              </button>
-              <button
-                onClick={() => router.back()}
-                className="w-full"
-                style={{ padding: '10px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
-              >
+              </Button>
+              <Button variant="secondary" size="md" fullWidth onClick={() => router.back()}>
                 Try Again
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -50,7 +45,6 @@ export default function PurchaseCancelledPage() {
             You still have your free weekly credits available!
           </motion.p>
         </motion.div>
-      </div>
-    </main>
+    </PageContainer>
   )
 }

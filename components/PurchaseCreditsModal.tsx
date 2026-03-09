@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { MOTION, STAGGER } from '@/lib/animations'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 import { useAuth } from '@/contexts/AuthContext'
 import { CREDIT_PACKAGES } from '@/lib/credits'
@@ -12,6 +13,7 @@ import { isIOSNative } from '@/lib/platform'
 import { purchaseViaStoreKit } from '@/lib/purchases'
 import { successHaptic } from '@/hooks/useHaptics'
 import { getAuthHeaders } from '@/lib/authHeaders'
+import { Button } from '@/components/ui'
 
 interface PurchaseCreditsModalProps {
   isOpen: boolean
@@ -126,7 +128,7 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+            transition={MOTION.spring}
             onClick={e => e.stopPropagation()}
             className="relative w-full overflow-hidden sm:rounded-2xl rounded-t-2xl"
             style={{
@@ -147,14 +149,16 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
                   transition={{ duration: 0.2 }}
                   className="p-5"
                 >
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={handleBack}
-                    className="flex items-center gap-1.5 text-sm font-medium mb-3"
-                    style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', padding: 0 }}
+                    icon={<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    className="mb-3"
+                    style={{ padding: 0 }}
                   >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     Back
-                  </button>
+                  </Button>
                   {selectedPkg && (
                     <div className="flex items-center gap-3 p-3 rounded-xl mb-4" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}>
                       <span className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{selectedPkg.label}</span>
@@ -184,14 +188,14 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
                     <h2 className="font-display" style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
                       Get credits
                     </h2>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={handleClose}
-                      aria-label="Close"
-                      className="w-8 h-8 flex items-center justify-center rounded-full"
-                      style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', border: 'none', cursor: 'pointer' }}
+                      style={{ width: 32, height: 32, padding: 0, borderRadius: '50%', background: 'var(--color-surface-alt)' }}
                     >
                       <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-                    </button>
+                    </Button>
                   </div>
 
                   {/* Current balance */}
@@ -251,7 +255,7 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
                           }}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.05 + 0.1 }}
+                          transition={{ delay: i * STAGGER.fast + 0.1 }}
                           whileTap={{ scale: 0.98 }}
                         >
                           {isBest && (
@@ -317,34 +321,19 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
 
                   {/* Purchase CTA */}
                   <div className="px-5 pt-6 pb-3">
-                    <motion.button
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      fullWidth
+                      loading={loading !== null}
+                      disabled={!selectedPkg}
                       onClick={() => selectedPkg && handlePurchase(selectedPkg.id)}
-                      disabled={loading !== null || !selectedPkg}
-                      className="w-full"
-                      style={{
-                        padding: '16px 24px',
-                        borderRadius: '14px',
-                        fontSize: '17px',
-                        fontWeight: 700,
-                        background: loading ? 'var(--color-surface-alt)' : 'var(--color-accent)',
-                        color: loading ? 'var(--color-text-tertiary)' : 'white',
-                        border: 'none',
-                        cursor: loading ? 'default' : 'pointer',
-                      }}
-                      whileHover={loading ? undefined : { scale: 1.02 }}
-                      whileTap={loading ? undefined : { scale: 0.98 }}
                     >
-                      {loading ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <span className="w-4 h-4 rounded-full border-2" style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-accent)', animation: 'spin 0.6s linear infinite' }} />
-                          Processing...
-                        </span>
-                      ) : selectedPkg ? (
-                        `Purchase ${selectedPkg.scripts} credits — $${(selectedPkg.price / 100).toFixed(2)}`
-                      ) : (
-                        'Select a package'
-                      )}
-                    </motion.button>
+                      {selectedPkg
+                        ? `Purchase ${selectedPkg.scripts} credits — $${(selectedPkg.price / 100).toFixed(2)}`
+                        : 'Select a package'
+                      }
+                    </Button>
                   </div>
 
                   {/* Footer */}

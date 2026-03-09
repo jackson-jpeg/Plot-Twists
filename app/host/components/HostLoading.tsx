@@ -6,6 +6,7 @@ import type { RoomSettings } from '@/lib/types'
 import { VARIANTS, MOTION, STAGGER } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { TypewriterIcon, CheckCircleIcon, SpinnerIcon, PendingCircleIcon, RetryIcon, WarningIcon } from '@/components/GameIcons'
+import { Button } from '@/components/ui'
 
 function getStepStatus(progress: number): [string, string, string] {
   if (progress >= 80) return ['done', 'done', 'active']
@@ -47,7 +48,7 @@ export function HostLoading({
       animate="animate"
       exit="exit"
       className="w-full mx-auto px-5"
-      style={{ maxWidth: isDesktop ? '640px' : '100%', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      style={{ maxWidth: isDesktop ? '540px' : '100%', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {/* Centered typewriter icon */}
       <motion.div
@@ -229,23 +230,23 @@ export function HostLoading({
               Script generation is taking longer than usual. You can wait, retry, or go back.
             </p>
             <div className="flex gap-3 justify-center flex-wrap">
-              <motion.button
+              <Button
+                variant="primary"
+                size="sm"
+                icon={<RetryIcon size={16} color="currentColor" />}
                 onClick={onRetry}
-                className="flex items-center gap-2"
-                style={{ padding: '10px 20px', borderRadius: 'var(--radius-button)', border: 'none', background: 'var(--color-accent)', color: 'white', fontWeight: 600, fontSize: 'var(--text-caption)', cursor: 'pointer' }}
-                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
               >
-                <RetryIcon size={16} color="currentColor" /><span>Retry</span>
-              </motion.button>
-              <motion.button
+                Retry
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon={<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
                 onClick={onBackToLobby}
-                className="flex items-center gap-2"
-                style={{ padding: '10px 20px', borderRadius: 'var(--radius-button)', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', fontWeight: 600, fontSize: 'var(--text-caption)', cursor: 'pointer' }}
-                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                style={{ border: '1px solid var(--color-border)' }}
               >
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                <span>Back to Lobby</span>
-              </motion.button>
+                Back to Lobby
+              </Button>
             </div>
           </motion.div>
         )}

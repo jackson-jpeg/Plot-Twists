@@ -8,10 +8,10 @@ import type { Player, RoomSettings, ScriptCustomization, AudioSettings, GameMode
 const ScriptCustomizationPanel = dynamic(() => import('@/components/ScriptCustomizationPanel').then(m => ({ default: m.ScriptCustomizationPanel })), { ssr: false, loading: () => null })
 const CardPackSelector = dynamic(() => import('@/components/CardPackSelector').then(m => ({ default: m.CardPackSelector })), { ssr: false, loading: () => null })
 const AudioSettingsPanel = dynamic(() => import('@/components/AudioSettingsPanel').then(m => ({ default: m.AudioSettingsPanel })), { ssr: false, loading: () => null })
-import { MOTION, VARIANTS } from '@/lib/animations'
+import { MOTION, VARIANTS, STAGGER } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
-import { getAvatarColor } from '@/lib/avatarColors'
+import { Button, Card, Badge, Avatar } from '@/components/ui'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -188,41 +188,37 @@ export function HostLobby({
 
   const qrSection = (
     <motion.div
-      className="flex items-center gap-5 rounded-xl"
-      style={{
-        padding: '20px',
-        border: '1px solid var(--color-border)',
-        background: 'var(--color-surface)',
-        marginTop: '24px',
-      }}
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
+      style={{ marginTop: '24px' }}
     >
-      {joinUrl ? (
-        <div className="flex-shrink-0 rounded-lg overflow-hidden p-2" style={{ background: 'var(--color-surface-alt)' }}>
-          <QRCodeSVG value={joinUrl} size={isDesktop ? 140 : 120} level="H" />
+      <Card variant="surface" padding="md" className="flex items-center gap-5">
+        {joinUrl ? (
+          <div className="flex-shrink-0 rounded-lg overflow-hidden p-2" style={{ background: 'var(--color-surface-alt)' }}>
+            <QRCodeSVG value={joinUrl} size={isDesktop ? 140 : 120} level="H" />
+          </div>
+        ) : (
+          <div className="animate-pulse flex-shrink-0" style={{ width: '136px', height: '136px', borderRadius: '8px', background: 'var(--color-surface-alt)' }} />
+        )}
+        <div>
+          <p style={{
+            fontWeight: 700,
+            fontSize: '17px',
+            color: 'var(--color-text-primary)',
+            marginBottom: '4px',
+          }}>
+            Scan to join
+          </p>
+          <p style={{
+            fontSize: 'var(--text-caption)',
+            lineHeight: 1.5,
+            color: 'var(--color-text-secondary)',
+          }}>
+            Or go to <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>plot-twists.com</span> and enter the code above
+          </p>
         </div>
-      ) : (
-        <div className="animate-pulse flex-shrink-0" style={{ width: '136px', height: '136px', borderRadius: '8px', background: 'var(--color-surface-alt)' }} />
-      )}
-      <div>
-        <p style={{
-          fontWeight: 700,
-          fontSize: '17px',
-          color: 'var(--color-text-primary)',
-          marginBottom: '4px',
-        }}>
-          Scan to join
-        </p>
-        <p style={{
-          fontSize: 'var(--text-caption)',
-          lineHeight: 1.5,
-          color: 'var(--color-text-secondary)',
-        }}>
-          Or go to <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>plot-twists.com</span> and enter the code above
-        </p>
-      </div>
+      </Card>
     </motion.div>
   )
 
@@ -260,31 +256,15 @@ export function HostLobby({
               initial={{ opacity: 0, x: -40, scale: 0.9 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 40, scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 200, damping: 22, delay: index * 0.06 }}
+              transition={{ ...MOTION.gentle, delay: index * STAGGER.fast }}
             >
-              <div
-                className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-              >
+              <Card variant="surface" padding="sm" className="flex items-center gap-3">
                 <motion.div
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    background: getAvatarColor(player.nickname),
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontWeight: 700,
-                    fontSize: 'var(--text-body)',
-                    flexShrink: 0,
-                  }}
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 20, delay: index * 0.06 + 0.1 }}
+                  transition={{ ...MOTION.bouncy, delay: index * STAGGER.fast + 0.1 }}
                 >
-                  {player.nickname[0]?.toUpperCase()}
+                  <Avatar name={player.nickname} size="md" />
                 </motion.div>
 
                 <div className="flex-1">
@@ -298,23 +278,13 @@ export function HostLobby({
                 </div>
 
                 {player.level != null ? (
-                  <span style={{
-                    fontSize: 'var(--text-caption)',
-                    fontWeight: 500,
-                    color: 'var(--color-text-tertiary)',
-                  }}>
-                    Lv.{player.level}
-                  </span>
+                  <Badge variant="default" size="sm">Lv.{player.level}</Badge>
                 ) : (
-                  <span style={{
-                    fontSize: 'var(--text-caption)',
-                    fontWeight: 500,
-                    color: player.hasSubmittedSelection ? 'var(--color-success)' : 'var(--color-text-tertiary)',
-                  }}>
+                  <Badge variant={player.hasSubmittedSelection ? 'success' : 'default'} size="sm">
                     {player.hasSubmittedSelection ? 'Ready' : 'Joined'}
-                  </span>
+                  </Badge>
                 )}
-              </div>
+              </Card>
             </motion.div>
           ))}
         </AnimatePresence>
@@ -350,21 +320,15 @@ export function HostLobby({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4 }}
     >
-      <button
+      <Button
+        variant="secondary"
+        size="md"
+        fullWidth
         onClick={() => setSettingsOpen(prev => !prev)}
-        className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl"
-        style={{
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border)',
-          cursor: 'pointer',
-          color: 'var(--color-text-secondary)',
-          fontSize: '15px',
-          fontWeight: 500,
-        }}
+        iconRight={<ChevronIcon size={16} direction={settingsOpen ? 'up' : 'down'} />}
       >
-        <span>Game Settings</span>
-        <ChevronIcon size={16} direction={settingsOpen ? 'up' : 'down'} />
-      </button>
+        Game Settings
+      </Button>
 
       <AnimatePresence>
         {settingsOpen && (
@@ -378,52 +342,33 @@ export function HostLobby({
           >
             <div className="flex flex-col gap-4">
               {/* Quick/Custom Tabs */}
-              <div className="p-4 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <Card variant="surface" padding="md">
                 <div className="flex gap-2 mb-3">
-                  <motion.button
+                  <Button
+                    variant={gameSetupMode === 'quick' ? 'primary' : 'secondary'}
+                    size="sm"
+                    fullWidth
                     onClick={() => onSetupModeChange('quick')}
-                    className="flex-1"
-                    style={{
-                      padding: '10px 16px',
-                      borderRadius: 'var(--radius-button)',
-                      fontSize: 'var(--text-caption)',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      background: gameSetupMode === 'quick' ? 'var(--color-success)' : 'var(--color-surface-alt)',
-                      color: gameSetupMode === 'quick' ? 'white' : 'var(--color-text-secondary)',
-                      border: gameSetupMode === 'quick' ? '2px solid var(--color-success)' : '1px solid var(--color-border)'
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    style={gameSetupMode === 'quick' ? { background: 'var(--color-success)', border: '2px solid var(--color-success)' } : {}}
                   >
                     Quick Game
-                  </motion.button>
-                  <motion.button
+                  </Button>
+                  <Button
+                    variant={gameSetupMode === 'custom' ? 'primary' : 'secondary'}
+                    size="sm"
+                    fullWidth
                     onClick={() => onSetupModeChange('custom')}
-                    className="flex-1"
-                    style={{
-                      padding: '10px 16px',
-                      borderRadius: 'var(--radius-button)',
-                      fontSize: 'var(--text-caption)',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      background: gameSetupMode === 'custom' ? 'var(--color-accent)' : 'var(--color-surface-alt)',
-                      color: gameSetupMode === 'custom' ? 'white' : 'var(--color-text-secondary)',
-                      border: gameSetupMode === 'custom' ? '2px solid var(--color-accent)' : '1px solid var(--color-border)'
-                    }}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                   >
                     Custom Game
-                  </motion.button>
+                  </Button>
                 </div>
                 <p className="text-center text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
                   {gameSetupMode === 'quick' ? 'Recommended settings for fast setup' : 'Customize all game options'}
                 </p>
-              </div>
+              </Card>
 
               {/* Game Mode Selection */}
-              <div className="p-4 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+              <Card variant="surface" padding="md">
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '12px' }}>Game Mode</h3>
                 <div className="grid gap-3 md:grid-cols-3">
                   {([
@@ -444,7 +389,9 @@ export function HostLobby({
                       whileTap={{ scale: 0.98 }}
                     >
                       {gameSetupMode === 'quick' && mode === 'ENSEMBLE' && (
-                        <div style={{ position: 'absolute', top: '-8px', right: '-8px', fontSize: '9px', padding: '2px 6px', borderRadius: '999px', background: 'var(--color-success)', color: 'white', fontWeight: 700 }}>Recommended</div>
+                        <div style={{ position: 'absolute', top: '-8px', right: '-8px' }}>
+                          <Badge variant="success" size="sm" style={{ background: 'var(--color-success)', color: 'white', borderRadius: '999px', fontSize: '9px' }}>Recommended</Badge>
+                        </div>
                       )}
                       <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: '4px', color: 'var(--color-text-primary)' }}>{label}</div>
                       <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{desc}</div>
@@ -472,45 +419,41 @@ export function HostLobby({
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </Card>
 
               {/* Content Rating */}
               {gameSetupMode === 'quick' && (
-                <motion.div className="p-4 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)' }}>{settings.isMature ? 'After Dark' : 'Family Friendly'}</h3>
-                      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{settings.isMature ? 'Adult themes, mature humor' : 'Fun for all ages'}</p>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                  <Card variant="surface" padding="md">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)' }}>{settings.isMature ? 'After Dark' : 'Family Friendly'}</h3>
+                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{settings.isMature ? 'Adult themes, mature humor' : 'Fun for all ages'}</p>
+                      </div>
+                      <Button variant="secondary" size="sm" onClick={onToggleMature}>
+                        Switch
+                      </Button>
                     </div>
-                    <motion.button
-                      onClick={onToggleMature}
-                      style={{ padding: '8px 16px', borderRadius: 'var(--radius-button)', border: '1px solid var(--color-border)', background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', fontSize: 'var(--text-caption)', fontWeight: 600, cursor: 'pointer' }}
-                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                    >
-                      Switch
-                    </motion.button>
-                  </div>
+                  </Card>
                 </motion.div>
               )}
 
               {/* Custom settings */}
               {gameSetupMode === 'custom' && (
                 <>
-                  <div className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-                    <div>
-                      <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '2px' }}>{settings.isMature ? 'After Dark' : 'Family Friendly'}</h3>
-                      <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Content Rating</p>
+                  <Card variant="surface" padding="md">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '2px' }}>{settings.isMature ? 'After Dark' : 'Family Friendly'}</h3>
+                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Content Rating</p>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={onToggleMature}>
+                        Switch Mode
+                      </Button>
                     </div>
-                    <motion.button
-                      onClick={onToggleMature}
-                      style={{ padding: '8px 16px', borderRadius: 'var(--radius-button)', border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', fontSize: 'var(--text-caption)', fontWeight: 600, cursor: 'pointer' }}
-                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                    >
-                      Switch Mode
-                    </motion.button>
-                  </div>
+                  </Card>
                   <CardPackSelector roomCode={roomCode} selectedPackId={selectedPackId} onSelect={onSetSelectedPackId} showCreateButton={true} />
-                  <div className="p-3 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+                  <Card variant="surface" padding="sm">
                     <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>Quick Themes</p>
                     <div className="flex gap-1.5 flex-wrap">
                       {[
@@ -519,8 +462,10 @@ export function HostLobby({
                         { label: 'Office Shenanigans', style: 'sitcom' as const, mature: false },
                         { label: 'After Hours', style: 'dark' as const, mature: true },
                       ].map((theme) => (
-                        <button
+                        <Button
                           key={theme.label}
+                          variant="ghost"
+                          size="sm"
                           onClick={() => {
                             onSetScriptCustomization(prev => ({ ...prev, comedyStyle: theme.style }))
                             if (theme.mature !== settings.isMature) {
@@ -530,14 +475,13 @@ export function HostLobby({
                             }
                             toast.success(`${theme.label} theme activated!`)
                           }}
-                          className="px-3 py-2.5 rounded-lg text-sm transition-all"
-                          style={{ border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-secondary)', cursor: 'pointer', minHeight: '44px' }}
+                          style={{ border: '1px solid var(--color-border)', minHeight: '44px' }}
                         >
                           {theme.label}
-                        </button>
+                        </Button>
                       ))}
                     </div>
-                  </div>
+                  </Card>
                   <ScriptCustomizationPanel customization={scriptCustomization} onChange={onSetScriptCustomization} />
                   <AudioSettingsPanel settings={audioSettings} onChange={onSetAudioSettings} />
                 </>
@@ -546,33 +490,30 @@ export function HostLobby({
               {/* Make Public Toggle */}
               {settings.gameMode !== 'SOLO' && (
                 <motion.div
-                  className="flex items-center justify-between p-4 rounded-xl"
-                  style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
                 >
-                  <div>
-                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                      {settings.isPublic ? 'Public Game' : 'Private Game'}
-                    </h3>
-                    <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                      {settings.isPublic ? 'Anyone can join from Quick Play' : 'Invite only via room code'}
-                    </p>
-                  </div>
-                  <motion.button
-                    onClick={() => {
-                      const newPublic = !settings.isPublic
-                      onSetSettings(prev => ({ ...prev, isPublic: newPublic }))
-                      socket?.emit('update_room_settings', roomCode, { isPublic: newPublic })
-                      tapHaptic()
-                    }}
-                    style={{ padding: '8px 16px', borderRadius: 'var(--radius-button)', border: '1px solid var(--color-border)', background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)', fontSize: 'var(--text-caption)', fontWeight: 600, cursor: 'pointer' }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {settings.isPublic ? 'Make Private' : 'Make Public'}
-                  </motion.button>
+                  <Card variant="surface" padding="md">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                          {settings.isPublic ? 'Public Game' : 'Private Game'}
+                        </h3>
+                        <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          {settings.isPublic ? 'Anyone can join from Quick Play' : 'Invite only via room code'}
+                        </p>
+                      </div>
+                      <Button variant="secondary" size="sm" onClick={() => {
+                        const newPublic = !settings.isPublic
+                        onSetSettings(prev => ({ ...prev, isPublic: newPublic }))
+                        socket?.emit('update_room_settings', roomCode, { isPublic: newPublic })
+                        tapHaptic()
+                      }}>
+                        {settings.isPublic ? 'Make Private' : 'Make Public'}
+                      </Button>
+                    </div>
+                  </Card>
                 </motion.div>
               )}
             </div>
@@ -583,23 +524,7 @@ export function HostLobby({
   )
 
   const startButton = (
-    <motion.button
-      onClick={() => { successHaptic(); onStartGame() }}
-      disabled={!canStartGame}
-      className="w-full"
-      style={{
-        background: canStartGame ? 'var(--color-accent)' : 'var(--color-surface-alt)',
-        color: canStartGame ? 'white' : 'var(--color-text-tertiary)',
-        border: 'none',
-        fontSize: '17px',
-        fontWeight: 600,
-        fontFamily: 'var(--font-display)',
-        borderRadius: 'var(--radius-button)',
-        padding: '18px',
-        cursor: canStartGame ? 'pointer' : 'not-allowed',
-        opacity: canStartGame ? 1 : 0.6,
-        boxShadow: canStartGame ? '0 4px 20px rgba(245, 158, 66, 0.35)' : 'none',
-      }}
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={canStartGame ? {
         opacity: 1,
@@ -609,16 +534,27 @@ export function HostLobby({
           '0 4px 32px rgba(245, 158, 66, 0.55)',
           '0 4px 20px rgba(245, 158, 66, 0.35)',
         ],
-      } : { opacity: 0.6, y: 0 }}
+      } : { opacity: 1, y: 0 }}
       transition={canStartGame ? {
         boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
         ...MOTION.gentle,
       } : MOTION.gentle}
-      whileHover={canStartGame ? { scale: 1.02 } : {}}
-      whileTap={canStartGame ? { scale: 0.97 } : {}}
+      style={{ borderRadius: 'var(--radius-button)' }}
     >
-      {settings.gameMode === 'SOLO' ? 'Start Solo Game' : 'Start Game'}
-    </motion.button>
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        disabled={!canStartGame}
+        onClick={() => { successHaptic(); onStartGame() }}
+        style={{
+          padding: '18px',
+          ...(canStartGame && { boxShadow: '0 4px 20px rgba(245, 158, 66, 0.35)' }),
+        }}
+      >
+        {settings.gameMode === 'SOLO' ? 'Start Solo Game' : 'Start Game'}
+      </Button>
+    </motion.div>
   )
 
   return (
@@ -631,14 +567,15 @@ export function HostLobby({
         transition={{ duration: 0.3 }}
         style={{ paddingTop: 'max(16px, env(safe-area-inset-top, 0px))', maxWidth: isDesktop ? '1200px' : undefined, margin: isDesktop ? '0 auto' : undefined, width: '100%' }}
       >
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onNavigateHome}
-          className="flex items-center gap-1.5"
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', fontSize: '15px', padding: '8px 4px' }}
+          icon={<span style={{ fontSize: '13px' }}>&#x2039;</span>}
+          style={{ color: 'var(--color-text-tertiary)' }}
         >
-          <span style={{ fontSize: '13px' }}>&#x2039;</span>
-          <span>Back</span>
-        </button>
+          Back
+        </Button>
         <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-caption)', color: isConnected ? 'var(--color-success)' : 'var(--color-danger)' }}>
           <span style={{ fontSize: '8px' }} aria-hidden="true">&#9679;</span>
           <span>{isConnected ? 'Connected' : 'Reconnecting...'}</span>

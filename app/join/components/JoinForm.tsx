@@ -10,6 +10,8 @@ import { withTimeout } from '@/lib/socketTimeout'
 import { MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { EyeIcon, WarningIcon } from '@/components/GameIcons'
+import { PageContainer, Button, Input, Card, Badge } from '@/components/ui'
+import { EmptyState } from '@/components/EmptyState'
 import { PublicRoomCard } from './PublicRoomCard'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
@@ -234,11 +236,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
   const isDesktop = breakpoint === 'desktop'
 
   return (
-    <main
-      className="flex flex-col items-center justify-center"
-      style={{ minHeight: '100dvh', padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px))', background: 'var(--color-bg)' }}
-    >
-      <div className="w-full" style={{ maxWidth: isDesktop ? '480px' : '448px' }}>
+    <PageContainer size="narrow" centered>
         {/* Icon + Heading */}
         <motion.div
           className="mb-8 text-center"
@@ -389,9 +387,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                   <p style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
                     {roomPreview.playerCount} player{roomPreview.playerCount !== 1 ? 's' : ''} · <GameModeLabel mode={roomPreview.gameMode} />
                     {roomPreview.isMature && (
-                      <span style={{ marginLeft: '6px', fontSize: '11px', fontWeight: 700, padding: '1px 6px', borderRadius: '6px', background: 'var(--color-danger-light)', color: 'var(--color-danger)' }}>
-                        18+
-                      </span>
+                      <Badge variant="danger" size="sm" style={{ marginLeft: '6px' }}>18+</Badge>
                     )}
                   </p>
                 </div>
@@ -433,77 +429,22 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, ...MOTION.gentle }}
         >
-          <label
-            htmlFor="join-nickname"
-            style={{
-              display: 'block',
-              fontSize: '12px',
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase' as const,
-              color: 'var(--color-text-tertiary)',
-              marginBottom: '6px',
-            }}
-          >
-            Nickname
-          </label>
-          <div style={{ position: 'relative' }}>
-            <input
-              ref={nicknameInputRef}
-              id="join-nickname"
-              type="text"
-              value={nickname}
-              onChange={(e) => handleNicknameChange(e.target.value)}
-              onBlur={() => { setNicknameTouched(true); setNicknameError(validateNickname(nickname)) }}
-              onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300) }}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleJoin() }}
-              placeholder="e.g. Captain Chaos"
-              maxLength={20}
-              autoComplete="off"
-              enterKeyHint="go"
-              style={{
-                width: '100%',
-                fontSize: '17px',
-                padding: '14px 16px',
-                paddingRight: isNicknameValid ? '44px' : '16px',
-                borderRadius: '12px',
-                border: nicknameTouched && nicknameError
-                  ? '2px solid var(--color-danger)'
-                  : isNicknameValid
-                  ? '2px solid var(--color-success)'
-                  : '1px solid var(--color-border)',
-                background: 'var(--color-surface)',
-                color: 'var(--color-text-primary)',
-                outline: 'none',
-                transition: 'border-color 0.2s',
-              }}
-            />
-            {isNicknameValid && (
-              <span
-                style={{
-                  position: 'absolute',
-                  right: '14px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'var(--color-success)',
-                  fontSize: '20px',
-                  fontWeight: 700,
-                }}
-              >
-                {'\u2713'}
-              </span>
-            )}
-          </div>
-          <div className="flex justify-between items-center mt-1">
-            {nicknameTouched && nicknameError ? (
-              <p style={{ fontSize: '13px', color: 'var(--color-danger)' }}>{nicknameError}</p>
-            ) : <span />}
-            {nickname.length > 12 && (
-              <span style={{ fontSize: '12px', color: nickname.length >= 20 ? 'var(--color-danger)' : 'var(--color-text-tertiary)' }}>
-                {nickname.length}/20
-              </span>
-            )}
-          </div>
+          <Input
+            ref={nicknameInputRef}
+            label="Nickname"
+            error={nicknameTouched && nicknameError ? nicknameError : undefined}
+            success={!!isNicknameValid}
+            value={nickname}
+            onChange={(e) => handleNicknameChange(e.target.value)}
+            onBlur={() => { setNicknameTouched(true); setNicknameError(validateNickname(nickname)) }}
+            onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300) }}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleJoin() }}
+            placeholder="e.g. Captain Chaos"
+            maxLength={20}
+            autoComplete="off"
+            enterKeyHint="go"
+            hint={nickname.length > 12 ? `${nickname.length}/20` : undefined}
+          />
         </motion.div>
 
         {/* Error banner */}
@@ -526,28 +467,17 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15, ...MOTION.gentle }}
         >
-          <motion.button
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            loading={isJoining}
+            disabled={!isFormValid()}
             onClick={handleJoin}
-            disabled={!isFormValid() || isJoining}
-            className={`w-full ${shakeInvalid ? 'shake' : ''}`}
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '17px',
-              fontWeight: 600,
-              padding: '16px',
-              borderRadius: '14px',
-              border: 'none',
-              background: isFormValid() && !isJoining ? 'var(--color-accent)' : 'var(--color-surface-alt)',
-              color: isFormValid() && !isJoining ? 'white' : 'var(--color-text-tertiary)',
-              cursor: isFormValid() && !isJoining ? 'pointer' : 'not-allowed',
-              opacity: isFormValid() && !isJoining ? 1 : 0.6,
-              transition: 'background 0.2s, opacity 0.2s',
-            }}
-            whileHover={isFormValid() && !isJoining ? { scale: 1.02 } : {}}
-            whileTap={isFormValid() && !isJoining ? { scale: 0.98 } : {}}
+            className={shakeInvalid ? 'shake' : ''}
           >
             {isJoining ? 'Joining...' : 'Join Game'}
-          </motion.button>
+          </Button>
           {!isFormValid() && !isJoining && (
             <p className="text-center mt-2" style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
               Fill in all fields to continue
@@ -571,16 +501,11 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, ...MOTION.gentle }}
         >
-          <motion.button
-            onClick={() => handleQuickPlay('ENSEMBLE')}
-            disabled={isMatching}
-            className="relative rounded-xl p-4 text-center transition-colors"
-            style={{
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-            }}
-            whileHover={isMatching ? undefined : { y: -2 }}
-            whileTap={isMatching ? undefined : { scale: 0.97 }}
+          <Card
+            variant="interactive"
+            padding="md"
+            onClick={() => !isMatching && handleQuickPlay('ENSEMBLE')}
+            className="relative text-center"
           >
             <div style={{ fontSize: '24px', marginBottom: '4px' }}>👥</div>
             <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>Ensemble</div>
@@ -595,22 +520,17 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                 <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-accent)' }}>Matching...</span>
               </motion.div>
             )}
-          </motion.button>
-          <motion.button
-            onClick={() => handleQuickPlay('HEAD_TO_HEAD')}
-            disabled={isMatching}
-            className="relative rounded-xl p-4 text-center transition-colors"
-            style={{
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-            }}
-            whileHover={isMatching ? undefined : { y: -2 }}
-            whileTap={isMatching ? undefined : { scale: 0.97 }}
+          </Card>
+          <Card
+            variant="interactive"
+            padding="md"
+            onClick={() => !isMatching && handleQuickPlay('HEAD_TO_HEAD')}
+            className="relative text-center"
           >
             <div style={{ fontSize: '24px', marginBottom: '4px' }}>⚔️</div>
             <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>Head-to-Head</div>
             <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>2-player duel</div>
-          </motion.button>
+          </Card>
         </motion.div>
 
         {/* Match error */}
@@ -631,32 +551,12 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
         {/* Public room list */}
         <div className="flex flex-col gap-3">
           {publicRooms.length === 0 ? (
-            <motion.div
-              className="text-center py-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.25 }}
-            >
-              <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>No public games right now</p>
-              <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', marginTop: '4px', marginBottom: '12px' }}>
-                Create the first one and invite friends!
-              </p>
-              <button
-                onClick={onNavigateHome}
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: '999px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  border: '1px solid var(--color-accent)',
-                  color: 'var(--color-accent)',
-                  background: 'transparent',
-                  cursor: 'pointer',
-                }}
-              >
-                Host a Public Game
-              </button>
-            </motion.div>
+            <EmptyState
+              variant="games"
+              title="No public games right now"
+              description="Create the first one and invite friends!"
+              action={{ label: 'Host a Public Game', onClick: onNavigateHome }}
+            />
           ) : (
             publicRooms.map((room, i) => (
               <PublicRoomCard
@@ -668,7 +568,6 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             ))
           )}
         </div>
-      </div>
-    </main>
+    </PageContainer>
   )
 }

@@ -7,6 +7,7 @@ import { MOTION } from '@/lib/animations'
 import { CREDIT_PACKAGES } from '@/lib/credits'
 import { getApiBaseUrl } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
+import { Button, PageContainer } from '@/components/ui'
 
 interface SessionStatus {
   status: string
@@ -62,8 +63,7 @@ function PurchaseSuccessContent() {
   const amount = session?.amountTotal ? (session.amountTotal / 100).toFixed(2) : null
 
   return (
-    <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
-      <div className="max-w-md w-full text-center">
+    <PageContainer size="narrow" centered>
         {loading ? (
           <motion.div
             initial={{ opacity: 0 }}
@@ -89,10 +89,7 @@ function PurchaseSuccessContent() {
               Something went wrong
             </h1>
             <p className="mb-6 text-[var(--color-text-secondary)]">{error}</p>
-            <button onClick={() => router.push('/')}
-              style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}>
-              Go Home
-            </button>
+            <Button onClick={() => router.push('/')}>Go Home</Button>
           </motion.div>
         ) : (
           <motion.div
@@ -151,35 +148,29 @@ function PurchaseSuccessContent() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
               >
-                <button onClick={() => router.push('/')} className="w-full"
-                  style={{ padding: '14px 24px', borderRadius: '14px', fontSize: '16px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}>
+                <Button variant="primary" size="lg" fullWidth onClick={() => router.push('/')}>
                   Start Playing
-                </button>
-                <button
-                  onClick={() => router.push('/profile')}
-                  className="w-full"
-                  style={{ padding: '10px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 600, background: 'transparent', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
-                >
+                </Button>
+                <Button variant="secondary" size="md" fullWidth onClick={() => router.push('/profile')}>
                   View Profile
-                </button>
+                </Button>
               </motion.div>
             </div>
           </motion.div>
         )}
-      </div>
-    </main>
+    </PageContainer>
   )
 }
 
 export default function PurchaseSuccessPage() {
   return (
     <Suspense fallback={
-      <main className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
+      <PageContainer size="narrow" centered>
         <div className="text-center">
           <div className="inline-block text-5xl mb-4 animate-spin">🎬</div>
           <p className="text-[var(--color-text-secondary)]">Verifying your purchase...</p>
         </div>
-      </main>
+      </PageContainer>
     }>
       <PurchaseSuccessContent />
     </Suspense>

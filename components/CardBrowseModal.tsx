@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { MOTION } from '@/lib/animations'
 import { Modal } from './Modal'
 import { EmptyState } from './EmptyState'
 import { ContentItem, CATEGORIES } from '@/lib/content-types'
@@ -270,7 +271,7 @@ export function CardBrowseModal({
                           style={{ background: color }}
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          transition={{ type: 'spring', stiffness: 300 }}
+                          transition={MOTION.spring}
                         >
                           <span className="text-white text-xs">✓</span>
                         </motion.div>

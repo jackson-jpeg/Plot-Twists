@@ -5,10 +5,11 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import type { Player, RoomSettings, CardSelection, AvailableCards } from '@/lib/types'
 import dynamic from 'next/dynamic'
 const CardPicker = dynamic(() => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })), { ssr: false, loading: () => null })
-import { VARIANTS } from '@/lib/animations'
+import { VARIANTS, MOTION, STAGGER } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon, SpinnerIcon, StatusDot } from '@/components/GameIcons'
+import { Card, Avatar } from '@/components/ui'
 
 const IMPROV_TIPS = [
   { tip: '"Yes, and..." -- always build on what your scene partner gives you.' },
@@ -78,8 +79,8 @@ export function HostSelection({
   if (settings.gameMode === 'SOLO' && hasSubmittedSelection) {
     return (
       <motion.div key="solo-waiting" variants={pageTransitionVariants} initial="initial" animate="animate" exit="exit" className="w-full max-w-lg mx-auto px-5 text-center">
-        <div className="p-6 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
-          <motion.div className="flex justify-center mb-6" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.5 }}>
+        <Card padding="lg">
+          <motion.div className="flex justify-center mb-6" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={MOTION.bouncy}>
             <CheckCircleIcon size={64} color="var(--color-success)" />
           </motion.div>
           <motion.h1 className="font-display" style={{ fontSize: '32px', fontWeight: 700, color: 'var(--color-success)', marginBottom: '12px' }} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>Cards Submitted!</motion.h1>
@@ -101,7 +102,7 @@ export function HostSelection({
               </div>
             </div>
           </motion.div>
-        </div>
+        </Card>
       </motion.div>
     )
   }
@@ -130,7 +131,7 @@ export function HostSelection({
           <span>Back to Lobby</span>
         </motion.button>
 
-        <div className="p-5 rounded-xl" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
+        <Card padding="lg">
           {availableCards.characters.length === 0 ? (
             <motion.div className="text-center py-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <SpinnerIcon size={32} color="var(--color-text-secondary)" className={prefersReducedMotion ? '' : ''} />
@@ -181,7 +182,7 @@ export function HostSelection({
               </motion.button>
             </>
           )}
-        </div>
+        </Card>
       </motion.div>
     )
   }
@@ -249,7 +250,7 @@ export function HostSelection({
                 style={{ background: 'var(--color-surface-alt)' }}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: i * STAGGER.fast }}
               >
                 <div className="flex items-center gap-3">
                   {status === 'done' ? (
@@ -257,7 +258,7 @@ export function HostSelection({
                   ) : (
                     <StatusDot status="waiting" size={20} />
                   )}
-                  <div className="flex items-center justify-center rounded-full shrink-0" style={{ width: '32px', height: '32px', fontSize: '13px', fontWeight: 700, background: 'var(--color-accent)', color: 'white' }}>{player.nickname[0]?.toUpperCase()}</div>
+                  <Avatar name={player.nickname} size="sm" />
                   <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{player.nickname}</span>
                 </div>
                 <span
@@ -313,26 +314,26 @@ export function HostSelection({
 
       {/* Cycling improv tips */}
       <motion.div
-        className="p-4 rounded-xl"
-        style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        <p className="text-[11px] font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Improv Tip</p>
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={tipIndex}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.3 }}
-            className="text-sm text-left"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            {currentTip.tip}
-          </motion.p>
-        </AnimatePresence>
+        <Card>
+          <p className="text-[11px] font-semibold mb-2 uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>Improv Tip</p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={tipIndex}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3 }}
+              className="text-sm text-left"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              {currentTip.tip}
+            </motion.p>
+          </AnimatePresence>
+        </Card>
       </motion.div>
     </motion.div>
   )

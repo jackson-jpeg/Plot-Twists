@@ -8,6 +8,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { AdminRooms } from './components/AdminRooms'
 import { AdminUsers } from './components/AdminUsers'
 import { AdminStats } from './components/AdminStats'
+import { PageContainer } from '@/components/ui/PageContainer'
+import { Button } from '@/components/ui/Button'
 import type { AdminRoomInfo, AdminUserInfo, AdminStats as AdminStatsType } from '@/lib/types'
 
 type AdminTab = 'rooms' | 'users' | 'stats'
@@ -153,20 +155,18 @@ export default function AdminPage() {
   // Loading state
   if (authLoading || isAdmin === null) {
     return (
-      <main className="flex flex-col" style={{ minHeight: '100dvh' }}>
-        <div className="w-full max-w-4xl mx-auto px-5 pt-20 pb-8">
-          <div className="text-center py-20">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="inline-block text-3xl mb-3"
-            >
-              ⚙️
-            </motion.div>
-            <p className="text-[var(--color-text-secondary)]">Checking access...</p>
-          </div>
+      <PageContainer size="wide" centered>
+        <div className="text-center py-20">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+            className="inline-block text-3xl mb-3"
+          >
+            ⚙️
+          </motion.div>
+          <p className="text-[var(--color-text-secondary)]">Checking access...</p>
         </div>
-      </main>
+      </PageContainer>
     )
   }
 
@@ -187,7 +187,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="flex flex-col" style={{ minHeight: '100dvh' }}>
+    <PageContainer size="wide">
       {/* Toast container */}
       <div className="fixed left-1/2 -translate-x-1/2 z-[60] flex flex-col items-center gap-2 pointer-events-none" style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}>
         <AnimatePresence>
@@ -211,18 +211,11 @@ export default function AdminPage() {
       </div>
 
       {/* Back button */}
-      <motion.button
-        onClick={() => router.push('/')}
-        className="fixed left-4 z-50 flex items-center gap-2 px-4 py-2 bg-[var(--color-surface)] border-2 border-[var(--color-border)] rounded-lg shadow-lg hover:shadow-xl transition-all"
-        style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}
-        initial={{ x: -20, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        whileHover={{ x: -4, scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        <span className="text-xl">←</span>
-        <span className="font-medium text-[var(--color-text-primary)]">Home</span>
-      </motion.button>
+      <div className="fixed left-4 z-50" style={{ top: 'calc(16px + env(safe-area-inset-top, 0px))' }}>
+        <Button variant="secondary" size="sm" icon={<span className="text-xl">←</span>} onClick={() => router.push('/')}>
+          Home
+        </Button>
+      </div>
 
       <div className="w-full max-w-4xl mx-auto px-5 pt-20 pb-8">
         {/* Header */}
@@ -252,22 +245,23 @@ export default function AdminPage() {
                 </span>
               )}
               {/* Refresh button */}
-              <motion.button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={refreshAll}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-alt)] transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
                 disabled={isRefreshing}
+                icon={
+                  <motion.span
+                    animate={isRefreshing ? { rotate: 360 } : {}}
+                    transition={isRefreshing ? { duration: 0.6, ease: 'linear' } : {}}
+                    className="inline-block"
+                  >
+                    ↻
+                  </motion.span>
+                }
               >
-                <motion.span
-                  animate={isRefreshing ? { rotate: 360 } : {}}
-                  transition={isRefreshing ? { duration: 0.6, ease: 'linear' } : {}}
-                  className="inline-block"
-                >
-                  ↻
-                </motion.span>
                 Refresh
-              </motion.button>
+              </Button>
             </div>
           </div>
           <p className="text-sm text-[var(--color-text-tertiary)]">
@@ -377,6 +371,6 @@ export default function AdminPage() {
           )}
         </AnimatePresence>
       </div>
-    </main>
+    </PageContainer>
   )
 }

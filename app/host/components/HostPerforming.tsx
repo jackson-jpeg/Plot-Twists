@@ -15,6 +15,7 @@ import { VARIANTS, MOTION } from '@/lib/animations'
 import { tapHaptic } from '@/hooks/useHaptics'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { PauseIcon, PlayIcon, ChaosIcon } from '@/components/GameIcons'
+import { Button } from '@/components/ui'
 
 export interface HostPerformingProps {
   script: Script
@@ -328,17 +329,20 @@ export function HostPerforming({
         )}
 
         {currentLineIndex >= script.lines.length - 1 && (
-          <motion.button
-            onClick={() => { tapHaptic(); onEndPerformance() }}
-            className="w-full"
-            style={{ padding: '14px', borderRadius: '12px', fontSize: '16px', fontWeight: 600, background: 'var(--color-accent)', color: 'var(--color-theater-bg)', border: 'none', cursor: 'pointer' }}
+          <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
           >
-            Finish Scene — Vote
-          </motion.button>
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={() => { tapHaptic(); onEndPerformance() }}
+              style={{ color: 'var(--color-theater-bg)' }}
+            >
+              Finish Scene — Vote
+            </Button>
+          </motion.div>
         )}
 
         <motion.p

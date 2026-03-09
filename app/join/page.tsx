@@ -23,6 +23,8 @@ import dynamic from 'next/dynamic'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
+import { PageContainer } from '@/components/ui/PageContainer'
+import { Button } from '@/components/ui/Button'
 const JoinForm = dynamic(() => import('./components/JoinForm').then(m => ({ default: m.JoinForm })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
 const JoinLobby = dynamic(() => import('./components/JoinLobby').then(m => ({ default: m.JoinLobby })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
 const JoinSelection = dynamic(() => import('./components/JoinSelection').then(m => ({ default: m.JoinSelection })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
@@ -192,18 +194,18 @@ function JoinPageContent() {
 
   if (!isConnected) {
     return (
-      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
+      <PageContainer size="narrow" centered>
         <div className="text-center">
           <div className="text-6xl mb-6">⚡</div>
           <p className="text-xl font-display" style={{ color: 'var(--color-text-secondary)' }}>Connecting...</p>
         </div>
-      </div>
+      </PageContainer>
     )
   }
 
   if (!hasJoined) {
     return (
-      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
+      <PageContainer size="narrow" centered>
         <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="join" />
         <AnimatePresence mode="wait">
           <motion.div
@@ -226,12 +228,12 @@ function JoinPageContent() {
             </GameErrorBoundary>
           </motion.div>
         </AnimatePresence>
-      </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="flex flex-col" style={{ minHeight: '100dvh' }}>
+    <PageContainer size="full" style={{ padding: 0 }}>
       <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="join" />
 
       {/* Host Disconnected Overlay */}
@@ -252,12 +254,8 @@ function JoinPageContent() {
                 The host has left the game. You can wait for them to reconnect or return to the home page.
               </p>
               <div className="flex flex-col gap-3">
-                <motion.button onClick={() => setHostDisconnected(false)} className="w-full"
-                  style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-surface-alt)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
-                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>Wait for Reconnection</motion.button>
-                <motion.button onClick={() => router.push('/')} className="w-full"
-                  style={{ padding: '12px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, background: 'var(--color-accent)', color: 'white', border: 'none', cursor: 'pointer' }}
-                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>Return Home</motion.button>
+                <Button variant="secondary" fullWidth onClick={() => setHostDisconnected(false)}>Wait for Reconnection</Button>
+                <Button variant="primary" fullWidth onClick={() => router.push('/')}>Return Home</Button>
               </div>
             </motion.div>
           </motion.div>
@@ -365,16 +363,16 @@ function JoinPageContent() {
 
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       <AchievementToast achievements={achievementToasts.achievements} onDismiss={achievementToasts.dismissAchievement} />
-    </div>
+    </PageContainer>
   )
 }
 
 export default function JoinPage() {
   return (
     <Suspense fallback={
-      <div className="flex flex-col items-center justify-center" style={{ minHeight: '100dvh' }}>
+      <PageContainer size="narrow" centered>
         <p className="text-xl font-display" style={{ color: 'var(--color-text-secondary)' }}>Loading...</p>
-      </div>
+      </PageContainer>
     }>
       <JoinPageContent />
     </Suspense>

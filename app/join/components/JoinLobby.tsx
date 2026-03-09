@@ -9,6 +9,7 @@ import { EyeIcon, CrownIcon, CheckCircleIcon } from '@/components/GameIcons'
 import { PushPermissionPrompt } from '@/components/PushPermissionPrompt'
 import { AutoStartCountdown } from './AutoStartCountdown'
 import { getAvatarColor } from '@/lib/avatarColors'
+import { Avatar, Badge } from '@/components/ui'
 
 export interface JoinLobbyProps {
   players: Player[]
@@ -40,7 +41,7 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
           className="flex justify-center mb-4"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ type: 'spring', bounce: 0.5, delay: 0.1 }}
+          transition={{ ...MOTION.bouncy, delay: 0.1 }}
         >
           {isSpectator ? (
             <div
@@ -130,19 +131,7 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
                   transition={{ delay: 0.35 + i * 0.05, ...MOTION.gentle }}
                 >
                   {/* Avatar */}
-                  <div
-                    className="flex items-center justify-center rounded-full shrink-0"
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      background: getAvatarColor(player.nickname),
-                      color: 'white',
-                      fontWeight: 700,
-                      fontSize: '15px',
-                    }}
-                  >
-                    {player.nickname[0]?.toUpperCase()}
-                  </div>
+                  <Avatar name={player.nickname} size="sm" highlighted={isMe} />
 
                   {/* Name + badges */}
                   <div className="flex items-center gap-2 flex-1">
@@ -156,47 +145,16 @@ export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoS
                       {player.nickname}
                     </span>
                     {isMe && (
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '2px 8px',
-                          borderRadius: '999px',
-                          background: 'rgba(245, 158, 66, 0.12)',
-                          color: 'var(--color-accent)',
-                        }}
-                      >
-                        YOU
-                      </span>
+                      <Badge variant="accent" size="sm">YOU</Badge>
                     )}
                     {player.level != null && (
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          padding: '1px 6px',
-                          borderRadius: '999px',
-                          background: 'var(--color-accent-light, rgba(245, 158, 66, 0.1))',
-                          color: 'var(--color-accent)',
-                        }}
-                      >
-                        Lv.{player.level}
-                      </span>
+                      <Badge variant="accent" size="sm">Lv.{player.level}</Badge>
                     )}
                   </div>
 
                   {/* Role indicator */}
                   {player.isHost && (
-                    <span style={{
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '2px 8px',
-                      borderRadius: '999px',
-                      background: 'rgba(245, 158, 66, 0.12)',
-                      color: 'var(--color-accent)',
-                    }}>
-                      HOST
-                    </span>
+                    <Badge variant="accent" size="sm">HOST</Badge>
                   )}
                   {player.role === 'SPECTATOR' && <EyeIcon size={16} color="var(--color-text-tertiary)" />}
                 </motion.div>

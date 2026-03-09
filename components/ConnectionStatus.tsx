@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { MOTION } from '@/lib/animations'
 import { useSocket } from '@/contexts/SocketContext'
+import { Button } from '@/components/ui/Button'
 
 export function ConnectionStatus() {
   const [isOnline, setIsOnline] = useState(true)
@@ -41,7 +43,7 @@ export function ConnectionStatus() {
           initial={{ opacity: 0, y: -40 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -40 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          transition={MOTION.snappy}
           style={{
             position: 'fixed',
             top: 'env(safe-area-inset-top, 0px)',
@@ -73,7 +75,9 @@ export function ConnectionStatus() {
           </svg>
           {message}
           {isFullyLost && (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 if (socket && !socket.connected) {
                   socket.connect()
@@ -83,19 +87,13 @@ export function ConnectionStatus() {
               }}
               style={{
                 marginLeft: '8px',
-                padding: '4px 12px',
                 background: 'rgba(255,255,255,0.2)',
                 border: '1px solid rgba(255,255,255,0.4)',
-                borderRadius: '6px',
                 color: 'white',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                minHeight: '36px',
               }}
             >
               Retry
-            </button>
+            </Button>
           )}
         </motion.div>
       )}

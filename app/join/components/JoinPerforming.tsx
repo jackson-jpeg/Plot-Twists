@@ -47,21 +47,26 @@ export function JoinPerforming({
       animate="animate"
       exit="exit"
       className="min-h-dvh flex flex-col"
-      style={{ maxWidth: isDesktop ? '900px' : undefined, margin: isDesktop ? '0 auto' : undefined }}
+      style={{
+        maxWidth: isDesktop ? '900px' : undefined,
+        margin: isDesktop ? '0 auto' : undefined,
+        background: 'var(--color-theater-bg)',
+        color: 'var(--color-theater-text)',
+      }}
     >
       {/* Header bar: LIVE / Title / Line count or Spectating */}
       <div
         className="flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: '1px solid var(--color-border)', paddingTop: 'max(12px, env(safe-area-inset-top, 0px))' }}
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingTop: 'max(12px, env(safe-area-inset-top, 0px))' }}
       >
         <div className="flex items-center gap-1.5">
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-success)', display: 'inline-block' }} />
           <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-success)' }}>LIVE</span>
         </div>
-        <span className="font-display font-bold truncate mx-4" style={{ fontSize: '15px', color: 'var(--color-text-primary)' }}>
+        <span className="font-display font-bold truncate mx-4" style={{ fontSize: '15px', color: 'var(--color-theater-text)' }}>
           {script.title}
         </span>
-        <span style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: '13px', color: 'var(--color-theater-muted)', whiteSpace: 'nowrap' }}>
           {myRole === 'SPECTATOR' ? '◎ Spectating' : `Line ${currentLineIndex + 1}/${script.lines.length}`}
         </span>
       </div>

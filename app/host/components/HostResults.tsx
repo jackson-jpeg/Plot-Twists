@@ -15,6 +15,7 @@ import { XPGainAnimation } from '@/components/XPGainAnimation'
 import { XPBar } from '@/components/XPBar'
 import { LevelUpCelebration } from '@/components/LevelUpCelebration'
 import { DirectorsReview } from '@/components/DirectorsReview'
+import { Button } from '@/components/ui'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -159,7 +160,7 @@ export function HostResults({
               className="mx-auto mb-3"
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
+              transition={{ ...MOTION.bouncy, delay: 0.3 }}
             >
               <svg width="48" height="48" viewBox="0 0 18 18" fill="none">
                 <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="var(--color-accent)" />
@@ -229,19 +230,23 @@ export function HostResults({
         )}
 
         {/* Share Results — full-width orange */}
-        <motion.button
-          onClick={handleShareScene}
-          className="w-full py-4 rounded-2xl font-display text-base font-bold mb-3"
-          style={{ background: 'var(--color-accent)', color: 'var(--color-theater-bg)', border: 'none', cursor: 'pointer' }}
+        <motion.div
+          className="mb-3"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          disabled={isSharing}
         >
-          {isSharing ? 'Sharing...' : shareCopied ? 'Copied!' : 'Share Results'}
-        </motion.button>
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            loading={isSharing}
+            onClick={handleShareScene}
+            style={{ color: 'var(--color-theater-bg)' }}
+          >
+            {isSharing ? 'Sharing...' : shareCopied ? 'Copied!' : 'Share Results'}
+          </Button>
+        </motion.div>
 
         {/* Read Script + Play Again — side by side */}
         <motion.div
@@ -250,29 +255,24 @@ export function HostResults({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
         >
-          <motion.button
+          <Button
+            variant="secondary"
+            size="md"
+            className="flex-1"
             onClick={handleDownloadScript}
-            className="flex-1 py-3.5 rounded-xl font-semibold text-sm"
-            style={{
-              color: 'var(--color-theater-text)',
-              background: 'transparent',
-              border: '1px solid rgba(155, 149, 144, 0.3)',
-              cursor: 'pointer',
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
+            style={{ color: 'var(--color-theater-text)', background: 'transparent', borderColor: 'rgba(155, 149, 144, 0.3)' }}
           >
             Read Script
-          </motion.button>
-          <motion.button
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            className="flex-1"
             onClick={() => onRequestNewGame(false)}
-            className="flex-1 py-3.5 rounded-xl font-semibold text-sm"
-            style={{ background: 'var(--color-accent)', color: 'var(--color-theater-bg)', border: 'none', cursor: 'pointer' }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
+            style={{ color: 'var(--color-theater-bg)' }}
           >
             Play Again
-          </motion.button>
+          </Button>
         </motion.div>
 
         {/* XP Progression */}
@@ -310,17 +310,22 @@ export function HostResults({
         )}
 
         {/* Back to lobby */}
-        <motion.button
-          onClick={() => router.push('/')}
-          className="w-full py-4 mt-4 text-sm font-medium"
-          style={{ color: 'var(--color-theater-muted)', background: 'transparent', border: 'none', cursor: 'pointer' }}
+        <motion.div
+          className="mt-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.3 }}
-          whileTap={{ scale: 0.97 }}
         >
-          Back to lobby
-        </motion.button>
+          <Button
+            variant="ghost"
+            size="md"
+            fullWidth
+            onClick={() => router.push('/')}
+            style={{ color: 'var(--color-theater-muted)' }}
+          >
+            Back to lobby
+          </Button>
+        </motion.div>
       </div>
     </motion.div>
   )

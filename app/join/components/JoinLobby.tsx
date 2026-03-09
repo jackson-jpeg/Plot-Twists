@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import type { Player, PlayerRole } from '@/lib/types'
+import type { PlayerRole } from '@/lib/types'
 import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { EyeIcon, CrownIcon, CheckCircleIcon } from '@/components/GameIcons'
@@ -10,20 +10,24 @@ import { PushPermissionPrompt } from '@/components/PushPermissionPrompt'
 import { AutoStartCountdown } from './AutoStartCountdown'
 import { getAvatarColor } from '@/lib/avatarColors'
 import { Avatar, Badge } from '@/components/ui'
+import { useGameStore } from '@/stores/gameStore'
+import { useSelectionStore } from '@/stores/selectionStore'
 
 export interface JoinLobbyProps {
-  players: Player[]
   myPlayerId: string
   myRole: PlayerRole
-  selectedPackName: string | null
   autoStartCountdown?: number | null
 }
 
-export function JoinLobby({ players, myPlayerId, myRole, selectedPackName, autoStartCountdown }: JoinLobbyProps) {
+export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyProps) {
   const prefersReducedMotion = useReducedMotion()
   const isSpectator = myRole === 'SPECTATOR'
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
+
+  // Store selectors
+  const players = useGameStore((s) => s.players)
+  const selectedPackName = useSelectionStore((s) => s.selectedPackName)
 
   return (
     <motion.div

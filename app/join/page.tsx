@@ -18,6 +18,8 @@ import { analytics } from '@/lib/analytics'
 import { useJoinSocket } from '@/hooks/useJoinSocket'
 import { useAudioPlayer } from '@/hooks/useAudioPlayer'
 import { useAuth } from '@/contexts/AuthContext'
+import { useSelectionStore } from '@/stores/selectionStore'
+import { useConnectionStore } from '@/stores/connectionStore'
 
 import dynamic from 'next/dynamic'
 import { GameErrorBoundary } from '@/components/GameErrorBoundary'
@@ -57,10 +59,16 @@ function JoinPageContent() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showPosterLightbox, setShowPosterLightbox] = useState(false)
 
-  // Card selection state (kept in orchestrator so socket actions can use it)
-  const [selection, setSelection] = useState<CardSelection>({ character: '', setting: '', circumstance: '' })
-  const [hasSubmitted, setHasSubmitted] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  // Selection state now lives in selectionStore — local state kept for orchestrator effects
+  const selection = useSelectionStore((s) => s.selection)
+  const setSelection = useSelectionStore((s) => s.setSelection)
+  const hasSubmitted = useSelectionStore((s) => s.hasSubmitted)
+  const setHasSubmitted = useSelectionStore((s) => s.setHasSubmitted)
+  const isSubmitting = useSelectionStore((s) => s.isSubmitting)
+  const setIsSubmitting = useSelectionStore((s) => s.setIsSubmitting)
+  const hostDisconnected = useConnectionStore((s) => s.hostDisconnected)
+  const setHostDisconnected = useConnectionStore((s) => s.setHostDisconnected)
+
   const [hasTriggeredSelectionConfetti, setHasTriggeredSelectionConfetti] = useState(false)
 
   const {
@@ -72,7 +80,6 @@ function JoinPageContent() {
     greenRoomQuestion,
     gameResults,
     availableCards,
-    hostDisconnected, setHostDisconnected,
     selectedPackName,
     scriptImageUrl,
     countdown,
@@ -124,14 +131,14 @@ function JoinPageContent() {
         setIsSubmitting(false)
       }
     }
-  }, [gameState, resyncData])
+  }, [gameState, resyncData, setSelection, setHasSubmitted, setIsSubmitting])
 
   // Restore selection state from resync (reconnect during SELECTION)
   useEffect(() => {
     if (!resyncData) return
     if (resyncData.hasSubmittedSelection) setHasSubmitted(true)
     if (resyncData.selection) setSelection(resyncData.selection)
-  }, [resyncData])
+  }, [resyncData, setHasSubmitted, setSelection])
 
   // Confetti on results
   useEffect(() => {
@@ -179,20 +186,6 @@ function JoinPageContent() {
       toast.error('Request timed out — please try again')
     })
   }
-
-  const handleVote = useCallback((playerId: string) => socket?.emit('submit_vote', roomCode, playerId), [socket, roomCode])
-
-  const goToNextLine = useCallback(() => {
-    if (script && currentLineIndex < script.lines.length - 1) {
-      socket?.emit('player_jump_to_line', roomCode.toUpperCase(), currentLineIndex + 1)
-    }
-  }, [script, currentLineIndex, socket, roomCode])
-
-  const goToPreviousLine = useCallback(() => {
-    if (currentLineIndex > 0) {
-      socket?.emit('player_jump_to_line', roomCode.toUpperCase(), currentLineIndex - 1)
-    }
-  }, [currentLineIndex, socket, roomCode])
 
   if (!isConnected) {
     return (
@@ -300,7 +293,7 @@ function JoinPageContent() {
       <AnimatePresence mode="wait">
         {gameState === 'LOBBY' && (
           <GameErrorBoundary phaseName="lobby" key="lobby-eb">
-            <JoinLobby key="lobby" players={players} myPlayerId={myPlayerId} myRole={myRole} selectedPackName={selectedPackName} autoStartCountdown={autoStartCountdown} />
+            <JoinLobby key="lobby" myPlayerId={myPlayerId} myRole={myRole} autoStartCountdown={autoStartCountdown} />
           </GameErrorBoundary>
         )}
 
@@ -308,17 +301,17 @@ function JoinPageContent() {
           <GameErrorBoundary phaseName="selection" key="selection-eb">
             <JoinSelection
               key="selection"
-              myRole={myRole} hasSubmitted={hasSubmitted} isSubmitting={isSubmitting}
-              selection={selection} setSelection={setSelection}
-              availableCards={availableCards} roomIsMature={roomIsMature}
-              error={error} players={players} onSubmitCards={handleSubmitCards} toast={toast}
+              myRole={myRole}
+              roomIsMature={roomIsMature}
+              onSubmitCards={handleSubmitCards}
+              toast={toast}
             />
           </GameErrorBoundary>
         )}
 
         {gameState === 'LOADING' && (
           <GameErrorBoundary phaseName="loading" key="loading-eb">
-            <JoinLoading key="loading" loadingProgress={loadingProgress} loadingPhase={loadingPhase} scriptTitlePreview={scriptTitlePreview} greenRoomQuestion={greenRoomQuestion} loadingTimedOut={loadingTimedOut} onLeave={() => router.push('/')} />
+            <JoinLoading key="loading" onLeave={() => router.push('/')} />
           </GameErrorBoundary>
         )}
 
@@ -326,13 +319,8 @@ function JoinPageContent() {
           <GameErrorBoundary phaseName="performing" key="performing-eb">
             <JoinPerforming
               key="performing"
-              script={script} currentLineIndex={currentLineIndex}
-              myCharacter={myCharacter} myRole={myRole}
-              roomCode={roomCode} spectatorMessages={spectatorMessages}
-              socket={socket}
-              scriptImageUrl={scriptImageUrl}
-              hostDisconnected={hostDisconnected}
-              onNextLine={goToNextLine} onPreviousLine={goToPreviousLine}
+              myCharacter={myCharacter}
+              myRole={myRole}
               onShowPosterLightbox={() => setShowPosterLightbox(true)}
             />
           </GameErrorBoundary>
@@ -340,7 +328,7 @@ function JoinPageContent() {
 
         {gameState === 'VOTING' && (
           <GameErrorBoundary phaseName="voting" key="voting-eb">
-            <JoinVoting key="voting" players={players} myPlayerId={myPlayerId} script={script} myCharacter={myCharacter} onVote={handleVote} />
+            <JoinVoting key="voting" myPlayerId={myPlayerId} myCharacter={myCharacter} />
           </GameErrorBoundary>
         )}
 
@@ -348,18 +336,10 @@ function JoinPageContent() {
           <GameErrorBoundary phaseName="results" key="results-eb">
             <JoinResults
               key="results"
-              script={script} gameResults={gameResults}
-              scriptImageUrl={scriptImageUrl}
-              showPosterLightbox={showPosterLightbox}
-              socket={socket}
               myPlayerId={myPlayerId}
               userUid={user?.uid || ''}
               isGuest={!user}
-              xpEvents={xpEvents}
-              levelUpData={levelUpData}
-              onDismissLevelUp={() => setLevelUpData(null)}
               onShowPosterLightbox={() => setShowPosterLightbox(true)}
-              onClosePosterLightbox={() => setShowPosterLightbox(false)}
             />
           </GameErrorBoundary>
         )}

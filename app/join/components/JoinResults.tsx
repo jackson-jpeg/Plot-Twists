@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import type { Script, GameResults, XPEvent, LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
+import type { LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
 import { SignInButton } from '@clerk/nextjs'
 import { copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
 import { withTimeout } from '@/lib/socketTimeout'
@@ -18,32 +18,20 @@ import { XPGainAnimation } from '@/components/XPGainAnimation'
 import { XPBar } from '@/components/XPBar'
 import { LevelUpCelebration } from '@/components/LevelUpCelebration'
 import { DirectorsReview } from '@/components/DirectorsReview'
-import type { Socket } from 'socket.io-client'
-import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
-
-type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>
+import { useScriptStore } from '@/stores/scriptStore'
+import { useVotingStore } from '@/stores/votingStore'
+import { socketManager } from '@/lib/socketManager'
 
 export interface JoinResultsProps {
-  script: Script | null
-  gameResults: GameResults | null
-  scriptImageUrl: string | null
-  showPosterLightbox: boolean
-  socket: AppSocket | null
   myPlayerId: string
   userUid: string
   isGuest?: boolean
-  xpEvents: XPEvent[]
-  levelUpData: { level: number; title: string } | null
-  onDismissLevelUp: () => void
   onShowPosterLightbox: () => void
-  onClosePosterLightbox: () => void
 }
 
 export function JoinResults({
-  script, gameResults, scriptImageUrl,
-  showPosterLightbox, socket, myPlayerId, userUid, isGuest,
-  xpEvents, levelUpData, onDismissLevelUp,
-  onShowPosterLightbox, onClosePosterLightbox,
+  myPlayerId, userUid, isGuest,
+  onShowPosterLightbox,
 }: JoinResultsProps) {
   const router = useRouter()
   const breakpoint = useBreakpoint()
@@ -53,6 +41,15 @@ export function JoinResults({
   const [copySuccess, setCopySuccess] = useState(false)
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
   const [directorsReview, setDirectorsReview] = useState<DirectorsReviewType | null>(null)
+  const [showPosterLightbox, setShowPosterLightbox] = useState(false)
+
+  // Store selectors
+  const script = useScriptStore((s) => s.script)
+  const scriptImageUrl = useScriptStore((s) => s.imageUrl)
+  const gameResults = useVotingStore((s) => s.gameResults)
+  const xpEvents = useVotingStore((s) => s.xpEvents)
+  const levelUpData = useVotingStore((s) => s.levelUpData)
+  const setLevelUpData = useVotingStore((s) => s.setLevelUpData)
 
   // Fire confetti on results reveal
   useEffect(() => {
@@ -67,26 +64,25 @@ export function JoinResults({
 
   useEffect(() => {
     const uid = userUid || myPlayerId
-    if (!socket || !uid) return
-    socket.emit('get_progression', uid, (response) => {
+    if (!uid) return
+    socketManager.emit('get_progression', uid, (response) => {
       if (response.success && response.levelInfo) setLevelInfo(response.levelInfo)
     })
-  }, [socket, userUid, myPlayerId])
+  }, [userUid, myPlayerId])
 
   // Listen for AI Director's Review
   useEffect(() => {
-    if (!socket) return
-    socket.on('directors_review', setDirectorsReview)
-    return () => { socket.off('directors_review', setDirectorsReview) }
-  }, [socket])
+    const unsub = socketManager.on('directors_review', setDirectorsReview)
+    return unsub
+  }, [])
 
   const getGameId = async (): Promise<string | null> => {
     const uid = userUid || myPlayerId
-    if (!socket || !uid) return null
+    if (!uid) return null
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const historyResponse: any = await withTimeout(
-        (cb) => socket.emit('get_game_history', uid, 1, cb),
+        (cb) => socketManager.emit('get_game_history', uid, 1, cb),
         10000
       )
       if (!historyResponse.success || !historyResponse.games?.length) return null
@@ -229,7 +225,7 @@ export function JoinResults({
             <XPBar levelInfo={levelInfo} compact />
           </motion.div>
         )}
-        <LevelUpCelebration show={!!levelUpData} level={levelUpData?.level ?? 0} title={levelUpData?.title ?? ''} onClose={onDismissLevelUp} />
+        <LevelUpCelebration show={!!levelUpData} level={levelUpData?.level ?? 0} title={levelUpData?.title ?? ''} onClose={() => setLevelUpData(null)} />
 
         {/* Director's Review */}
         {directorsReview && (
@@ -251,11 +247,11 @@ export function JoinResults({
             className="flex-1"
             onClick={async () => {
               const gameId = await getGameId()
-              if (!gameId || !socket) return
+              if (!gameId) return
               try {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const shareResponse: any = await withTimeout(
-                  (cb) => socket.emit('share_game', gameId, cb),
+                  (cb) => socketManager.emit('share_game', gameId, cb),
                   10000
                 )
                 if (shareResponse.success && shareResponse.shareUrl) {
@@ -332,8 +328,8 @@ export function JoinResults({
         </motion.div>
       </div>
 
-      {/* Poster Lightbox */}
-      <Modal isOpen={showPosterLightbox} onClose={onClosePosterLightbox} title={script?.title ?? 'Movie Poster'} maxWidth="600px">
+      {/* Poster Lightbox — now self-contained */}
+      <Modal isOpen={showPosterLightbox} onClose={() => setShowPosterLightbox(false)} title={script?.title ?? 'Movie Poster'} maxWidth="600px">
         {scriptImageUrl && (
           <div className="flex justify-center">
             <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} loading="lazy" style={{ maxHeight: '75dvh', maxWidth: '100%', objectFit: 'contain', borderRadius: 'var(--radius-lg, 12px)' }} onError={(e) => { (e.target as HTMLElement).style.display = 'none' }} />
@@ -343,4 +339,3 @@ export function JoinResults({
     </motion.div>
   )
 }
-

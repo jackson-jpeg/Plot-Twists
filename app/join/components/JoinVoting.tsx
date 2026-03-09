@@ -1,32 +1,41 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import type { Player, Script } from '@/lib/types'
 import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { successHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon } from '@/components/GameIcons'
 import { getAvatarColor } from '@/lib/avatarColors'
 import { Avatar, Badge, Card, SectionHeader } from '@/components/ui'
+import { useGameStore } from '@/stores/gameStore'
+import { useScriptStore } from '@/stores/scriptStore'
+import { socketManager } from '@/lib/socketManager'
 
 export interface JoinVotingProps {
-  players: Player[]
   myPlayerId: string
-  script: Script | null
   myCharacter: string | null
-  onVote: (playerId: string) => void
 }
 
-export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }: JoinVotingProps) {
+export function JoinVoting({ myPlayerId, myCharacter }: JoinVotingProps) {
   const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
   const [isVoting, setIsVoting] = useState(false)
+
+  // Store selectors
+  const players = useGameStore((s) => s.players)
+  const roomCode = useGameStore((s) => s.roomCode)
+  const script = useScriptStore((s) => s.script)
+
   const myPlayer = players.find(p => p.id === myPlayerId)
   const hasVoted = myPlayer?.hasSubmittedVote
   const isSpectator = myPlayer?.role === 'SPECTATOR'
   const votablePlayers = players.filter(p => p.role === 'PLAYER' && p.id !== myPlayerId)
+
+  const handleVote = useCallback((playerId: string) => {
+    socketManager.emit('submit_vote', roomCode, playerId)
+  }, [roomCode])
 
   return (
     <motion.div
@@ -155,7 +164,7 @@ export function JoinVoting({ players, myPlayerId, script, myCharacter, onVote }:
             {votablePlayers.map((player, i) => (
               <motion.button
                 key={player.id}
-                onClick={() => { if (isVoting) return; setIsVoting(true); successHaptic(); onVote(player.id) }}
+                onClick={() => { if (isVoting) return; setIsVoting(true); successHaptic(); handleVote(player.id) }}
                 aria-label={`Vote for ${player.nickname}`}
                 className={`flex items-center gap-3 p-4 rounded-xl text-left ${isDesktop ? 'flex-1 min-w-[280px]' : 'w-full'}`}
                 style={{

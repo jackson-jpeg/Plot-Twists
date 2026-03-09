@@ -6,6 +6,8 @@ import { VARIANTS, MOTION, STAGGER } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { TypewriterIcon, CheckCircleIcon, SpinnerIcon, PendingCircleIcon, DoorIcon, WarningIcon } from '@/components/GameIcons'
 import { Button } from '@/components/ui'
+import { useScriptStore } from '@/stores/scriptStore'
+import { useAudienceStore } from '@/stores/audienceStore'
 
 function getStepStatus(progress: number): [string, string, string] {
   if (progress >= 80) return ['done', 'done', 'active']
@@ -20,18 +22,21 @@ const steps = [
 ]
 
 export interface JoinLoadingProps {
-  loadingProgress: number
-  loadingPhase?: string
-  scriptTitlePreview?: string | null
-  greenRoomQuestion: string
-  loadingTimedOut?: boolean
   onLeave?: () => void
 }
 
-export function JoinLoading({ loadingProgress, loadingPhase, scriptTitlePreview, greenRoomQuestion, loadingTimedOut, onLeave }: JoinLoadingProps) {
+export function JoinLoading({ onLeave }: JoinLoadingProps) {
   const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
+
+  // Store selectors
+  const loadingProgress = useScriptStore((s) => s.generationProgress)
+  const loadingPhase = useScriptStore((s) => s.generationPhase)
+  const scriptTitlePreview = useScriptStore((s) => s.titlePreview)
+  const loadingTimedOut = useScriptStore((s) => s.generationTimedOut)
+  const greenRoomQuestion = useAudienceStore((s) => s.greenRoomQuestion)
+
   const stepStatuses = getStepStatus(loadingProgress)
   const [elapsed, setElapsed] = useState(0)
 

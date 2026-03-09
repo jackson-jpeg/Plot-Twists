@@ -3,12 +3,15 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import dynamic from 'next/dynamic'
-import type { CardSelection, PlayerRole, AvailableCards, Player } from '@/lib/types'
+import type { PlayerRole } from '@/lib/types'
 import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon, SpinnerIcon, PopcornIcon } from '@/components/GameIcons'
 import { Card } from '@/components/ui'
+import { useSelectionStore } from '@/stores/selectionStore'
+import { useGameStore } from '@/stores/gameStore'
+import { useConnectionStore } from '@/stores/connectionStore'
 
 const CardPicker = dynamic(
   () => import('@/components/CardPicker').then(m => ({ default: m.CardPicker })),
@@ -17,29 +20,29 @@ const CardPicker = dynamic(
 
 export interface JoinSelectionProps {
   myRole: PlayerRole
-  hasSubmitted: boolean
-  isSubmitting: boolean
-  selection: CardSelection
-  setSelection: React.Dispatch<React.SetStateAction<CardSelection>>
-  availableCards: AvailableCards
   roomIsMature: boolean
-  error: string
-  players: Player[]
   onSubmitCards: () => void
   onBack?: () => void
   toast: { success: (m: string, opts?: { duration?: number }) => void }
 }
 
 export function JoinSelection({
-  myRole, hasSubmitted, isSubmitting, selection, setSelection,
-  availableCards, roomIsMature, error, players,
-  onSubmitCards, onBack, toast,
+  myRole, roomIsMature, onSubmitCards, onBack, toast,
 }: JoinSelectionProps) {
   const pageTransitionVariants = VARIANTS.pageTransition
   const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
   const [confirmMode, setConfirmMode] = useState(false)
+
+  // Store selectors
+  const selection = useSelectionStore((s) => s.selection)
+  const setSelection = useSelectionStore((s) => s.setSelection)
+  const hasSubmitted = useSelectionStore((s) => s.hasSubmitted)
+  const isSubmitting = useSelectionStore((s) => s.isSubmitting)
+  const availableCards = useSelectionStore((s) => s.availableCards)
+  const players = useGameStore((s) => s.players)
+  const error = useConnectionStore((s) => s.error)
 
   useEffect(() => {
     if (!confirmMode) return
@@ -222,7 +225,7 @@ export function JoinSelection({
   }
 
   const handleShuffleAll = () => {
-    if (availableCards.characters.length && availableCards.settings.length && availableCards.circumstances.length) {
+    if (availableCards && availableCards.characters.length && availableCards.settings.length && availableCards.circumstances.length) {
       setSelection({
         character: availableCards.characters[Math.floor(Math.random() * availableCards.characters.length)],
         setting: availableCards.settings[Math.floor(Math.random() * availableCards.settings.length)],
@@ -278,7 +281,7 @@ export function JoinSelection({
             selection={selection}
             setSelection={(s) => setSelection(s)}
             isMature={roomIsMature}
-            availableCards={availableCards}
+            availableCards={availableCards ?? { characters: [], settings: [], circumstances: [] }}
             onShuffleAll={handleShuffleAll}
             toast={toast}
           />

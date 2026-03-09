@@ -1,45 +1,58 @@
 'use client'
 
-import React from 'react'
+import React, { useCallback } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
-import type { Script, PlayerRole, SpectatorMessage } from '@/lib/types'
+import type { PlayerRole } from '@/lib/types'
 import { MobileTeleprompter } from '@/components/MobileTeleprompter'
 import { SpectatorChat } from '@/components/SpectatorChat'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { VARIANTS } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { GamePausedOverlay } from '@/components/GamePausedOverlay'
-import type { Socket } from 'socket.io-client'
-import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
+import { useScriptStore } from '@/stores/scriptStore'
+import { useAudienceStore } from '@/stores/audienceStore'
+import { useGameStore } from '@/stores/gameStore'
+import { useConnectionStore } from '@/stores/connectionStore'
+import { socketManager } from '@/lib/socketManager'
 
 const AudienceReactionBar = dynamic(() => import('@/components/AudienceReactionBar').then(m => ({ default: m.AudienceReactionBar })), { ssr: false, loading: () => <div style={{ height: 48 }} /> })
 const PlotTwistVoting = dynamic(() => import('@/components/PlotTwistVoting').then(m => ({ default: m.PlotTwistVoting })), { ssr: false, loading: () => <div style={{ height: 48 }} /> })
 
-type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>
-
 export interface JoinPerformingProps {
-  script: Script
-  currentLineIndex: number
   myCharacter: string
   myRole: PlayerRole
-  roomCode: string
-  spectatorMessages: SpectatorMessage[]
-  socket: AppSocket | null
-  scriptImageUrl: string | null
-  hostDisconnected?: boolean
-  onNextLine: () => void
-  onPreviousLine: () => void
   onShowPosterLightbox?: () => void
 }
 
 export function JoinPerforming({
-  script, currentLineIndex, myCharacter, myRole, roomCode,
-  spectatorMessages, socket, scriptImageUrl, hostDisconnected,
-  onNextLine, onPreviousLine, onShowPosterLightbox,
+  myCharacter, myRole, onShowPosterLightbox,
 }: JoinPerformingProps) {
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
+
+  // Store selectors
+  const script = useScriptStore((s) => s.script)
+  const currentLineIndex = useScriptStore((s) => s.currentLineIndex)
+  const scriptImageUrl = useScriptStore((s) => s.imageUrl)
+  const spectatorMessages = useAudienceStore((s) => s.spectatorMessages)
+  const roomCode = useGameStore((s) => s.roomCode)
+  const hostDisconnected = useConnectionStore((s) => s.hostDisconnected)
+
+  // Actions via socketManager
+  const onNextLine = useCallback(() => {
+    if (script && currentLineIndex < script.lines.length - 1) {
+      socketManager.emit('player_jump_to_line', roomCode.toUpperCase(), currentLineIndex + 1)
+    }
+  }, [script, currentLineIndex, roomCode])
+
+  const onPreviousLine = useCallback(() => {
+    if (currentLineIndex > 0) {
+      socketManager.emit('player_jump_to_line', roomCode.toUpperCase(), currentLineIndex - 1)
+    }
+  }, [currentLineIndex, roomCode])
+
+  if (!script) return null
 
   return (
     <motion.div
@@ -100,7 +113,7 @@ export function JoinPerforming({
           <SpectatorChat
             messages={spectatorMessages}
             onSendMessage={(text, isPreset) => {
-              socket?.emit('send_spectator_message', roomCode.toUpperCase(), text, isPreset)
+              socketManager.emit('send_spectator_message', roomCode.toUpperCase(), text, isPreset)
             }}
           />
         </div>

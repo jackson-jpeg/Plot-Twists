@@ -1,0 +1,205 @@
+[    3222ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[    3223ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[    7354ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[    7355ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[   13989ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[   13989ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[   20810ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[   20811ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[   25730ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[   25730ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[   38506ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[   38506ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[   51676ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[   51676ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[   69151ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[   69152ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[   89744ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[   89745ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  109627ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  109627ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  127631ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  127631ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  144423ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  144424ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  160010ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  160011ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  175329ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  175329ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  190659ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  190660ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  205973ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  205973ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  221642ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  221643ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  236974ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  236974ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  252307ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  252307ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  267655ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  267656ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  283366ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  283366ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  298694ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  298694ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  314015ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  314016ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  329349ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  329349ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  344729ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  344729ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  360109ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  360109ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  375442ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  375442ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  390795ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  390796ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  406409ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  406409ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  421731ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  421731ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  437139ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  437140ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  452458ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  452459ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  468073ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  468073ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  483433ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  483433ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  498754ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  498754ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  514167ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  514167ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  529549ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  529549ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  544871ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  544872ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  560207ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  560207ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  575532ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  575532ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  590935ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  590936ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  606320ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  606320ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  621767ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  621768ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  637094ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  637094ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  652469ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  652470ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  667797ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  667798ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  683130ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  683130ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  698539ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  698540ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  713985ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  713985ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  729314ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  729315ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  744656ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[  744656ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8
+[  744657ms] [ERROR] [ERROR] Socket reconnection failed after all attempts @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8

@@ -1,0 +1,1 @@
+[       2ms] [WARNING] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: WebSocket is closed before the connection is established. @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0

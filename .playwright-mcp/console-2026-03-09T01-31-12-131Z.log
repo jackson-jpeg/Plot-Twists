@@ -1,0 +1,5 @@
+[       3ms] [WARNING] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: WebSocket is closed before the connection is established. @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[   16800ms] [ERROR] WebSocket connection to 'wss://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=websocket' failed: Error during WebSocket handshake: Unexpected response code: 502 @ https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:0
+[   16800ms] [ERROR] [ERROR] Socket connection error: L: websocket error
+    at websocket.onError (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:4396)
+    at ws.onerror (https://www.plot-twists.com/_next/static/chunks/3eb5da2c8d516bea.js:1:10638) @ https://www.plot-twists.com/_next/static/chunks/be6688ff89b2e839.js:8

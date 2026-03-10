@@ -20,35 +20,18 @@ export function SectionHeader({
   return (
     <div className={className} style={{ textAlign: align }}>
       <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: align === 'center' ? 'center' : 'flex-start',
-          gap: '8px',
-        }}
+        className="flex items-center gap-2"
+        style={{ justifyContent: align === 'center' ? 'center' : 'flex-start' }}
       >
         <h2
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-title)',
-            fontWeight: 700,
-            color: 'var(--color-text-primary)',
-            lineHeight: 1.2,
-            letterSpacing: '-0.02em',
-          }}
+          className="font-[var(--font-display)] text-xl font-semibold text-[var(--color-text-primary)] leading-tight tracking-tight"
         >
           {title}
         </h2>
         {badge}
       </div>
       {subtitle && (
-        <p
-          style={{
-            fontSize: 'var(--text-caption)',
-            color: 'var(--color-text-tertiary)',
-            marginTop: '4px',
-          }}
-        >
+        <p className="text-[13px] text-[var(--color-text-tertiary)] mt-1 font-[var(--font-body)]">
           {subtitle}
         </p>
       )}

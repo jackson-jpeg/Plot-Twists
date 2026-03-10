@@ -43,7 +43,7 @@ function SceneTicker() {
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.35 }}
           style={{
-            fontFamily: 'var(--font-handwritten)',
+            fontFamily: 'var(--font-display)',
             fontSize: '15px',
             color: 'var(--color-accent)',
             lineHeight: 1.4,
@@ -150,12 +150,11 @@ export function LandingPage() {
               {/* Handwritten tagline */}
               <p
                 style={{
-                  fontFamily: 'var(--font-handwritten)',
+                  fontFamily: 'var(--font-display)',
                   fontSize: isDesktop ? '20px' : '17px',
                   color: 'var(--color-accent)',
+                  fontWeight: 500,
                   marginTop: '6px',
-                  transform: 'rotate(-2deg)',
-                  display: 'inline-block',
                 }}
               >
                 where everyone&rsquo;s a star

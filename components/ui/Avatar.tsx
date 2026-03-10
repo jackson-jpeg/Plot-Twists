@@ -1,7 +1,5 @@
 'use client'
 
-import { getAvatarColor } from '@/lib/avatarColors'
-
 export interface AvatarProps {
   name: string
   size?: 'sm' | 'md' | 'lg'
@@ -13,7 +11,7 @@ export interface AvatarProps {
 const sizeMap = {
   sm: { wh: 32, fontSize: '13px' },
   md: { wh: 40, fontSize: '16px' },
-  lg: { wh: 56, fontSize: '22px' },
+  lg: { wh: 64, fontSize: '24px' },
 } as const
 
 export function Avatar({
@@ -23,7 +21,6 @@ export function Avatar({
   className = '',
   style,
 }: AvatarProps) {
-  const color = getAvatarColor(name)
   const { wh, fontSize } = sizeMap[size]
   const initial = name.charAt(0).toUpperCase()
 
@@ -33,7 +30,7 @@ export function Avatar({
       style={{
         width: wh,
         height: wh,
-        background: color,
+        background: 'linear-gradient(135deg, #F59E42, #E88A2E)',
         color: 'white',
         fontSize,
         fontWeight: 700,

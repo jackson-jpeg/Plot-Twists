@@ -363,7 +363,7 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
             {unlockedAchievements.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-[var(--color-text-primary)] font-display mb-4 flex items-center gap-2">
-                  <span className="font-handwritten text-[var(--color-accent)]">★</span>
+                  <span className="font-display text-[var(--color-accent)]">★</span>
                   Unlocked ({unlockedAchievements.length})
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -577,7 +577,7 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
             )}
             {unlocked && achievement.unlockedAt && (
               <div className="flex items-center justify-between mt-1">
-                <p className="text-xs text-[var(--color-text-tertiary)] font-handwritten">
+                <p className="text-xs text-[var(--color-text-tertiary)] font-display">
                   {new Date(achievement.unlockedAt).toLocaleDateString()}
                 </p>
                 <Button variant="ghost" size="sm" onClick={handleShare} style={{ fontSize: '12px', padding: '2px 8px' }}>

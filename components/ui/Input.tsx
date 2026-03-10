@@ -15,71 +15,51 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
 ) {
   const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined)
 
-  const borderStyle = error
-    ? '2px solid var(--color-danger)'
-    : success
-    ? '2px solid var(--color-success)'
-    : '1px solid var(--color-border)'
-
   return (
     <div className={className}>
       {label && (
         <label
           htmlFor={inputId}
-          style={{
-            display: 'block',
-            fontSize: '12px',
-            fontWeight: 600,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            color: 'var(--color-text-tertiary)',
-            marginBottom: '6px',
-          }}
+          className="block text-xs font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)] mb-1.5"
         >
           {label}
         </label>
       )}
-      <div style={{ position: 'relative' }}>
+      <div className="relative">
         <input
           ref={ref}
           id={inputId}
+          className="
+            w-full h-12 px-4
+            text-base font-[var(--font-body)]
+            bg-[var(--color-surface-inset)]
+            text-[var(--color-text-primary)]
+            rounded-xl outline-none
+            transition-[border-color,box-shadow] duration-150
+            focus:border-[var(--color-accent)] focus:ring-[3px] focus:ring-[var(--color-accent-light)]
+          "
           style={{
-            width: '100%',
-            fontSize: '17px',
-            fontFamily: 'var(--font-ui)',
-            padding: '14px 16px',
-            paddingRight: success ? '44px' : '16px',
-            borderRadius: 'var(--radius-lg)',
-            border: borderStyle,
-            background: 'var(--color-surface)',
-            color: 'var(--color-text-primary)',
-            outline: 'none',
-            transition: 'border-color 0.2s',
+            border: error
+              ? '2px solid var(--color-danger)'
+              : success
+              ? '2px solid var(--color-success)'
+              : '1.5px solid var(--color-border)',
+            paddingRight: success ? '44px' : undefined,
             ...style,
           }}
           {...props}
         />
         {success && !error && (
-          <span
-            style={{
-              position: 'absolute',
-              right: '14px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--color-success)',
-              fontSize: '20px',
-              fontWeight: 700,
-            }}
-          >
-            {'\u2713'}
+          <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--color-success)] text-xl font-bold">
+            ✓
           </span>
         )}
       </div>
       {error && (
-        <p style={{ fontSize: '13px', color: 'var(--color-danger)', marginTop: '4px' }}>{error}</p>
+        <p className="text-[13px] text-[var(--color-danger)] mt-1">{error}</p>
       )}
       {hint && !error && (
-        <p style={{ fontSize: '13px', color: 'var(--color-text-tertiary)', marginTop: '4px' }}>{hint}</p>
+        <p className="text-[13px] text-[var(--color-text-tertiary)] mt-1">{hint}</p>
       )}
     </div>
   )

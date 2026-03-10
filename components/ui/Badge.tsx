@@ -10,40 +10,12 @@ export interface BadgeProps {
   style?: React.CSSProperties
 }
 
-const variantStyles = {
-  default: {
-    background: 'var(--color-surface-alt)',
-    color: 'var(--color-text-secondary)',
-  },
-  success: {
-    background: 'var(--color-success-light)',
-    color: 'var(--color-success)',
-  },
-  warning: {
-    background: 'var(--color-warning-light)',
-    color: 'var(--color-warning)',
-  },
-  accent: {
-    background: 'var(--color-accent-light)',
-    color: 'var(--color-accent-dark)',
-  },
-  danger: {
-    background: 'var(--color-danger-light)',
-    color: 'var(--color-danger)',
-  },
-} as const
-
-const sizeStyles = {
-  sm: {
-    fontSize: '11px',
-    padding: '1px 6px',
-    borderRadius: '6px',
-  },
-  md: {
-    fontSize: '12px',
-    padding: '2px 8px',
-    borderRadius: '8px',
-  },
+const variantClasses = {
+  default: 'bg-[var(--color-surface-inset)] text-[var(--color-text-secondary)]',
+  success: 'bg-[var(--color-success-light)] text-[var(--color-success)]',
+  warning: 'bg-[var(--color-warning-light)] text-[var(--color-warning)]',
+  accent: 'bg-[var(--color-accent-light)] text-[var(--color-accent-dark)]',
+  danger: 'bg-[var(--color-danger-light)] text-[var(--color-danger)]',
 } as const
 
 export function Badge({
@@ -55,17 +27,13 @@ export function Badge({
 }: BadgeProps) {
   return (
     <span
-      className={className}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        fontWeight: 700,
-        lineHeight: 1.4,
-        whiteSpace: 'nowrap',
-        ...variantStyles[variant],
-        ...sizeStyles[size],
-        ...style,
-      }}
+      className={`
+        inline-flex items-center rounded-full font-semibold whitespace-nowrap
+        ${size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-0.5 text-xs'}
+        ${variantClasses[variant]}
+        ${className}
+      `}
+      style={style}
     >
       {children}
     </span>

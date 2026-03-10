@@ -31,7 +31,7 @@ function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSel
               <Badge variant="danger" size="md" className="shrink-0 ml-2">18+</Badge>
             )}
           </div>
-          <p className="text-xs text-[var(--color-text-muted)] font-handwritten mb-2">by {pack.author}</p>
+          <p className="text-xs text-[var(--color-text-muted)] font-display mb-2">by {pack.author}</p>
           <p className="text-[13px] text-[var(--color-text-secondary)] mb-3 leading-relaxed line-clamp-2">
             {pack.description}
           </p>
@@ -91,7 +91,7 @@ function PackPreviewContent({
         <h2 className="text-xl font-bold text-[var(--color-text-primary)] font-display mb-1">
           {pack.name}
         </h2>
-        <p className="text-sm text-[var(--color-text-muted)] font-handwritten">by {pack.author}</p>
+        <p className="text-sm text-[var(--color-text-muted)] font-display">by {pack.author}</p>
       </div>
 
       <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed text-center">
@@ -140,7 +140,7 @@ function PackPreviewContent({
               </motion.span>
             ))}
             {pack.characters.length > 6 && (
-              <span className="text-xs px-2.5 py-1 text-[var(--color-text-muted)] font-handwritten">
+              <span className="text-xs px-2.5 py-1 text-[var(--color-text-muted)] font-display">
                 +{pack.characters.length - 6} more
               </span>
             )}

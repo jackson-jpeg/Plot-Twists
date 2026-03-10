@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import { Fredoka, DM_Sans, Courier_Prime, Permanent_Marker } from 'next/font/google'
+import { Fredoka, DM_Sans, Courier_Prime } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import { SocketProvider } from '@/contexts/SocketContext'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -34,13 +34,6 @@ const courierPrime = Courier_Prime({
   weight: ['400', '700'],
   style: ['normal', 'italic'],
   variable: '--font-courier-prime',
-  display: 'swap',
-})
-
-const permanentMarker = Permanent_Marker({
-  subsets: ['latin'],
-  weight: ['400'],
-  variable: '--font-permanent-marker',
   display: 'swap',
 })
 
@@ -125,7 +118,7 @@ export default function RootLayout({
         },
       }}
     >
-      <html lang="en" className={`${fredoka.variable} ${dmSans.variable} ${courierPrime.variable} ${permanentMarker.variable}`} suppressHydrationWarning>
+      <html lang="en" className={`${fredoka.variable} ${dmSans.variable} ${courierPrime.variable}`} suppressHydrationWarning>
         <head>
           <script
             dangerouslySetInnerHTML={{

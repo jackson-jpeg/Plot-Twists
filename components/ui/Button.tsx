@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { ReactNode, forwardRef } from 'react'
-import { MOTION, BUTTON } from '@/lib/animations'
+import { SPRING, PRESS } from '@/lib/motion'
 
 export interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -18,47 +18,6 @@ export interface ButtonProps {
   className?: string
   style?: React.CSSProperties
 }
-
-const sizeStyles = {
-  sm: {
-    padding: '8px 16px',
-    fontSize: '13px',
-    gap: '6px',
-  },
-  md: {
-    padding: '12px 24px',
-    fontSize: '15px',
-    gap: '8px',
-  },
-  lg: {
-    padding: '16px 24px',
-    fontSize: '17px',
-    gap: '10px',
-  },
-} as const
-
-const variantStyles = {
-  primary: {
-    background: 'var(--color-accent)',
-    color: 'white',
-    border: 'none',
-  },
-  secondary: {
-    background: 'var(--color-surface)',
-    color: 'var(--color-text-primary)',
-    border: '1px solid var(--color-border)',
-  },
-  ghost: {
-    background: 'transparent',
-    color: 'var(--color-text-secondary)',
-    border: '1px solid transparent',
-  },
-  danger: {
-    background: 'var(--color-danger)',
-    color: 'white',
-    border: 'none',
-  },
-} as const
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
@@ -78,8 +37,19 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   ref
 ) {
   const isDisabled = disabled || loading
-  const sizeS = sizeStyles[size]
-  const variantS = variantStyles[variant]
+
+  const sizeClasses = {
+    sm: 'h-9 px-4 text-[13px] gap-1.5',
+    md: 'h-11 px-6 text-[15px] gap-2',
+    lg: 'h-[52px] px-6 text-[17px] gap-2.5',
+  } as const
+
+  const variantClasses = {
+    primary: 'bg-[var(--color-accent)] text-white border-0',
+    secondary: 'bg-transparent text-[var(--color-text-primary)] border-[1.5px] border-[var(--color-border-strong)]',
+    ghost: 'bg-transparent text-[var(--color-text-secondary)] border-0',
+    danger: 'bg-[var(--color-danger)] text-white border-0',
+  } as const
 
   return (
     <motion.button
@@ -87,45 +57,35 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       onClick={onClick}
       disabled={isDisabled}
-      className={`${fullWidth ? 'w-full' : ''} ${className}`}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: sizeS.gap,
-        fontFamily: 'var(--font-display)',
-        fontWeight: 600,
-        fontSize: sizeS.fontSize,
-        padding: sizeS.padding,
-        borderRadius: 'var(--radius-button)',
-        cursor: isDisabled ? 'not-allowed' : 'pointer',
-        opacity: isDisabled ? 0.5 : 1,
-        transition: 'background 0.2s, opacity 0.2s, border-color 0.2s',
-        ...variantS,
-        ...style,
-      }}
-      whileHover={isDisabled ? undefined : BUTTON.hover}
-      whileTap={isDisabled ? undefined : BUTTON.tap}
-      transition={MOTION.snappy}
+      className={`
+        inline-flex items-center justify-center
+        font-[var(--font-display)] font-semibold
+        rounded-[14px] cursor-pointer
+        transition-colors duration-150
+        ${sizeClasses[size]}
+        ${variantClasses[variant]}
+        ${fullWidth ? 'w-full' : ''}
+        ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
+        ${className}
+      `}
+      style={style}
+      whileTap={isDisabled ? undefined : PRESS.whileTap}
+      transition={SPRING}
     >
       {loading ? (
         <span
+          className="border-2 border-current border-t-transparent rounded-full animate-spin shrink-0"
           style={{
-            width: size === 'sm' ? '14px' : '18px',
-            height: size === 'sm' ? '14px' : '18px',
-            border: '2px solid currentColor',
-            borderTopColor: 'transparent',
-            borderRadius: '50%',
-            animation: 'spin 0.6s linear infinite',
-            flexShrink: 0,
+            width: size === 'sm' ? 14 : 18,
+            height: size === 'sm' ? 14 : 18,
           }}
         />
       ) : icon ? (
-        <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
+        <span className="flex items-center shrink-0">{icon}</span>
       ) : null}
       {children}
       {iconRight && !loading && (
-        <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{iconRight}</span>
+        <span className="flex items-center shrink-0">{iconRight}</span>
       )}
     </motion.button>
   )

@@ -12,7 +12,7 @@ export interface PageContainerProps {
 }
 
 const maxWidthMap = {
-  narrow: '520px',
+  narrow: '480px',
   medium: '720px',
   wide: '1000px',
   full: '100%',
@@ -34,14 +34,13 @@ export function PageContainer({
         padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px))',
         background: theater ? 'var(--color-theater-bg)' : 'var(--color-bg)',
         color: theater ? 'var(--color-theater-text)' : undefined,
+        transition: 'background-color 600ms',
         ...style,
       }}
     >
       <div
         className="w-full mx-auto"
-        style={{
-          maxWidth: maxWidthMap[size],
-        }}
+        style={{ maxWidth: maxWidthMap[size] }}
       >
         {children}
       </div>

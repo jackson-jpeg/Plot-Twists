@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ReactNode, forwardRef } from 'react'
+import { type CSSProperties, type ReactNode, forwardRef } from 'react'
 import { SPRING, PRESS } from '@/lib/motion'
 
 export interface ButtonProps {
@@ -39,17 +39,35 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   const isDisabled = disabled || loading
 
   const sizeClasses = {
-    sm: 'h-9 px-4 text-[13px] gap-1.5',
-    md: 'h-11 px-6 text-[15px] gap-2',
-    lg: 'h-[52px] px-6 text-[17px] gap-2.5',
+    sm: 'min-h-10 px-4 text-[12px] gap-1.5',
+    md: 'min-h-12 px-6 text-[14px] gap-2',
+    lg: 'min-h-[56px] px-7 text-[16px] gap-2.5',
   } as const
 
   const variantClasses = {
-    primary: 'bg-[var(--color-accent)] text-white border-0',
-    secondary: 'bg-transparent text-[var(--color-text-primary)] border-[1.5px] border-[var(--color-border-strong)]',
-    ghost: 'bg-transparent text-[var(--color-text-secondary)] border-0',
-    danger: 'bg-[var(--color-danger)] text-white border-0',
+    primary: 'text-white border-[1.5px] border-[rgba(255,255,255,0.14)]',
+    secondary: 'bg-[var(--color-surface)] text-[var(--color-text-primary)] border-[1.5px] border-[var(--color-border-strong)]',
+    ghost: 'bg-transparent text-[var(--color-text-secondary)] border-[1px] border-transparent',
+    danger: 'text-white border-[1.5px] border-[rgba(255,255,255,0.14)]',
   } as const
+
+  const variantStyles: Record<NonNullable<ButtonProps['variant']>, CSSProperties> = {
+    primary: {
+      background: 'linear-gradient(135deg, var(--color-accent) 0%, #ff7d3f 100%)',
+      boxShadow: '0 16px 36px rgba(255, 90, 54, 0.26)',
+    },
+    secondary: {
+      background: 'var(--gradient-panel)',
+      boxShadow: 'var(--shadow-1)',
+    },
+    ghost: {
+      background: 'rgba(255,255,255,0.04)',
+    },
+    danger: {
+      background: 'linear-gradient(135deg, var(--color-danger) 0%, #ff7a7a 100%)',
+      boxShadow: '0 16px 36px rgba(215, 59, 59, 0.22)',
+    },
+  }
 
   return (
     <motion.button
@@ -59,17 +77,22 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={isDisabled}
       className={`
         inline-flex items-center justify-center
-        font-[var(--font-display)] font-semibold
-        rounded-[14px] cursor-pointer
-        transition-colors duration-150
+        font-[var(--font-display)] uppercase
+        rounded-[18px] cursor-pointer
+        transition-transform duration-150
         ${sizeClasses[size]}
         ${variantClasses[variant]}
         ${fullWidth ? 'w-full' : ''}
         ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}
         ${className}
       `}
-      style={style}
+      style={{
+        letterSpacing: '0.04em',
+        ...variantStyles[variant],
+        ...style,
+      }}
       whileTap={isDisabled ? undefined : PRESS.whileTap}
+      whileHover={isDisabled ? undefined : { y: -2, scale: 1.01 }}
       transition={SPRING}
     >
       {loading ? (

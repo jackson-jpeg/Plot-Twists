@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import { Fredoka, DM_Sans, Courier_Prime } from 'next/font/google'
+import { Archivo_Black, Manrope, IBM_Plex_Mono } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import { SocketProvider } from '@/contexts/SocketContext'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -15,25 +15,24 @@ import { NativeBootstrap } from '@/components/NativeBootstrap'
 import { ConnectionStatus } from '@/components/ConnectionStatus'
 import { BottomTabBar } from '@/components/BottomTabBar'
 
-const fredoka = Fredoka({
+const archivoBlack = Archivo_Black({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-fredoka',
+  weight: ['400'],
+  variable: '--font-archivo-black',
   display: 'swap',
 })
 
-const dmSans = DM_Sans({
+const manrope = Manrope({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-dm-sans',
+  variable: '--font-manrope',
   display: 'swap',
 })
 
-const courierPrime = Courier_Prime({
+const ibmPlexMono = IBM_Plex_Mono({
   subsets: ['latin'],
-  weight: ['400', '700'],
-  style: ['normal', 'italic'],
-  variable: '--font-courier-prime',
+  weight: ['400', '500', '700'],
+  variable: '--font-ibm-plex-mono',
   display: 'swap',
 })
 
@@ -72,7 +71,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   viewportFit: 'cover',
-  themeColor: '#F59E42',
+  themeColor: '#ff5a36',
 }
 
 export default function RootLayout({
@@ -87,21 +86,21 @@ export default function RootLayout({
       afterSignOutUrl="/"
       appearance={{
         variables: {
-          colorPrimary: '#F59E42',
+          colorPrimary: '#ff5a36',
           colorText: 'var(--color-text-primary)',
           colorTextSecondary: 'var(--color-text-secondary)',
           colorBackground: 'var(--color-surface)',
           colorInputBackground: 'var(--color-surface-alt)',
-          borderRadius: '0.75rem',
-          fontFamily: 'var(--font-fredoka), var(--font-dm-sans), sans-serif',
+          borderRadius: '1rem',
+          fontFamily: 'var(--font-display), var(--font-body), sans-serif',
         },
         elements: {
-          card: 'bg-[var(--color-surface)] shadow-none',
+          card: 'bg-[var(--color-surface)] shadow-none border border-[var(--color-border)]',
           cardBox: 'shadow-none',
           headerTitle: 'font-display text-[var(--color-text-primary)]',
           headerSubtitle: 'text-[var(--color-text-secondary)]',
-          socialButtonsBlockButton: 'border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-alt)]',
-          formButtonPrimary: 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)]',
+          socialButtonsBlockButton: 'border-[var(--color-border)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-alt)] rounded-2xl',
+          formButtonPrimary: 'bg-[var(--color-accent)] hover:bg-[var(--color-accent-dark)] rounded-2xl',
           formFieldInput: 'bg-[var(--color-surface-alt)] border-[var(--color-border)] text-[var(--color-text-primary)]',
           formFieldLabel: 'text-[var(--color-text-secondary)]',
           formFieldErrorText: 'text-[var(--color-danger,#f87171)]',
@@ -118,7 +117,7 @@ export default function RootLayout({
         },
       }}
     >
-      <html lang="en" className={`${fredoka.variable} ${dmSans.variable} ${courierPrime.variable}`} suppressHydrationWarning>
+      <html lang="en" className={`${archivoBlack.variable} ${manrope.variable} ${ibmPlexMono.variable}`} suppressHydrationWarning>
         <head>
           <script
             dangerouslySetInnerHTML={{

@@ -7,6 +7,10 @@ import { GoogleGenAI } from '@google/genai'
 import { getStorage } from '../db/firestore'
 import { v4 as uuidv4 } from 'uuid'
 import { logger } from '../../lib/logger'
+import {
+  HOMEPAGE_POSTER_FALLBACK_MODEL,
+  HOMEPAGE_POSTER_PRIMARY_MODEL,
+} from '../../lib/homepagePosterBriefs'
 
 const PLACEHOLDER_IMAGE_URL = '/images/default-poster.svg'
 
@@ -19,10 +23,44 @@ function getGenAI(): GoogleGenAI {
   return genAIInstance
 }
 
+async function generateImageBuffer(prompt: string, preferredModel = HOMEPAGE_POSTER_PRIMARY_MODEL): Promise<Buffer> {
+  const genAI = getGenAI()
+  const modelsToTry = [preferredModel, HOMEPAGE_POSTER_FALLBACK_MODEL].filter(
+    (model, index, models) => models.indexOf(model) === index
+  )
+
+  let lastError: unknown = null
+
+  for (const model of modelsToTry) {
+    try {
+      const response = await genAI.models.generateContent({
+        model,
+        contents: prompt,
+        config: {
+          responseModalities: ['IMAGE'],
+        }
+      })
+
+      const parts = response.candidates?.[0]?.content?.parts
+      const imagePart = parts?.find(p => p.inlineData?.mimeType?.startsWith('image/'))
+
+      if (!imagePart?.inlineData?.data) {
+        throw new Error(`No image data returned from ${model}`)
+      }
+
+      return Buffer.from(imagePart.inlineData.data, 'base64')
+    } catch (error) {
+      lastError = error
+      logger.warn(`[Image Service] Image generation failed with ${model}, trying next model if available`, error)
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('Image generation failed')
+}
+
 /**
  * Generate a movie poster "title card" for a script.
- * Uses Gemini's native image generation to create context-aware posters —
- * animated characters stay animated, live-action settings stay live-action.
+ * Uses Gemini's latest fast image models to create context-aware posters.
  */
 export async function generateTitleCard(
   title: string,
@@ -59,23 +97,7 @@ IMPORTANT STYLE RULES:
 
     logger.info(`[Image Service] Generating poster for "${title}" with characters: ${characterList}`)
 
-    const response = await genAI.models.generateContent({
-      model: 'gemini-3.1-flash-image-preview',
-      contents: prompt,
-      config: {
-        responseModalities: ['IMAGE'],
-      }
-    })
-
-    // Extract image data from Gemini response
-    const parts = response.candidates?.[0]?.content?.parts
-    const imagePart = parts?.find(p => p.inlineData?.mimeType?.startsWith('image/'))
-
-    if (!imagePart?.inlineData?.data) {
-      throw new Error('No image data returned from Gemini')
-    }
-
-    const buffer = Buffer.from(imagePart.inlineData.data, 'base64')
+    const buffer = await generateImageBuffer(prompt)
     const url = await uploadToStorage(buffer)
 
     logger.info(`[Image Service] Poster generated successfully for "${title}"`)

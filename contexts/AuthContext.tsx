@@ -8,7 +8,7 @@
  * they used with Firebase Auth.
  */
 
-import React, { createContext, useContext, useCallback } from 'react'
+import React, { createContext, useContext, useCallback, useEffect, useState } from 'react'
 import { useUser, useClerk, useAuth as useClerkAuth } from '@clerk/nextjs'
 import { getPlayerSessionId } from '@/lib/playerSession'
 
@@ -49,6 +49,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { user: clerkUser, isLoaded } = useUser()
   const { signOut: clerkSignOut } = useClerk()
   const { getToken } = useClerkAuth()
+  const [devAuthTimedOut, setDevAuthTimedOut] = useState(false)
+
+  useEffect(() => {
+    if (isLoaded || typeof window === 'undefined') return
+
+    const isLocalDevHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    if (process.env.NODE_ENV !== 'development' || !isLocalDevHost) return
+
+    const timeout = window.setTimeout(() => {
+      setDevAuthTimedOut(true)
+    }, 2500)
+
+    return () => window.clearTimeout(timeout)
+  }, [isLoaded])
 
   const user: AuthUser | null = clerkUser
     ? {
@@ -72,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     user,
-    loading: !isLoaded,
+    loading: !isLoaded && !devAuthTimedOut,
     isConfigured: true,
     isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
     signOut,

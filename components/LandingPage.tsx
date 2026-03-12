@@ -7,12 +7,7 @@ import { analytics } from '@/lib/analytics'
 import { MOTION, VARIANTS } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { Button, Card, Badge, PageContainer, SectionHeader } from '@/components/ui'
-
-const sceneExamples = [
-  { scenario: 'Zombie apocalypse at the office', icon: 'zombie' },
-  { scenario: 'Cooking show gone horribly wrong', icon: 'chef' },
-  { scenario: 'Detectives accusing each other', icon: 'detective' },
-]
+import { HomepagePosterShowcase } from '@/components/HomepagePosterShowcase'
 
 const tickerScenes = [
   'A pirate captain... at a job interview... who can only speak in questions',
@@ -58,39 +53,6 @@ function SceneTicker() {
   )
 }
 
-function SceneIcon({ type }: { type: string }) {
-  const size = 28
-  switch (type) {
-    case 'zombie':
-      return (
-        <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
-          <circle cx="14" cy="14" r="11" stroke="currentColor" strokeWidth="1.5" />
-          <circle cx="10" cy="12" r="1.5" fill="currentColor" />
-          <circle cx="18" cy="12" r="1.5" fill="currentColor" />
-          <path d="M9 18h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M12 18v2M16 18v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-        </svg>
-      )
-    case 'chef':
-      return (
-        <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
-          <ellipse cx="14" cy="8" rx="6" ry="5" stroke="currentColor" strokeWidth="1.5" />
-          <rect x="8" y="12" width="12" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M11 16h6M11 19h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-        </svg>
-      )
-    case 'detective':
-      return (
-        <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
-          <circle cx="12" cy="15" r="6" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M16.5 19.5L22 25" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          <circle cx="12" cy="15" r="2" fill="currentColor" opacity="0.2" />
-        </svg>
-      )
-    default:
-      return null
-  }
-}
 
 function TheaterMasks() {
   return (
@@ -114,15 +76,14 @@ export function LandingPage() {
   return (
     <PageContainer size="wide" centered style={{ padding: isDesktop ? undefined : '24px 20px' }}>
       <div className="w-full mx-auto" style={{ maxWidth: isDesktop ? '1100px' : '448px' }}>
-        {/* Hero + Scene Previews (side-by-side on desktop) */}
-        <div style={{ display: 'flex', flexDirection: isDesktop ? 'row' : 'column', alignItems: isDesktop ? 'center' : undefined, gap: isDesktop ? '64px' : '0px', paddingTop: isDesktop ? '0' : '24px' }}>
-          <div style={{ flex: isDesktop ? 1 : undefined, maxWidth: isDesktop ? '520px' : undefined }}>
+        <div style={{ paddingTop: isDesktop ? '0' : '24px' }}>
+          <div style={{ maxWidth: isDesktop ? '720px' : undefined, margin: isDesktop ? '0 auto' : undefined }}>
             {/* Hero */}
             <motion.div
               initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={MOTION.gentle}
-              style={{ textAlign: isDesktop ? 'left' : 'center' }}
+              style={{ textAlign: 'center' }}
             >
               {/* Animated Theater Masks */}
               <motion.div
@@ -136,7 +97,7 @@ export function LandingPage() {
               <h1
                 className="font-display"
                 style={{
-                  fontSize: isDesktop ? '64px' : 'clamp(48px, 12vw, 56px)',
+                  fontSize: isDesktop ? '72px' : 'clamp(46px, 12vw, 56px)',
                   fontWeight: 700,
                   color: 'var(--color-text-primary)',
                   letterSpacing: '-0.03em',
@@ -144,7 +105,7 @@ export function LandingPage() {
                   marginTop: '8px',
                 }}
               >
-                {isDesktop ? <>The improv game{'\n'}that writes itself</> : 'Plot Twists'}
+                {isDesktop ? <>Movie-night chaos{'\n'}for people who perform</> : 'Plot Twists'}
               </h1>
 
               {/* Handwritten tagline */}
@@ -167,12 +128,13 @@ export function LandingPage() {
                   color: 'var(--color-text-tertiary)',
                   lineHeight: 1.5,
                   marginTop: isDesktop ? '16px' : '8px',
-                  maxWidth: isDesktop ? '420px' : undefined,
+                  maxWidth: '580px',
+                  marginInline: 'auto',
                 }}
               >
                 {isDesktop
-                  ? 'Pick your cards. AI writes the script. You steal the show. The party game where everyone\'s a comedian.'
-                  : 'The improv comedy game that writes itself — pick cards, get a script, steal the show.'}
+                  ? 'Pick the crossover. Let AI write the scene. Then perform it like your living room just became opening night.'
+                  : 'Pick the crossover. Get the script. Perform it live.'}
               </p>
 
               {/* Scene Ticker — mobile only */}
@@ -205,7 +167,7 @@ export function LandingPage() {
                     fontSize: '13px',
                     color: 'var(--color-text-tertiary)',
                     marginTop: '10px',
-                    textAlign: 'left',
+                    textAlign: 'center',
                   }}
                 >
                   5 free scripts — no credit card needed
@@ -213,67 +175,16 @@ export function LandingPage() {
               )}
             </motion.div>
           </div>
-
-          {/* Scene Previews — desktop only */}
-          {isDesktop && <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="flex gap-3"
-            style={{
-              flexDirection: 'column',
-              flex: 1,
-              maxWidth: '440px',
-            }}
-          >
-            {sceneExamples.map((scene, i) => (
-              <motion.div
-                key={scene.icon}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 + i * 0.08, ...MOTION.gentle }}
-                className="flex-1"
-              >
-                <Card
-                  variant="elevated"
-                  padding="none"
-                  style={{
-                    padding: '16px 20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '16px',
-                  }}
-                >
-                  <div
-                    className="flex items-center justify-center"
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      background: 'var(--color-accent-light)',
-                      borderRadius: '12px',
-                      color: 'var(--color-text-secondary)',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <SceneIcon type={scene.icon} />
-                  </div>
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-ui)',
-                      fontSize: '15px',
-                      color: 'var(--color-text-secondary)',
-                      lineHeight: '1.4',
-                      textAlign: 'left',
-                      fontWeight: 500,
-                    }}
-                  >
-                    {scene.scenario}
-                  </p>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22, ...MOTION.gentle }}
+          style={{ marginTop: isDesktop ? '40px' : '28px' }}
+        >
+          <HomepagePosterShowcase />
+        </motion.div>
 
         {/* How It Works */}
         <motion.div

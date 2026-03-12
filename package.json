@@ -8,7 +8,8 @@
     "start": "NODE_ENV=production tsx server.ts",
     "test": "jest --coverage",
     "test:watch": "jest --watch",
-    "test:unit": "jest --testPathPattern=__tests__/unit"
+    "test:unit": "jest --testPathPattern=__tests__/unit",
+    "generate:homepage-posters": "tsx scripts/generate-homepage-posters.ts"
   },
   "engines": {
     "node": "22.x",

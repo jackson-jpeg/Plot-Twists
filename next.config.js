@@ -28,8 +28,8 @@ const nextConfig = {
         source: '/:path*',
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors 'self' https://sang3r.com https://www.sang3r.com",
           },
           {
             key: 'X-Content-Type-Options',

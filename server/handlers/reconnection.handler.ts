@@ -5,9 +5,9 @@ import * as roomService from '../services/room.service'
 import { logger } from '@/lib/logger'
 
 export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
-  socket.on('rejoin_room', withErrorHandler(socket, 'rejoin_room', async (roomCode: string, userId: string, callback) => {
-    if (!roomCode || !userId) {
-      callback({ success: false, error: 'Missing roomCode or userId' })
+  socket.on('rejoin_room', withErrorHandler(socket, 'rejoin_room', async (roomCode: string, playerSessionId: string, callback) => {
+    if (!roomCode || !playerSessionId) {
+      callback({ success: false, error: 'Missing roomCode or playerSessionId' })
       return
     }
 
@@ -18,8 +18,9 @@ export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, c
       return
     }
 
-    // Find player by userId
-    const found = roomService.findPlayerInRoomByUserId(upperCode, userId)
+    // Find player by stable client session first, then legacy userId fallback.
+    const found = roomService.findPlayerInRoomBySessionId(upperCode, playerSessionId)
+      ?? roomService.findPlayerInRoomByUserId(upperCode, playerSessionId)
     if (!found) {
       callback({ success: false, error: 'Player not found in room' })
       return
@@ -33,13 +34,14 @@ export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, c
       callback({ success: false, error: 'Reconnection failed' })
       return
     }
+    result.player.sessionId = socket.data.playerSessionId ?? result.player.sessionId
 
     // Join socket to the room channel
     socket.join(upperCode)
 
     // Update handler context
     ctx.socketId = socket.id
-    ctx.userId = userId
+    ctx.userId = player.uid ?? ctx.userId
 
     logger.info(`Player ${player.nickname} reconnected to room ${upperCode} (new socket: ${socket.id})`)
 
@@ -62,12 +64,25 @@ export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, c
       script: room.script ?? null,
       currentLineIndex: room.currentLineIndex,
       scriptImageUrl: room.script?.imageUrl ?? null,
+      myPlayerId: playerId,
+      roomCode: upperCode,
       assignedCharacter: player.assignedCharacter,
       myRole: player.role,
       hasSubmittedSelection: player.hasSubmittedSelection,
       selection: room.selections.get(playerId) ?? undefined,
       spectatorMessages: room.audienceInteraction?.spectatorMessages ?? [],
       votingStatus: { hasVoted: !!room.votes.get(playerId) },
+      results: null,
+      roomSettings: {
+        isMature: room.isMature,
+        gameMode: room.gameMode,
+        scriptCustomization: room.scriptCustomization,
+        cardPackId: room.cardPackId,
+        audioSettings: room.audioSettings,
+        audienceInteractionEnabled: Boolean(room.audienceInteraction),
+        isPublic: room.isPublic,
+        publicTitle: room.publicTitle,
+      },
     }
 
     callback({ success: true, snapshot })

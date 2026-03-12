@@ -25,7 +25,7 @@ An AI-powered improv comedy party game where players pick cards, AI generates a 
 - **Frontend**: Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4
 - **Backend**: Custom Node.js server — Express 5 + Socket.IO (single process)
 - **AI**: Anthropic Claude (`claude-sonnet-4-5-20250929`) for scripts, Google Gemini for poster images
-- **Auth**: Firebase Auth (phone + anonymous)
+- **Auth**: Clerk + stable device session identity for room recovery
 - **Database**: Firestore (production) / JSON file (dev) — adapter pattern
 - **Payments**: Stripe (credit system) + Apple App Store IAP
 - **Mobile**: Capacitor for iOS
@@ -133,7 +133,7 @@ server/services/
 - Helmet.js with CSP, HSTS, and security headers
 - Per-socket rate limiting (`SocketRateLimiter`) on all event types
 - HTTP rate limiting (express-rate-limit) on API routes
-- Firebase Auth middleware for authenticated endpoints
+- Clerk auth middleware for authenticated endpoints
 - Input sanitization and XSS prevention
 - Socket emit timeout wrappers (10s default)
 - React Error Boundaries per game phase
@@ -143,10 +143,15 @@ server/services/
 ### Frontend Architecture
 - 47 shared components, 10 custom hooks
 - Dynamic imports (`next/dynamic`) for all game phase components
-- `useHostSocket` / `useJoinSocket` hooks own all game state
+- Zustand stores + `SocketContext` coordinate live game state and recovery
 - CSS custom properties for theming (light + dark mode)
 - Framer Motion with `useReducedMotion` gating
 - Safe area insets for mobile notch/home indicator
+
+### Beta Readiness
+- Stable per-device player session IDs support room recovery for guests and signed-in users
+- Public matchmaking, purchases, audience systems, card packs, replays, and admin can be gated by beta feature flags
+- See `docs/beta-checklist.md` for the private-beta readiness matrix
 
 ## Deployment
 

@@ -5,7 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { RoomSettings, ScriptCustomization, AudioSettings, GameMode } from '@/lib/types'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { VARIANTS, MOTION, getVariants } from '@/lib/animations'
+import { SPRING_BOUNCY, ENTER_SCALE, ENTER_Y } from '@/lib/motion'
+import { getVariants } from '@/lib/animations'
 import { withTimeout } from '@/lib/socketTimeout'
 import { useConfetti } from '@/hooks/useConfetti'
 import { OnboardingModal } from '@/components/OnboardingModal'
@@ -17,6 +18,7 @@ import dynamic from 'next/dynamic'
 const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
 import { analytics } from '@/lib/analytics'
+import { applyRoomRecoverySnapshot } from '@/lib/roomRecovery'
 
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
@@ -31,10 +33,11 @@ import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { GameShell } from '@/app/game/GameShell'
 
 function HostPageContent() {
+  const ACTIVE_ROOM_KEY = 'plottwists_active_room'
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, loading: authLoading, getToken } = useAuth()
-  const { socket, isConnected, connectionState, reconnectAttempt, setActiveRoom } = useSocket()
+  const { socket, isConnected, connectionState, reconnectAttempt, setActiveRoom, playerSessionId } = useSocket()
   const confetti = useConfetti()
   const prefersReducedMotion = useReducedMotion()
   const variants = getVariants(prefersReducedMotion)
@@ -66,6 +69,8 @@ function HostPageContent() {
   })
   const [hasTriggeredSelectionConfetti, setHasTriggeredSelectionConfetti] = useState(false)
   const roomCreatedRef = useRef(false)
+  const recoveryAttemptRef = useRef<string | null>(null)
+  const [recoveryResolved, setRecoveryResolved] = useState(false)
 
   // Store selectors
   const gameState = useGameStore((s) => s.gameState)
@@ -142,9 +147,46 @@ function HostPageContent() {
     }
   }, [countdown])
 
+  // Recover active room on initial connect / reconnect before creating a new room.
+  useEffect(() => {
+    if (authLoading || !user || !socket || !isConnected) return
+
+    let activeRoom: string | null = null
+    try {
+      activeRoom = sessionStorage.getItem(ACTIVE_ROOM_KEY)
+    } catch {
+      activeRoom = null
+    }
+
+    if (!activeRoom) {
+      setRecoveryResolved(true)
+      return
+    }
+
+    if (recoveryAttemptRef.current === `${socket.id}:${activeRoom}`) return
+    recoveryAttemptRef.current = `${socket.id}:${activeRoom}`
+
+    socket.emit('rejoin_room', activeRoom, playerSessionId, (response) => {
+      if (response.success && response.snapshot) {
+        applyRoomRecoverySnapshot(response.snapshot)
+        useGameStore.getState().setRole('host')
+        setSettings(response.snapshot.roomSettings ?? settings)
+        setScriptCustomization(response.snapshot.roomSettings?.scriptCustomization ?? scriptCustomization)
+        setAudioSettings(response.snapshot.roomSettings?.audioSettings ?? audioSettings)
+        roomCreatedRef.current = true
+        setActiveRoom(response.snapshot.roomCode)
+      } else {
+        roomCreatedRef.current = false
+        setActiveRoom(null)
+      }
+      setRecoveryResolved(true)
+    })
+  }, [socket, isConnected, authLoading, user, playerSessionId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Create room
   useEffect(() => {
     if (authLoading || !user) return
+    if (!recoveryResolved) return
     if (!socket || !isConnected || roomCreatedRef.current) return
     roomCreatedRef.current = true
     withTimeout<{ success: boolean; code?: string }>(
@@ -164,7 +206,7 @@ function HostPageContent() {
         useGameStore.getState().setCreditBalance(response.balance)
       }
     })
-  }, [socket, isConnected, settings, authLoading, user]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [socket, isConnected, settings, authLoading, user, recoveryResolved]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset orchestrator state when returning to LOBBY
   useEffect(() => {
@@ -333,7 +375,7 @@ function HostPageContent() {
                 initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0.3, opacity: 0 }}
                 animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
                 exit={prefersReducedMotion ? { opacity: 0 } : { scale: 2, opacity: 0 }}
-                transition={MOTION.bouncy}
+                transition={SPRING_BOUNCY}
                 className="text-center" role="status" aria-live="assertive">
                 <div style={{ fontSize: '120px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1 }}>{countdown}</div>
                 <div style={{ fontSize: '18px', color: 'var(--color-text-tertiary)', marginTop: '16px' }}>Curtain up!</div>

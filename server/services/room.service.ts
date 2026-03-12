@@ -291,12 +291,36 @@ export function findPlayerByUserId(userId: string): { room: Room; playerId: stri
   return null
 }
 
+/** Find a player across all rooms by stable player session ID */
+export function findPlayerBySessionId(sessionId: string): { room: Room; playerId: string; player: Player } | null {
+  for (const [, room] of rooms.entries()) {
+    for (const [playerId, player] of room.players.entries()) {
+      if (player.sessionId === sessionId) {
+        return { room, playerId, player }
+      }
+    }
+  }
+  return null
+}
+
 /** Find a player in a specific room by userId */
 export function findPlayerInRoomByUserId(roomCode: string, userId: string): { playerId: string; player: Player } | null {
   const room = rooms.get(roomCode.toUpperCase())
   if (!room) return null
   for (const [playerId, player] of room.players.entries()) {
     if (player.uid === userId || playerId === userId) {
+      return { playerId, player }
+    }
+  }
+  return null
+}
+
+/** Find a player in a specific room by stable player session ID */
+export function findPlayerInRoomBySessionId(roomCode: string, sessionId: string): { playerId: string; player: Player } | null {
+  const room = rooms.get(roomCode.toUpperCase())
+  if (!room) return null
+  for (const [playerId, player] of room.players.entries()) {
+    if (player.sessionId === sessionId) {
       return { playerId, player }
     }
   }

@@ -21,8 +21,8 @@ const PUBLIC_ROOMS_CHANNEL = 'public_rooms_watchers'
 // Auto-start thresholds per mode
 const AUTO_START_THRESHOLD: Record<GameMode, number> = {
   SOLO: 1,
-  HEAD_TO_HEAD: 3, // 2 players + host
-  ENSEMBLE: 4,     // 3 players + host
+  HEAD_TO_HEAD: 2,
+  ENSEMBLE: 3,
 }
 
 // Active countdowns
@@ -101,6 +101,30 @@ export function checkAutoStart(
 
   if (playerCount >= threshold && !activeCountdowns.has(room.code)) {
     startAutoCountdown(room, io)
+  }
+}
+
+export function getRequiredPlayersForMode(gameMode: GameMode): number {
+  return AUTO_START_THRESHOLD[gameMode]
+}
+
+export function syncAutoStart(
+  room: Room,
+  io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>
+): void {
+  if (!room.isPublic || !room.autoStart || room.gameState !== 'LOBBY') return
+
+  const playerCount = Array.from(room.players.values()).filter(p => p.role === 'PLAYER' && !p.isHost).length
+  const threshold = AUTO_START_THRESHOLD[room.gameMode]
+
+  if (playerCount >= threshold) {
+    checkAutoStart(room, io)
+    return
+  }
+
+  if (activeCountdowns.has(room.code)) {
+    cancelAutoCountdown(room.code)
+    io.to(room.code).emit('auto_start_countdown', 0)
   }
 }
 

@@ -247,6 +247,7 @@ export interface Player {
   role: PlayerRole
   isHost: boolean
   socketId: string
+  sessionId?: string
   uid?: string
   connected?: boolean
   hasSubmittedSelection?: boolean
@@ -342,6 +343,40 @@ export interface GameResults {
   allResults: VoteResult[]
   highlights?: { label: string; value: string; icon: string }[]
 }
+
+export interface RoomRecoverySnapshot {
+  gameState: GameState
+  players: Player[]
+  script: Script | null
+  currentLineIndex: number
+  scriptImageUrl: string | null
+  assignedCharacter?: string
+  myRole?: PlayerRole
+  myPlayerId: string
+  roomCode: string
+  hasSubmittedSelection?: boolean
+  selection?: CardSelection
+  spectatorMessages?: SpectatorMessage[]
+  votingStatus?: { hasVoted: boolean }
+  results?: GameResults | null
+  roomSettings?: RoomSettings
+}
+
+export type BetaFeatureKey =
+  | 'publicMatchmaking'
+  | 'purchases'
+  | 'audience'
+  | 'cardPacks'
+  | 'replays'
+  | 'admin'
+
+export interface BetaFeatureConfig {
+  enabled: boolean
+  label: string
+  description: string
+}
+
+export type BetaFeatureMatrix = Record<BetaFeatureKey, BetaFeatureConfig>
 
 // ============================================================
 // Admin Dashboard Types
@@ -588,22 +623,10 @@ export interface ClientToServerEvents {
   request_resync: (roomCode: string, playerId: string, callback: (response: { success: boolean, gameState?: string, players?: Player[], script?: Script, currentLineIndex?: number, hasSubmittedSelection?: boolean, assignedCharacter?: string, selection?: CardSelection, error?: string }) => void) => void
 
   // Rejoin room after full disconnect/reconnect
-  rejoin_room: (roomCode: string, userId: string, callback: (res: {
+  rejoin_room: (roomCode: string, playerSessionId: string, callback: (res: {
     success: boolean
     error?: string
-    snapshot?: {
-      gameState: GameState
-      players: Player[]
-      script: Script | null
-      currentLineIndex: number
-      scriptImageUrl: string | null
-      assignedCharacter?: string
-      myRole?: PlayerRole
-      hasSubmittedSelection?: boolean
-      selection?: CardSelection
-      spectatorMessages?: SpectatorMessage[]
-      votingStatus?: { hasVoted: boolean }
-    }
+    snapshot?: RoomRecoverySnapshot
   }) => void) => void
 
   // Feature 7: Progression Events

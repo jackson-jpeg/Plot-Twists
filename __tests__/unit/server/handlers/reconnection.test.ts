@@ -65,6 +65,7 @@ function makePlayer(overrides: Partial<Player> = {}): Player {
     role: 'PLAYER',
     isHost: false,
     socketId: 'sock-1',
+    sessionId: 'session-1',
     uid: 'uid-1',
     connected: true,
     ...overrides,
@@ -220,6 +221,26 @@ describe('findPlayerInRoomByUserId', () => {
 
   it('returns null for wrong room', () => {
     expect(roomService.findPlayerInRoomByUserId('NOPE', 'uid-room')).toBeNull()
+  })
+})
+
+describe('findPlayerInRoomBySessionId', () => {
+  it('finds player in specific room by stable session ID', () => {
+    const player = makePlayer({ sessionId: 'session-room' })
+    const room = makeRoom()
+    room.players.set(player.id, player)
+    roomService.createRoom(room)
+
+    const result = roomService.findPlayerInRoomBySessionId('TEST', 'session-room')
+    expect(result).not.toBeNull()
+    expect(result!.player.nickname).toBe('Alice')
+  })
+
+  it('returns null for unknown session ID', () => {
+    const room = makeRoom()
+    roomService.createRoom(room)
+
+    expect(roomService.findPlayerInRoomBySessionId('TEST', 'missing-session')).toBeNull()
   })
 })
 

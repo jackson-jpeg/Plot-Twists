@@ -34,6 +34,11 @@ async function verifyClerkToken(token: string): Promise<{ sub: string; email?: s
 export function createSocketAuthMiddleware() {
   return async (socket: Socket, next: (err?: Error) => void) => {
     const token = socket.handshake.auth?.token
+    const playerSessionId = typeof socket.handshake.auth?.playerSessionId === 'string'
+      ? socket.handshake.auth.playerSessionId
+      : null
+
+    socket.data.playerSessionId = playerSessionId
 
     if (!token) {
       // Allow connection without auth — guests can still play,

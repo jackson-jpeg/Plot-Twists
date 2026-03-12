@@ -4,6 +4,11 @@ const config = {
   testEnvironment: 'node',
   roots: ['<rootDir>'],
   testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/\\.next/',
+    '/\\.worktrees/',
+  ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   collectCoverageFrom: [
     'server/**/*.ts',

@@ -14,6 +14,7 @@ import { purchaseViaStoreKit } from '@/lib/purchases'
 import { successHaptic } from '@/hooks/useHaptics'
 import { getAuthHeaders } from '@/lib/authHeaders'
 import { Button } from '@/components/ui'
+import { isBetaFeatureEnabled } from '@/lib/betaFeatures'
 
 interface PurchaseCreditsModalProps {
   isOpen: boolean
@@ -25,6 +26,7 @@ const BEST_VALUE_ID = 'studio'
 
 export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: PurchaseCreditsModalProps) {
   const { user, getToken } = useAuth()
+  const purchasesEnabled = isBetaFeatureEnabled('purchases')
   const [loading, setLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
@@ -40,6 +42,10 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
   }
 
   const handlePurchase = async (packageId: string) => {
+    if (!purchasesEnabled) {
+      setError('Purchases are disabled for this beta build.')
+      return
+    }
     if (!user) return
     setLoading(packageId)
     setError(null)
@@ -198,6 +204,15 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
                     </Button>
                   </div>
 
+                  {!purchasesEnabled && (
+                    <div
+                      className="mx-5 mt-4 px-4 py-3 rounded-xl text-sm"
+                      style={{ background: 'rgba(245, 158, 66, 0.12)', color: 'var(--color-text-secondary)', border: '1px solid var(--color-border)' }}
+                    >
+                      Purchases are disabled for this beta build while we validate credits across web and native surfaces.
+                    </div>
+                  )}
+
                   {/* Current balance */}
                   {currentBalance !== undefined && (
                     <div className="text-center py-4">
@@ -326,7 +341,7 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
                       size="lg"
                       fullWidth
                       loading={loading !== null}
-                      disabled={!selectedPkg}
+                      disabled={!selectedPkg || !purchasesEnabled}
                       onClick={() => selectedPkg && handlePurchase(selectedPkg.id)}
                     >
                       {selectedPkg

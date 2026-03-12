@@ -11,10 +11,12 @@ import { useConfetti } from '@/hooks/useConfetti'
 import { OnboardingModal } from '@/components/OnboardingModal'
 import { Modal } from '@/components/Modal'
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
-import { MOTION, getVariants } from '@/lib/animations'
+import { SPRING_BOUNCY } from '@/lib/motion'
+import { getVariants } from '@/lib/animations'
 import { withTimeout } from '@/lib/socketTimeout'
 import { analytics } from '@/lib/analytics'
 import { useAuth } from '@/contexts/AuthContext'
+import { applyRoomRecoverySnapshot } from '@/lib/roomRecovery'
 
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
@@ -36,9 +38,10 @@ import { GameShell } from '@/app/game/GameShell'
 const JoinForm = dynamic(() => import('./components/JoinForm').then(m => ({ default: m.JoinForm })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
 
 function JoinPageContent() {
+  const ACTIVE_ROOM_KEY = 'plottwists_active_room'
   const router = useRouter()
   const { user } = useAuth()
-  const { socket, isConnected, connectionState, reconnectAttempt, setActiveRoom } = useSocket()
+  const { socket, isConnected, connectionState, reconnectAttempt, setActiveRoom, playerSessionId } = useSocket()
   const searchParams = useSearchParams()
   const codeFromUrl = searchParams.get('code')
   const nicknameFromUrl = searchParams.get('nickname')
@@ -56,6 +59,8 @@ function JoinPageContent() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showPosterLightbox, setShowPosterLightbox] = useState(false)
   const [hasTriggeredSelectionConfetti, setHasTriggeredSelectionConfetti] = useState(false)
+  const recoveryAttemptRef = useRef<string | null>(null)
+  const [recoveryResolved, setRecoveryResolved] = useState(false)
 
   // Store selectors
   const gameState = useGameStore((s) => s.gameState)
@@ -114,6 +119,38 @@ function JoinPageContent() {
       return () => { document.body.style.overflow = '' }
     }
   }, [hostDisconnected, countdown])
+
+  // Recover active room on initial connect / reconnect before showing the join form.
+  useEffect(() => {
+    if (!socket || !isConnected) return
+
+    let activeRoom: string | null = null
+    try {
+      activeRoom = sessionStorage.getItem(ACTIVE_ROOM_KEY)
+    } catch {
+      activeRoom = null
+    }
+
+    if (!activeRoom) {
+      setRecoveryResolved(true)
+      return
+    }
+
+    if (recoveryAttemptRef.current === `${socket.id}:${activeRoom}`) return
+    recoveryAttemptRef.current = `${socket.id}:${activeRoom}`
+
+    socket.emit('rejoin_room', activeRoom, playerSessionId, (response) => {
+      if (response.success && response.snapshot) {
+        applyRoomRecoverySnapshot(response.snapshot)
+        useGameStore.getState().setRole(response.snapshot.myRole === 'SPECTATOR' ? 'spectator' : 'player')
+        setActiveRoom(response.snapshot.roomCode)
+        setHasJoined(true)
+      } else {
+        setActiveRoom(null)
+      }
+      setRecoveryResolved(true)
+    })
+  }, [socket, isConnected, playerSessionId, setActiveRoom])
 
   // Reset orchestrator state when returning to LOBBY
   useEffect(() => {
@@ -186,7 +223,7 @@ function JoinPageContent() {
     )
   }
 
-  if (!hasJoined) {
+  if (!recoveryResolved || !hasJoined) {
     return (
       <PageContainer size="narrow" centered>
         <OnboardingModal isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} mode="join" />
@@ -199,15 +236,19 @@ function JoinPageContent() {
             transition={{ duration: 0.3 }}
           >
             <GameErrorBoundary phaseName="join">
-              <JoinForm
-                socket={socket} isConnected={isConnected}
-                initialRoomCode={codeFromUrl || ''}
-                initialNickname={nicknameFromUrl || ''}
-                toast={toast}
-                onJoinSuccess={handleJoinSuccess}
-                onShowOnboarding={() => setShowOnboarding(true)}
-                onNavigateHome={() => router.push('/')}
-              />
+              {recoveryResolved ? (
+                <JoinForm
+                  socket={socket} isConnected={isConnected}
+                  initialRoomCode={codeFromUrl || ''}
+                  initialNickname={nicknameFromUrl || ''}
+                  toast={toast}
+                  onJoinSuccess={handleJoinSuccess}
+                  onShowOnboarding={() => setShowOnboarding(true)}
+                  onNavigateHome={() => router.push('/')}
+                />
+              ) : (
+                <div style={{ minHeight: '30vh' }} />
+              )}
             </GameErrorBoundary>
           </motion.div>
         </AnimatePresence>
@@ -260,7 +301,7 @@ function JoinPageContent() {
                 initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0.3, opacity: 0 }}
                 animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
                 exit={prefersReducedMotion ? { opacity: 0 } : { scale: 2, opacity: 0 }}
-                transition={MOTION.bouncy}
+                transition={SPRING_BOUNCY}
                 className="text-center">
                 <div style={{ fontSize: '120px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1 }}>{countdown}</div>
                 <div style={{ fontSize: '18px', color: 'var(--color-text-tertiary)', marginTop: '16px' }}>Get ready to perform!</div>

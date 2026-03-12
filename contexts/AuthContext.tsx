@@ -10,6 +10,7 @@
 
 import React, { createContext, useContext, useCallback } from 'react'
 import { useUser, useClerk, useAuth as useClerkAuth } from '@clerk/nextjs'
+import { getPlayerSessionId } from '@/lib/playerSession'
 
 interface AuthUser {
   uid: string
@@ -65,17 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [clerkSignOut])
 
   const getPlayerId = useCallback((): string => {
-    if (clerkUser) {
-      return clerkUser.id
-    }
-    // Anonymous fallback for guests
-    if (typeof window === 'undefined') return ''
-    let id = localStorage.getItem('plottwists_player_id')
-    if (!id) {
-      id = `anon_${crypto.randomUUID()}`
-      localStorage.setItem('plottwists_player_id', id)
-    }
-    return id
+    if (typeof window === 'undefined') return clerkUser?.id ?? ''
+    return getPlayerSessionId()
   }, [clerkUser])
 
   const value: AuthContextType = {

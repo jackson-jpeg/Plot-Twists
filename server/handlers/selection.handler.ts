@@ -7,6 +7,7 @@ import { requireHost } from '../socket/helpers'
 import { notifyGameStarting } from '../services/notification.service'
 import { startScriptGeneration } from './game.helpers'
 import * as roomService from '../services/room.service'
+import { getRequiredPlayersForMode } from '../services/matchmaking.service'
 import { logger } from '@/lib/logger'
 
 export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
@@ -95,6 +96,20 @@ export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx:
     const room = roomService.getRoomFromCache(roomCode)
     if (!room) return
     if (!requireHost(room, socket)) return
+
+    if (room.gameState !== 'LOBBY') {
+      socket.emit('error', 'Game can only be started from the lobby')
+      return
+    }
+
+    const activePlayers = Array.from(room.players.values()).filter((player) =>
+      room.gameMode === 'SOLO' ? player.isHost : (player.role === 'PLAYER' && !player.isHost)
+    )
+    const requiredPlayers = getRequiredPlayersForMode(room.gameMode)
+    if (activePlayers.length < requiredPlayers) {
+      socket.emit('error', `Need at least ${requiredPlayers} player${requiredPlayers === 1 ? '' : 's'} to start ${room.gameMode.toLowerCase().replaceAll('_', '-')}`)
+      return
+    }
 
     room.gameState = 'SELECTION'
     room.lastActivity = Date.now()

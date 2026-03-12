@@ -14,6 +14,7 @@ import { requireHost } from '../socket/helpers'
 import * as roomService from '../services/room.service'
 import * as matchmakingService from '../services/matchmaking.service'
 import { logger } from '@/lib/logger'
+import { isBetaFeatureEnabled } from '@/lib/betaFeatures'
 
 // Rate limiters (moved from server.ts)
 const roomCreationLimiter = new SocketRateLimiter(10, 5 * 60 * 1000) // 10 rooms per 5 minutes
@@ -43,6 +44,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
         role: isSoloMode ? 'PLAYER' : 'HOST', // In Solo mode, host is the player
         isHost: true,
         socketId: socket.id,
+        sessionId: socket.data.playerSessionId ?? socket.data.userId ?? `legacy_${uuidv4()}`,
         uid: socket.data.userId ?? undefined,
       }
 
@@ -165,6 +167,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
         role: isRoomFull ? 'SPECTATOR' : 'PLAYER',
         isHost: false,
         socketId: socket.id,
+        sessionId: socket.data.playerSessionId ?? socket.data.userId ?? `legacy_${uuidv4()}`,
         uid: socket.data.userId ?? undefined,
         score: 0
       }
@@ -194,7 +197,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
       // Check auto-start for public rooms
       if (room.isPublic) {
-        matchmakingService.checkAutoStart(room, io)
+        matchmakingService.syncAutoStart(room, io)
         matchmakingService.broadcastPublicRooms(io)
       }
     } catch (error) {
@@ -287,10 +290,16 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
     }
     // Feature 8: Public Games
     if (settings.isPublic !== undefined) {
+      if (settings.isPublic && !isBetaFeatureEnabled('publicMatchmaking')) {
+        socket.emit('error', 'Public matchmaking is disabled for this beta build.')
+        return
+      }
       room.isPublic = settings.isPublic
       room.autoStart = settings.isPublic
       if (!settings.isPublic) {
         matchmakingService.cancelAutoCountdown(roomCode)
+      } else {
+        matchmakingService.syncAutoStart(room, io)
       }
     }
     if (settings.publicTitle !== undefined) {
@@ -320,6 +329,10 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
   // List public rooms
   socket.on('list_public_rooms', withErrorHandler(socket, 'list_public_rooms', (filters, callback) => {
     try {
+      if (!isBetaFeatureEnabled('publicMatchmaking')) {
+        callback({ success: true, rooms: [] })
+        return
+      }
       const rooms = matchmakingService.getPublicRooms(filters || undefined)
       callback({ success: true, rooms })
     } catch (error) {
@@ -330,6 +343,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Subscribe to public rooms
   socket.on('subscribe_public_rooms', withErrorHandler(socket, 'subscribe_public_rooms', () => {
+    if (!isBetaFeatureEnabled('publicMatchmaking')) return
     matchmakingService.subscribeToPublicRooms(socket)
   }))
 
@@ -341,6 +355,11 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
   // Quick play
   socket.on('quick_play', withErrorHandler(socket, 'quick_play', (request, callback) => {
     try {
+      if (!isBetaFeatureEnabled('publicMatchmaking')) {
+        callback({ success: false, error: 'Public matchmaking is disabled for this beta build' })
+        return
+      }
+
       // Auth required for public games
       if (!socket.data.uid) {
         callback({ success: false, error: 'Sign in to join public games' })
@@ -365,6 +384,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
         role: 'HOST',
         isHost: true,
         socketId: socket.id,
+        sessionId: socket.data.playerSessionId ?? socket.data.userId ?? `legacy_${uuidv4()}`,
         uid: socket.data.userId ?? undefined,
       }
 

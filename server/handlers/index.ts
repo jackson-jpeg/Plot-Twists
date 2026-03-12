@@ -72,9 +72,14 @@ export function registerAllHandlers(io: AppServer) {
             const removed = roomService.removePlayerAfterGrace(code, playerId)
             if (!removed) return // Player reconnected or already removed
 
-            logger.info(`Grace period expired — removing ${removed.player.nickname} from room ${code}`)
-            io.to(code).emit('player_left', playerId)
-            io.to(code).emit('players_update', Array.from(removed.room.players.values()))
+	            logger.info(`Grace period expired — removing ${removed.player.nickname} from room ${code}`)
+	            io.to(code).emit('player_left', playerId)
+	            io.to(code).emit('players_update', Array.from(removed.room.players.values()))
+
+	            if (removed.room.isPublic) {
+	              matchmakingService.syncAutoStart(removed.room, io)
+	              matchmakingService.broadcastPublicRooms(io)
+	            }
 
             // Check SELECTION auto-start after removal
             if (removed.room.gameState === 'SELECTION' && !removed.player.isHost) {
@@ -87,16 +92,17 @@ export function registerAllHandlers(io: AppServer) {
             }
 
             // Host removal — cleanup or notify
-            if (removed.player.isHost && removed.room.gameState === 'LOBBY' && removed.room.players.size === 0) {
-              logger.info(`Deleting empty room ${code}`)
-              roomService.clearAllRoomTimeouts(code)
-              matchmakingService.cleanupRoom(code)
-              roomService.deleteRoom(code)
-            } else if (removed.player.isHost) {
-              logger.info(`Host permanently left room ${code}`)
-              roomService.clearAllRoomTimeouts(code)
-              io.to(code).emit('host_disconnected', { message: 'The host has left the game. You can wait for them to reconnect or return to the home page.' })
-            }
+	            if (removed.player.isHost && removed.room.gameState === 'LOBBY' && removed.room.players.size === 0) {
+	              logger.info(`Deleting empty room ${code}`)
+	              roomService.clearAllRoomTimeouts(code)
+	              matchmakingService.cleanupRoom(code)
+	              roomService.deleteRoom(code)
+	            } else if (removed.player.isHost) {
+	              logger.info(`Host permanently left room ${code}`)
+	              roomService.clearAllRoomTimeouts(code)
+	              matchmakingService.cleanupRoom(code)
+	              io.to(code).emit('host_disconnected', { message: 'The host has left the game. You can wait for them to reconnect or return to the home page.' })
+	            }
           }, gracePeriodMs)
 
           roomService.setDisconnectTimer(code, playerId, timer)

@@ -6,6 +6,8 @@ import type { ServerToClientEvents, ClientToServerEvents } from '@/lib/types'
 import { useAuth as useClerkAuth } from '@clerk/nextjs'
 import { logger } from '@/lib/logger'
 import { SocketActionQueue } from '@/lib/socketQueue'
+import { useConnectionStore } from '@/stores/connectionStore'
+import { getPlayerSessionId } from '@/lib/playerSession'
 
 type SocketType = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -16,6 +18,7 @@ interface SocketContextType {
   isConnected: boolean
   connectionState: ConnectionState
   reconnectAttempt: number
+  playerSessionId: string
   socketEmit: <E extends keyof ClientToServerEvents>(event: E, ...args: Parameters<ClientToServerEvents[E]>) => void
   setActiveRoom: (roomCode: string | null) => void
 }
@@ -25,6 +28,7 @@ const SocketContext = createContext<SocketContextType>({
   isConnected: false,
   connectionState: 'disconnected',
   reconnectAttempt: 0,
+  playerSessionId: '',
   socketEmit: () => {},
   setActiveRoom: () => {},
 })
@@ -48,6 +52,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   const initRef = useRef(false)
   const { getToken, userId, isLoaded } = useClerkAuth()
   const activeRoomRef = useRef<string | null>(null)
+  const playerSessionIdRef = useRef<string>('')
+
+  const connectionStore = useConnectionStore()
 
   const setActiveRoom = useCallback((roomCode: string | null) => {
     activeRoomRef.current = roomCode
@@ -77,6 +84,10 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     initRef.current = true
 
     async function initSocket() {
+      if (!playerSessionIdRef.current) {
+        playerSessionIdRef.current = getPlayerSessionId()
+      }
+
       // Reuse existing socket or create new one
       if (!globalSocket) {
         // Get Clerk session token if signed in
@@ -125,34 +136,46 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           withCredentials: false,
           forceNew: false,
           multiplex: true,
-          auth: token ? { token } : undefined
+          auth: {
+            ...(token ? { token } : {}),
+            playerSessionId: playerSessionIdRef.current,
+          }
         })
 
         setConnectionState('connecting')
+        connectionStore.setConnectionState('connecting')
+        connectionStore.setIsConnected(false)
 
         globalSocket.on('connect', () => {
           logger.info('Socket connected:', globalSocket?.id)
           setIsConnected(true)
           setConnectionState('connected')
           setReconnectAttempt(0)
+          connectionStore.setIsConnected(true)
+          connectionStore.setConnectionState('connected')
+          connectionStore.setReconnectAttempt(0)
         })
 
         globalSocket.on('disconnect', (reason) => {
           logger.info('Socket disconnected:', reason)
           setIsConnected(false)
           setConnectionState('disconnected')
+          connectionStore.setIsConnected(false)
+          connectionStore.setConnectionState('disconnected')
         })
 
         globalSocket.on('connect_error', async (error) => {
           logger.error('Socket connection error:', error)
           setConnectionState('disconnected')
+          connectionStore.setIsConnected(false)
+          connectionStore.setConnectionState('disconnected')
 
           // If auth error, try refreshing token and reconnecting
           if (error.message === 'Invalid authentication token' || error.message === 'Authentication required') {
             try {
               const freshToken = await getToken()
               if (freshToken && globalSocket) {
-                globalSocket.auth = { token: freshToken }
+                globalSocket.auth = { token: freshToken, playerSessionId: playerSessionIdRef.current }
                 globalSocket.connect()
               }
             } catch {
@@ -165,12 +188,14 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           logger.info('Socket reconnecting... attempt', attempt)
           setConnectionState('reconnecting')
           setReconnectAttempt(attempt)
+          connectionStore.setConnectionState('reconnecting')
+          connectionStore.setReconnectAttempt(attempt)
 
           // Refresh token on reconnect
           try {
             const freshToken = await getToken()
             if (freshToken && globalSocket) {
-              globalSocket.auth = { token: freshToken }
+              globalSocket.auth = { token: freshToken, playerSessionId: playerSessionIdRef.current }
             }
           } catch {
             // Token refresh failed
@@ -181,30 +206,17 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           logger.info('Socket reconnected')
           setConnectionState('connected')
           setReconnectAttempt(0)
+          connectionStore.setIsConnected(true)
+          connectionStore.setConnectionState('connected')
+          connectionStore.setReconnectAttempt(0)
           if (globalSocket) actionQueue.flush(globalSocket)
-
-          // Auto-rejoin active room on reconnect
-          const activeRoom = activeRoomRef.current || (() => {
-            try { return sessionStorage.getItem(ACTIVE_ROOM_KEY) } catch { return null }
-          })()
-          if (activeRoom && userId && globalSocket) {
-            logger.info(`[SocketContext] Auto-rejoining room ${activeRoom}`)
-            globalSocket.emit('rejoin_room', activeRoom, userId, (res) => {
-              if (res.success) {
-                logger.info(`[SocketContext] Successfully rejoined room ${activeRoom}`)
-              } else {
-                logger.warn(`[SocketContext] Failed to rejoin room ${activeRoom}:`, res.error)
-                // Room no longer exists — clear active room
-                activeRoomRef.current = null
-                try { sessionStorage.removeItem(ACTIVE_ROOM_KEY) } catch { /* noop */ }
-              }
-            })
-          }
         })
 
         globalSocket.io.on('reconnect_failed', () => {
           logger.error('Socket reconnection failed after all attempts')
           setConnectionState('disconnected')
+          connectionStore.setIsConnected(false)
+          connectionStore.setConnectionState('disconnected')
         })
       }
 
@@ -248,7 +260,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           // No token available
         }
       }
-      globalSocket.auth = freshToken ? { token: freshToken } : {}
+      globalSocket.auth = freshToken
+        ? { token: freshToken, playerSessionId: playerSessionIdRef.current }
+        : { playerSessionId: playerSessionIdRef.current }
       globalSocket.disconnect().connect()
       logger.info(`[SocketContext] Auth changed (userId: ${userId ?? 'null'}), reconnecting socket`)
     }
@@ -257,7 +271,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
   }, [userId, isLoaded, getToken])
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected, connectionState, reconnectAttempt, socketEmit, setActiveRoom }}>
+    <SocketContext.Provider value={{ socket, isConnected, connectionState, reconnectAttempt, playerSessionId: playerSessionIdRef.current, socketEmit, setActiveRoom }}>
       {children}
     </SocketContext.Provider>
   )

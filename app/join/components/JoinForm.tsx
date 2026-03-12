@@ -7,12 +7,13 @@ import { analytics } from '@/lib/analytics'
 import { successHaptic, errorHaptic } from '@/hooks/useHaptics'
 import { isCapacitorNative } from '@/lib/platform'
 import { withTimeout } from '@/lib/socketTimeout'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE, ENTER_Y, STAGGER, PRESS } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { EyeIcon, WarningIcon } from '@/components/GameIcons'
 import { PageContainer, Button, Input, Card, Badge } from '@/components/ui'
 import { EmptyState } from '@/components/EmptyState'
 import { PublicRoomCard } from './PublicRoomCard'
+import { isBetaFeatureEnabled } from '@/lib/betaFeatures'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 
@@ -30,14 +31,6 @@ export interface JoinFormProps {
 }
 
 const VALID_ROOM_CODE_REGEX = /^[A-HJ-NP-Y2-9]{4}$/
-
-function BackArrowIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
 
 function GameModeLabel({ mode }: { mode: GameMode }) {
   switch (mode) {
@@ -65,10 +58,15 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
   } | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
 
+  // Individual digit refs for 4-box room code
+  const digitRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null])
+  const [focusedDigit, setFocusedDigit] = useState<number | null>(null)
+
   // Public games state
   const [publicRooms, setPublicRooms] = useState<PublicRoomListing[]>([])
   const [isMatching, setIsMatching] = useState(false)
   const [matchError, setMatchError] = useState<string | null>(null)
+  const publicMatchmakingEnabled = isBetaFeatureEnabled('publicMatchmaking')
 
   const validateRoomCode = (code: string): string => {
     if (!code) return 'Room code is required'
@@ -91,10 +89,58 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
     const upper = value.toUpperCase()
     setRoomCode(upper)
     setRoomPreview(null)
-    // Always clear error when code becomes valid to prevent stale error display
     const error = validateRoomCode(upper)
     if (roomCodeTouched || !error) setRoomCodeError(error)
     if (upper.length === 4 && VALID_ROOM_CODE_REGEX.test(upper)) nicknameInputRef.current?.focus()
+  }
+
+  // Handle individual digit input for 4-box layout
+  const handleDigitChange = (index: number, value: string) => {
+    // Take only the last character typed
+    const char = value.slice(-1).toUpperCase()
+    const digits = roomCode.padEnd(4, ' ').split('')
+
+    if (char) {
+      digits[index] = char
+      const newCode = digits.join('').replace(/ /g, '')
+      // If pasting a full code
+      if (value.length > 1) {
+        const pasted = value.toUpperCase().slice(0, 4)
+        handleRoomCodeChange(pasted)
+        if (pasted.length === 4) {
+          nicknameInputRef.current?.focus()
+        } else {
+          digitRefs.current[Math.min(pasted.length, 3)]?.focus()
+        }
+        return
+      }
+      handleRoomCodeChange(newCode.slice(0, 4))
+      // Auto-advance to next box
+      if (index < 3) {
+        digitRefs.current[index + 1]?.focus()
+      } else {
+        nicknameInputRef.current?.focus()
+      }
+    }
+  }
+
+  const handleDigitKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      e.preventDefault()
+      const digits = roomCode.padEnd(4, ' ').split('')
+      if (digits[index] && digits[index] !== ' ') {
+        digits[index] = ' '
+        handleRoomCodeChange(digits.join('').replace(/ /g, ''))
+      } else if (index > 0) {
+        digits[index - 1] = ' '
+        handleRoomCodeChange(digits.join('').replace(/ /g, ''))
+        digitRefs.current[index - 1]?.focus()
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      digitRefs.current[index - 1]?.focus()
+    } else if (e.key === 'ArrowRight' && index < 3) {
+      digitRefs.current[index + 1]?.focus()
+    }
   }
 
   const handleNicknameChange = (value: string) => {
@@ -134,6 +180,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
 
   // Subscribe to public rooms
   useEffect(() => {
+    if (!publicMatchmakingEnabled) return
     if (!socket || !isConnected) return
 
     socket.emit('list_public_rooms', undefined, (res) => {
@@ -149,9 +196,13 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
       socket.emit('unsubscribe_public_rooms')
       socket.off('public_rooms_update')
     }
-  }, [socket, isConnected])
+  }, [socket, isConnected, publicMatchmakingEnabled])
 
   const handleQuickPlay = useCallback((gameMode: GameMode) => {
+    if (!publicMatchmakingEnabled) {
+      setMatchError('Public matchmaking is disabled for this beta build.')
+      return
+    }
     if (!socket || !isConnected) return
     setIsMatching(true)
     setMatchError(null)
@@ -172,7 +223,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
         setMatchError(res.error || 'Failed to find a game')
       }
     })
-  }, [socket, isConnected, nickname, toast])
+  }, [socket, isConnected, nickname, toast, publicMatchmakingEnabled])
 
   const handleJoinPublicRoom = useCallback((code: string) => {
     handleRoomCodeChange(code)
@@ -235,271 +286,258 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
 
+  // Extract digits for the 4-box display
+  const digits = roomCode.padEnd(4, '').split('').slice(0, 4)
+
   return (
     <PageContainer size="narrow" centered>
-        {/* Icon + Heading */}
-        <motion.div
-          className="mb-8 text-center"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={MOTION.gentle}
+      {/* Back button */}
+      <motion.div
+        className="mb-6"
+        {...ENTER_Y}
+        transition={SPRING_GENTLE}
+      >
+        <motion.button
+          onClick={onNavigateHome}
+          className="flex items-center gap-1.5 text-sm font-medium cursor-pointer"
+          style={{ color: 'var(--color-text-tertiary)', background: 'none', border: 'none', padding: 0 }}
+          {...PRESS}
         >
-          <div className="flex justify-center mb-3">
-            <span style={{ fontSize: '32px' }}>🎭</span>
-          </div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(28px, 7vw, 36px)',
-              fontWeight: 700,
-              color: 'var(--color-text-primary)',
-              lineHeight: 1.1,
-              letterSpacing: '-0.02em',
-            }}
-          >
-            Join a Game
-          </h1>
-          <p style={{ fontSize: '15px', color: 'var(--color-text-tertiary)', marginTop: '8px' }}>
-            Enter the room code from your host
-          </p>
-        </motion.div>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back
+        </motion.button>
+      </motion.div>
 
-        {/* Room code input */}
-        <motion.div
-          className="mb-5"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05, ...MOTION.gentle }}
+      {/* Title */}
+      <motion.div
+        className="mb-8 text-center"
+        {...ENTER_Y}
+        transition={SPRING_GENTLE}
+      >
+        <h1
+          className="font-bold leading-tight tracking-tight"
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '28px',
+            color: 'var(--color-text-primary)',
+          }}
         >
-          <label
-            htmlFor="join-room-code"
-            style={{
-              display: 'block',
-              fontSize: '12px',
-              fontWeight: 600,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase' as const,
-              color: 'var(--color-text-tertiary)',
-              marginBottom: '6px',
-            }}
-          >
-            Room Code
-          </label>
-          <div style={{ position: 'relative' }}>
+          Join a Game
+        </h1>
+      </motion.div>
+
+      {/* Room code — 4 separate boxes */}
+      <motion.div
+        className="mb-6"
+        {...ENTER_Y}
+        transition={{ delay: STAGGER, ...SPRING_GENTLE }}
+      >
+        <label
+          className="block text-xs font-semibold uppercase tracking-widest mb-2"
+          style={{ color: 'var(--color-text-tertiary)' }}
+        >
+          Room Code
+        </label>
+        <div className="flex justify-center gap-3">
+          {[0, 1, 2, 3].map((i) => (
             <input
-              id="join-room-code"
+              key={i}
+              ref={(el) => { digitRefs.current[i] = el }}
               type="text"
-              value={roomCode}
-              onChange={(e) => handleRoomCodeChange(e.target.value)}
-              onBlur={() => { setRoomCodeTouched(true); setRoomCodeError(validateRoomCode(roomCode)) }}
-              placeholder="ABCD"
-              maxLength={4}
               inputMode="text"
               autoCapitalize="characters"
               autoComplete="off"
-              enterKeyHint="next"
+              maxLength={4}
+              value={digits[i] || ''}
+              onChange={(e) => handleDigitChange(i, e.target.value)}
+              onKeyDown={(e) => handleDigitKeyDown(i, e)}
+              onBlur={() => { setFocusedDigit(null); setRoomCodeTouched(true); setRoomCodeError(validateRoomCode(roomCode)) }}
+              onFocus={(e) => { setFocusedDigit(i); e.target.select() }}
+              className="text-center outline-none transition-all duration-200"
               style={{
-                width: '100%',
-                fontFamily: 'var(--font-script)',
+                width: '56px',
+                height: '56px',
+                fontFamily: 'var(--font-mono)',
                 fontSize: '28px',
                 fontWeight: 700,
-                textAlign: 'center',
-                letterSpacing: '0.15em',
-                padding: '14px 16px',
                 borderRadius: '12px',
-                border: roomCodeTouched && roomCodeError
+                background: 'var(--color-surface-inset)',
+                color: 'var(--color-text-primary)',
+                border: focusedDigit === i
+                  ? '2px solid var(--color-accent)'
+                  : roomCodeTouched && roomCodeError
                   ? '2px solid var(--color-danger)'
                   : isRoomCodeValid
                   ? '2px solid var(--color-success)'
-                  : '1px solid var(--color-border)',
-                background: 'var(--color-surface)',
-                color: 'var(--color-text-primary)',
-                outline: 'none',
-                transition: 'border-color 0.2s',
+                  : '2px solid transparent',
               }}
             />
-            {isRoomCodeValid && (
-              <span
-                style={{
-                  position: 'absolute',
-                  right: '14px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: 'var(--color-success)',
-                  fontSize: '20px',
-                  fontWeight: 700,
-                }}
-              >
-                {'\u2713'}
-              </span>
-            )}
-          </div>
-          {roomCodeTouched && roomCodeError && (
-            <p style={{ fontSize: '13px', color: 'var(--color-danger)', marginTop: '4px' }}>{roomCodeError}</p>
-          )}
-        </motion.div>
+          ))}
+        </div>
+        {roomCodeTouched && roomCodeError && (
+          <p className="text-center mt-2 text-xs" style={{ color: 'var(--color-danger)' }}>{roomCodeError}</p>
+        )}
+      </motion.div>
 
-        {/* Room Preview */}
-        <AnimatePresence>
-          {isLoadingPreview && isRoomCodeValid && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-5"
-            >
-              <div
-                className="flex items-center gap-3 p-3 rounded-xl"
-                style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
-              >
-                <div className="w-8 h-8 rounded-full animate-pulse" style={{ background: 'var(--color-border)' }} />
-                <div className="flex-1">
-                  <div className="h-4 w-24 rounded animate-pulse mb-1" style={{ background: 'var(--color-border)' }} />
-                  <div className="h-3 w-16 rounded animate-pulse" style={{ background: 'var(--color-border)' }} />
-                </div>
-              </div>
-            </motion.div>
-          )}
-          {roomPreview && !isLoadingPreview && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-5"
-            >
-              <div
-                className="flex items-center gap-3 p-3 rounded-xl"
-                style={{
-                  background: 'var(--color-surface)',
-                  border: '1px solid var(--color-border)',
-                }}
-              >
-                <div
-                  className="flex items-center justify-center rounded-full shrink-0"
-                  style={{ width: 40, height: 40, background: 'rgba(245, 158, 66, 0.15)' }}
-                >
-                  <span style={{ fontSize: '18px' }}>🎬</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p style={{ fontWeight: 600, fontSize: '15px', color: 'var(--color-text-primary)' }}>
-                    {roomPreview.hostName}&apos;s Room
-                  </p>
-                  <p style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
-                    {roomPreview.playerCount} player{roomPreview.playerCount !== 1 ? 's' : ''} · <GameModeLabel mode={roomPreview.gameMode} />
-                    {roomPreview.isMature && (
-                      <Badge variant="danger" size="sm" style={{ marginLeft: '6px' }}>18+</Badge>
-                    )}
-                  </p>
-                </div>
-                <div
-                  className="shrink-0 rounded-full"
-                  style={{
-                    width: 10,
-                    height: 10,
-                    background: isFull ? 'var(--color-warning)' : 'var(--color-success)',
-                  }}
-                />
-              </div>
-              {isFull && (
-                <div
-                  className="flex items-center gap-2 mt-2 p-2 rounded-lg text-sm"
-                  style={{ background: 'var(--color-surface)', color: 'var(--color-warning)', border: '1px solid var(--color-border)' }}
-                >
-                  <EyeIcon size={16} color="var(--color-warning)" />
-                  <span>Room is full — you&apos;ll join as a spectator</span>
-                </div>
-              )}
-              {roomPreview.gameState !== 'LOBBY' && (
-                <div
-                  className="flex items-center gap-2 mt-2 p-2 rounded-lg text-sm"
-                  style={{ background: 'var(--color-surface)', color: 'var(--color-danger)', border: '1px solid var(--color-border)' }}
-                >
-                  <WarningIcon size={16} color="var(--color-danger)" />
-                  <span>Game in progress — wait for next round</span>
-                </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Nickname input */}
-        <motion.div
-          className="mb-5"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, ...MOTION.gentle }}
-        >
-          <Input
-            ref={nicknameInputRef}
-            label="Nickname"
-            error={nicknameTouched && nicknameError ? nicknameError : undefined}
-            success={!!isNicknameValid}
-            value={nickname}
-            onChange={(e) => handleNicknameChange(e.target.value)}
-            onBlur={() => { setNicknameTouched(true); setNicknameError(validateNickname(nickname)) }}
-            onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300) }}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleJoin() }}
-            placeholder="e.g. Captain Chaos"
-            maxLength={20}
-            autoComplete="off"
-            enterKeyHint="go"
-            hint={nickname.length > 12 ? `${nickname.length}/20` : undefined}
-          />
-        </motion.div>
-
-        {/* Error banner */}
-        {error && (
+      {/* Room Preview */}
+      <AnimatePresence>
+        {isLoadingPreview && isRoomCodeValid && (
           <motion.div
-            className="mb-5 p-3 rounded-xl text-center"
-            style={{ background: 'var(--color-danger)', color: 'white' }}
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            role="alert"
-            aria-live="polite"
+            exit={{ opacity: 0, y: 8 }}
+            transition={SPRING_GENTLE}
+            className="mb-5"
           >
-            <p className="font-semibold text-sm">{error}</p>
+            <div
+              className="flex items-center gap-3 p-3 rounded-xl"
+              style={{ background: 'var(--color-surface-inset)', border: '1px solid var(--color-border)' }}
+            >
+              <div className="w-8 h-8 rounded-full animate-pulse" style={{ background: 'var(--color-border)' }} />
+              <div className="flex-1">
+                <div className="h-4 w-24 rounded animate-pulse mb-1" style={{ background: 'var(--color-border)' }} />
+                <div className="h-3 w-16 rounded animate-pulse" style={{ background: 'var(--color-border)' }} />
+              </div>
+            </div>
           </motion.div>
         )}
-
-        {/* Join button */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, ...MOTION.gentle }}
-        >
-          <Button
-            variant="primary"
-            size="lg"
-            fullWidth
-            loading={isJoining}
-            disabled={!isFormValid()}
-            onClick={handleJoin}
-            className={shakeInvalid ? 'shake' : ''}
+        {roomPreview && !isLoadingPreview && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={SPRING_GENTLE}
+            className="mb-5"
           >
-            {isJoining ? 'Joining...' : 'Join Game'}
-          </Button>
-          {!isFormValid() && !isJoining && (
-            <p className="text-center mt-2" style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
-              Fill in all fields to continue
-            </p>
-          )}
+            <div
+              className="flex items-center gap-3 p-3 rounded-xl"
+              style={{
+                background: 'var(--color-surface-inset)',
+                border: '1px solid var(--color-border)',
+              }}
+            >
+              <div
+                className="flex items-center justify-center rounded-full shrink-0"
+                style={{ width: 40, height: 40, background: 'rgba(245, 158, 66, 0.15)' }}
+              >
+                <span className="text-lg">🎬</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-[15px]" style={{ color: 'var(--color-text-primary)' }}>
+                  {roomPreview.hostName}&apos;s Room
+                </p>
+                <p className="text-[13px]" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {roomPreview.playerCount} player{roomPreview.playerCount !== 1 ? 's' : ''} · <GameModeLabel mode={roomPreview.gameMode} />
+                  {roomPreview.isMature && (
+                    <Badge variant="danger" size="sm" className="ml-1.5">18+</Badge>
+                  )}
+                </p>
+              </div>
+              <div
+                className="shrink-0 w-2.5 h-2.5 rounded-full"
+                style={{
+                  background: isFull ? 'var(--color-warning)' : 'var(--color-success)',
+                }}
+              />
+            </div>
+            {isFull && (
+              <div
+                className="flex items-center gap-2 mt-2 p-2 rounded-lg text-sm"
+                style={{ background: 'var(--color-surface-inset)', color: 'var(--color-warning)', border: '1px solid var(--color-border)' }}
+              >
+                <EyeIcon size={16} color="var(--color-warning)" />
+                <span>Room is full — you&apos;ll join as a spectator</span>
+              </div>
+            )}
+            {roomPreview.gameState !== 'LOBBY' && (
+              <div
+                className="flex items-center gap-2 mt-2 p-2 rounded-lg text-sm"
+                style={{ background: 'var(--color-surface-inset)', color: 'var(--color-danger)', border: '1px solid var(--color-border)' }}
+              >
+                <WarningIcon size={16} color="var(--color-danger)" />
+                <span>Game in progress — wait for next round</span>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Nickname input */}
+      <motion.div
+        className="mb-5"
+        {...ENTER_Y}
+        transition={{ delay: STAGGER * 2, ...SPRING_GENTLE }}
+      >
+        <Input
+          ref={nicknameInputRef}
+          label="Nickname"
+          error={nicknameTouched && nicknameError ? nicknameError : undefined}
+          success={!!isNicknameValid}
+          value={nickname}
+          onChange={(e) => handleNicknameChange(e.target.value)}
+          onBlur={() => { setNicknameTouched(true); setNicknameError(validateNickname(nickname)) }}
+          onFocus={(e) => { setTimeout(() => e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300) }}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleJoin() }}
+          placeholder="e.g. Captain Chaos"
+          maxLength={20}
+          autoComplete="off"
+          enterKeyHint="go"
+          hint={nickname.length > 12 ? `${nickname.length}/20` : undefined}
+        />
+      </motion.div>
+
+      {/* Error banner */}
+      {error && (
+        <motion.div
+          className="mb-5 p-3 rounded-xl text-center"
+          style={{ background: 'var(--color-danger)', color: 'white' }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={SPRING_GENTLE}
+          role="alert"
+          aria-live="polite"
+        >
+          <p className="font-semibold text-sm">{error}</p>
         </motion.div>
+      )}
 
-        {/* Divider */}
-        <div className="flex items-center gap-3 my-8">
-          <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
-          <span style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-tertiary)' }}>
-            or browse public games
-          </span>
-          <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
-        </div>
+      {/* Join button */}
+      <motion.div
+        {...ENTER_Y}
+        transition={{ delay: STAGGER * 3, ...SPRING_GENTLE }}
+      >
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
+          loading={isJoining}
+          disabled={!isFormValid()}
+          onClick={handleJoin}
+          className={shakeInvalid ? 'shake' : ''}
+        >
+          {isJoining ? 'Joining...' : 'Join Game'}
+        </Button>
+      </motion.div>
 
-        {/* Quick Play buttons */}
+      {/* Divider */}
+      <div className="flex items-center gap-3 my-8">
+        <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+        <span
+          className="text-xs font-semibold uppercase tracking-widest"
+          style={{ color: 'var(--color-text-tertiary)' }}
+        >
+          {publicMatchmakingEnabled ? 'or browse public games' : 'private beta'}
+        </span>
+        <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+      </div>
+
+      {publicMatchmakingEnabled && (
         <motion.div
           className="grid grid-cols-2 gap-3 mb-4"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, ...MOTION.gentle }}
+          {...ENTER_Y}
+          transition={{ delay: STAGGER * 4, ...SPRING_GENTLE }}
         >
           <Card
             variant="interactive"
@@ -507,9 +545,14 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             onClick={() => !isMatching && handleQuickPlay('ENSEMBLE')}
             className="relative text-center"
           >
-            <div style={{ fontSize: '24px', marginBottom: '4px' }}>👥</div>
-            <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>Ensemble</div>
-            <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>3-6 performers</div>
+            <div className="text-2xl mb-1">👥</div>
+            <div
+              className="text-[13px] font-bold"
+              style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
+            >
+              Ensemble
+            </div>
+            <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>3-6 performers</div>
             {isMatching && (
               <motion.div
                 className="absolute inset-0 rounded-xl flex items-center justify-center"
@@ -517,7 +560,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-accent)' }}>Matching...</span>
+                <span className="text-[13px] font-medium" style={{ color: 'var(--color-accent)' }}>Matching...</span>
               </motion.div>
             )}
           </Card>
@@ -527,28 +570,35 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             onClick={() => !isMatching && handleQuickPlay('HEAD_TO_HEAD')}
             className="relative text-center"
           >
-            <div style={{ fontSize: '24px', marginBottom: '4px' }}>⚔️</div>
-            <div style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>Head-to-Head</div>
-            <div style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', marginTop: '2px' }}>2-player duel</div>
+            <div className="text-2xl mb-1">⚔️</div>
+            <div
+              className="text-[13px] font-bold"
+              style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
+            >
+              Head-to-Head
+            </div>
+            <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>2-player duel</div>
           </Card>
         </motion.div>
+      )}
 
-        {/* Match error */}
-        <AnimatePresence>
-          {matchError && (
-            <motion.div
-              className="mb-4 p-3 rounded-lg text-center text-sm"
-              style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-danger)' }}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-            >
-              {matchError}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* Match error */}
+      <AnimatePresence>
+        {matchError && (
+          <motion.div
+            className="mb-4 p-3 rounded-lg text-center text-sm"
+            style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-danger)' }}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={SPRING_GENTLE}
+          >
+            {matchError}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-        {/* Public room list */}
+      {publicMatchmakingEnabled ? (
         <div className="flex flex-col gap-3">
           {publicRooms.length === 0 ? (
             <EmptyState
@@ -568,6 +618,14 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             ))
           )}
         </div>
+      ) : (
+        <EmptyState
+          variant="games"
+          title="Private beta mode"
+          description="Public matchmaking is currently disabled while we harden the core loop."
+          action={{ label: 'Host a Private Game', onClick: onNavigateHome }}
+        />
+      )}
     </PageContainer>
   )
 }

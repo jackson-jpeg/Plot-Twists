@@ -3,12 +3,12 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import dynamic from 'next/dynamic'
-const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => ({ default: m.QRCodeSVG })), { ssr: false, loading: () => <div className="animate-pulse rounded-lg" style={{ width: 140, height: 140, background: 'var(--color-surface-alt)' }} /> })
+const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => ({ default: m.QRCodeSVG })), { ssr: false, loading: () => <div className="animate-pulse" style={{ width: 140, height: 140, borderRadius: '8px', background: 'var(--color-surface-alt)' }} /> })
 import type { RoomSettings, ScriptCustomization, AudioSettings, GameMode } from '@/lib/types'
 const ScriptCustomizationPanel = dynamic(() => import('@/components/ScriptCustomizationPanel').then(m => ({ default: m.ScriptCustomizationPanel })), { ssr: false, loading: () => null })
 const CardPackSelector = dynamic(() => import('@/components/CardPackSelector').then(m => ({ default: m.CardPackSelector })), { ssr: false, loading: () => null })
 const AudioSettingsPanel = dynamic(() => import('@/components/AudioSettingsPanel').then(m => ({ default: m.AudioSettingsPanel })), { ssr: false, loading: () => null })
-import { SPRING, SPRING_GENTLE, ENTER_Y, PRESS, STAGGER } from '@/lib/motion'
+import { MOTION, STAGGER } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 import { Button, Card, Badge, Avatar } from '@/components/ui'
@@ -51,8 +51,7 @@ function ChevronIcon({ size = 16, direction = 'down' }: { size?: number; directi
       viewBox="0 0 16 16"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="transition-transform duration-200"
-      style={{ transform: direction === 'up' ? 'rotate(180deg)' : undefined }}
+      style={{ transform: direction === 'up' ? 'rotate(180deg)' : undefined, transition: 'transform 0.2s ease' }}
     >
       <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
@@ -67,7 +66,6 @@ export function HostLobby({
   onShowOnboarding, onNavigateHome,
 }: HostLobbyProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [qrOpen, setQrOpen] = useState(false)
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
 
@@ -107,38 +105,36 @@ export function HostLobby({
     return `${nonHostPlayers.length} of ${min} needed`
   }
 
-  // --- Sections ---
+  // --- Shared sub-sections ---
 
   const roomCodeSection = (
     <motion.div
-      {...ENTER_Y}
-      transition={{ ...SPRING_GENTLE, delay: 0.1 }}
-      className="text-center rounded-[28px] border px-5 py-6"
-      style={{
-        background: 'var(--gradient-stage)',
-        borderColor: 'rgba(255,255,255,0.12)',
-        boxShadow: 'var(--shadow-marquee)',
-      }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 }}
     >
-      <p
-        className="uppercase tracking-widest font-semibold mb-2"
-        style={{ fontSize: '11px', fontFamily: 'var(--font-body)', color: 'rgba(255,255,255,0.62)' }}
-      >
-        Tonight&apos;s room code
+      <p style={{
+        fontSize: 'var(--text-label)',
+        fontWeight: 600,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase' as const,
+        color: 'var(--color-text-tertiary)',
+        marginBottom: '8px',
+        textAlign: isDesktop ? 'left' : 'center',
+      }}>
+        Room Code
       </p>
       {roomCode ? (
         <>
-          <div className="flex items-center justify-center gap-3">
-            <span
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '64px',
-                lineHeight: 1,
-                letterSpacing: '0.04em',
-                color: 'white',
-                textShadow: '0 10px 30px rgba(0,0,0,0.28)',
-              }}
-            >
+          <div className="flex items-center gap-3" style={{ justifyContent: isDesktop ? 'flex-start' : 'center' }}>
+            <span style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: isDesktop ? '80px' : '64px',
+              fontWeight: 700,
+              lineHeight: 1,
+              letterSpacing: '0.04em',
+              color: 'var(--color-text-primary)',
+            }}>
               {roomCode}
             </span>
             <motion.button
@@ -149,94 +145,104 @@ export function HostLobby({
                   toast.success('Link copied!')
                 } catch { toast.error('Failed to copy') }
               }}
-              className="p-2 cursor-pointer bg-transparent border-none mt-2"
-              style={{ color: 'rgba(255,255,255,0.68)' }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--color-text-tertiary)',
+                padding: '8px',
+                marginTop: '8px',
+              }}
               whileHover={{ scale: 1.1 }}
-              {...PRESS}
+              whileTap={{ scale: 0.9 }}
               title="Copy join link"
               aria-label="Copy join link"
             >
               <CopyIcon size={22} />
             </motion.button>
           </div>
-          <p className="mt-1 text-xs" style={{ color: 'rgba(255,255,255,0.72)' }}>
-            Cast your players and get the audience in the room
+          <p style={{
+            fontSize: 'var(--text-caption)',
+            marginTop: '4px',
+            color: 'var(--color-text-tertiary)',
+            textAlign: isDesktop ? 'left' : 'center',
+          }}>
+            Share this code with your friends
           </p>
           {creditBalance && (
-            <p
-              className="mt-1.5 text-xs"
-              style={{ color: creditBalance.total === 0 ? '#ffd4d4' : 'rgba(255,255,255,0.58)' }}
-            >
+            <p style={{
+              fontSize: 'var(--text-caption)',
+              marginTop: '6px',
+              color: creditBalance.total === 0 ? 'var(--color-danger)' : 'var(--color-text-tertiary)',
+              textAlign: isDesktop ? 'left' : 'center',
+            }}>
               {creditBalance.total} script{creditBalance.total !== 1 ? 's' : ''} remaining
             </p>
           )}
         </>
       ) : (
-        <div className="animate-pulse inline-block rounded-xl" style={{ width: '280px', height: '72px', background: 'var(--color-surface-alt)' }} />
+        <div className="animate-pulse" style={{ width: '280px', height: '72px', display: 'inline-block', borderRadius: 12, background: 'var(--color-surface-alt)' }} />
       )}
     </motion.div>
   )
 
   const qrSection = (
     <motion.div
-      {...ENTER_Y}
-      transition={{ ...SPRING_GENTLE, delay: 0.2 }}
-      className="mt-6"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2 }}
+      style={{ marginTop: '24px' }}
     >
-      <button
-        onClick={() => setQrOpen(prev => !prev)}
-        className="flex items-center justify-center gap-2 w-full py-2 cursor-pointer bg-transparent border-none"
-        style={{ color: 'var(--color-text-tertiary)', fontSize: '13px', fontFamily: 'var(--font-body)' }}
-      >
-        <span>{qrOpen ? 'Hide' : 'Show'} QR Code</span>
-        <ChevronIcon size={14} direction={qrOpen ? 'up' : 'down'} />
-      </button>
-      <AnimatePresence>
-        {qrOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={SPRING_GENTLE}
-            className="overflow-hidden"
-          >
-            <Card variant="surface" padding="md" className="flex items-center gap-5 mt-2">
-              {joinUrl ? (
-                <div className="flex-shrink-0 rounded-lg overflow-hidden p-2" style={{ background: 'var(--color-surface-alt)' }}>
-                  <QRCodeSVG value={joinUrl} size={isDesktop ? 140 : 120} level="H" />
-                </div>
-              ) : (
-                <div className="animate-pulse flex-shrink-0 rounded-lg" style={{ width: '136px', height: '136px', background: 'var(--color-surface-alt)' }} />
-              )}
-              <div>
-                <p className="font-bold text-[17px]" style={{ color: 'var(--color-text-primary)' }}>
-                  Scan to join
-                </p>
-                <p className="text-xs leading-relaxed mt-1" style={{ color: 'var(--color-text-secondary)' }}>
-                  Or go to <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>plot-twists.com</span> and enter the code above
-                </p>
-              </div>
-            </Card>
-          </motion.div>
+      <Card variant="surface" padding="md" className="flex items-center gap-5">
+        {joinUrl ? (
+          <div className="flex-shrink-0 rounded-lg overflow-hidden p-2" style={{ background: 'var(--color-surface-alt)' }}>
+            <QRCodeSVG value={joinUrl} size={isDesktop ? 140 : 120} level="H" />
+          </div>
+        ) : (
+          <div className="animate-pulse flex-shrink-0" style={{ width: '136px', height: '136px', borderRadius: '8px', background: 'var(--color-surface-alt)' }} />
         )}
-      </AnimatePresence>
+        <div>
+          <p style={{
+            fontWeight: 700,
+            fontSize: '17px',
+            color: 'var(--color-text-primary)',
+            marginBottom: '4px',
+          }}>
+            Scan to join
+          </p>
+          <p style={{
+            fontSize: 'var(--text-caption)',
+            lineHeight: 1.5,
+            color: 'var(--color-text-secondary)',
+          }}>
+            Or go to <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>plot-twists.com</span> and enter the code above
+          </p>
+        </div>
+      </Card>
     </motion.div>
   )
 
   const playersSection = settings.gameMode !== 'SOLO' ? (
     <motion.div
-      {...ENTER_Y}
-      transition={{ ...SPRING_GENTLE, delay: 0.3 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
     >
       {/* Players header */}
       <div className="flex items-center justify-between mb-3">
-        <p
-          className="uppercase tracking-widest font-semibold"
-          style={{ fontSize: '11px', fontFamily: 'var(--font-body)', color: 'var(--color-text-tertiary)' }}
-        >
+        <p style={{
+          fontSize: 'var(--text-label)',
+          fontWeight: 600,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase' as const,
+          color: 'var(--color-text-tertiary)',
+        }}>
           Players ({nonHostPlayers.length})
         </p>
-        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+        <p style={{
+          fontSize: 'var(--text-caption)',
+          color: 'var(--color-text-tertiary)',
+        }}>
           Max {settings.gameMode === 'HEAD_TO_HEAD' ? 2 : 8}
         </p>
       </div>
@@ -250,27 +256,25 @@ export function HostLobby({
               initial={{ opacity: 0, x: -40, scale: 0.9 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 40, scale: 0.95 }}
-              transition={{ ...SPRING_GENTLE, delay: index * STAGGER }}
+              transition={{ ...MOTION.gentle, delay: index * STAGGER.fast }}
             >
               <Card variant="surface" padding="sm" className="flex items-center gap-3">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ ...SPRING, delay: index * STAGGER + 0.1 }}
+                  transition={{ ...MOTION.bouncy, delay: index * STAGGER.fast + 0.1 }}
                 >
                   <Avatar name={player.nickname} size="md" />
                 </motion.div>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <PlayerConnectionDot connected={player.connected} />
-                    <p
-                      className="font-semibold text-sm truncate"
-                      style={{
-                        fontFamily: 'var(--font-body)',
-                        color: player.connected === false ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)',
-                      }}
-                    >
+                    <p style={{
+                      fontWeight: 600,
+                      fontSize: 'var(--text-body)',
+                      color: player.connected === false ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)',
+                    }}>
                       {player.nickname}
                     </p>
                   </div>
@@ -290,8 +294,8 @@ export function HostLobby({
 
         {!canStartGame && getWaitingText() && (
           <motion.p
-            className="text-center py-5 text-xs"
-            style={{ color: 'var(--color-text-tertiary)' }}
+            className="text-center py-5"
+            style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-tertiary)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
@@ -305,9 +309,9 @@ export function HostLobby({
       className="py-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ ...SPRING_GENTLE, delay: 0.3 }}
+      transition={{ delay: 0.3 }}
     >
-      <p className="text-xs text-center" style={{ color: 'var(--color-text-secondary)', fontFamily: 'var(--font-body)' }}>
+      <p style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
         Solo mode — you are the star performer. Press Start Game when ready.
       </p>
     </motion.div>
@@ -315,8 +319,9 @@ export function HostLobby({
 
   const settingsSection = (
     <motion.div
-      {...ENTER_Y}
-      transition={{ ...SPRING_GENTLE, delay: 0.4 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4 }}
     >
       <Button
         variant="secondary"
@@ -334,8 +339,9 @@ export function HostLobby({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={SPRING_GENTLE}
-            className="overflow-hidden mt-3"
+            transition={MOTION.gentle}
+            style={{ overflow: 'hidden' }}
+            className="mt-3"
           >
             <div className="flex flex-col gap-4">
               {/* Quick/Custom Tabs */}
@@ -366,12 +372,7 @@ export function HostLobby({
 
               {/* Game Mode Selection */}
               <Card variant="surface" padding="md">
-                <h3
-                  className="text-lg font-bold mb-3"
-                  style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
-                >
-                  Game Mode
-                </h3>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '12px' }}>Game Mode</h3>
                 <div className="grid gap-3 md:grid-cols-3">
                   {([
                     { mode: 'SOLO' as const, label: 'Solo', desc: '1 player vs AI', sublabel: '' },
@@ -381,21 +382,21 @@ export function HostLobby({
                     <motion.button
                       key={mode}
                       onClick={() => onUpdateGameMode(mode)}
-                      className="p-4 cursor-pointer relative overflow-visible text-left"
                       style={{
-                        borderRadius: 'var(--radius-card)',
+                        padding: '16px', cursor: 'pointer', position: 'relative', overflow: 'visible',
+                        borderRadius: 'var(--radius-card)', textAlign: 'left',
                         border: settings.gameMode === mode ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
-                        background: settings.gameMode === mode ? 'var(--color-highlight)' : 'var(--color-surface-alt)',
+                        background: settings.gameMode === mode ? 'var(--color-highlight)' : 'var(--color-surface-alt)'
                       }}
                       whileHover={{ scale: 1.02, y: -2 }}
-                      {...PRESS}
+                      whileTap={{ scale: 0.98 }}
                     >
                       {gameSetupMode === 'quick' && mode === 'ENSEMBLE' && (
-                        <div className="absolute -top-2 -right-2">
+                        <div style={{ position: 'absolute', top: '-8px', right: '-8px' }}>
                           <Badge variant="success" size="sm" style={{ background: 'var(--color-success)', color: 'white', borderRadius: '999px', fontSize: '9px' }}>Recommended</Badge>
                         </div>
                       )}
-                      <div className="font-semibold mb-1" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>{label}</div>
+                      <div style={{ fontFamily: 'var(--font-display)', fontWeight: 600, marginBottom: '4px', color: 'var(--color-text-primary)' }}>{label}</div>
                       <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{desc}</div>
                       {sublabel && <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>{sublabel}</div>}
                     </motion.button>
@@ -425,11 +426,11 @@ export function HostLobby({
 
               {/* Content Rating */}
               {gameSetupMode === 'quick' && (
-                <motion.div {...ENTER_Y} transition={{ ...SPRING_GENTLE, delay: 0.1 }}>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
                   <Card variant="surface" padding="md">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-[17px] font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>{settings.isMature ? 'After Dark' : 'Family Friendly'}</h3>
+                        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)' }}>{settings.isMature ? 'After Dark' : 'Family Friendly'}</h3>
                         <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>{settings.isMature ? 'Adult themes, mature humor' : 'Fun for all ages'}</p>
                       </div>
                       <Button variant="secondary" size="sm" onClick={onToggleMature}>
@@ -446,7 +447,7 @@ export function HostLobby({
                   <Card variant="surface" padding="md">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-[17px] font-bold mb-0.5" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>{settings.isMature ? 'After Dark' : 'Family Friendly'}</h3>
+                        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '2px' }}>{settings.isMature ? 'After Dark' : 'Family Friendly'}</h3>
                         <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>Content Rating</p>
                       </div>
                       <Button variant="ghost" size="sm" onClick={onToggleMature}>
@@ -492,13 +493,14 @@ export function HostLobby({
               {/* Make Public Toggle */}
               {settings.gameMode !== 'SOLO' && (
                 <motion.div
-                  {...ENTER_Y}
-                  transition={{ ...SPRING_GENTLE, delay: 0.15 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
                 >
                   <Card variant="surface" padding="md">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-[17px] font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
+                        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
                           {settings.isPublic ? 'Public Game' : 'Private Game'}
                         </h3>
                         <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
@@ -527,12 +529,20 @@ export function HostLobby({
   const startButton = (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={SPRING_GENTLE}
-      style={{
-        borderRadius: 'var(--radius-button)',
-        ...(canStartGame && { boxShadow: '0 0 20px rgba(245, 158, 66, 0.4)' }),
-      }}
+      animate={canStartGame ? {
+        opacity: 1,
+        y: 0,
+        boxShadow: [
+          '0 4px 20px rgba(245, 158, 66, 0.35)',
+          '0 4px 32px rgba(245, 158, 66, 0.55)',
+          '0 4px 20px rgba(245, 158, 66, 0.35)',
+        ],
+      } : { opacity: 1, y: 0 }}
+      transition={canStartGame ? {
+        boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
+        ...MOTION.gentle,
+      } : MOTION.gentle}
+      style={{ borderRadius: 'var(--radius-button)' }}
     >
       <Button
         variant="primary"
@@ -540,9 +550,9 @@ export function HostLobby({
         fullWidth
         disabled={!canStartGame}
         onClick={() => { successHaptic(); onStartGame() }}
-        className="py-[18px]"
         style={{
-          ...(canStartGame && { boxShadow: '0 0 20px rgba(245, 158, 66, 0.4)' }),
+          padding: '18px',
+          ...(canStartGame && { boxShadow: '0 4px 20px rgba(245, 158, 66, 0.35)' }),
         }}
       >
         {settings.gameMode === 'SOLO' ? 'Start Solo Game' : 'Start Game'}
@@ -552,66 +562,94 @@ export function HostLobby({
 
   return (
     <>
-      {/* Top Bar: ← Back + ● Connected */}
+      {/* Top Bar: Back + Connected */}
       <motion.div
-        className="flex items-center justify-between px-4 pb-2 w-full"
+        className="flex items-center justify-between px-4 pb-2"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={SPRING}
-        style={{
-          paddingTop: 'max(16px, env(safe-area-inset-top, 0px))',
-          maxWidth: isDesktop ? '1200px' : undefined,
-          margin: isDesktop ? '0 auto' : undefined,
-        }}
+        transition={{ duration: 0.3 }}
+        style={{ paddingTop: 'max(16px, env(safe-area-inset-top, 0px))', maxWidth: isDesktop ? '1200px' : undefined, margin: isDesktop ? '0 auto' : undefined, width: '100%' }}
       >
         <Button
           variant="ghost"
           size="sm"
           onClick={onNavigateHome}
-          icon={<span className="text-[13px]">&#x2039;</span>}
-          style={{ color: 'var(--color-text-secondary)' }}
+          icon={<span style={{ fontSize: '13px' }}>&#x2039;</span>}
+          style={{ color: 'var(--color-text-tertiary)' }}
         >
           Back
         </Button>
-        <div
-          className="flex items-center gap-1.5 text-xs"
-          style={{ color: isConnected ? 'var(--color-success)' : 'var(--color-danger)' }}
-        >
-          <span className="text-[8px]" aria-hidden="true">&#9679;</span>
+        <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-caption)', color: isConnected ? 'var(--color-success)' : 'var(--color-danger)' }}>
+          <span style={{ fontSize: '8px' }} aria-hidden="true">&#9679;</span>
           <span>{isConnected ? 'Connected' : 'Reconnecting...'}</span>
         </div>
       </motion.div>
 
-      {/* Main content */}
-      <div
-        className="w-full max-w-lg mx-auto px-5 flex flex-col"
-        style={{
+      {/* Main content: responsive layout */}
+      {isDesktop ? (
+        /* Desktop: 40/60 split */
+        <div style={{
+          display: 'flex',
+          gap: '48px',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 40px',
           minHeight: 'calc(100dvh - 60px)',
-          paddingBottom: 'calc(100px + env(safe-area-inset-bottom, 0px))',
-        }}
-      >
-        <div className="rounded-[32px] border p-3" style={{ background: 'rgba(255,255,255,0.34)', borderColor: 'rgba(255,255,255,0.5)' }}>
-          {roomCodeSection}
-        </div>
-        {qrSection}
-        <div className="mt-6">{playersSection}</div>
-        <div className="flex-1" />
-        <div className="mt-6">{settingsSection}</div>
+        }}>
+          {/* Left column: Room code + QR */}
+          <div style={{ flex: '0 0 40%', paddingTop: '24px' }}>
+            {roomCodeSection}
+            {qrSection}
+          </div>
 
-        {/* Fixed bottom Start button */}
-        <div
-          className="fixed bottom-0 left-0 right-0 px-5 z-50"
-          style={{
-            paddingTop: '16px',
-            paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
-            background: 'linear-gradient(to top, rgba(244,236,222,0.96) 68%, transparent)',
-          }}
-        >
-          <div className="max-w-lg mx-auto">
-            {startButton}
+          {/* Right column: Players + Settings + Start */}
+          <div style={{
+            flex: '1 1 60%',
+            paddingTop: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+            paddingBottom: '40px',
+          }}>
+            {playersSection}
+            <div style={{ flex: 1 }} />
+            {settingsSection}
+            <div style={{ maxWidth: '400px', margin: '0 auto', width: '100%' }}>
+              {startButton}
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        /* Mobile: stacked layout */
+        <div className="w-full max-w-lg mx-auto px-5" style={{
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 'calc(100dvh - 60px)',
+          paddingBottom: 'calc(100px + env(safe-area-inset-bottom, 0px))',
+        }}>
+          {roomCodeSection}
+          <div style={{ marginTop: '24px' }}>{qrSection}</div>
+          <div style={{ marginTop: '24px' }}>{playersSection}</div>
+          <div style={{ flex: 1 }} />
+          <div style={{ marginTop: '24px' }}>{settingsSection}</div>
+
+          {/* Bottom-anchored Start button */}
+          <div style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            padding: '16px 20px',
+            paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+            background: 'linear-gradient(to top, var(--color-bg) 70%, transparent)',
+            zIndex: 'var(--z-sticky)',
+          }}>
+            <div className="max-w-lg mx-auto">
+              {startButton}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

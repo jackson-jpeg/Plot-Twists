@@ -3,7 +3,7 @@
 import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { PlayerRole } from '@/lib/types'
-import { SPRING_GENTLE, SPRING_BOUNCY, STAGGER } from '@/lib/motion'
+import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { EyeIcon, CrownIcon, CheckCircleIcon } from '@/components/GameIcons'
 import { PushPermissionPrompt } from '@/components/PushPermissionPrompt'
@@ -32,32 +32,20 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
   return (
     <motion.div
       key="lobby"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={SPRING_GENTLE}
+      variants={VARIANTS.pageTransition}
+      initial="initial"
+      animate="animate"
+      exit="exit"
       className="flex flex-col items-center justify-center"
-      style={{
-        minHeight: '100dvh',
-        padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px',
-        background: 'radial-gradient(circle at top, rgba(255,79,184,0.18), transparent 24%), radial-gradient(circle at 85% 20%, rgba(63,124,255,0.16), transparent 22%), var(--gradient-page)',
-      }}
+      style={{ minHeight: '100dvh', padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-bg)' }}
     >
-      <div
-        className="w-full text-center rounded-[30px] border px-5 py-6"
-        style={{
-          maxWidth: isDesktop ? '560px' : '448px',
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,245,236,0.88) 100%)',
-          borderColor: 'var(--color-border)',
-          boxShadow: 'var(--shadow-3)',
-        }}
-      >
+      <div className="w-full text-center" style={{ maxWidth: isDesktop ? '520px' : '448px' }}>
         {/* Success icon */}
         <motion.div
           className="flex justify-center mb-4"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ ...SPRING_BOUNCY, delay: 0.1 }}
+          transition={{ ...MOTION.bouncy, delay: 0.1 }}
         >
           {isSpectator ? (
             <div
@@ -95,7 +83,7 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
           transition={{ delay: 0.3 }}
         >
           {isSpectator ? 'Sit back and enjoy the show! You can vote at the end.' : (
-            <>Backstage doors are open<motion.span animate={prefersReducedMotion ? {} : { opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>...</motion.span></>
+            <>Waiting for host to start<motion.span animate={prefersReducedMotion ? {} : { opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>...</motion.span></>
           )}
         </motion.p>
 
@@ -139,13 +127,12 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
                   key={player.id}
                   className="flex items-center gap-3 p-3 rounded-xl"
                   style={{
-                    background: isMe ? 'rgba(255, 90, 54, 0.08)' : 'rgba(255,255,255,0.62)',
-                    border: isMe ? '1.5px solid var(--color-accent)' : '1px solid var(--color-border)',
-                    boxShadow: isMe ? '0 16px 36px rgba(255, 90, 54, 0.14)' : 'none',
+                    background: isMe ? 'rgba(245, 158, 66, 0.06)' : 'var(--color-surface-alt)',
+                    border: isMe ? '1.5px solid var(--color-accent)' : '1px solid transparent',
                   }}
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.35 + i * STAGGER, ...SPRING_GENTLE }}
+                  transition={{ delay: 0.35 + i * 0.05, ...MOTION.gentle }}
                 >
                   {/* Avatar */}
                   <Avatar name={player.nickname} size="sm" highlighted={isMe} />
@@ -180,22 +167,16 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
           </div>
         </motion.div>
 
+        {/* Decorative dots */}
         <motion.div
-          className="mb-6 rounded-[22px] border px-4 py-4 text-left"
+          className="flex justify-center gap-2 mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          style={{
-            background: 'linear-gradient(135deg, #2c0714 0%, #1a0f31 100%)',
-            borderColor: 'rgba(255,255,255,0.08)',
-          }}
         >
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(255,255,255,0.52)' }}>
-            Backstage note
-          </p>
-          <p className="mt-2 text-sm font-semibold" style={{ color: 'white' }}>
-            When the host starts, your phone turns into your cue card and teleprompter.
-          </p>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-success)' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-accent)' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-border)' }} />
         </motion.div>
 
         {/* Auto-start countdown */}

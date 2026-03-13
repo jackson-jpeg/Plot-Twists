@@ -301,7 +301,17 @@ function HostPageContent() {
     socket?.emit('request_new_game', roomCode, { keepSelections })
   }
 
-  const navigateHome = () => {
+  const navigateHome = async () => {
+    if (socket && roomCode) {
+      try {
+        await withTimeout<{ success: boolean; error?: string }>(
+          (cb) => socket.emit('leave_room', roomCode, cb),
+          3000
+        )
+      } catch {
+        // If leave_room fails we still clear local recovery state and navigate away.
+      }
+    }
     setActiveRoom(null)
     router.push('/')
   }

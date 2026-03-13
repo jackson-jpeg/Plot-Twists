@@ -1,6 +1,7 @@
 import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
 import { startScriptGeneration } from './game.helpers'
+import { calculateResults } from '../services/voting.service'
 import * as roomService from '../services/room.service'
 import * as matchmakingService from '../services/matchmaking.service'
 import { CONFIG } from '../utils/config'
@@ -88,6 +89,15 @@ export function registerAllHandlers(io: AppServer) {
               if (allSubmitted && removed.room.players.size > 1) {
                 logger.info(`All remaining players submitted after grace expiry, starting script generation for room ${code}`)
                 startScriptGeneration(removed.room, io).catch(err => logger.error(`Script generation error in room ${code}:`, err))
+              }
+            }
+
+            if (removed.room.gameState === 'VOTING' && !removed.player.isHost) {
+              const remainingPlayers = Array.from(removed.room.players.values()).filter(p => p.role === 'PLAYER')
+              const allVoted = remainingPlayers.length > 0 && remainingPlayers.every(p => p.hasSubmittedVote)
+              if (allVoted) {
+                logger.info(`All remaining players voted after grace expiry in room ${code}, calculating results`)
+                void calculateResults(removed.room, io)
               }
             }
 

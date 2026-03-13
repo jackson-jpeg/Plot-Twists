@@ -9,6 +9,8 @@ import { initializeAudienceState } from '../services/audience.service'
 import { validateCustomization } from '../services/scriptCustomization.service'
 import { validateAudioSettings, createDefaultAudioSettings } from '../services/audio.service'
 import { STANDARD_PACK_ID } from '../services/cardpack.service'
+import { startScriptGeneration } from './game.helpers'
+import { calculateResults } from '../services/voting.service'
 import { MAX_PLAYERS } from '../utils/constants'
 import { requireHost } from '../socket/helpers'
 import * as roomService from '../services/room.service'
@@ -204,6 +206,80 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       logger.error('Error joining room:', error)
       callback({ success: false, error: 'Failed to join room' })
     }
+  }))
+
+  socket.on('leave_room', withErrorHandler(socket, 'leave_room', async (roomCode, callback) => {
+    const upperRoomCode = roomCode?.toUpperCase()
+    if (!upperRoomCode) {
+      callback({ success: false, error: 'Room code is required' })
+      return
+    }
+
+    const room = roomService.getRoomFromCache(upperRoomCode)
+    if (!room) {
+      callback({ success: true })
+      return
+    }
+
+    const playerEntry = Array.from(room.players.entries()).find(([, player]) => player.socketId === socket.id)
+    if (!playerEntry) {
+      callback({ success: true })
+      return
+    }
+
+    const [playerId, player] = playerEntry
+    socket.leave(upperRoomCode)
+
+    if (player.isHost) {
+      logger.info(`Host "${player.nickname}" ended room ${upperRoomCode}`)
+
+      for (const remainingPlayer of room.players.values()) {
+        if (remainingPlayer.id === playerId) continue
+        const remainingSocket = io.sockets.sockets.get(remainingPlayer.socketId)
+        if (!remainingSocket) continue
+        remainingSocket.emit('kicked', { reason: 'The host ended the game' })
+        remainingSocket.leave(upperRoomCode)
+      }
+
+      roomService.clearAllRoomTimeouts(upperRoomCode)
+      matchmakingService.cleanupRoom(upperRoomCode)
+      await roomService.deleteRoom(upperRoomCode)
+      if (room.isPublic) {
+        matchmakingService.broadcastPublicRooms(io)
+      }
+
+      callback({ success: true })
+      return
+    }
+
+    roomService.removePlayer(room, playerId)
+    io.to(upperRoomCode).emit('player_left', playerId)
+    io.to(upperRoomCode).emit('players_update', Array.from(room.players.values()))
+
+    if (room.isPublic) {
+      matchmakingService.syncAutoStart(room, io)
+      matchmakingService.broadcastPublicRooms(io)
+    }
+
+    if (room.gameState === 'SELECTION') {
+      const remainingPlayers = Array.from(room.players.values()).filter(p => p.role === 'PLAYER' && !p.isHost)
+      const allSubmitted = remainingPlayers.length > 0 && remainingPlayers.every(p => p.hasSubmittedSelection)
+      if (allSubmitted && room.players.size > 1) {
+        logger.info(`All remaining players submitted after ${player.nickname} left room ${upperRoomCode}, starting script generation`)
+        void startScriptGeneration(room, io).catch(err => logger.error(`Script generation error in room ${upperRoomCode}:`, err))
+      }
+    }
+
+    if (room.gameState === 'VOTING') {
+      const remainingPlayers = Array.from(room.players.values()).filter(p => p.role === 'PLAYER')
+      const allVoted = remainingPlayers.length > 0 && remainingPlayers.every(p => p.hasSubmittedVote)
+      if (allVoted) {
+        logger.info(`All remaining players voted after ${player.nickname} left room ${upperRoomCode}, calculating results`)
+        void calculateResults(room, io)
+      }
+    }
+
+    callback({ success: true })
   }))
 
   // Get room preview (for join page)

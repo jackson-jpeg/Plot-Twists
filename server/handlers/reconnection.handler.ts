@@ -2,7 +2,42 @@
 import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
 import * as roomService from '../services/room.service'
+import type { Player, Room, RoomRecoverySnapshot } from '@/lib/types'
 import { logger } from '@/lib/logger'
+
+export function buildRoomRecoverySnapshot(room: Room, playerId: string, player: Player): RoomRecoverySnapshot {
+  const hostDisconnected = room.gameState === 'PERFORMING' && room.host.connected === false
+
+  return {
+    gameState: room.gameState,
+    players: Array.from(room.players.values()),
+    script: room.script ?? null,
+    currentLineIndex: room.currentLineIndex,
+    scriptImageUrl: room.script?.imageUrl ?? null,
+    isPaused: room.isPaused,
+    hostDisconnected,
+    myPlayerId: playerId,
+    roomCode: room.code,
+    assignedCharacter: player.assignedCharacter,
+    myRole: player.role,
+    hasSubmittedSelection: player.hasSubmittedSelection,
+    selection: room.selections.get(playerId) ?? undefined,
+    spectatorMessages: room.audienceInteraction?.spectatorMessages ?? [],
+    votingStatus: { hasVoted: !!room.votes.get(playerId) },
+    results: room.results ?? null,
+    directorsReview: room.directorsReview ?? null,
+    roomSettings: {
+      isMature: room.isMature,
+      gameMode: room.gameMode,
+      scriptCustomization: room.scriptCustomization,
+      cardPackId: room.cardPackId,
+      audioSettings: room.audioSettings,
+      audienceInteractionEnabled: Boolean(room.audienceInteraction),
+      isPublic: room.isPublic,
+      publicTitle: room.publicTitle,
+    },
+  }
+}
 
 export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
   socket.on('rejoin_room', withErrorHandler(socket, 'rejoin_room', async (roomCode: string, playerSessionId: string, callback) => {
@@ -57,33 +92,7 @@ export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, c
       logger.info(`Auto-resumed performance in room ${upperCode} after host reconnect`)
     }
 
-    // Build state snapshot for the client
-    const snapshot = {
-      gameState: room.gameState,
-      players: Array.from(room.players.values()),
-      script: room.script ?? null,
-      currentLineIndex: room.currentLineIndex,
-      scriptImageUrl: room.script?.imageUrl ?? null,
-      myPlayerId: playerId,
-      roomCode: upperCode,
-      assignedCharacter: player.assignedCharacter,
-      myRole: player.role,
-      hasSubmittedSelection: player.hasSubmittedSelection,
-      selection: room.selections.get(playerId) ?? undefined,
-      spectatorMessages: room.audienceInteraction?.spectatorMessages ?? [],
-      votingStatus: { hasVoted: !!room.votes.get(playerId) },
-      results: null,
-      roomSettings: {
-        isMature: room.isMature,
-        gameMode: room.gameMode,
-        scriptCustomization: room.scriptCustomization,
-        cardPackId: room.cardPackId,
-        audioSettings: room.audioSettings,
-        audienceInteractionEnabled: Boolean(room.audienceInteraction),
-        isPublic: room.isPublic,
-        publicTitle: room.publicTitle,
-      },
-    }
+    const snapshot = buildRoomRecoverySnapshot(room, playerId, player)
 
     callback({ success: true, snapshot })
   }))

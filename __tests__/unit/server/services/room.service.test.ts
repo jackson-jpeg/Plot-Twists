@@ -253,3 +253,67 @@ describe('timeout management', () => {
     clearTimeout(t2)
   })
 })
+
+describe('loadRoomsFromFirestore', () => {
+  it('marks recovered players disconnected and pauses active performances', async () => {
+    const now = Date.now()
+    const host = {
+      id: 'host-1',
+      nickname: 'Host',
+      isHost: true,
+      socketId: 'sock-host',
+      role: 'HOST',
+      connected: true,
+    } as Player
+    const player = {
+      id: 'p-1',
+      nickname: 'Player 1',
+      isHost: false,
+      socketId: 'sock-player',
+      role: 'PLAYER',
+      connected: true,
+    } as Player
+
+    mockDb.getAll.mockResolvedValueOnce([
+      makeRoom({
+        code: 'LIVE',
+        host,
+        players: new Map([
+          [host.id, host],
+          [player.id, player],
+        ]),
+        gameState: 'PERFORMING',
+        isPaused: false,
+        lastActivity: now - 30_000,
+      }),
+    ])
+
+    await roomService.loadRoomsFromFirestore()
+
+    const recoveredRoom = roomService.getRoomFromCache('LIVE')
+    expect(recoveredRoom?.isPaused).toBe(true)
+    expect(recoveredRoom?.host.connected).toBe(false)
+    expect(recoveredRoom?.players.get('p-1')?.connected).toBe(false)
+    expect(mockDb.set).toHaveBeenCalledWith('rooms', 'LIVE', expect.objectContaining({
+      isPaused: true,
+    }))
+  })
+
+  it('rewinds stale loading rooms back to selection', async () => {
+    const now = Date.now()
+    mockDb.getAll.mockResolvedValueOnce([
+      makeRoom({
+        code: 'LOAD',
+        gameState: 'LOADING',
+        lastActivity: now - (3 * 60 * 1000),
+      }),
+    ])
+
+    await roomService.loadRoomsFromFirestore()
+
+    expect(roomService.getRoomFromCache('LOAD')?.gameState).toBe('SELECTION')
+    expect(mockDb.set).toHaveBeenCalledWith('rooms', 'LOAD', expect.objectContaining({
+      gameState: 'SELECTION',
+    }))
+  })
+})

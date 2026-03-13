@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import type { LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
+import type { LevelInfo } from '@/lib/types'
 import { shareScriptText } from '@/lib/scriptUtils'
 import { VARIANTS, MOTION } from '@/lib/animations'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
@@ -38,13 +38,13 @@ export function HostResults({
   const [isSharing, setIsSharing] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
-  const [directorsReview, setDirectorsReview] = useState<DirectorsReviewType | null>(null)
   const [posterError, setPosterError] = useState(false)
 
   // Store selectors
   const script = useScriptStore((s) => s.script)
   const scriptImageUrl = useScriptStore((s) => s.imageUrl)
   const gameResults = useVotingStore((s) => s.gameResults)
+  const directorsReview = useVotingStore((s) => s.directorsReview)
   const xpEvents = useVotingStore((s) => s.xpEvents)
   const levelUpData = useVotingStore((s) => s.levelUpData)
   const setLevelUpData = useVotingStore((s) => s.setLevelUpData)
@@ -66,12 +66,6 @@ export function HostResults({
       if (response.success && response.levelInfo) setLevelInfo(response.levelInfo)
     })
   }, [userUid])
-
-  // Listen for AI Director's Review
-  useEffect(() => {
-    const unsub = socketManager.on('directors_review', setDirectorsReview)
-    return unsub
-  }, [])
 
   const handleDownloadScript = async () => {
     if (!script) return

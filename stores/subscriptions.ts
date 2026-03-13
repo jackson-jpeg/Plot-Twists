@@ -268,6 +268,10 @@ export function initStoreSubscriptions(
     useVotingStore.getState().setResults(results)
   }))
 
+  unsubs.push(manager.on('directors_review', (review) => {
+    useVotingStore.getState().setDirectorsReview(review)
+  }))
+
   unsubs.push(manager.on('xp_gained', (data) => {
     useVotingStore.getState().setXpEvents(data.events)
   }))

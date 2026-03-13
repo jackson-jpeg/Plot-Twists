@@ -36,6 +36,38 @@ let retryInterval: NodeJS.Timeout | null = null
 
 // ── Helpers ────────────────────────────────────────────────
 
+function normalizeRecoveredRoom(room: Room, now: number): boolean {
+  let changed = false
+
+  for (const player of room.players.values()) {
+    if (player.connected !== false) {
+      player.connected = false
+      changed = true
+    }
+    if (player.socketId) {
+      player.socketId = ''
+      changed = true
+    }
+  }
+
+  if (room.host.connected !== false) {
+    room.host.connected = false
+    changed = true
+  }
+  if (room.host.socketId) {
+    room.host.socketId = ''
+    changed = true
+  }
+
+  // Recovering a live performance requires an explicit host resume because in-memory timers are gone.
+  if (room.gameState === 'PERFORMING' && now - room.lastActivity <= 2 * 60 * 1000 && !room.isPaused) {
+    room.isPaused = true
+    changed = true
+  }
+
+  return changed
+}
+
 function startRetryQueue(): void {
   if (retryInterval) return
   retryInterval = setInterval(async () => {
@@ -422,18 +454,26 @@ export async function loadRoomsFromFirestore(): Promise<void> {
       }
 
       const room = firestoreToRoom(doc)
+      let changed = normalizeRecoveredRoom(room, now)
 
       // Stale PERFORMING rooms (>2min since activity) → transition to RESULTS
       if (room.gameState === 'PERFORMING' && now - room.lastActivity > 2 * 60 * 1000) {
         room.gameState = 'RESULTS'
+        changed = true
       }
 
       // LOADING rooms that are stale → back to SELECTION
       if (room.gameState === 'LOADING' && now - room.lastActivity > 2 * 60 * 1000) {
         room.gameState = 'SELECTION'
+        changed = true
       }
 
       rooms.set(room.code, room)
+
+      if (changed) {
+        await db.set(Collections.ROOMS, room.code, roomToFirestore(room))
+      }
+
       recovered++
     }
 

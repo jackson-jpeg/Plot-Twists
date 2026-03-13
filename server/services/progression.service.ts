@@ -13,7 +13,6 @@ import type {
   Achievement,
 } from '../../lib/types'
 import { getDatabase, Collections } from '../db'
-import { logger } from '../../lib/logger'
 
 // ── Level Configuration ──────────────────────────────────
 
@@ -128,7 +127,9 @@ export async function getProgression(playerId: string): Promise<Progression> {
   }
 
   // Check if weekly challenges need refresh
-  progression = refreshWeeklyChallenges(progression)
+  if (refreshWeeklyChallenges(progression)) {
+    await db.set(Collections.PROGRESSION, playerId, progression)
+  }
 
   return progression
 }
@@ -333,12 +334,12 @@ export async function markDailyBonus(playerId: string): Promise<void> {
 /**
  * Refresh weekly challenges if they've expired
  */
-function refreshWeeklyChallenges(progression: Progression): Progression {
+function refreshWeeklyChallenges(progression: Progression): boolean {
   const now = Date.now()
   const needsRefresh = progression.weeklyChallenges.length === 0 ||
     progression.weeklyChallenges.every(c => c.expiresAt < now)
 
-  if (!needsRefresh) return progression
+  if (!needsRefresh) return false
 
   // Generate 3 random challenges
   const shuffled = [...CHALLENGE_POOL].sort(() => Math.random() - 0.5)
@@ -358,7 +359,7 @@ function refreshWeeklyChallenges(progression: Progression): Progression {
     completed: false,
   }))
 
-  return progression
+  return true
 }
 
 function getNextMondayUTC(): number {

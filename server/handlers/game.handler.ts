@@ -405,6 +405,8 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
     room.script = undefined
     room.currentLineIndex = 0
     room.isPaused = false
+    room.results = undefined
+    room.directorsReview = undefined
     room.lastActivity = Date.now()
 
     // Clear votes

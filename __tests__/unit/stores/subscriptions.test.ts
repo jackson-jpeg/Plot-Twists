@@ -6,7 +6,7 @@ import { useAudienceStore } from '@/stores/audienceStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import { useVotingStore } from '@/stores/votingStore'
 import type { SocketManager } from '@/lib/socketManager'
-import type { Player, Script, GameResults, SpectatorMessage } from '@/lib/types'
+import type { DirectorsReview, Player, Script, GameResults, SpectatorMessage } from '@/lib/types'
 
 // ── Mock SocketManager ─────────────────────────────────────────
 
@@ -118,6 +118,7 @@ describe('initStoreSubscriptions', () => {
       'green_room_prompt',
       'plot_twist_started',
       'game_over',
+      'directors_review',
       'xp_gained',
       'level_up',
       'achievement_unlocked',
@@ -375,6 +376,19 @@ describe('initStoreSubscriptions', () => {
     expect(useVotingStore.getState().gameResults).toEqual(results)
   })
 
+  it('directors_review → votingStore.setDirectorsReview', () => {
+    const review: DirectorsReview = {
+      rating: 4,
+      headline: 'A triumph',
+      review: 'Very serious about very silly business.',
+      bestMoment: 'The final monologue.',
+    }
+
+    manager._simulate('directors_review', review)
+
+    expect(useVotingStore.getState().directorsReview).toEqual(review)
+  })
+
   it('xp_gained → votingStore.setXpEvents', () => {
     const events = [{ source: 'game_completed' as const, amount: 100, description: 'Completed a game', timestamp: Date.now() }]
     manager._simulate('xp_gained', { events, totalXP: 100, level: 1, title: 'Rookie' })
@@ -395,6 +409,12 @@ describe('initStoreSubscriptions', () => {
     useSelectionStore.getState().setAvailableCards({ characters: ['X'], settings: ['Y'], circumstances: ['Z'] })
     useAudienceStore.getState().addMessage({ id: 'm1', senderId: 'u1', senderName: 'Fan', text: 'Hi', timestamp: 1, isPreset: false })
     useVotingStore.getState().setResults({ allResults: [{ playerId: '1', playerName: 'A', votes: 1 }] })
+    useVotingStore.getState().setDirectorsReview({
+      rating: 5,
+      headline: 'Encore',
+      review: 'A grand finale.',
+      bestMoment: 'Curtain call.',
+    })
 
     manager._simulate('new_game_started', {})
 
@@ -403,6 +423,7 @@ describe('initStoreSubscriptions', () => {
     expect(useSelectionStore.getState().availableCards).toBeNull()
     expect(useAudienceStore.getState().spectatorMessages).toEqual([])
     expect(useVotingStore.getState().gameResults).toBeNull()
+    expect(useVotingStore.getState().directorsReview).toBeNull()
   })
 
   // ── Latency ping/pong ────────────────────────────────────

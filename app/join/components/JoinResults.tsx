@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import type { LevelInfo, DirectorsReview as DirectorsReviewType } from '@/lib/types'
+import type { LevelInfo } from '@/lib/types'
 import { SignInButton } from '@clerk/nextjs'
 import { copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
 import { withTimeout } from '@/lib/socketTimeout'
@@ -40,13 +40,13 @@ export function JoinResults({
   const confettiFiredRef = useRef(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
-  const [directorsReview, setDirectorsReview] = useState<DirectorsReviewType | null>(null)
   const [showPosterLightbox, setShowPosterLightbox] = useState(false)
 
   // Store selectors
   const script = useScriptStore((s) => s.script)
   const scriptImageUrl = useScriptStore((s) => s.imageUrl)
   const gameResults = useVotingStore((s) => s.gameResults)
+  const directorsReview = useVotingStore((s) => s.directorsReview)
   const xpEvents = useVotingStore((s) => s.xpEvents)
   const levelUpData = useVotingStore((s) => s.levelUpData)
   const setLevelUpData = useVotingStore((s) => s.setLevelUpData)
@@ -69,12 +69,6 @@ export function JoinResults({
       if (response.success && response.levelInfo) setLevelInfo(response.levelInfo)
     })
   }, [userUid, myPlayerId])
-
-  // Listen for AI Director's Review
-  useEffect(() => {
-    const unsub = socketManager.on('directors_review', setDirectorsReview)
-    return unsub
-  }, [])
 
   const getGameId = async (): Promise<string | null> => {
     const uid = userUid || myPlayerId

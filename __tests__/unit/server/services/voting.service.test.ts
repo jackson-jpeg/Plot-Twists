@@ -5,6 +5,24 @@
 
 import type { Room, Player, GameState, Script } from '../../../../lib/types'
 
+const mockGenerateDirectorsReview = jest.fn().mockResolvedValue(null)
+const mockShouldGenerateDirectorsReview = jest.fn(() => false)
+const mockRecordGameResult = jest.fn().mockResolvedValue([])
+const mockGetPlayerStats = jest.fn().mockResolvedValue({ currentWinStreak: 0 })
+const mockAwardXP = jest.fn().mockResolvedValue({
+  xpEvents: [{ source: 'game_completed', amount: 50, description: 'Game completed', timestamp: Date.now() }],
+  newLevel: 1,
+  oldLevel: 1,
+  title: 'Rookie',
+  totalXP: 50,
+})
+const mockComputeGameXPEvents = jest.fn().mockReturnValue([
+  { source: 'game_completed', description: 'Game completed' },
+])
+const mockIsFirstGameToday = jest.fn().mockResolvedValue(false)
+const mockMarkDailyBonus = jest.fn().mockResolvedValue(undefined)
+const mockUpdateChallengeProgress = jest.fn().mockResolvedValue({ completedChallenges: [], xpAwarded: 0 })
+
 // Mock database
 const mockGet = jest.fn()
 const mockUpdate = jest.fn()
@@ -50,7 +68,21 @@ jest.mock('../../../../server/services/gameHistory.service', () => ({
 
 // Mock player stats service
 jest.mock('../../../../server/services/playerStats.service', () => ({
-  recordGameResult: jest.fn().mockResolvedValue([]),
+  recordGameResult: (...args: unknown[]) => mockRecordGameResult(...args),
+  getPlayerStats: (...args: unknown[]) => mockGetPlayerStats(...args),
+}))
+
+jest.mock('../../../../server/services/directorsReview.service', () => ({
+  generateDirectorsReview: (...args: unknown[]) => mockGenerateDirectorsReview(...args),
+  shouldGenerateDirectorsReview: () => mockShouldGenerateDirectorsReview(),
+}))
+
+jest.mock('../../../../server/services/progression.service', () => ({
+  awardXP: (...args: unknown[]) => mockAwardXP(...args),
+  computeGameXPEvents: (...args: unknown[]) => mockComputeGameXPEvents(...args),
+  isFirstGameToday: (...args: unknown[]) => mockIsFirstGameToday(...args),
+  markDailyBonus: (...args: unknown[]) => mockMarkDailyBonus(...args),
+  updateChallengeProgress: (...args: unknown[]) => mockUpdateChallengeProgress(...args),
 }))
 
 // Mock roomSerializer
@@ -111,6 +143,23 @@ function makeMockIO() {
 
 beforeEach(() => {
   jest.clearAllMocks()
+  mockGenerateDirectorsReview.mockResolvedValue(null)
+  mockShouldGenerateDirectorsReview.mockReturnValue(false)
+  mockRecordGameResult.mockResolvedValue([])
+  mockGetPlayerStats.mockResolvedValue({ currentWinStreak: 0 })
+  mockAwardXP.mockResolvedValue({
+    xpEvents: [{ source: 'game_completed', amount: 50, description: 'Game completed', timestamp: Date.now() }],
+    newLevel: 1,
+    oldLevel: 1,
+    title: 'Rookie',
+    totalXP: 50,
+  })
+  mockComputeGameXPEvents.mockReturnValue([
+    { source: 'game_completed', description: 'Game completed' },
+  ])
+  mockIsFirstGameToday.mockResolvedValue(false)
+  mockMarkDailyBonus.mockResolvedValue(undefined)
+  mockUpdateChallengeProgress.mockResolvedValue({ completedChallenges: [], xpAwarded: 0 })
 })
 
 describe('calculateResults', () => {
@@ -208,5 +257,82 @@ describe('calculateResults', () => {
         expect.objectContaining({ label: 'Chat Messages' }),
       ])
     }))
+  })
+
+  it('should add weekly challenge XP to awarded events', async () => {
+    const room = makeRoom()
+    room.votes.set('p1', 'p2')
+
+    mockUpdateChallengeProgress.mockResolvedValue({
+      completedChallenges: [
+        {
+          id: 'play_3',
+          title: 'Triple Feature',
+          description: 'Play 3 games this week',
+          target: 3,
+          progress: 3,
+          xpReward: 150,
+          expiresAt: Date.now() + 1000,
+          completed: true,
+        },
+      ],
+      xpAwarded: 150,
+    })
+
+    const io = makeMockIO()
+    await calculateResults(room, io as never)
+
+    const awardCall = mockAwardXP.mock.calls.find(([playerId]) => playerId === 'p1')
+    expect(awardCall).toBeDefined()
+    expect(awardCall?.[1]).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        source: 'weekly_challenge',
+        amount: 150,
+        description: 'Weekly challenge: Triple Feature',
+      }),
+    ]))
+  })
+
+  it('should continue processing other players if one player update fails', async () => {
+    const room = makeRoom()
+    room.votes.set('p1', 'p2')
+    room.votes.set('p2', 'p1')
+    room.votes.set('p3', 'p2')
+
+    mockRecordGameResult.mockImplementation(async (playerId: string) => {
+      if (playerId === 'p1') {
+        throw new Error('stats write failed')
+      }
+      return []
+    })
+
+    const io = makeMockIO()
+    await calculateResults(room, io as never)
+
+    expect(mockRecordGameResult).toHaveBeenCalledTimes(3)
+    expect(mockAwardXP).toHaveBeenCalledTimes(2)
+    expect(mockAwardXP.mock.calls.map(([playerId]) => playerId)).toEqual(['p2', 'p3'])
+    expect(io._emit).toHaveBeenCalledWith('game_over', expect.any(Object))
+  })
+
+  it('should emit director review when generation is enabled and succeeds', async () => {
+    const room = makeRoom()
+    room.votes.set('p1', 'p2')
+    const review = {
+      rating: 4,
+      headline: 'A triumph',
+      review: 'Absurdly serious and very funny.',
+      bestMoment: 'The final line reading.',
+    }
+
+    mockShouldGenerateDirectorsReview.mockReturnValue(true)
+    mockGenerateDirectorsReview.mockResolvedValue(review)
+
+    const io = makeMockIO()
+    await calculateResults(room, io as never)
+    await new Promise<void>(resolve => setImmediate(resolve))
+
+    expect(mockGenerateDirectorsReview).toHaveBeenCalled()
+    expect(io._emit).toHaveBeenCalledWith('directors_review', review)
   })
 })

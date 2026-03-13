@@ -312,6 +312,7 @@ export interface Room {
   isPublic?: boolean
   publicTitle?: string
   autoStart?: boolean
+  results?: GameResults
   // AI Director's Review
   directorsReview?: DirectorsReview
 }
@@ -350,6 +351,8 @@ export interface RoomRecoverySnapshot {
   script: Script | null
   currentLineIndex: number
   scriptImageUrl: string | null
+  isPaused: boolean
+  hostDisconnected: boolean
   assignedCharacter?: string
   myRole?: PlayerRole
   myPlayerId: string
@@ -359,6 +362,7 @@ export interface RoomRecoverySnapshot {
   spectatorMessages?: SpectatorMessage[]
   votingStatus?: { hasVoted: boolean }
   results?: GameResults | null
+  directorsReview?: DirectorsReview | null
   roomSettings?: RoomSettings
 }
 

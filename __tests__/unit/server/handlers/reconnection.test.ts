@@ -39,6 +39,7 @@ jest.mock('../../../../server/utils/roomSerializer', () => ({
 }))
 
 import * as roomService from '../../../../server/services/room.service'
+import { buildRoomRecoverySnapshot } from '../../../../server/handlers/reconnection.handler'
 
 function makeRoom(overrides: Partial<Room> = {}): Room {
   return {
@@ -256,5 +257,49 @@ describe('clearAllRoomTimeouts', () => {
 
     roomService.clearAllRoomTimeouts('TEST')
     // No error thrown = success (timers cleaned up)
+  })
+})
+
+describe('buildRoomRecoverySnapshot', () => {
+  it('includes persisted results and director review state', () => {
+    const player = makePlayer({ id: 'player-2', assignedCharacter: 'Detective' })
+    const room = makeRoom({
+      code: 'SNAP',
+      results: {
+        winner: { playerId: 'player-2', playerName: 'Alice', votes: 3 },
+        allResults: [{ playerId: 'player-2', playerName: 'Alice', votes: 3 }],
+      },
+      directorsReview: {
+        rating: 4,
+        headline: 'A triumph',
+        review: 'Very serious about very silly business.',
+        bestMoment: 'The final monologue.',
+      },
+    })
+    room.players.set(player.id, player)
+
+    const snapshot = buildRoomRecoverySnapshot(room, player.id, player)
+
+    expect(snapshot.results).toEqual(room.results)
+    expect(snapshot.directorsReview).toEqual(room.directorsReview)
+    expect(snapshot.assignedCharacter).toBe('Detective')
+  })
+
+  it('flags host disconnect state for reconnecting audience members', () => {
+    const player = makePlayer({ id: 'player-3' })
+    const host = makePlayer({ id: 'host-1', isHost: true, role: 'HOST', connected: false, socketId: '' })
+    const room = makeRoom({
+      code: 'PAUSE',
+      host,
+      gameState: 'PERFORMING',
+      isPaused: true,
+    })
+    room.players.set(host.id, host)
+    room.players.set(player.id, player)
+
+    const snapshot = buildRoomRecoverySnapshot(room, player.id, player)
+
+    expect(snapshot.hostDisconnected).toBe(true)
+    expect(snapshot.isPaused).toBe(true)
   })
 })

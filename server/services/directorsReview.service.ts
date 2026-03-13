@@ -8,7 +8,7 @@ import { logger } from '../../lib/logger'
 import { extractJSON } from '../utils/jsonExtractor'
 import type { DirectorsReview } from '../../lib/types'
 
-interface ReviewInput {
+export interface ReviewInput {
   title: string
   synopsis: string
   cast: { nickname: string; character: string; isWinner: boolean }[]
@@ -16,11 +16,40 @@ interface ReviewInput {
   plotTwists: string[]
 }
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+let anthropicClient: Anthropic | null = null
+
+export function shouldGenerateDirectorsReview(): boolean {
+  if (process.env.ENABLE_DIRECTORS_REVIEW === 'false') {
+    return false
+  }
+
+  if (process.env.NODE_ENV === 'test' && process.env.ENABLE_DIRECTORS_REVIEW !== 'true') {
+    return false
+  }
+
+  return Boolean(process.env.ANTHROPIC_API_KEY)
+}
+
+function getAnthropicClient(): Anthropic | null {
+  if (!shouldGenerateDirectorsReview()) {
+    return null
+  }
+
+  if (!anthropicClient) {
+    anthropicClient = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    })
+  }
+
+  return anthropicClient
+}
 
 export async function generateDirectorsReview(input: ReviewInput): Promise<DirectorsReview | null> {
+  const anthropic = getAnthropicClient()
+  if (!anthropic) {
+    return null
+  }
+
   try {
     const castText = input.cast
       .map(p => `${p.nickname} as "${p.character}"${p.isWinner ? ' (MVP)' : ''}`)

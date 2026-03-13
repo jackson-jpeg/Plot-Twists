@@ -14,7 +14,8 @@ import type {
   AudienceInteractionState,
   ScriptCustomization,
   AudioSettings,
-  DirectorsReview
+  DirectorsReview,
+  GameResults,
 } from '../../lib/types'
 
 /** Firestore-safe version of Room (Records instead of Maps, no socketId) */
@@ -45,6 +46,7 @@ export interface FirestoreRoom {
   isPublic?: boolean
   publicTitle?: string
   autoStart?: boolean
+  results?: GameResults
   directorsReview?: DirectorsReview
 }
 
@@ -96,6 +98,7 @@ export function roomToFirestore(room: Room): FirestoreRoom {
     isPublic: room.isPublic,
     publicTitle: room.publicTitle,
     autoStart: room.autoStart,
+    results: room.results,
     directorsReview: room.directorsReview,
   })) as FirestoreRoom
 }
@@ -140,6 +143,7 @@ export function firestoreToRoom(doc: FirestoreRoom): Room {
     isPublic: doc.isPublic,
     publicTitle: doc.publicTitle,
     autoStart: doc.autoStart,
+    results: doc.results,
     directorsReview: doc.directorsReview,
   }
 }

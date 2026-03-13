@@ -19,6 +19,7 @@ export function applyRoomRecoverySnapshot(snapshot: RoomRecoverySnapshot): void 
   gameStore.setRoomCode(snapshot.roomCode)
   gameStore.setMyPlayerId(snapshot.myPlayerId)
   gameStore.setMyRole(snapshot.myRole ?? 'PLAYER')
+  gameStore.setMyCharacter(snapshot.assignedCharacter ?? '')
   gameStore.setRoomIsMature(snapshot.roomSettings?.isMature ?? gameStore.roomIsMature)
 
   if (snapshot.roomSettings) {
@@ -28,17 +29,20 @@ export function applyRoomRecoverySnapshot(snapshot: RoomRecoverySnapshot): void 
   scriptStore.setScript(snapshot.script)
   scriptStore.setImageUrl(snapshot.scriptImageUrl)
   scriptStore.setCurrentLineIndex(snapshot.currentLineIndex)
-  scriptStore.setIsPlaying(snapshot.gameState === 'PERFORMING' && !connectionStore.hostDisconnected)
+  scriptStore.setIsPlaying(
+    snapshot.gameState === 'PERFORMING' &&
+    !snapshot.hostDisconnected &&
+    !snapshot.isPaused
+  )
 
   selectionStore.setHasSubmitted(Boolean(snapshot.hasSubmittedSelection))
   selectionStore.setSelection(snapshot.selection ?? { character: '', setting: '', circumstance: '' })
 
   audienceStore.setSpectatorMessages(snapshot.spectatorMessages ?? [])
 
-  if (snapshot.results) {
-    votingStore.setResults(snapshot.results)
-  }
+  votingStore.setResults(snapshot.results ?? null)
+  votingStore.setDirectorsReview(snapshot.directorsReview ?? null)
 
-  connectionStore.setHostDisconnected(false)
+  connectionStore.setHostDisconnected(snapshot.hostDisconnected)
   connectionStore.setError(null)
 }

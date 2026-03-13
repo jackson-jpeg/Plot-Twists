@@ -113,6 +113,43 @@ describe('Progression Service', () => {
       expect(progression.level).toBe(3)
     })
 
+    it('should persist refreshed weekly challenges when stored ones are expired', async () => {
+      const existing: Progression = {
+        playerId: 'existing-player',
+        totalXP: 500,
+        level: 3,
+        title: 'Rookie',
+        xpHistory: [],
+        levelRewardsClaimed: [],
+        weeklyChallenges: [
+          {
+            id: 'play_3',
+            title: 'Triple Feature',
+            description: 'Play 3',
+            target: 3,
+            progress: 1,
+            xpReward: 150,
+            expiresAt: Date.now() - 1000,
+            completed: false,
+          }
+        ],
+      }
+      mockGet.mockResolvedValue(existing)
+
+      const progression = await getProgression('existing-player')
+
+      expect(progression.weeklyChallenges).toHaveLength(3)
+      expect(mockSet).toHaveBeenCalledWith(
+        'progression',
+        'existing-player',
+        expect.objectContaining({
+          weeklyChallenges: expect.arrayContaining([
+            expect.objectContaining({ completed: false }),
+          ]),
+        })
+      )
+    })
+
     it('should bootstrap from existing stats', async () => {
       mockGet.mockImplementation(async (collection: string) => {
         if (collection === 'progression') return null

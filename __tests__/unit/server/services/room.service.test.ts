@@ -170,6 +170,70 @@ describe('addPlayer / removePlayer', () => {
     const updated = roomService.getRoomFromCache('REM1')
     expect(updated?.players.get('p-2')).toBeUndefined()
   })
+
+  it('should refresh lastActivity when a player is removed', () => {
+    const room = makeRoom({ code: 'REM2', lastActivity: Date.now() - 10_000 })
+    const player: Player = {
+      id: 'p-3',
+      nickname: 'Player 3',
+      isHost: false,
+      socketId: 'sock-4',
+      role: 'PLAYER',
+      hasSubmittedSelection: false,
+      hasSubmittedVote: false
+    } as Player
+    room.players.set(player.id, player)
+    roomService.createRoom(room)
+
+    const before = room.lastActivity
+    roomService.removePlayer(room, 'p-3')
+
+    expect(roomService.getRoomFromCache('REM2')?.lastActivity).toBeGreaterThan(before)
+  })
+})
+
+describe('disconnect activity tracking', () => {
+  it('updates lastActivity when a player disconnects', () => {
+    const player: Player = {
+      id: 'p-4',
+      nickname: 'Player 4',
+      isHost: false,
+      socketId: 'sock-5',
+      role: 'PLAYER',
+      connected: true,
+      hasSubmittedSelection: false,
+      hasSubmittedVote: false
+    } as Player
+    const room = makeRoom({ code: 'DISC', lastActivity: Date.now() - 10_000 })
+    room.players.set(player.id, player)
+    roomService.createRoom(room)
+
+    const before = room.lastActivity
+    roomService.markPlayerDisconnected('DISC', 'sock-5')
+
+    expect(roomService.getRoomFromCache('DISC')?.lastActivity).toBeGreaterThan(before)
+  })
+
+  it('updates lastActivity when a player reconnects', () => {
+    const player: Player = {
+      id: 'p-5',
+      nickname: 'Player 5',
+      isHost: false,
+      socketId: 'sock-old',
+      role: 'PLAYER',
+      connected: false,
+      hasSubmittedSelection: false,
+      hasSubmittedVote: false
+    } as Player
+    const room = makeRoom({ code: 'RECN', lastActivity: Date.now() - 10_000 })
+    room.players.set(player.id, player)
+    roomService.createRoom(room)
+
+    const before = room.lastActivity
+    roomService.markPlayerReconnected('RECN', 'p-5', 'sock-new')
+
+    expect(roomService.getRoomFromCache('RECN')?.lastActivity).toBeGreaterThan(before)
+  })
 })
 
 describe('setGameState', () => {

@@ -212,6 +212,11 @@ function JoinPageContent() {
     })
   }
 
+  const leaveRoom = () => {
+    setActiveRoom(null)
+    router.push('/')
+  }
+
   if (!isConnected) {
     return (
       <PageContainer size="narrow" centered>
@@ -282,7 +287,7 @@ function JoinPageContent() {
               </p>
               <div className="flex flex-col gap-3">
                 <Button variant="secondary" fullWidth onClick={() => setHostDisconnected(false)}>Wait for Reconnection</Button>
-                <Button variant="primary" fullWidth onClick={() => router.push('/')}>Return Home</Button>
+                <Button variant="primary" fullWidth onClick={leaveRoom}>Return Home</Button>
               </div>
             </motion.div>
           </motion.div>
@@ -325,7 +330,7 @@ function JoinPageContent() {
         userUid={user?.uid || ''}
         isGuest={!user}
         onSubmitCards={handleSubmitCards}
-        onLeave={() => router.push('/')}
+        onLeave={leaveRoom}
         onShowPosterLightbox={() => setShowPosterLightbox(true)}
       />
 

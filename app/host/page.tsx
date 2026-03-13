@@ -301,6 +301,11 @@ function HostPageContent() {
     socket?.emit('request_new_game', roomCode, { keepSelections })
   }
 
+  const navigateHome = () => {
+    setActiveRoom(null)
+    router.push('/')
+  }
+
   // Auth loading / unauthenticated
   if (authLoading || !user) {
     return (
@@ -400,7 +405,7 @@ function HostPageContent() {
         onUpdateGameMode={updateGameMode}
         onSetupModeChange={handleSetupModeChange}
         onShowOnboarding={() => setShowOnboarding(true)}
-        onNavigateHome={() => router.push('/')}
+        onNavigateHome={navigateHome}
         onSubmitSoloCards={handleSubmitSoloCards}
         onBackToLobby={handleBackToLobby}
         onRetry={() => socket?.emit('retry_script_generation', roomCode)}

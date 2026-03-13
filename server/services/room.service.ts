@@ -218,6 +218,7 @@ export function addPlayer(room: Room, player: Player): void {
 /** Remove a player from a room */
 export function removePlayer(room: Room, playerId: string): void {
   room.players.delete(playerId)
+  room.lastActivity = Date.now()
   rooms.set(room.code, room)
   persistToFirestore(room)
 }
@@ -260,6 +261,7 @@ export function markPlayerDisconnected(roomCode: string, socketId: string): { pl
   for (const [playerId, player] of room.players.entries()) {
     if (player.socketId === socketId) {
       player.connected = false
+      room.lastActivity = Date.now()
       rooms.set(roomCode, room)
       persistDebounced(room)
 
@@ -300,6 +302,7 @@ export function markPlayerReconnected(roomCode: string, playerId: string, newSoc
 
   player.connected = true
   player.socketId = newSocketId
+  room.lastActivity = Date.now()
   rooms.set(roomCode, room)
   persistDebounced(room)
 

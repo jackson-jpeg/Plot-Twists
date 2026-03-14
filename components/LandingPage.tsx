@@ -6,7 +6,7 @@ import { SignInButton } from '@clerk/nextjs'
 import { analytics } from '@/lib/analytics'
 import { SPRING_GENTLE, SPRING_BOUNCY } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
-import { Button, Card, Badge, PageContainer, SectionHeader } from '@/components/ui'
+import { Button, Card, PageContainer, SectionHeader } from '@/components/ui'
 import { HomepagePosterShowcase } from '@/components/HomepagePosterShowcase'
 
 const tickerScenes = [
@@ -191,136 +191,240 @@ export function LandingPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          style={{ marginTop: '36px', padding: '0 4px', maxWidth: isDesktop ? '720px' : undefined, margin: isDesktop ? '48px auto 0' : undefined }}
+          style={{ marginTop: isDesktop ? '48px' : '36px', padding: '0 4px', maxWidth: isDesktop ? '960px' : undefined, marginInline: isDesktop ? 'auto' : undefined }}
         >
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '24px' }}>
             <SectionHeader title="How it works" align="center" />
           </div>
-          {isDesktop ? (
-            <div className="flex gap-4" style={{ position: 'relative', alignItems: 'flex-start' }}>
-              {[
-                { num: '1', title: 'Pick cards', desc: 'Character + setting + twist' },
-                { num: '2', title: 'AI writes', desc: 'Custom script in seconds' },
-                { num: '3', title: 'Perform', desc: 'Act it out, crown MVP' },
-              ].map((step, i) => (
-                <motion.div
-                  key={step.num}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.55 + i * 0.08, ...SPRING_GENTLE }}
-                  className="flex-1 text-center"
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', position: 'relative' }}
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isDesktop ? '1fr 1fr 1fr' : '1fr',
+              gap: isDesktop ? '20px' : '16px',
+            }}
+          >
+            {/* Step 1: Pick your cards */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55, ...SPRING_GENTLE }}
+            >
+              <Card variant="elevated" padding="none" style={{ overflow: 'hidden' }}>
+                {/* Visual: fanned cards */}
+                <div
+                  style={{
+                    minHeight: '160px',
+                    background: 'var(--color-surface)',
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
                 >
-                  {/* Connecting line to next step */}
-                  {i < 2 && (
-                    <svg
-                      style={{
-                        position: 'absolute',
-                        top: '18px',
-                        left: 'calc(50% + 24px)',
-                        width: 'calc(100% - 48px)',
-                        height: '2px',
-                        overflow: 'visible',
-                        pointerEvents: 'none',
-                      }}
-                      aria-hidden="true"
-                    >
-                      <line
-                        x1="0"
-                        y1="1"
-                        x2="100%"
-                        y2="1"
-                        stroke="var(--color-border)"
-                        strokeWidth="2"
-                        strokeDasharray="6 4"
-                      />
-                    </svg>
-                  )}
+                  {/* Card 1 — character */}
                   <div
-                    className="flex items-center justify-center"
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '18px',
-                      background: 'var(--color-text-primary)',
-                      position: 'relative',
-                      zIndex: 1,
+                      position: 'absolute',
+                      width: '90px',
+                      height: '120px',
+                      borderRadius: '10px',
+                      background: 'linear-gradient(135deg, #7b2d8e, #e94560)',
+                      transform: 'rotate(-8deg) translateX(-36px)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      padding: '8px',
                     }}
                   >
-                    <span
-                      className="font-display"
-                      style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-bg)' }}
-                    >
-                      {step.num}
+                    <span style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.92)', lineHeight: 1.3 }}>
+                      A pirate captain
                     </span>
                   </div>
-                  <p style={{ fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: '13px', color: 'var(--color-text-primary)' }}>
-                    {step.title}
+                  {/* Card 2 — setting */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: '90px',
+                      height: '120px',
+                      borderRadius: '10px',
+                      background: 'linear-gradient(135deg, #264653, #2a9d8f)',
+                      transform: 'rotate(0deg)',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+                      zIndex: 1,
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      padding: '8px',
+                    }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.92)', lineHeight: 1.3 }}>
+                      At a job interview
+                    </span>
+                  </div>
+                  {/* Card 3 — wild card */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      width: '90px',
+                      height: '120px',
+                      borderRadius: '10px',
+                      background: 'linear-gradient(135deg, #e76f51, #f4a261)',
+                      transform: 'rotate(8deg) translateX(36px)',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      padding: '8px',
+                    }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-ui)', fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.92)', lineHeight: 1.3 }}>
+                      Who only speaks in questions
+                    </span>
+                  </div>
+                </div>
+                <div style={{ padding: '16px 20px 20px' }}>
+                  <p style={{ fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: '15px', color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+                    1. Pick your cards
                   </p>
-                  <p style={{ fontFamily: 'var(--font-ui)', fontSize: '12px', color: 'var(--color-text-tertiary)', lineHeight: '16px' }}>
-                    {step.desc}
+                  <p style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--color-text-tertiary)', lineHeight: 1.5 }}>
+                    Choose a character, setting, and wild card from the deck.
                   </p>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5" style={{ padding: '0 4px' }}>
-              {[
-                { num: '1', bg: 'var(--color-highlight-blue, #EEF0F8)', color: 'var(--color-accent-2, #5B6AA0)', title: 'Pick your cards', desc: 'Choose a character, setting, and wild card from the deck.' },
-                { num: '2', bg: 'var(--color-success-bg, #E8F5E9)', color: 'var(--color-success, #4CAF50)', title: 'AI writes the script', desc: 'Claude crafts a hilarious scene from everyone\u2019s choices.' },
-                { num: '3', bg: 'var(--color-success-bg, #F0F5E5)', color: 'var(--color-success, #7CB342)', title: 'Perform and vote', desc: 'Act it out live, then vote for the MVP of the scene.' },
-              ].map((step, i) => (
-                <motion.div
-                  key={step.num}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.55 + i * 0.08, ...SPRING_GENTLE }}
-                >
-                  <Card variant="elevated" padding="md" style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
-                    <div
-                      className="flex items-center justify-center shrink-0"
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '20px',
-                        background: step.bg,
-                      }}
-                    >
-                      <span
-                        className="font-display"
-                        style={{ fontSize: '16px', fontWeight: 700, color: step.color }}
-                      >
-                        {step.num}
-                      </span>
-                    </div>
-                    <div>
-                      <p style={{ fontFamily: 'var(--font-ui)', fontWeight: 600, fontSize: '15px', color: 'var(--color-text-primary)', marginBottom: '2px' }}>
-                        {step.title}
-                      </p>
-                      <p style={{ fontFamily: 'var(--font-ui)', fontSize: '14px', color: 'var(--color-text-tertiary)', lineHeight: '20px' }}>
-                        {step.desc}
-                      </p>
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </motion.div>
+                </div>
+              </Card>
+            </motion.div>
 
-        {/* Social Proof — now shows on both mobile and desktop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.65 }}
-          className="flex justify-center gap-2 flex-wrap"
-          style={{ marginTop: '32px' }}
-        >
-          {['Party Game', 'AI-Powered', 'Free to Start'].map((label) => (
-            <Badge key={label} variant="default" size="md" style={{ padding: '6px 14px', borderRadius: '20px', border: '1px solid var(--color-border)' }}>
-              {label}
-            </Badge>
-          ))}
+            {/* Step 2: AI writes the script */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.63, ...SPRING_GENTLE }}
+            >
+              <Card variant="elevated" padding="none" style={{ overflow: 'hidden' }}>
+                {/* Visual: mini screenplay */}
+                <div
+                  style={{
+                    minHeight: '160px',
+                    background: 'var(--color-surface)',
+                    padding: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      background: 'var(--color-bg)',
+                      borderRadius: '8px',
+                      padding: '12px 14px',
+                      border: '1px solid var(--color-border)',
+                      width: '100%',
+                    }}
+                  >
+                    <p className="font-mono" style={{ fontSize: '11px', color: 'var(--color-text-primary)', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '2px' }}>
+                      CAPTAIN HOOK
+                    </p>
+                    <p className="font-mono" style={{ fontSize: '10px', color: 'var(--color-text-tertiary)', fontStyle: 'italic', marginBottom: '4px' }}>
+                      (nervously adjusting tie)
+                    </p>
+                    <p className="font-mono" style={{ fontSize: '10px', color: 'var(--color-text-secondary)', marginBottom: '10px', lineHeight: 1.5 }}>
+                      So, tell me about your five-year plan.
+                    </p>
+                    <p className="font-mono" style={{ fontSize: '11px', color: 'var(--color-text-primary)', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '4px' }}>
+                      INTERVIEWER
+                    </p>
+                    <p className="font-mono" style={{ fontSize: '10px', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>
+                      Sir, you literally have a hook for a hand.
+                    </p>
+                  </div>
+                </div>
+                <div style={{ padding: '16px 20px 20px' }}>
+                  <p style={{ fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: '15px', color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+                    2. AI writes the script
+                  </p>
+                  <p style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--color-text-tertiary)', lineHeight: 1.5 }}>
+                    Claude crafts a hilarious scene from everyone&rsquo;s choices.
+                  </p>
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Step 3: Perform & vote */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.71, ...SPRING_GENTLE }}
+            >
+              <Card variant="elevated" padding="none" style={{ overflow: 'hidden' }}>
+                {/* Visual: crown + MVP + vote button */}
+                <div
+                  style={{
+                    minHeight: '160px',
+                    background: 'var(--color-surface)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                  }}
+                >
+                  {/* Crown SVG */}
+                  <svg width="48" height="36" viewBox="0 0 48 36" fill="none" aria-hidden="true">
+                    <path
+                      d="M4 28L8 10L18 20L24 6L30 20L40 10L44 28H4Z"
+                      fill="url(#crownGrad)"
+                      stroke="rgba(255,200,60,0.6)"
+                      strokeWidth="1.5"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="8" cy="10" r="3" fill="#f4a261" />
+                    <circle cx="24" cy="6" r="3" fill="#e76f51" />
+                    <circle cx="40" cy="10" r="3" fill="#f4a261" />
+                    <defs>
+                      <linearGradient id="crownGrad" x1="4" y1="6" x2="44" y2="28" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#f9c74f" />
+                        <stop offset="1" stopColor="#f4a261" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <span
+                    className="font-display"
+                    style={{ fontSize: '22px', fontWeight: 800, color: 'var(--color-text-primary)', letterSpacing: '-0.02em' }}
+                  >
+                    MVP
+                  </span>
+                  {/* Stylized vote button */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                    }}
+                  >
+                    {['⭐', '⭐⭐', '⭐⭐⭐'].map((stars, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          background: i === 2 ? 'var(--color-accent)' : 'var(--color-surface-raised, var(--color-border))',
+                          borderRadius: '8px',
+                          padding: '4px 8px',
+                          fontSize: '11px',
+                          opacity: i === 2 ? 1 : 0.5,
+                          border: i === 2 ? 'none' : '1px solid var(--color-border)',
+                        }}
+                      >
+                        {stars}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ padding: '16px 20px 20px' }}>
+                  <p style={{ fontFamily: 'var(--font-ui)', fontWeight: 700, fontSize: '15px', color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+                    3. Perform &amp; vote
+                  </p>
+                  <p style={{ fontFamily: 'var(--font-ui)', fontSize: '13px', color: 'var(--color-text-tertiary)', lineHeight: 1.5 }}>
+                    Act it out live, then vote for the MVP of the scene.
+                  </p>
+                </div>
+              </Card>
+            </motion.div>
+          </div>
         </motion.div>
       </div>
     </PageContainer>

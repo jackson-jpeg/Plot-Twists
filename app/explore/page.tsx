@@ -2,80 +2,63 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { STAGGER, SPRING_GENTLE, ENTER_Y } from '@/lib/motion'
+import { STAGGER, SPRING_GENTLE } from '@/lib/motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/Modal'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { EmptyState, Skeleton } from '@/components/EmptyState'
-import { Button, Badge, Card } from '@/components/ui'
+import { Button, Badge } from '@/components/ui'
 import type { CardPackMetadata, CardPack } from '@/lib/types'
 
 // ─── Sub-components ──────────────────────────────────────────
 
 function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSelect: (pack: CardPackMetadata) => void; index?: number }) {
-  const [g1, g2] = pack.gradient || ['#888', '#aaa']
+  const [g1] = pack.gradient || ['#888', '#aaa']
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * STAGGER, ...SPRING_GENTLE }}
+      style={{ paddingTop: 8, position: 'relative' }}
     >
-      <Card variant="interactive" padding="none" onClick={() => onSelect(pack)} style={{ overflow: 'hidden' }}>
-        <div className="flex gap-0">
-          <div className="w-1 rounded-l-xl shrink-0" style={{ background: `linear-gradient(180deg, ${g1}, ${g2})` }} />
-          <div className="p-4 flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-sm font-bold truncate" style={{ color: 'var(--color-text-primary)' }}>{pack.name}</h3>
-              {pack.isMature && <Badge variant="danger" size="sm">18+</Badge>}
-            </div>
-            <p className="text-[13px] leading-relaxed line-clamp-2 mb-2" style={{ color: 'var(--color-text-secondary)' }}>{pack.description}</p>
-            <div className="flex items-center gap-2 text-[11px]" style={{ color: 'var(--color-text-disabled)' }}>
-              {pack.rating > 0 && <span className="font-semibold" style={{ color: 'var(--color-accent)' }}>★ {pack.rating.toFixed(1)}</span>}
-              <span>{pack.downloads} plays</span>
-              {pack.theme && <span className="px-1.5 py-0.5 rounded" style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-tertiary)' }}>{pack.theme}</span>}
-            </div>
-          </div>
+      {/* Folder tab */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 8,
+        width: 48,
+        height: 8,
+        borderRadius: '4px 4px 0 0',
+        background: g1,
+      }} />
+      {/* Folder body */}
+      <motion.div
+        onClick={() => onSelect(pack)}
+        whileHover={{ y: -2, boxShadow: '0 6px 18px rgba(0,0,0,0.35)' }}
+        style={{
+          background: 'linear-gradient(135deg, #d4c9a8, #c8bc98)',
+          borderRadius: '4px 10px 10px 10px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+          cursor: 'pointer',
+          padding: '12px 14px',
+          color: '#1a1812',
+          transition: 'box-shadow 0.15s ease',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#1a1812' }}>{pack.name}</h3>
+          {pack.isMature && (
+            <span style={{ fontSize: 10, fontWeight: 600, color: '#c0392b', border: '1px solid #c0392b', borderRadius: 4, padding: '1px 4px', flexShrink: 0 }}>18+</span>
+          )}
         </div>
-      </Card>
-    </motion.div>
-  )
-}
-
-function TrendingCard({ pack, rank, onSelect }: { pack: CardPackMetadata; rank: number; onSelect: (pack: CardPackMetadata) => void }) {
-  const [g1, g2] = pack.gradient || ['#888', '#aaa']
-  return (
-    <motion.div
-      className="shrink-0 cursor-pointer rounded-2xl overflow-hidden relative"
-      style={{ width: 220, scrollSnapAlign: 'start' }}
-      whileTap={{ scale: 0.97 }}
-      onClick={() => onSelect(pack)}
-    >
-      <div className="h-[130px] relative" style={{ background: `linear-gradient(135deg, ${g1}, ${g2})` }}>
-        <div className="absolute top-2.5 left-2.5 w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)' }}>{rank}</div>
-        <div className="absolute bottom-0 inset-x-0 p-3" style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.75))' }}>
-          <h3 className="text-sm font-bold text-white">{pack.name}</h3>
-          <div className="flex gap-2 text-[11px] text-white/70 mt-0.5">
-            <span>★ {pack.rating.toFixed(1)}</span>
-            <span>{pack.downloads} plays</span>
-          </div>
+        <p style={{ fontSize: 11, lineHeight: 1.5, color: '#5a5240', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', marginBottom: 8 }}>{pack.description}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#7a6e58' }}>
+          {pack.rating > 0 && <span style={{ fontWeight: 600, color: '#b8860b' }}>★ {pack.rating.toFixed(1)}</span>}
+          <span>{pack.downloads} plays</span>
+          {pack.theme && <span style={{ marginLeft: 'auto', opacity: 0.7 }}>{pack.theme}</span>}
         </div>
-      </div>
-    </motion.div>
-  )
-}
-
-function QuickPlayBanner({ onQuickPlay }: { onQuickPlay: () => void }) {
-  return (
-    <motion.div {...ENTER_Y} transition={SPRING_GENTLE}
-      className="rounded-2xl p-5 mb-7 flex items-center justify-between gap-4"
-      style={{ background: 'linear-gradient(135deg, #1a1a1a, #2d2d2d)', color: 'white' }}
-    >
-      <div>
-        <h3 className="text-[17px] font-bold mb-0.5">Feeling lucky?</h3>
-        <p className="text-[13px] text-white/50">Random pack, instant scene. No decisions required.</p>
-      </div>
-      <button className="shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold" style={{ background: 'var(--color-accent)', color: 'white' }} onClick={(e) => { e.stopPropagation(); onQuickPlay() }}>Quick Play</button>
+      </motion.div>
     </motion.div>
   )
 }
@@ -85,10 +68,10 @@ function CategoryPills({ categories, active, onSelect }: { categories: string[];
     <div className="flex gap-2 overflow-x-auto pb-1 mb-6" style={{ scrollbarWidth: 'none' }}>
       {categories.map(cat => (
         <button key={cat}
-          className="shrink-0 px-4 py-1.5 rounded-full text-[13px] font-medium border transition-colors"
+          className="shrink-0 px-3 py-1 rounded-full border transition-colors"
           style={active === cat
-            ? { background: 'var(--color-text-primary)', color: 'white', borderColor: 'var(--color-text-primary)' }
-            : { background: 'white', color: 'var(--color-text-secondary)', borderColor: 'var(--color-border)' }}
+            ? { background: '#ffffff', color: '#0a0909', borderColor: '#ffffff', fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }
+            : { background: 'transparent', color: 'var(--color-text-secondary)', borderColor: 'rgba(255,255,255,0.15)', fontSize: 11, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}
           onClick={() => onSelect(cat)}
         >{cat}</button>
       ))}
@@ -196,7 +179,6 @@ function PackPreviewContent({
 // ─── Main Page ───────────────────────────────────────────────
 
 export default function ExplorePage() {
-  const router = useRouter()
   const { socket, isConnected } = useSocket()
   const [featuredPacks, setFeaturedPacks] = useState<CardPackMetadata[]>([])
   const [searchResults, setSearchResults] = useState<CardPackMetadata[]>([])
@@ -281,8 +263,6 @@ export default function ExplorePage() {
 
   // ─── Derived data ────────────────────────────────────────
 
-  const trendingPacks = [...featuredPacks].sort((a, b) => b.downloads - a.downloads).slice(0, 5)
-
   const categories: string[] = ['All', ...Array.from(new Set(featuredPacks.map(p => p.theme).filter(Boolean)))]
 
   const displayPacks = isSearching
@@ -292,15 +272,6 @@ export default function ExplorePage() {
       : featuredPacks.filter(p => p.theme === activeCategory)
 
   // ─── Handlers ────────────────────────────────────────────
-
-  const handleQuickPlay = () => {
-    if (featuredPacks.length === 0) return
-    const randomPack = featuredPacks[Math.floor(Math.random() * featuredPacks.length)]
-    try {
-      localStorage.setItem('selectedPackId', randomPack.id)
-    } catch { /* ignore */ }
-    router.push('/host')
-  }
 
   const toggleSearch = () => {
     if (searchActive) {
@@ -315,7 +286,7 @@ export default function ExplorePage() {
   // ─── Render ──────────────────────────────────────────────
 
   return (
-    <div style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+    <div style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))', background: 'var(--color-void)', minHeight: '100vh' }}>
       <div className="mx-auto px-5 pt-6 sm:pt-8 pb-8" style={{ maxWidth: 960 }}>
         {/* Header */}
         <motion.div
@@ -323,11 +294,11 @@ export default function ExplorePage() {
           animate={{ y: 0, opacity: 1 }}
           className="flex items-center justify-between mb-6"
         >
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Explore</h1>
+          <h1 style={{ color: 'var(--color-text-primary)', fontFamily: 'var(--font-serif)', fontSize: 25, fontWeight: 700 }}>Scripts</h1>
           <button
             onClick={toggleSearch}
             className="w-9 h-9 rounded-full flex items-center justify-center text-lg"
-            style={{ background: searchActive ? 'var(--color-text-primary)' : 'var(--color-surface-alt)', color: searchActive ? 'white' : 'var(--color-text-secondary)' }}
+            style={{ background: searchActive ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)', color: searchActive ? 'white' : 'var(--color-text-secondary)', border: '1px solid rgba(255,255,255,0.1)' }}
             aria-label={searchActive ? 'Close search' : 'Search packs'}
           >
             {searchActive ? '\u00d7' : '\u{1F50D}'}
@@ -352,9 +323,9 @@ export default function ExplorePage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleSearch() }}
-                    placeholder="Search packs..."
+                    placeholder="Search scripts..."
                     className="w-full px-4 py-2.5 rounded-xl text-sm"
-                    style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', color: 'var(--color-text-primary)', outline: 'none' }}
                     aria-label="Search card packs"
                     autoFocus
                   />
@@ -367,63 +338,46 @@ export default function ExplorePage() {
           )}
         </AnimatePresence>
 
-        {/* Quick Play Banner (hidden during search) */}
-        {!isSearching && !loading && featuredPacks.length > 0 && (
-          <QuickPlayBanner onQuickPlay={handleQuickPlay} />
-        )}
-
-        {/* Trending section (hidden during search) */}
-        {!isSearching && !loading && trendingPacks.length > 0 && (
-          <motion.div {...ENTER_Y} transition={{ ...SPRING_GENTLE, delay: 0.05 }} className="mb-7">
-            <h2 className="text-base font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>Trending</h2>
-            <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollSnapType: 'x mandatory', scrollbarWidth: 'none' }}>
-              {trendingPacks.map((pack, i) => (
-                <TrendingCard key={pack.id} pack={pack} rank={i + 1} onSelect={handleSelectPack} />
-              ))}
-            </div>
-          </motion.div>
-        )}
-
         {/* Category pills */}
         {!loading && categories.length > 1 && (
           <CategoryPills categories={categories} active={activeCategory} onSelect={setActiveCategory} />
         )}
 
-        {/* All Packs section header */}
+        {/* Pack count header */}
         {!loading && displayPacks.length > 0 && (
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold" style={{ color: 'var(--color-text-primary)' }}>
-              {isSearching ? 'Search Results' : 'All Packs'}
-            </h2>
-            <span className="text-xs" style={{ color: 'var(--color-text-disabled)' }}>{displayPacks.length} packs</span>
+          <div className="flex items-center justify-between mb-5">
+            <span style={{ fontSize: 11, color: 'var(--color-text-disabled)', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 600 }}>
+              {isSearching ? 'Search Results' : activeCategory !== 'All' ? activeCategory : 'All Scripts'}
+            </span>
+            <span style={{ fontSize: 11, color: 'var(--color-text-disabled)' }}>{displayPacks.length} packs</span>
           </div>
         )}
 
         {/* Pack grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ paddingTop: 8 }}>
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} variant="card" height={120} />
+              <Skeleton key={i} variant="card" height={110} />
             ))}
           </div>
         ) : displayPacks.length === 0 ? (
           isSearching ? (
             <EmptyState
               variant="search"
-              title="No packs found"
-              description="Try a different search term or browse the featured packs."
+              title="No scripts found"
+              description="Try a different search term or browse the featured scripts."
               action={{ label: 'Clear Search', onClick: toggleSearch }}
             />
           ) : (
             <EmptyState
               variant="default"
-              title="No packs found"
-              description={activeCategory !== 'All' ? `No packs in the "${activeCategory}" category.` : 'Check back soon for curated card packs!'}
+              title="No scripts found"
+              description={activeCategory !== 'All' ? `No scripts in the "${activeCategory}" category.` : 'Check back soon for curated card packs!'}
               action={activeCategory !== 'All' ? { label: 'Show All', onClick: () => setActiveCategory('All') } : undefined}
             />
           )
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ paddingTop: 8 }}>
             {displayPacks.map((pack, index) => (
               <PackCard key={pack.id} pack={pack} onSelect={handleSelectPack} index={index} />
             ))}

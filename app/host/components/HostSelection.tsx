@@ -164,11 +164,12 @@ export function HostSelection({
         {...ENTER_Y}
         transition={SPRING_GENTLE}
         className="w-full mx-auto px-5"
-        style={{ maxWidth: isDesktop ? '900px' : '672px' }}
+        style={{ maxWidth: isDesktop ? '900px' : '672px', background: 'var(--color-void)', minHeight: '100dvh' }}
       >
         <motion.button
           onClick={onBackToLobby}
-          className="flex items-center gap-1.5 mb-4 bg-transparent border-none cursor-pointer text-[var(--color-text-tertiary)] text-[15px] py-2 px-1"
+          className="flex items-center gap-1.5 mb-4 bg-transparent border-none cursor-pointer text-[15px] py-2 px-1"
+          style={{ color: 'rgba(255,255,255,0.4)' }}
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           whileHover={{ x: -4 }}
@@ -179,11 +180,11 @@ export function HostSelection({
           <span>Back to Lobby</span>
         </motion.button>
 
-        <Card padding="lg">
+        <div>
           {!availableCards || availableCards.characters.length === 0 ? (
             <motion.div className="text-center py-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <SpinnerIcon size={32} color="var(--color-text-secondary)" className={prefersReducedMotion ? '' : ''} />
-              <p className="mt-4 text-[var(--color-text-secondary)]">Loading cards...</p>
+              <SpinnerIcon size={32} color="rgba(255,255,255,0.5)" className={prefersReducedMotion ? '' : ''} />
+              <p className="mt-4" style={{ color: 'rgba(255,255,255,0.5)' }}>Loading cards...</p>
             </motion.div>
           ) : (
             <>
@@ -197,7 +198,7 @@ export function HostSelection({
               />
 
               {/* Fixed bottom submit */}
-              <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))] z-30 bg-[var(--color-bg)]">
+              <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))] z-30" style={{ background: 'var(--color-void)' }}>
                 <Button
                   fullWidth
                   size="lg"
@@ -205,7 +206,7 @@ export function HostSelection({
                   loading={isSubmittingCards}
                   disabled={!allSelected || isSubmittingCards}
                   onClick={handleSoloSubmit}
-                  style={confirmMode ? { background: 'var(--color-success)' } : undefined}
+                  style={confirmMode ? { background: 'var(--color-success)' } : allSelected ? { background: '#fff', color: '#1a1812' } : undefined}
                 >
                   {isSubmittingCards ? (
                     'Submitting...'
@@ -217,13 +218,13 @@ export function HostSelection({
                   ) : !allSelected ? (
                     `Pick ${3 - selectedCount} more`
                   ) : (
-                    'Submit Cards \u2713'
+                    'Lock In Cards'
                   )}
                 </Button>
               </div>
             </>
           )}
-        </Card>
+        </div>
         {/* Spacer for fixed bottom button */}
         <div className="h-24" />
       </motion.div>

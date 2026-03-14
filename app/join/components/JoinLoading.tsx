@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { SPRING, SPRING_GENTLE, ENTER_Y } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
-import { TypewriterIcon, CheckCircleIcon, SpinnerIcon, PendingCircleIcon, DoorIcon, WarningIcon } from '@/components/GameIcons'
+import { CheckCircleIcon, SpinnerIcon, PendingCircleIcon, DoorIcon, WarningIcon } from '@/components/GameIcons'
 import { Button } from '@/components/ui'
 import { useScriptStore } from '@/stores/scriptStore'
 import { useAudienceStore } from '@/stores/audienceStore'
@@ -48,229 +48,282 @@ export function JoinLoading({ onLeave }: JoinLoadingProps) {
   const isDelayed = elapsed >= 60
   const isSlow = elapsed >= 30 && !isDelayed
 
+  // suppress unused warning — phase may be used by parent logic
+  void loadingPhase
+
   return (
     <motion.div
       key="loading"
       {...ENTER_Y}
       transition={SPRING_GENTLE}
-      className="min-h-screen w-full px-5 py-8 flex flex-col items-center text-center"
+      className="min-h-screen w-full flex flex-col items-center justify-center px-5 py-8"
       style={{
-        background: 'var(--color-theater-bg)',
+        background: 'var(--color-void, #08070b)',
         color: 'var(--color-theater-text)',
         paddingBottom: 'calc(32px + env(safe-area-inset-bottom, 0px))',
       }}
     >
-      <div className="w-full" style={{ maxWidth: isDesktop ? '540px' : '100%' }}>
-        {/* Typewriter icon */}
-        <motion.div
-          className="flex justify-center mb-6"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={SPRING_GENTLE}
-        >
-          <TypewriterIcon size={56} color="var(--color-theater-muted)" />
-        </motion.div>
+      <div className="w-full flex flex-col items-center" style={{ maxWidth: isDesktop ? '540px' : '360px' }}>
 
-        {/* Heading */}
-        <motion.h1
-          className="font-display font-bold text-center mb-2"
-          style={{ fontSize: 'var(--text-title)', color: 'var(--color-theater-text)' }}
-          initial={{ opacity: 0, y: 10 }}
+        {/* Paper element */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...SPRING, delay: 0.15 }}
-        >
-          Get Ready!
-        </motion.h1>
-
-        <motion.p
-          className="text-center mb-7"
-          style={{ fontSize: 'var(--text-caption)', color: 'var(--color-theater-muted)' }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25 }}
-        >
-          Claude is crafting your scene
-        </motion.p>
-
-        {/* Script title reveal — blur to sharp over 2s */}
-        <AnimatePresence>
-          {scriptTitlePreview && (
-            <motion.p
-              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(20px)', scale: 0.95 }}
-              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, filter: 'blur(0px)', scale: 1 }}
-              transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-8 font-bold text-center font-display"
-              style={{ color: 'var(--color-accent)', fontSize: isDesktop ? '24px' : '20px' }}
-            >
-              &ldquo;{scriptTitlePreview}&rdquo;
-            </motion.p>
-          )}
-        </AnimatePresence>
-
-        {/* Thin progress bar with shimmer */}
-        <motion.div
-          className="mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <div
-            className="relative overflow-hidden rounded-full"
-            style={{ height: '4px', background: 'rgba(255,255,255,0.1)' }}
-          >
-            <motion.div
-              className="h-full rounded-full"
-              style={{
-                background: 'linear-gradient(90deg, var(--color-accent), var(--color-accent-hover))',
-              }}
-              initial={{ width: '0%' }}
-              animate={{ width: `${Math.min(loadingProgress, 100)}%` }}
-              transition={{ duration: 1.5, ease: [0.33, 1, 0.68, 1] }}
-            />
-            {loadingProgress < 100 && !prefersReducedMotion && (
-              <motion.div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
-                }}
-                animate={{ x: ['-100%', '200%'] }}
-                transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-              />
-            )}
-          </div>
-        </motion.div>
-
-        {/* Step list with stagger */}
-        <motion.div
-          className="flex flex-col gap-3 mb-6 text-left"
-          initial="initial"
-          animate="animate"
-          variants={{
-            animate: { transition: { staggerChildren: 0.12 } }
+          transition={{ ...SPRING_GENTLE, delay: 0.1 }}
+          style={{
+            width: '260px',
+            background: 'var(--color-paper, #f4f0e8)',
+            borderRadius: '4px 4px 0 0',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+            padding: '32px 24px 40px',
+            color: '#1a1812',
+            maskImage: 'linear-gradient(to bottom, #000 85%, transparent)',
+            WebkitMaskImage: 'linear-gradient(to bottom, #000 85%, transparent)',
           }}
         >
-          {steps.map((step, i) => {
-            const status = stepStatuses[i]
-            return (
-              <motion.div
-                key={step.label}
-                className="flex items-center gap-3"
-                variants={{
-                  initial: { opacity: 0, x: -12 },
-                  animate: { opacity: 1, x: 0 },
-                }}
-                transition={SPRING}
-              >
-                {status === 'done' && <CheckCircleIcon size={20} color="var(--color-success)" />}
-                {status === 'active' && <SpinnerIcon size={20} color="var(--color-accent)" />}
-                {status === 'pending' && <PendingCircleIcon size={20} />}
-                <span
-                  className="text-sm font-medium"
+          {/* Studio watermark */}
+          <p style={{
+            fontSize: '9px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.2em',
+            color: 'rgba(26,24,18,0.35)',
+            marginBottom: '20px',
+            textAlign: 'center',
+          }}>
+            A Plot Twists Original
+          </p>
+
+          {/* Script title */}
+          <div style={{ minHeight: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <AnimatePresence>
+              {scriptTitlePreview ? (
+                <motion.p
+                  initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, filter: 'blur(20px)', scale: 0.95 }}
+                  animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, filter: 'blur(0px)', scale: 1 }}
+                  transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
                   style={{
-                    color: status === 'done'
-                      ? 'var(--color-success)'
-                      : status === 'active'
-                      ? 'var(--color-theater-text)'
-                      : 'var(--color-theater-muted)',
+                    fontFamily: 'var(--font-serif)',
+                    fontStyle: 'italic',
+                    fontSize: isDesktop ? '28px' : '24px',
+                    color: '#1a1812',
+                    textAlign: 'center',
+                    lineHeight: 1.3,
                   }}
                 >
-                  {step.label}{status === 'active' ? '...' : ''}
-                </span>
-              </motion.div>
-            )
-          })}
+                  {scriptTitlePreview}
+                  <motion.span
+                    animate={{ opacity: [1, 1, 0, 0] }}
+                    transition={{ duration: 1, repeat: Infinity, times: [0, 0.49, 0.5, 1], ease: 'linear' }}
+                    style={{ color: 'var(--color-stage-red, #e53e3e)', marginLeft: 2 }}
+                  >|</motion.span>
+                </motion.p>
+              ) : (
+                <motion.span
+                  animate={{ opacity: [1, 1, 0, 0] }}
+                  transition={{ duration: 1, repeat: Infinity, times: [0, 0.49, 0.5, 1], ease: 'linear' }}
+                  style={{ color: 'var(--color-stage-red, #e53e3e)', fontSize: '28px' }}
+                >|</motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Written by */}
+          <p style={{
+            fontSize: '10px',
+            fontStyle: 'italic',
+            color: 'rgba(26,24,18,0.4)',
+            textAlign: 'center',
+            marginTop: '20px',
+          }}>
+            written by Claude
+          </p>
         </motion.div>
 
-        {/* Timeout indicators */}
-        <AnimatePresence mode="wait">
-          {loadingTimedOut ? (
-            <motion.div
-              key="timed-out"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={SPRING}
-              className="mb-6 p-4 rounded-xl text-center"
-              style={{
-                background: 'rgba(239,68,68,0.1)',
-                border: '1px solid var(--color-danger)',
-              }}
-            >
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <WarningIcon size={18} color="var(--color-danger)" />
-                <span className="text-sm font-semibold" style={{ color: 'var(--color-danger)' }}>
-                  Something may have gone wrong
-                </span>
-              </div>
-              {onLeave && (
-                <div className="flex justify-center mt-3">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    icon={<DoorIcon size={16} color="currentColor" />}
-                    onClick={onLeave}
-                    style={{ background: 'transparent' }}
-                  >
-                    Leave Game
-                  </Button>
-                </div>
-              )}
-            </motion.div>
-          ) : isDelayed ? (
-            <motion.div
-              key="delayed"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={SPRING}
-              className="mb-6 p-3 rounded-xl"
-              style={{
-                background: 'rgba(245,158,66,0.08)',
-                border: '1px solid var(--color-warning, var(--color-accent))',
-              }}
-            >
-              <p className="text-sm font-medium" style={{ color: 'var(--color-warning, var(--color-accent))' }}>
-                Taking longer than expected — hang tight, the AI is crafting something special
-              </p>
-            </motion.div>
-          ) : isSlow ? (
-            <motion.div
-              key="slow"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mb-6"
-            >
-              <p className="text-sm" style={{ color: 'var(--color-theater-muted)' }}>
-                Complex scripts take a bit longer...
-              </p>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
+        {/* Below-paper content on dark background */}
+        <div className="w-full" style={{ maxWidth: '320px', marginTop: '32px' }}>
 
-        {/* Green Room */}
-        <AnimatePresence mode="wait">
-          {greenRoomQuestion && (
-            <motion.div
-              className="p-5 rounded-xl text-left"
-              style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.12)',
-              }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={SPRING_GENTLE}
+          {/* Status label */}
+          <motion.p
+            className="text-center mb-4"
+            style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.05em' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            Writing your scene...
+          </motion.p>
+
+          {/* Progress bar */}
+          <motion.div
+            className="mb-5"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <div
+              className="relative overflow-hidden rounded-full"
+              style={{ height: '3px', background: 'rgba(255,255,255,0.08)' }}
             >
-              <h3
-                className="font-display font-bold mb-2"
-                style={{ fontSize: 'var(--text-body)', color: 'var(--color-accent)' }}
+              <motion.div
+                className="h-full rounded-full"
+                style={{
+                  background: 'rgba(255,255,255,0.35)',
+                }}
+                initial={{ width: '0%' }}
+                animate={{ width: `${Math.min(loadingProgress, 100)}%` }}
+                transition={{ duration: 1.5, ease: [0.33, 1, 0.68, 1] }}
+              />
+              {loadingProgress < 100 && !prefersReducedMotion && (
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                  }}
+                  animate={{ x: ['-100%', '200%'] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                />
+              )}
+            </div>
+          </motion.div>
+
+          {/* Step list */}
+          <motion.div
+            className="flex flex-col gap-2 mb-5"
+            initial="initial"
+            animate="animate"
+            variants={{
+              animate: { transition: { staggerChildren: 0.12 } }
+            }}
+          >
+            {steps.map((step, i) => {
+              const status = stepStatuses[i]
+              return (
+                <motion.div
+                  key={step.label}
+                  className="flex items-center gap-2"
+                  variants={{
+                    initial: { opacity: 0, x: -12 },
+                    animate: { opacity: 1, x: 0 },
+                  }}
+                  transition={SPRING}
+                >
+                  {status === 'done' && <CheckCircleIcon size={16} color="rgba(255,255,255,0.5)" />}
+                  {status === 'active' && <SpinnerIcon size={16} color="rgba(255,255,255,0.8)" />}
+                  {status === 'pending' && <PendingCircleIcon size={16} />}
+                  <span
+                    style={{
+                      fontSize: '12px',
+                      color: status === 'done'
+                        ? 'rgba(255,255,255,0.4)'
+                        : status === 'active'
+                        ? 'rgba(255,255,255,0.8)'
+                        : 'rgba(255,255,255,0.2)',
+                    }}
+                  >
+                    {step.label}{status === 'active' ? '...' : ''}
+                  </span>
+                </motion.div>
+              )
+            })}
+          </motion.div>
+
+          {/* Timeout indicators */}
+          <AnimatePresence mode="wait">
+            {loadingTimedOut ? (
+              <motion.div
+                key="timed-out"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={SPRING}
+                className="mb-5 p-3 rounded-xl"
+                style={{
+                  background: 'rgba(239,68,68,0.08)',
+                  border: '1px solid var(--color-danger)',
+                }}
               >
-                While You Wait
-              </h3>
-              <p className="italic" style={{ fontSize: 'var(--text-body)', color: 'var(--color-theater-text)' }}>
-                &ldquo;{greenRoomQuestion}&rdquo;
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <WarningIcon size={16} color="var(--color-danger)" />
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--color-danger)' }}>
+                    Something may have gone wrong
+                  </span>
+                </div>
+                {onLeave && (
+                  <div className="flex justify-center mt-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={<DoorIcon size={14} color="currentColor" />}
+                      onClick={onLeave}
+                      style={{ border: '1px solid rgba(255,255,255,0.12)', fontSize: '12px' }}
+                    >
+                      Leave Game
+                    </Button>
+                  </div>
+                )}
+              </motion.div>
+            ) : isDelayed ? (
+              <motion.div
+                key="delayed"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={SPRING}
+                className="mb-5 p-3 rounded-lg"
+                style={{
+                  background: 'rgba(245,158,66,0.06)',
+                  border: '1px solid rgba(245,158,66,0.3)',
+                }}
+              >
+                <p style={{ fontSize: '12px', color: 'rgba(245,158,66,0.8)', textAlign: 'center' }}>
+                  Taking longer than expected — hang tight, the AI is crafting something special
+                </p>
+              </motion.div>
+            ) : isSlow ? (
+              <motion.div
+                key="slow"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mb-5"
+              >
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
+                  Complex scripts take a bit longer...
+                </p>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+
+          {/* Green Room */}
+          <AnimatePresence mode="wait">
+            {greenRoomQuestion && (
+              <motion.div
+                className="p-4 rounded-xl"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={SPRING_GENTLE}
+              >
+                <h3
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    color: 'rgba(255,255,255,0.4)',
+                    marginBottom: '8px',
+                  }}
+                >
+                  While You Wait
+                </h3>
+                <p className="italic" style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>
+                  &ldquo;{greenRoomQuestion}&rdquo;
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   )

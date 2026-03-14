@@ -224,15 +224,14 @@ export function JoinSelection({
       key="selection"
       {...ENTER_Y}
       transition={SPRING_GENTLE}
-      className="bg-[var(--color-bg)]"
-      style={{ padding: '24px 16px' }}
+      style={{ background: 'var(--color-void)', padding: '24px 16px', minHeight: '100dvh' }}
     >
       <div className="w-full mx-auto relative" style={{ maxWidth: isDesktop ? '600px' : undefined }}>
         {onBack && (
           <button
             onClick={onBack}
-            className="absolute z-20 w-9 h-9 rounded-full bg-[var(--color-surface-alt)] border border-[var(--color-border)] flex items-center justify-center cursor-pointer text-[var(--color-text-tertiary)]"
-            style={{ top: 'calc(12px + env(safe-area-inset-top, 0px))', left: 12 }}
+            className="absolute z-20 w-9 h-9 rounded-full flex items-center justify-center cursor-pointer"
+            style={{ top: 'calc(12px + env(safe-area-inset-top, 0px))', left: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)' }}
             aria-label="Close card picker"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -259,7 +258,7 @@ export function JoinSelection({
           )}
 
           {/* Fixed bottom submit */}
-          <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))] z-30 bg-[var(--color-bg)]">
+          <div className="fixed bottom-0 left-0 right-0 p-4 pb-[calc(16px+env(safe-area-inset-bottom,0px))] z-30" style={{ background: 'var(--color-void)' }}>
             <Button
               fullWidth
               size="lg"
@@ -267,7 +266,7 @@ export function JoinSelection({
               loading={isSubmitting}
               disabled={!allSelected || isSubmitting}
               onClick={handleSubmit}
-              style={confirmMode ? { background: 'var(--color-success)' } : undefined}
+              style={confirmMode ? { background: 'var(--color-success)' } : allSelected ? { background: '#fff', color: '#1a1812' } : undefined}
             >
               {isSubmitting ? (
                 'Submitting...'
@@ -279,7 +278,7 @@ export function JoinSelection({
               ) : !allSelected ? (
                 `Pick ${3 - selectedCount} more`
               ) : (
-                'Submit Cards \u2713'
+                'Lock In Cards'
               )}
             </Button>
           </div>

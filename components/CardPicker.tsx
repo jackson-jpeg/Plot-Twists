@@ -10,10 +10,10 @@ import { tapHaptic } from '@/hooks/useHaptics'
 
 type TabKey = 'character' | 'setting' | 'circumstance'
 
-const TABS: { key: TabKey; label: string; icon: string; shortLabel: string; contentType: 'characters' | 'settings' | 'circumstances'; color: string; maxCustomLength: number }[] = [
-  { key: 'character', label: 'Character', icon: '🎭', shortLabel: 'Char.', contentType: 'characters', color: 'var(--color-accent)', maxCustomLength: 50 },
-  { key: 'setting', label: 'Setting', icon: '🏛️', shortLabel: 'Setting', contentType: 'settings', color: 'var(--color-accent-2)', maxCustomLength: 50 },
-  { key: 'circumstance', label: 'Circumstance', icon: '⚡', shortLabel: 'Circ.', contentType: 'circumstances', color: 'var(--color-warning)', maxCustomLength: 80 },
+const TABS: { key: TabKey; label: string; subtitle: string; icon: string; shortLabel: string; contentType: 'characters' | 'settings' | 'circumstances'; color: string; maxCustomLength: number }[] = [
+  { key: 'character', label: 'Character', subtitle: 'Who is in this scene?', icon: '🎭', shortLabel: 'Char.', contentType: 'characters', color: 'var(--color-stage-red)', maxCustomLength: 50 },
+  { key: 'setting', label: 'Setting', subtitle: 'Where does this scene take place?', icon: '🏛️', shortLabel: 'Setting', contentType: 'settings', color: 'var(--color-stage-blue)', maxCustomLength: 50 },
+  { key: 'circumstance', label: 'Wild Card', subtitle: 'What twist makes it interesting?', icon: '⚡', shortLabel: 'Wild', contentType: 'circumstances', color: 'var(--color-stage-gold)', maxCustomLength: 80 },
 ]
 
 export interface CardPickerProps {
@@ -200,11 +200,11 @@ export function CardPicker({
   const noCardsSelected = selectedCount === 0
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-display" style={{ color: 'var(--color-text-primary)', marginBottom: 0 }}>
-          <span aria-hidden="true">🎴 </span>Pick Your Cards
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', fontWeight: 400, color: 'rgba(255,255,255,0.92)', margin: 0 }}>
+          Pick Your Cards
         </h1>
         <div className="flex items-center gap-2">
           <div className="flex gap-1.5">
@@ -213,14 +213,14 @@ export function CardPicker({
                 key={tab.key}
                 className="w-3 h-3 rounded-full"
                 animate={{
-                  backgroundColor: selection[tab.key] ? 'var(--color-success)' : 'var(--color-border)',
+                  backgroundColor: selection[tab.key] ? 'var(--color-success)' : 'rgba(255,255,255,0.15)',
                   scale: selection[tab.key] ? 1 : 0.75,
                 }}
                 transition={SPRING_BOUNCY}
               />
             ))}
           </div>
-          <span className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{selectedCount}/3</span>
+          <span className="text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>{selectedCount}/3</span>
         </div>
       </div>
 
@@ -229,16 +229,16 @@ export function CardPicker({
         <motion.button
           onClick={() => { onShuffleAll(); toast.success('Shuffled! 🎲', { duration: 1500 }) }}
           className="w-full"
-          style={{ background: 'linear-gradient(135deg, var(--color-highlight-pink), var(--color-highlight-yellow))', border: '2px solid var(--color-accent)', fontWeight: 'bold', padding: '12px 24px', borderRadius: '12px', cursor: 'pointer', fontSize: '15px', color: 'var(--color-text-primary)' }}
+          style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', fontWeight: 600, padding: '12px 24px', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}
           whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
           initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
         >
-          <span aria-hidden="true">🎲</span><span>Feeling Lucky? Shuffle All!</span>
+          <span aria-hidden="true">🎲 </span><span>Feeling Lucky? Shuffle All!</span>
         </motion.button>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-0.5 p-1 rounded-xl" style={{ background: 'var(--color-surface-alt)' }} role="tablist">
+      <div className="flex gap-0" style={{ background: 'var(--color-ink)', borderRadius: '10px', padding: '2px' }} role="tablist">
         {TABS.map(tab => {
           const isActive = activeTab === tab.key
           const hasValue = !!selection[tab.key]
@@ -249,35 +249,54 @@ export function CardPicker({
               aria-selected={isActive}
               aria-label={`${tab.label}${hasValue ? ' (selected)' : ''}`}
               onClick={() => setActiveTab(tab.key)}
-              className="flex-1 flex items-center justify-center gap-1 py-2.5 px-2 rounded-lg font-semibold text-sm relative overflow-hidden"
+              className="flex-1 flex flex-col items-center gap-0.5 py-2 px-2 relative overflow-hidden"
               style={{
-                color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
+                color: isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.4)',
+                fontSize: '12px',
+                fontWeight: 600,
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                borderRadius: '8px',
               }}
               whileTap={{ scale: 0.97 }}
             >
+              {/* Active underline */}
               {isActive && (
                 <motion.div
-                  layoutId="activeTabBg"
-                  className="absolute inset-0 rounded-lg"
+                  layoutId="activeTabUnderline"
+                  className="absolute bottom-0 left-2 right-2"
                   style={{
-                    background: 'var(--color-surface)',
-                    boxShadow: 'var(--shadow-2)',
+                    height: '2px',
+                    background: tab.color,
+                    borderRadius: '1px',
                   }}
                   transition={SPRING}
                 />
               )}
-              <span className="relative z-10" aria-hidden="true">{tab.icon}</span>
-              <span className="relative z-10 hidden min-[420px]:inline">{tab.label}</span>
-              <span className="relative z-10 inline min-[420px]:hidden">{tab.shortLabel}</span>
+              <span className="relative z-10 flex items-center gap-1.5">
+                <span
+                  style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: tab.color,
+                    display: 'inline-block',
+                    flexShrink: 0,
+                  }}
+                  aria-hidden="true"
+                />
+                <span className="hidden min-[420px]:inline">{tab.label}</span>
+                <span className="inline min-[420px]:hidden">{tab.shortLabel}</span>
+              </span>
               {hasValue && (
                 <motion.span
                   className="relative z-10"
-                  initial={{ scale: 0 }} animate={{ scale: 1 }}
+                  initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                   transition={SPRING_BOUNCY}
-                  style={{ color: 'var(--color-success)', fontSize: '12px' }}
-                  aria-hidden="true"
+                  style={{ color: 'var(--color-success)', fontSize: '10px', lineHeight: 1, maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                 >
-                  ✓
+                  {selection[tab.key]}
                 </motion.span>
               )}
             </motion.button>
@@ -298,8 +317,7 @@ export function CardPicker({
             /* Custom Input Mode */
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg" aria-hidden="true">{activeTabConfig.icon}</span>
-                <span className="font-display text-base" style={{ color: 'var(--color-text-primary)' }}>
+                <span style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', color: 'rgba(255,255,255,0.85)' }}>
                   Write your own {activeTabConfig.label.toLowerCase()}
                 </span>
               </div>
@@ -311,8 +329,8 @@ export function CardPicker({
                 maxLength={activeTabConfig.maxCustomLength}
                 enterKeyHint="done"
                 autoCapitalize="sentences"
-                className="w-full px-3 py-2 rounded-lg font-script text-lg"
-                style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-primary)', outline: 'none', border: `2px solid ${activeTabConfig.color}`, fontStyle: 'italic' }}
+                className="w-full px-3 py-2.5 rounded-lg text-base"
+                style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.9)', outline: 'none', border: `2px solid ${activeTabConfig.color}`, fontStyle: 'italic' }}
                 aria-label={`Custom ${activeTabConfig.label.toLowerCase()}`}
                 autoFocus
               />
@@ -320,11 +338,11 @@ export function CardPicker({
                 <button
                   onClick={toggleCustom}
                   className="text-sm flex items-center gap-1 py-1"
-                  style={{ color: 'var(--color-text-secondary)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
+                  style={{ color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
                 >
-                  <span aria-hidden="true">🃏</span> Browse cards instead
+                  Browse cards instead
                 </button>
-                <span className="text-xs" style={{ color: (selection[activeTab] || '').length > activeTabConfig.maxCustomLength * 0.8 ? 'var(--color-warning)' : 'var(--color-text-disabled)' }}>
+                <span className="text-xs" style={{ color: (selection[activeTab] || '').length > activeTabConfig.maxCustomLength * 0.8 ? 'var(--color-stage-gold)' : 'rgba(255,255,255,0.3)' }}>
                   {(selection[activeTab] || '').length}/{activeTabConfig.maxCustomLength}
                 </span>
               </div>
@@ -332,6 +350,14 @@ export function CardPicker({
           ) : (
             /* Browse Mode */
             <div className="flex flex-col gap-3">
+              {/* Category heading */}
+              <div>
+                <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '22px', fontWeight: 400, color: 'rgba(255,255,255,0.9)', margin: '0 0 2px 0' }}>
+                  {activeTabConfig.label}
+                </h2>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{activeTabConfig.subtitle}</p>
+              </div>
+
               {/* Search + Shuffle Row */}
               <div className="flex gap-2">
                 <div className="relative flex-1">
@@ -344,22 +370,22 @@ export function CardPicker({
                     inputMode="search"
                     enterKeyHint="search"
                     className="w-full px-3 py-2 rounded-lg text-sm"
-                    style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-primary)', outline: 'none', paddingLeft: '40px', paddingRight: searchQuery ? '36px' : '12px' }}
+                    style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.9)', outline: 'none', paddingLeft: '36px', paddingRight: searchQuery ? '36px' : '12px', border: '1px solid rgba(255,255,255,0.1)' }}
                     aria-label={`Search ${activeTabConfig.label.toLowerCase()}s`}
                   />
                   <span
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-lg"
-                    style={{ pointerEvents: 'none' }}
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm"
+                    style={{ pointerEvents: 'none', color: 'rgba(255,255,255,0.3)' }}
                     aria-hidden="true"
                   >
-                    🔍
+                    &#x1F50D;
                   </span>
                   {/* Clear search button */}
                   {searchQuery && (
                     <motion.button
                       onClick={clearSearch}
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center justify-center rounded-full"
-                      style={{ width: '36px', height: '36px', background: 'var(--color-surface-alt)', color: 'var(--color-text-tertiary)', fontSize: '14px', border: 'none', cursor: 'pointer' }}
+                      style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.5)', fontSize: '12px', border: 'none', cursor: 'pointer' }}
                       initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                       transition={SPRING_BOUNCY}
                       whileTap={{ scale: 0.85 }}
@@ -369,15 +395,6 @@ export function CardPicker({
                     </motion.button>
                   )}
                 </div>
-                <motion.button
-                  onClick={shuffleCurrentTab}
-                  style={{ padding: '8px 14px', fontSize: '20px', flexShrink: 0, background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '10px', cursor: 'pointer', color: 'var(--color-text-secondary)' }}
-                  whileHover={{ scale: 1.1, rotate: 180 }}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label={`Shuffle ${activeTabConfig.label.toLowerCase()}`}
-                >
-                  🎲
-                </motion.button>
               </div>
 
               {/* Category Chips */}
@@ -398,21 +415,21 @@ export function CardPicker({
                         <motion.button
                           key={category.id}
                           onClick={() => toggleCategory(category.id)}
-                          className="flex items-center gap-1 px-3 py-2 rounded-full whitespace-nowrap"
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-full whitespace-nowrap"
                           style={{
-                            background: isSelected ? activeTabConfig.color : 'var(--color-surface-alt)',
-                            color: isSelected ? 'white' : 'var(--color-text-secondary)',
-                            border: `1px solid ${isSelected ? activeTabConfig.color : 'var(--color-border)'}`,
-                            fontSize: '14px',
-                            fontWeight: isSelected ? 600 : 400,
+                            background: isSelected ? activeTabConfig.color : 'rgba(255,255,255,0.06)',
+                            color: isSelected ? 'white' : 'rgba(255,255,255,0.55)',
+                            border: `1px solid ${isSelected ? activeTabConfig.color : 'rgba(255,255,255,0.1)'}`,
+                            fontSize: '12px',
+                            fontWeight: isSelected ? 600 : 500,
                             flexShrink: 0,
-                            minHeight: '36px',
+                            minHeight: '32px',
                           }}
                           whileTap={{ scale: 0.95 }}
                         >
                           <span aria-hidden="true">{category.emoji}</span>
                           <span>{category.name}</span>
-                          <span style={{ fontSize: '11px', opacity: 0.65, marginLeft: '1px' }}>
+                          <span style={{ fontSize: '10px', opacity: 0.6, marginLeft: '1px' }}>
                             {category.count}
                           </span>
                         </motion.button>
@@ -423,22 +440,31 @@ export function CardPicker({
                   {chipScrollable && (
                     <div
                       className="absolute right-0 top-0 bottom-1 w-8 pointer-events-none"
-                      style={{ background: 'linear-gradient(to right, transparent, var(--color-surface))' }}
+                      style={{ background: 'linear-gradient(to right, transparent, var(--color-void))' }}
                     />
                   )}
                 </div>
               )}
 
-              {/* Results Count + Write-your-own */}
+              {/* Results Count + Shuffle + Write-your-own */}
               <div className="flex items-center justify-between">
-                <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                  {filteredItems.length} {filteredItems.length === 1 ? 'option' : 'options'}
-                  {debouncedQuery && ` for "${debouncedQuery}"`}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    {filteredItems.length} {filteredItems.length === 1 ? 'option' : 'options'}
+                    {debouncedQuery && ` for "${debouncedQuery}"`}
+                  </span>
+                  <button
+                    onClick={shuffleCurrentTab}
+                    style={{ color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline', textUnderlineOffset: '2px', padding: '2px 0' }}
+                    aria-label={`Shuffle ${activeTabConfig.label.toLowerCase()}`}
+                  >
+                    &#x21bb; Shuffle cards
+                  </button>
+                </div>
                 <button
                   onClick={toggleCustom}
-                  className="text-sm flex items-center gap-1 px-3 py-2 rounded-md transition-colors"
-                  style={{ color: 'var(--color-text-secondary)', background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', cursor: 'pointer', minHeight: '36px' }}
+                  className="text-xs flex items-center gap-1 px-2.5 py-1.5 rounded-md"
+                  style={{ color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}
                 >
                   ✎ Write your own
                 </button>
@@ -452,21 +478,21 @@ export function CardPicker({
               >
                 {filteredItems.length === 0 ? (
                   <div className="text-center py-8">
-                    <div className="text-3xl mb-2" aria-hidden="true">🔍</div>
-                    <p className="text-sm mb-1" style={{ color: 'var(--color-text-secondary)' }}>No matches found</p>
-                    <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Try a different search or clear your filters</p>
+                    <div className="text-3xl mb-2" aria-hidden="true">&#x1F50D;</div>
+                    <p className="text-sm mb-1" style={{ color: 'rgba(255,255,255,0.5)' }}>No matches found</p>
+                    <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>Try a different search or clear your filters</p>
                     {(searchQuery || selectedCategories.length > 0) && (
                       <button
                         onClick={() => { setSearchQuery(''); setSelectedCategories([]) }}
                         className="text-xs mt-3"
-                        style={{ color: activeTabConfig.color, background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontWeight: 500 }}
+                        style={{ color: activeTabConfig.color, background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontWeight: 500 }}
                       >
                         Clear all filters
                       </button>
                     )}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 max-[380px]:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2.5">
                     {filteredItems.map((item, index) => {
                       const isSelected = item.name === selection[activeTab]
                       return (
@@ -474,11 +500,14 @@ export function CardPicker({
                           key={item.id}
                           data-selected={isSelected || undefined}
                           onClick={() => selectCard(item.name)}
-                          className="text-left p-2.5 rounded-lg relative"
+                          className="text-left relative overflow-hidden"
                           style={{
-                            background: isSelected ? `${activeTabConfig.color}15` : 'var(--color-surface-alt)',
-                            border: isSelected ? `2px solid ${activeTabConfig.color}` : '1px solid var(--color-border)',
-                            boxShadow: isSelected ? `0 0 10px ${activeTabConfig.color}25` : 'none',
+                            background: isSelected ? '#ffffff' : 'var(--color-cream)',
+                            border: isSelected ? `2px solid ${activeTabConfig.color}` : '1px solid rgba(0,0,0,0.06)',
+                            borderRadius: '10px',
+                            boxShadow: isSelected ? `0 2px 8px rgba(0,0,0,0.25)` : '0 1px 4px rgba(0,0,0,0.2)',
+                            padding: '0',
+                            cursor: 'pointer',
                           }}
                           initial={{ opacity: 0, y: 8 }}
                           animate={{
@@ -487,25 +516,29 @@ export function CardPicker({
                             scale: isSelected ? 1.03 : 1,
                           }}
                           transition={{ duration: 0.12, delay: Math.min(index * 0.015, 0.3) }}
-                          whileHover={{ scale: 1.04, y: -1 }}
+                          whileHover={{ scale: 1.04, y: -2, boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
                           whileTap={{ scale: 0.97 }}
                         >
-                          <p className="font-semibold text-xs leading-tight line-clamp-1" style={{ color: 'var(--color-text-primary)' }}>
-                            {item.name}
-                          </p>
-                          {item.source && (
-                            <p className="text-[11px] line-clamp-1 mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
-                              {item.source}
+                          {/* Category color stripe */}
+                          <div style={{ height: '3px', background: activeTabConfig.color, borderRadius: '10px 10px 0 0' }} />
+                          <div style={{ padding: '10px 10px 8px' }}>
+                            <p style={{ fontWeight: 600, fontSize: '14px', lineHeight: 1.3, color: '#1a1812', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                              {item.name}
                             </p>
-                          )}
+                            {item.source && (
+                              <p style={{ fontSize: '9px', color: '#8a8578', margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {item.source}
+                              </p>
+                            )}
+                          </div>
                           {isSelected && (
                             <motion.div
-                              className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
-                              style={{ background: activeTabConfig.color }}
+                              className="absolute flex items-center justify-center"
+                              style={{ top: '8px', right: '8px', width: '20px', height: '20px', borderRadius: '50%', background: activeTabConfig.color }}
                               initial={{ scale: 0 }} animate={{ scale: 1 }}
                               transition={SPRING_BOUNCY}
                             >
-                              <span className="text-white" style={{ fontSize: '10px', lineHeight: 1 }} aria-hidden="true">✓</span>
+                              <span className="text-white" style={{ fontSize: '11px', lineHeight: 1, fontWeight: 700 }} aria-hidden="true">✓</span>
                             </motion.div>
                           )}
                         </motion.button>
@@ -519,18 +552,18 @@ export function CardPicker({
         </motion.div>
       </AnimatePresence>
 
-      {/* Selected Summary — pill-style cards */}
+      {/* Bottom Summary — mini card slots */}
       <motion.div
         className="rounded-xl overflow-hidden"
-        style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+        style={{ background: 'var(--color-ink)', border: '1px solid rgba(255,255,255,0.08)' }}
         layout
       >
-        <div className="px-3 py-2 flex items-center justify-between" style={{ borderBottom: '1px solid var(--color-border)' }}>
-          <span className="text-xs font-semibold tracking-wide" style={{ color: 'var(--color-text-tertiary)' }}>YOUR CARDS</span>
+        <div className="px-3 py-2 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <span className="text-xs font-semibold tracking-wide" style={{ color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em' }}>YOUR CARDS</span>
           {selectedCount === 3 && (
             <motion.span
               className="text-xs font-semibold px-2 py-0.5 rounded-full"
-              style={{ background: 'var(--color-success-light)', color: 'var(--color-success)' }}
+              style={{ background: 'rgba(76,175,80,0.15)', color: 'var(--color-success)' }}
               initial={{ scale: 0 }} animate={{ scale: 1 }}
               transition={SPRING_BOUNCY}
             >
@@ -538,29 +571,32 @@ export function CardPicker({
             </motion.span>
           )}
         </div>
-        <div className="p-2 flex flex-col gap-1.5">
+        {/* Three mini card slots in a row */}
+        <div className="p-2.5 flex gap-2">
           {TABS.map(tab => {
             const value = selection[tab.key]
             return (
               <motion.div
                 key={tab.key}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-sm"
+                className="flex-1 flex flex-col items-center justify-center rounded-lg relative"
                 style={{
-                  background: value ? `${tab.color}10` : 'transparent',
-                  border: value ? `1px solid ${tab.color}30` : '1px dashed var(--color-border)',
+                  minHeight: '52px',
+                  padding: '6px 8px',
+                  background: value ? `color-mix(in srgb, ${tab.color} 12%, transparent)` : 'transparent',
+                  border: value ? `1.5px solid ${tab.color}` : '1.5px dashed rgba(255,255,255,0.12)',
+                  cursor: value ? 'default' : 'pointer',
                 }}
-                animate={{ scale: value ? 1 : 0.98, opacity: value ? 1 : 0.7 }}
+                animate={{ scale: value ? 1 : 0.97, opacity: value ? 1 : 0.5 }}
                 transition={{ duration: 0.15 }}
+                onClick={() => !value && setActiveTab(tab.key)}
               >
-                <span className="flex-shrink-0" style={{ fontSize: '14px' }} aria-hidden="true">{tab.icon}</span>
                 {value ? (
                   <>
-                    <span className="font-semibold truncate flex-1 min-w-0" style={{ color: 'var(--color-text-primary)' }}>{value}</span>
+                    <span className="font-semibold text-center leading-tight" style={{ fontSize: '11px', color: 'rgba(255,255,255,0.9)', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', width: '100%' }}>{value}</span>
                     <motion.button
-                      onClick={() => clearCard(tab.key)}
-                      className="flex-shrink-0 flex items-center justify-center"
-                      style={{ color: 'var(--color-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', width: '36px', height: '36px', fontSize: '13px', lineHeight: 1 }}
-                      whileHover={{ scale: 1.15 }}
+                      onClick={(e) => { e.stopPropagation(); clearCard(tab.key) }}
+                      className="absolute flex items-center justify-center"
+                      style={{ top: '-4px', right: '-4px', width: '18px', height: '18px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', fontSize: '9px', lineHeight: 1, border: 'none', cursor: 'pointer' }}
                       whileTap={{ scale: 0.85 }}
                       aria-label={`Clear ${tab.label}`}
                     >
@@ -568,13 +604,10 @@ export function CardPicker({
                     </motion.button>
                   </>
                 ) : (
-                  <button
-                    onClick={() => setActiveTab(tab.key)}
-                    className="text-xs italic flex-1 text-left py-0.5"
-                    style={{ color: 'var(--color-text-disabled)', background: 'none', border: 'none', cursor: 'pointer', padding: '2px 0' }}
-                  >
-                    Tap to pick {tab.label.toLowerCase()}
-                  </button>
+                  <>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: tab.color, opacity: 0.4, marginBottom: '4px' }} />
+                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{tab.shortLabel}</span>
+                  </>
                 )}
               </motion.div>
             )

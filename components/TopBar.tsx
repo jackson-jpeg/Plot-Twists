@@ -9,7 +9,7 @@ import { useBreakpoint } from '@/hooks/useBreakpoint'
 const NAV_ITEMS = [
   { href: '/', label: 'Home' },
   { href: '/join', label: 'Join' },
-  { href: '/explore', label: 'Explore' },
+  { href: '/explore', label: 'Scripts' },
   { href: '/profile', label: 'Profile' },
 ]
 
@@ -22,13 +22,22 @@ export function TopBar() {
   return (
     <header className="sticky top-0 z-40 w-full"
       style={{
-        background: 'var(--color-bg)',
-        borderBottom: '1px solid var(--color-border)',
+        background: 'rgba(8,7,11,0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(255,255,255,0.03)',
       }}>
       <div className="flex items-center justify-between px-5 mx-auto"
         style={{ maxWidth: 960, height: 52 }}>
-        <Link href="/" className="font-display text-lg font-extrabold tracking-tight"
-          style={{ color: 'var(--color-text-primary)' }}>
+        <Link href="/"
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 16,
+            fontWeight: 700,
+            color: 'rgba(240,236,228,0.6)',
+            textDecoration: 'none',
+            letterSpacing: '0.03em',
+          }}>
           Plot Twists
         </Link>
 
@@ -39,8 +48,10 @@ export function TopBar() {
                 className="text-sm font-medium transition-colors"
                 style={{
                   color: pathname === item.href
-                    ? 'var(--color-text-primary)'
-                    : 'var(--color-text-tertiary)',
+                    ? 'rgba(240,236,228,0.8)'
+                    : 'rgba(240,236,228,0.25)',
+                  textDecoration: 'none',
+                  fontSize: 13,
                 }}>
                 {item.label}
               </Link>
@@ -48,8 +59,16 @@ export function TopBar() {
           </nav>
         )}
 
-        <Link href="/profile">
-          <Avatar name={user?.displayName || '?'} size="sm" />
+        <Link href="/join"
+          style={{
+            fontSize: 12,
+            color: 'rgba(240,236,228,0.4)',
+            textDecoration: 'none',
+            padding: '5px 14px',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 100,
+          }}>
+          Join Game
         </Link>
       </div>
     </header>

@@ -20,7 +20,11 @@ import { LevelUpCelebration } from '@/components/LevelUpCelebration'
 import { DirectorsReview } from '@/components/DirectorsReview'
 import { useScriptStore } from '@/stores/scriptStore'
 import { useVotingStore } from '@/stores/votingStore'
+import { useGameStore } from '@/stores/gameStore'
 import { socketManager } from '@/lib/socketManager'
+
+const SPROCKET_PATTERN = 'repeating-linear-gradient(to bottom, transparent 0px, transparent 10px, rgba(255,255,255,0.03) 10px, rgba(255,255,255,0.03) 14px, transparent 14px, transparent 24px)'
+const SHIMMER_BG = 'linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.03) 48%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 52%, transparent 70%)'
 
 export interface JoinResultsProps {
   myPlayerId: string
@@ -118,11 +122,34 @@ export function JoinResults({
     successHaptic()
   }
 
+  const players = useGameStore((s) => s.players)
+  const winner = gameResults?.winner
+
+  // Build cast list: player name + assigned character
+  const castList = players
+    .filter(p => !p.isHost && p.role === 'PLAYER')
+    .map(p => ({ name: p.nickname, character: p.assignedCharacter }))
+
+  // Find winner's character
+  const winnerPlayer = winner ? players.find(p => p.nickname === winner.playerName) : null
+  const winnerCharacter = winnerPlayer?.assignedCharacter
+
   return (
-    <motion.div key="results" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={SPRING_GENTLE} style={{ padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-bg)' }}>
+    <motion.div key="results" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={SPRING_GENTLE} className="relative overflow-hidden" style={{ padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-void)' }}>
+      {/* Film strip sprocket holes — left */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, bottom: 0, width: '20px',
+        background: SPROCKET_PATTERN, zIndex: 1, pointerEvents: 'none',
+      }} />
+      {/* Film strip sprocket holes — right */}
+      <div style={{
+        position: 'absolute', top: 0, right: 0, bottom: 0, width: '20px',
+        background: SPROCKET_PATTERN, zIndex: 1, pointerEvents: 'none',
+      }} />
+
       <div className="w-full mx-auto text-center" style={{ maxWidth: isDesktop ? '720px' : '512px' }}>
-        {/* MVP Hero — star + label + name */}
-        {gameResults?.winner ? (
+        {/* MVP Hero — premiere style */}
+        {winner ? (
           <motion.div
             className="mb-6"
             initial={{ opacity: 0, scale: 0 }}
@@ -138,42 +165,59 @@ export function JoinResults({
               transition={{ ...SPRING_BOUNCY, delay: 0.3 }}
             >
               <svg width="48" height="48" viewBox="0 0 18 18" fill="none">
-                <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="var(--color-accent)" />
+                <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="var(--color-stage-gold)" />
               </svg>
             </motion.div>
-            <p
-              className="text-xs font-semibold uppercase tracking-widest mb-2"
-              style={{ color: 'var(--color-text-tertiary)', letterSpacing: '0.15em' }}
-            >
-              Most Valuable Player
-            </p>
-            <h1
-              className="font-display"
-              style={{ fontSize: isDesktop ? '42px' : '36px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1.1, marginBottom: '6px' }}
-            >
-              {gameResults.winner.playerName}
+            <span style={{
+              display: 'inline-block', background: 'var(--color-stage-gold)', color: 'var(--color-void)',
+              padding: '4px 10px', borderRadius: '3px', fontWeight: 700, fontSize: '9px',
+              textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '12px',
+            }}>
+              MVP
+            </span>
+            <h1 style={{
+              fontFamily: 'var(--font-serif)', fontSize: isDesktop ? '36px' : '32px',
+              fontWeight: 700, color: 'var(--color-theater-text)', lineHeight: 1.1, marginBottom: '4px',
+            }}>
+              {winner.playerName}
             </h1>
-            <p style={{ fontSize: '15px', color: 'var(--color-text-secondary)' }}>
-              {gameResults.winner.votes} vote{gameResults.winner.votes !== 1 ? 's' : ''}
+            {winnerCharacter && (
+              <p style={{ fontSize: '15px', color: 'var(--color-theater-muted)', marginBottom: '4px' }}>
+                as <em>{winnerCharacter}</em>
+              </p>
+            )}
+            {script?.title && (
+              <p style={{
+                fontFamily: 'var(--font-serif)', fontStyle: 'italic',
+                fontSize: '16px', color: 'var(--color-stage-gold)', marginTop: '8px',
+              }}>
+                {script.title}
+              </p>
+            )}
+            <p style={{ fontSize: '13px', color: 'var(--color-theater-muted)', marginTop: '4px' }}>
+              {winner.votes} vote{winner.votes !== 1 ? 's' : ''}
             </p>
           </motion.div>
         ) : (
           <motion.div className="mb-6" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
             <motion.div className="mx-auto mb-3" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={SPRING_BOUNCY}>
-              <StarIcon size={48} color="var(--color-accent-2)" />
+              <StarIcon size={48} color="var(--color-stage-gold)" />
             </motion.div>
-            <h1 className="font-display" style={{ fontSize: '36px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
+            <h1 style={{
+              fontFamily: 'var(--font-serif)', fontSize: '36px', fontWeight: 700,
+              color: 'var(--color-theater-text)', marginBottom: '8px',
+            }}>
               Performance Complete!
             </h1>
-            <p style={{ fontSize: '15px', color: 'var(--color-text-secondary)' }}>Great show!</p>
+            <p style={{ fontSize: '15px', color: 'var(--color-theater-muted)' }}>Great show!</p>
           </motion.div>
         )}
 
-        {/* Poster — constrained ~300px */}
+        {/* Poster — full-width with shimmer */}
         {scriptImageUrl && (
           <motion.div
-            className="mx-auto mb-6 cursor-pointer overflow-hidden"
-            style={{ maxWidth: '300px', borderRadius: '16px' }}
+            className="mx-auto mb-6 cursor-pointer overflow-hidden w-full"
+            style={{ maxWidth: isDesktop ? '480px' : '100%', borderRadius: '16px' }}
             onClick={onShowPosterLightbox}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -181,33 +225,73 @@ export function JoinResults({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} loading="lazy" className="w-full block" style={{ borderRadius: '16px' }} onError={(e) => { (e.target as HTMLElement).parentElement!.style.display = 'none' }} />
+            <div className="relative">
+              <img src={scriptImageUrl} alt={`${script?.title ?? 'Movie'} Poster`} loading="lazy" className="w-full block" style={{ borderRadius: '16px' }} onError={(e) => { (e.target as HTMLElement).parentElement!.style.display = 'none' }} />
+              {/* Shimmer sweep overlay */}
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                borderRadius: '16px', pointerEvents: 'none',
+                background: SHIMMER_BG,
+                backgroundSize: '200% 100%',
+                animation: 'shimmerSweep 5s ease-in-out infinite',
+              }} />
+              <style>{`@keyframes shimmerSweep { 0% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }`}</style>
+            </div>
           </motion.div>
         )}
 
-        {/* Share Results — full-width accent */}
+        {/* The Cast — credits section */}
+        {castList.length > 0 && (
+          <motion.div
+            className="mb-6 text-center"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <p style={{
+              fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.2em',
+              color: 'rgba(155, 149, 144, 0.4)', marginBottom: '12px',
+            }}>
+              THE CAST
+            </p>
+            <div className="flex flex-wrap justify-center gap-x-6 gap-y-3">
+              {castList.map((c) => (
+                <div key={c.name} className="text-center">
+                  <p style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(253, 252, 250, 0.7)' }}>{c.name}</p>
+                  {c.character && (
+                    <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'rgba(155, 149, 144, 0.4)' }}>
+                      as {c.character}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Share Results — primary: white bg, dark text */}
         <motion.div
           className="mb-3"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
         >
-          <Button variant="primary" size="lg" fullWidth onClick={handleShareScript}>
+          <Button variant="primary" size="lg" fullWidth onClick={handleShareScript} style={{ background: '#ffffff', color: 'var(--color-void)' }}>
             Share Results
           </Button>
         </motion.div>
 
-        {/* Read Script + secondary button */}
+        {/* Read Script + Share Character — secondary: dark bg, muted text, subtle border */}
         <motion.div
           className="flex gap-3 mb-6"
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
         >
-          <Button variant="secondary" size="md" className="flex-1" onClick={handleCopyScript} style={{ background: 'transparent' }}>
-            {copySuccess ? 'Copied!' : 'Read Script'}
+          <Button variant="secondary" size="md" className="flex-1" onClick={handleCopyScript} style={{ color: 'var(--color-theater-muted)', background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(155, 149, 144, 0.2)' }}>
+            {copySuccess ? 'Copied!' : 'Script'}
           </Button>
-          <Button variant="secondary" size="md" className="flex-1" onClick={handleShareCharacter} style={{ background: 'transparent' }}>
+          <Button variant="secondary" size="md" className="flex-1" onClick={handleShareCharacter} style={{ color: 'var(--color-theater-muted)', background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(155, 149, 144, 0.2)' }}>
             Share Character
           </Button>
         </motion.div>
@@ -254,7 +338,7 @@ export function JoinResults({
                 }
               } catch { /* noop */ }
             }}
-            style={{ background: 'transparent' }}
+            style={{ color: 'var(--color-theater-muted)', background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(155, 149, 144, 0.2)' }}
           >
             Watch Replay
           </Button>
@@ -263,7 +347,7 @@ export function JoinResults({
             size="md"
             className="flex-1"
             onClick={() => router.push('/replays')}
-            style={{ background: 'transparent' }}
+            style={{ color: 'var(--color-theater-muted)', background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(155, 149, 144, 0.2)' }}
           >
             Browse Replays
           </Button>
@@ -301,19 +385,19 @@ export function JoinResults({
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
         >
-          <Card padding="lg" className="text-center" style={{ background: 'var(--color-highlight)', borderColor: 'var(--color-accent)' }}>
+          <Card padding="lg" className="text-center" style={{ background: 'rgba(255,255,255,0.04)', borderColor: 'rgba(155, 149, 144, 0.2)' }}>
             <motion.div className="flex justify-center mb-3" animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 2, repeat: Infinity }}>
-              <SpinnerIcon size={32} color="var(--color-accent)" />
+              <SpinnerIcon size={32} color="var(--color-theater-muted)" />
             </motion.div>
-            <p style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '4px' }}>Waiting for Host</p>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>The host will start the next round</p>
+            <p style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-theater-text)', marginBottom: '4px' }}>Waiting for Host</p>
+            <p style={{ fontSize: '14px', color: 'var(--color-theater-muted)', marginBottom: '16px' }}>The host will start the next round</p>
             <div className="flex justify-center">
               <Button
                 variant="secondary"
                 size="sm"
                 icon={<DoorIcon size={16} color="currentColor" />}
                 onClick={() => router.push('/')}
-                style={{ background: 'transparent' }}
+                style={{ color: 'var(--color-theater-muted)', background: 'transparent' }}
               >
                 Leave Game
               </Button>

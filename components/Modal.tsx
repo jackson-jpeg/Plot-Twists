@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { ReactNode, useEffect, useRef, useCallback, useId } from 'react'
-import { MOTION } from '@/lib/animations'
+import { SPRING } from '@/lib/motion'
 import { Button } from '@/components/ui'
 
 interface ModalProps {
@@ -129,7 +129,7 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
           initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9, y: 20 }}
-          transition={shouldReduceMotion ? { duration: 0 } : MOTION.spring}
+          transition={shouldReduceMotion ? { duration: 0 } : SPRING}
           style={{
             position: 'relative',
             background: 'var(--color-background)',

@@ -9,7 +9,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import { UserMenu } from '@/components/UserMenu'
 import { LandingPage } from '@/components/LandingPage'
 import { XPBar } from '@/components/XPBar'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { useCreditBalance } from '@/components/CreditBadge'
 import { Skeleton } from '@/components/EmptyState'
@@ -187,7 +187,7 @@ export default function Home() {
           style={{ paddingTop: 'calc(16px + env(safe-area-inset-top, 0px))' }}
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={MOTION.gentle}
+          transition={SPRING_GENTLE}
         >
           <div className="flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
             <TheaterMasksIcon />
@@ -200,7 +200,7 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={MOTION.gentle}
+          transition={SPRING_GENTLE}
           style={{ marginTop: '24px' }}
         >
           <h1
@@ -243,7 +243,7 @@ export default function Home() {
             }}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15, ...MOTION.gentle }}
+            transition={{ delay: 0.15, ...SPRING_GENTLE }}
             whileHover={canHover ? { y: -2, scale: 1.01 } : undefined}
             whileTap={{ scale: 0.98 }}
           >
@@ -279,7 +279,7 @@ export default function Home() {
             }}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, ...MOTION.gentle }}
+            transition={{ delay: 0.2, ...SPRING_GENTLE }}
             whileHover={canHover ? { y: -2, scale: 1.01 } : undefined}
             whileTap={{ scale: 0.98 }}
           >
@@ -321,7 +321,7 @@ export default function Home() {
           }}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, ...MOTION.gentle }}
+          transition={{ delay: 0.25, ...SPRING_GENTLE }}
           whileHover={canHover ? { scale: 1.02 } : undefined}
           whileTap={{ scale: 0.98 }}
         >

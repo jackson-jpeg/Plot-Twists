@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import type { SavedGame } from '@/lib/types'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE } from '@/lib/motion'
 import { Card } from '@/components/ui'
 
 interface ReplayCardProps {
@@ -21,7 +21,7 @@ export function ReplayCard({ game, index, onClick }: ReplayCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ ...MOTION.gentle, delay: index * 0.05 }}
+      transition={{ ...SPRING_GENTLE, delay: index * 0.05 }}
     >
       <Card
         variant="surface"

@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { CardCarousel } from './CardCarousel'
-import { MOTION } from '@/lib/animations'
+import { SPRING, SPRING_BOUNCY } from '@/lib/motion'
 import { CardBrowseModal } from './CardBrowseModal'
 import { getFilteredContentRich } from '@/lib/content'
 import { ContentItem } from '@/lib/content-types'
@@ -199,9 +199,9 @@ function CardCarouselNoLabel({
           animate={isShaking ? "shake" : "center"}
           exit="exit"
           transition={{
-            x: MOTION.spring,
+            x: SPRING,
             opacity: { duration: 0.2 },
-            rotateY: MOTION.bouncy
+            rotateY: SPRING_BOUNCY
           }}
           className="absolute inset-0"
           style={{ transformStyle: 'preserve-3d' }}

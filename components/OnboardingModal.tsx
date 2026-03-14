@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Modal } from './Modal'
 import { Button } from '@/components/ui/Button'
-import { MOTION } from '@/lib/animations'
+import { SPRING, SPRING_GENTLE } from '@/lib/motion'
 
 interface OnboardingModalProps {
   isOpen: boolean
@@ -22,7 +22,7 @@ const STEPS = [
           style={{ fontSize: '80px', marginBottom: '16px' }}
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
-          transition={{ ...MOTION.gentle, delay: 0.2 }}
+          transition={{ ...SPRING_GENTLE, delay: 0.2 }}
         >
           🎭
         </motion.div>
@@ -78,7 +78,7 @@ const STEPS = [
           style={{ fontSize: '64px', marginBottom: '16px' }}
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ ...MOTION.spring, delay: 0.2 }}
+          transition={{ ...SPRING, delay: 0.2 }}
         >
           🚀
         </motion.div>

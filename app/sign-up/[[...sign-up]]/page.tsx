@@ -3,7 +3,7 @@
 import { SignUp } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE } from '@/lib/motion'
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -38,7 +38,7 @@ export default function SignUpPage() {
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={MOTION.gentle}
+          transition={SPRING_GENTLE}
         >
           {/* Header */}
           <div className="text-center mb-6">

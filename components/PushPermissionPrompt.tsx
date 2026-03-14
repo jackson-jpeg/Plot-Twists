@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MOTION } from '@/lib/animations'
+import { SPRING } from '@/lib/motion'
 import { registerPushNotifications } from '@/lib/pushNotifications'
 
 const DISMISSED_KEY = 'pt-push-prompt-dismissed'
@@ -39,7 +39,7 @@ export function PushPermissionPrompt() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 10, scale: 0.95 }}
-          transition={MOTION.spring}
+          transition={SPRING}
           style={{
             background: 'var(--color-surface)',
             border: '1px solid var(--color-border)',

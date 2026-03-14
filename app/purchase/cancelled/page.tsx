@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE } from '@/lib/motion'
 import { Button, PageContainer } from '@/components/ui'
 
 export default function PurchaseCancelledPage() {
@@ -13,7 +13,7 @@ export default function PurchaseCancelledPage() {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={MOTION.gentle}
+          transition={SPRING_GENTLE}
         >
           <div className="text-6xl mb-6">🎬</div>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE, SPRING_BOUNCY } from '@/lib/motion'
 
 interface GamePausedOverlayProps {
   visible: boolean
@@ -16,7 +16,7 @@ export function GamePausedOverlay({ visible, reason = 'Host disconnected' }: Gam
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={MOTION.gentle}
+          transition={SPRING_GENTLE}
           className="fixed inset-0 z-40 flex items-center justify-center"
           style={{ background: 'rgba(0, 0, 0, 0.75)', backdropFilter: 'blur(8px)' }}
         >
@@ -24,7 +24,7 @@ export function GamePausedOverlay({ visible, reason = 'Host disconnected' }: Gam
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            transition={MOTION.bouncy}
+            transition={SPRING_BOUNCY}
             className="text-center px-8 py-10 rounded-2xl mx-4"
             style={{
               background: 'var(--color-surface)',

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MOTION, STAGGER } from '@/lib/animations'
+import { SPRING_GENTLE, SPRING_BOUNCY, STAGGER } from '@/lib/motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { PlotTwistOption } from '@/lib/types'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
@@ -247,7 +247,7 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
-              transition={MOTION.dramatic}
+              transition={SPRING_GENTLE}
             >
               <div className="text-center mb-6">
                 <motion.h2
@@ -275,7 +275,7 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
                       disabled={hasVoted}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * STAGGER.slow }}
+                      transition={{ delay: index * STAGGER }}
                       whileHover={!hasVoted ? { scale: 1.02, x: 4 } : {}}
                       whileTap={!hasVoted ? { scale: 0.98 } : {}}
                       className={`w-full p-4 rounded-xl text-left relative overflow-hidden transition-all ${
@@ -297,7 +297,7 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
                         animate={{ width: `${percentage}%` }}
                         className="absolute inset-y-0 left-0"
                         style={{ background: 'linear-gradient(to right, var(--color-purple-bg), var(--color-pink-bg))' }}
-                        transition={MOTION.bouncy}
+                        transition={SPRING_BOUNCY}
                       />
 
                       <div className="relative z-10 flex justify-between items-center">
@@ -349,9 +349,9 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
                 x: screenShake ? [0, -10, 10, -10, 10, 0] : 0,
               }}
               transition={{
-                scale: MOTION.dramatic,
-                rotate: MOTION.dramatic,
-                x: { duration: MOTION.duration.slower }
+                scale: SPRING_GENTLE,
+                rotate: SPRING_GENTLE,
+                x: { duration: 0.5 }
               }}
             >
               {/* Shimmer effect */}
@@ -364,7 +364,7 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ ...MOTION.dramatic, delay: 0.2 }}
+                transition={{ ...SPRING_GENTLE, delay: 0.2 }}
                 className="text-6xl mb-4"
               >
                 🎭
@@ -382,7 +382,7 @@ export function PlotTwistVoting({ roomCode, isHost = false }: PlotTwistVotingPro
               <motion.p
                 initial={{ y: 20, opacity: 0, scale: 0.8 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4, ...MOTION.dramatic }}
+                transition={{ delay: 0.4, ...SPRING_GENTLE }}
                 className="text-white text-xl font-medium"
               >
                 {winningTwist}

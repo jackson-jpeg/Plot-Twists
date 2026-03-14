@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { DirectorsReview } from '@/components/DirectorsReview'
 import { withTimeout } from '@/lib/socketTimeout'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE } from '@/lib/motion'
 import { CAST_COLORS } from '@/lib/avatarColors'
 import type { SavedGame } from '@/lib/types'
 
@@ -196,7 +196,7 @@ export default function ReviewPage() {
           className="mt-8"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, ...MOTION.gentle }}
+          transition={{ delay: 0.2, ...SPRING_GENTLE }}
         >
           <p style={{
             fontSize: '11px',
@@ -251,7 +251,7 @@ export default function ReviewPage() {
           className="mt-8"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, ...MOTION.gentle }}
+          transition={{ delay: 0.3, ...SPRING_GENTLE }}
         >
           <button
             onClick={() => router.push(`/replay/${code}`)}

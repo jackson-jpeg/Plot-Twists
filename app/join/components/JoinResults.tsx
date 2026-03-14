@@ -10,7 +10,7 @@ import { withTimeout } from '@/lib/socketTimeout'
 import { successHaptic } from '@/hooks/useHaptics'
 import { useConfetti } from '@/hooks/useConfetti'
 import { Modal } from '@/components/Modal'
-import { VARIANTS, MOTION } from '@/lib/animations'
+import { SPRING_BOUNCY, SPRING_GENTLE } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { DoorIcon, StarIcon, SpinnerIcon } from '@/components/GameIcons'
 import { Button, Card } from '@/components/ui'
@@ -119,15 +119,15 @@ export function JoinResults({
   }
 
   return (
-    <motion.div key="results" variants={VARIANTS.spotlight} initial="initial" animate="animate" exit="exit" style={{ padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-bg)' }}>
+    <motion.div key="results" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={SPRING_GENTLE} style={{ padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-bg)' }}>
       <div className="w-full mx-auto text-center" style={{ maxWidth: isDesktop ? '720px' : '512px' }}>
         {/* MVP Hero — star + label + name */}
         {gameResults?.winner ? (
           <motion.div
             className="mb-6"
-            variants={VARIANTS.drumRoll}
-            initial="initial"
-            animate="animate"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={SPRING_BOUNCY}
             aria-live="polite"
             aria-atomic="true"
           >
@@ -135,7 +135,7 @@ export function JoinResults({
               className="mx-auto mb-3"
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ ...MOTION.bouncy, delay: 0.3 }}
+              transition={{ ...SPRING_BOUNCY, delay: 0.3 }}
             >
               <svg width="48" height="48" viewBox="0 0 18 18" fill="none">
                 <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="var(--color-accent)" />
@@ -159,7 +159,7 @@ export function JoinResults({
           </motion.div>
         ) : (
           <motion.div className="mb-6" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            <motion.div className="mx-auto mb-3" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={MOTION.bouncy}>
+            <motion.div className="mx-auto mb-3" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={SPRING_BOUNCY}>
               <StarIcon size={48} color="var(--color-accent-2)" />
             </motion.div>
             <h1 className="font-display" style={{ fontSize: '36px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
@@ -177,7 +177,7 @@ export function JoinResults({
             onClick={onShowPosterLightbox}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, ...MOTION.dramatic }}
+            transition={{ delay: 0.4, ...SPRING_GENTLE }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

@@ -8,7 +8,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import { withTimeout } from '@/lib/socketTimeout'
 import { ReplayCard } from './components/ReplayCard'
 import { Button } from '@/components/ui'
-import { VARIANTS, MOTION } from '@/lib/animations'
+import { ENTER_Y, SPRING_GENTLE } from '@/lib/motion'
 
 type Tab = 'recent' | 'trending'
 
@@ -55,10 +55,8 @@ export default function ReplaysPage() {
 
   return (
     <motion.div
-      variants={VARIANTS.pageTransition}
-      initial="initial"
-      animate="animate"
-      exit="exit"
+      {...ENTER_Y}
+      transition={SPRING_GENTLE}
       className="min-h-dvh"
       style={{ background: 'var(--color-bg)' }}
     >
@@ -121,7 +119,7 @@ export default function ReplaysPage() {
             className="text-center py-12"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={MOTION.gentle}
+            transition={SPRING_GENTLE}
           >
             <div className="text-4xl mb-3">🎬</div>
             <p className="font-display text-lg mb-2" style={{ color: 'var(--color-text-primary)' }}>No replays yet</p>

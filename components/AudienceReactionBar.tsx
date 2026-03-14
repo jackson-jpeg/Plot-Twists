@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { AudienceReactionType, AudienceReaction } from '@/lib/types'
 import { tapHaptic } from '@/hooks/useHaptics'
-import { MOTION } from '@/lib/animations'
+import { SPRING, SPRING_BOUNCY, SPRING_GENTLE } from '@/lib/motion'
 
 interface AudienceReactionBarProps {
   roomCode: string
@@ -154,7 +154,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
                   initial={{ opacity: 0, scale: 0.3, y: 50, x: Math.random() * 100, rotate: rotation }}
                   animate={{ opacity: 1, scale: 1, y: -100, rotate: rotation }}
                   exit={{ opacity: 0, scale: 0.6 }}
-                  transition={{ duration: 2, scale: { duration: 0.3, ...MOTION.bouncy } }}
+                  transition={{ duration: 2, scale: { duration: 0.3, ...SPRING_BOUNCY } }}
                   className="absolute"
                   style={{ fontSize: `${size}px` }}
                 >
@@ -233,7 +233,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
               initial={{ opacity: 0, scale: 0.8, y: 10, transformOrigin: 'bottom right' }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.85, y: 8 }}
-              transition={MOTION.spring}
+              transition={SPRING}
             >
               <div className="grid grid-cols-4 gap-2">
                 {reactionTypes.map((type, i) => (
@@ -247,7 +247,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
                     }}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03, ...MOTION.gentle }}
+                    transition={{ delay: i * 0.03, ...SPRING_GENTLE }}
                     aria-label={`Send ${REACTION_LABELS[type]} reaction`}
                   >
                     <span className="text-3xl leading-none select-none">{REACTION_EMOJIS[type]}</span>
@@ -293,7 +293,7 @@ export function AudienceReactionBar({ roomCode, isPerforming, isHost = false }: 
         }}
         whileTap={{ scale: 0.9 }}
         animate={burstType ? { scale: [1, 1.2, 1] } : {}}
-        transition={MOTION.spring}
+        transition={SPRING}
         aria-label={menuOpen ? 'Close reactions' : 'Open reactions'}
       >
         <span className="text-2xl select-none leading-none">

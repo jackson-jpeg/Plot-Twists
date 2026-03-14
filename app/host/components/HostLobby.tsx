@@ -8,7 +8,7 @@ import type { RoomSettings, ScriptCustomization, AudioSettings, GameMode } from 
 const ScriptCustomizationPanel = dynamic(() => import('@/components/ScriptCustomizationPanel').then(m => ({ default: m.ScriptCustomizationPanel })), { ssr: false, loading: () => null })
 const CardPackSelector = dynamic(() => import('@/components/CardPackSelector').then(m => ({ default: m.CardPackSelector })), { ssr: false, loading: () => null })
 const AudioSettingsPanel = dynamic(() => import('@/components/AudioSettingsPanel').then(m => ({ default: m.AudioSettingsPanel })), { ssr: false, loading: () => null })
-import { MOTION, STAGGER } from '@/lib/animations'
+import { SPRING, SPRING_GENTLE, SPRING_BOUNCY, STAGGER } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 import { Button, Card, Badge, Avatar } from '@/components/ui'
@@ -256,13 +256,13 @@ export function HostLobby({
               initial={{ opacity: 0, x: -40, scale: 0.9 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 40, scale: 0.95 }}
-              transition={{ ...MOTION.gentle, delay: index * STAGGER.fast }}
+              transition={{ ...SPRING_GENTLE, delay: index * STAGGER }}
             >
               <Card variant="surface" padding="sm" className="flex items-center gap-3">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ ...MOTION.bouncy, delay: index * STAGGER.fast + 0.1 }}
+                  transition={{ ...SPRING_BOUNCY, delay: index * STAGGER + 0.1 }}
                 >
                   <Avatar name={player.nickname} size="md" />
                 </motion.div>
@@ -339,7 +339,7 @@ export function HostLobby({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={MOTION.gentle}
+            transition={SPRING_GENTLE}
             style={{ overflow: 'hidden' }}
             className="mt-3"
           >
@@ -540,8 +540,8 @@ export function HostLobby({
       } : { opacity: 1, y: 0 }}
       transition={canStartGame ? {
         boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
-        ...MOTION.gentle,
-      } : MOTION.gentle}
+        ...SPRING_GENTLE,
+      } : SPRING_GENTLE}
       style={{ borderRadius: 'var(--radius-button)' }}
     >
       <Button

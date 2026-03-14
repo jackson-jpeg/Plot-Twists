@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE } from '@/lib/motion'
 import { analytics } from '@/lib/analytics'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { CAST_COLORS } from '@/lib/avatarColors'
@@ -133,7 +133,7 @@ export function InvitePage() {
           className="w-full max-w-md text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={MOTION.gentle}
+          transition={SPRING_GENTLE}
           style={{ padding: '24px 16px' }}
         >
           <div className="rounded-xl" style={{ padding: '48px 32px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
@@ -173,7 +173,7 @@ export function InvitePage() {
           className="flex items-center justify-center gap-2 mb-8"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={MOTION.gentle}
+          transition={SPRING_GENTLE}
         >
           <TheaterMasks size={28} />
           <span
@@ -189,7 +189,7 @@ export function InvitePage() {
           className="flex justify-center mb-5"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.05, ...MOTION.gentle }}
+          transition={{ delay: 0.05, ...SPRING_GENTLE }}
         >
           {loading ? (
             <div className="rounded-full animate-pulse" style={{ width: 80, height: 80, background: 'var(--color-border)' }} />
@@ -215,7 +215,7 @@ export function InvitePage() {
           className="text-center mb-2"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.08, ...MOTION.gentle }}
+          transition={{ delay: 0.08, ...SPRING_GENTLE }}
         >
           <h1
             className="font-display"
@@ -240,7 +240,7 @@ export function InvitePage() {
           className="my-6"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, ...MOTION.gentle }}
+          transition={{ delay: 0.12, ...SPRING_GENTLE }}
         >
           {loading ? (
             <SkeletonCard />
@@ -347,7 +347,7 @@ export function InvitePage() {
           onSubmit={handleSubmit}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.16, ...MOTION.gentle }}
+          transition={{ delay: 0.16, ...SPRING_GENTLE }}
         >
           <label
             className="block mb-2"
@@ -424,7 +424,7 @@ export function InvitePage() {
           className="flex items-center justify-center gap-0"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, ...MOTION.gentle }}
+          transition={{ delay: 0.25, ...SPRING_GENTLE }}
         >
           {[
             { num: '1', label: 'Pick cards' },

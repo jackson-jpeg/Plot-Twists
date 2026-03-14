@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { STAGGER } from '@/lib/animations'
+import { STAGGER } from '@/lib/motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { PlayerStats, Achievement, LeaderboardEntry, LeaderboardCategory } from '@/lib/types'
 import { GameHistory } from './GameHistory'
@@ -411,7 +411,7 @@ const staggerContainer = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: STAGGER.slow
+      staggerChildren: STAGGER
     }
   }
 }

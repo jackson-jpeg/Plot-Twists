@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { STAGGER } from '@/lib/animations'
+import { STAGGER } from '@/lib/motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { PlayerProfile, Leaderboard } from '@/components/PlayerProfile'
@@ -259,7 +259,7 @@ export default function ProfilePage() {
                   }}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * STAGGER.fast }}
+                  transition={{ delay: i * STAGGER }}
                 >
                   <div className="font-display" style={{
                     fontSize: '24px',

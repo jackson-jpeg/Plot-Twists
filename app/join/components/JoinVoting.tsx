@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { VARIANTS, MOTION } from '@/lib/animations'
+import { SPRING_GENTLE, SPRING_BOUNCY } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { successHaptic } from '@/hooks/useHaptics'
 import { CheckCircleIcon } from '@/components/GameIcons'
@@ -40,10 +40,10 @@ export function JoinVoting({ myPlayerId, myCharacter }: JoinVotingProps) {
   return (
     <motion.div
       key="voting"
-      variants={VARIANTS.spotlight}
-      initial="initial"
-      animate="animate"
-      exit="exit"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={SPRING_GENTLE}
       className="flex flex-col items-center justify-center"
       style={{ minHeight: '100dvh', padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-bg)' }}
     >
@@ -111,7 +111,7 @@ export function JoinVoting({ myPlayerId, myCharacter }: JoinVotingProps) {
               className="flex justify-center mb-4"
               initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0 }}
               animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1 }}
-              transition={MOTION.bouncy}
+              transition={SPRING_BOUNCY}
             >
               <CheckCircleIcon size={56} color="var(--color-success)" />
             </motion.div>
@@ -174,7 +174,7 @@ export function JoinVoting({ myPlayerId, myCharacter }: JoinVotingProps) {
                 }}
                 initial={{ opacity: 0, x: -15 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.08, ...MOTION.gentle }}
+                transition={{ delay: i * 0.08, ...SPRING_GENTLE }}
                 whileHover={{ scale: 1.02, borderColor: 'var(--color-accent)' }}
                 whileTap={{ scale: 0.98 }}
               >

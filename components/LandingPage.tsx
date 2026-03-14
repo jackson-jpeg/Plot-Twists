@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SignInButton } from '@clerk/nextjs'
 import { analytics } from '@/lib/analytics'
-import { MOTION, VARIANTS } from '@/lib/animations'
+import { SPRING_GENTLE, SPRING_BOUNCY } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { Button, Card, Badge, PageContainer, SectionHeader } from '@/components/ui'
 import { HomepagePosterShowcase } from '@/components/HomepagePosterShowcase'
@@ -82,14 +82,14 @@ export function LandingPage() {
             <motion.div
               initial={{ opacity: 0, y: -30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={MOTION.gentle}
+              transition={SPRING_GENTLE}
               style={{ textAlign: 'center' }}
             >
               {/* Animated Theater Masks */}
               <motion.div
-                variants={VARIANTS.drumRoll}
-                initial="initial"
-                animate="animate"
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={SPRING_BOUNCY}
                 style={{ display: 'inline-block' }}
               >
                 <TheaterMasks />
@@ -145,7 +145,7 @@ export function LandingPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12, ...MOTION.gentle }}
+              transition={{ delay: 0.12, ...SPRING_GENTLE }}
               style={{ marginTop: '32px', padding: isDesktop ? '0' : '0 4px' }}
             >
               <div style={{ display: 'flex', gap: '12px', flexDirection: isDesktop ? 'row' : 'column' }}>
@@ -180,7 +180,7 @@ export function LandingPage() {
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.22, ...MOTION.gentle }}
+          transition={{ delay: 0.22, ...SPRING_GENTLE }}
           style={{ marginTop: isDesktop ? '40px' : '28px' }}
         >
           <HomepagePosterShowcase />
@@ -207,7 +207,7 @@ export function LandingPage() {
                   key={step.num}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.55 + i * 0.08, ...MOTION.gentle }}
+                  transition={{ delay: 0.55 + i * 0.08, ...SPRING_GENTLE }}
                   className="flex-1 text-center"
                   style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', position: 'relative' }}
                 >
@@ -274,7 +274,7 @@ export function LandingPage() {
                   key={step.num}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.55 + i * 0.08, ...MOTION.gentle }}
+                  transition={{ delay: 0.55 + i * 0.08, ...SPRING_GENTLE }}
                 >
                   <Card variant="elevated" padding="md" style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
                     <div

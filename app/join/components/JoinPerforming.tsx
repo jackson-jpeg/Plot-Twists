@@ -7,7 +7,7 @@ import type { PlayerRole } from '@/lib/types'
 import { MobileTeleprompter } from '@/components/MobileTeleprompter'
 import { SpectatorChat } from '@/components/SpectatorChat'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
-import { VARIANTS } from '@/lib/animations'
+import { SPRING_GENTLE } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { GamePausedOverlay } from '@/components/GamePausedOverlay'
 import { useScriptStore } from '@/stores/scriptStore'
@@ -57,10 +57,10 @@ export function JoinPerforming({
   return (
     <motion.div
       key="performing"
-      variants={VARIANTS.curtainRise}
-      initial="initial"
-      animate="animate"
-      exit="exit"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={SPRING_GENTLE}
       className="min-h-dvh flex flex-col"
       style={{
         maxWidth: isDesktop ? '900px' : undefined,

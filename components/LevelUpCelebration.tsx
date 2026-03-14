@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE } from '@/lib/motion'
 import { useEffect } from 'react'
 import { successHaptic } from '@/hooks/useHaptics'
 import { useConfetti } from '@/hooks/useConfetti'
@@ -41,7 +41,7 @@ export function LevelUpCelebration({ show, level, title, onClose }: LevelUpCeleb
             initial={{ scale: 0.3, y: 50 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.3, opacity: 0 }}
-            transition={MOTION.dramatic}
+            transition={SPRING_GENTLE}
             onClick={e => e.stopPropagation()}
           >
             <motion.div

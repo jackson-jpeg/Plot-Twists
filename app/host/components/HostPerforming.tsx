@@ -10,7 +10,7 @@ const AudienceReactionBar = dynamic(() => import('@/components/AudienceReactionB
 const PlotTwistVoting = dynamic(() => import('@/components/PlotTwistVoting').then(m => ({ default: m.PlotTwistVoting })), { ssr: false, loading: () => <div style={{ height: 48 }} /> })
 import { SpectatorTicker } from '@/components/SpectatorChat'
 import { MoviePosterFrame, MoviePosterSkeleton } from '@/components/MoviePosterFrame'
-import { VARIANTS, MOTION } from '@/lib/animations'
+import { SPRING, SPRING_GENTLE, ENTER_Y, PRESS } from '@/lib/motion'
 import { tapHaptic, successHaptic } from '@/hooks/useHaptics'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { PauseIcon, PlayIcon, ChaosIcon } from '@/components/GameIcons'
@@ -136,10 +136,10 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
   return (
     <motion.div
       key="performing"
-      variants={VARIANTS.curtainRise}
-      initial="initial"
-      animate="animate"
-      exit="exit"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={SPRING_GENTLE}
       className="w-full max-w-5xl mx-auto px-5"
       style={{
         background: 'var(--color-theater-bg)',
@@ -274,7 +274,7 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           exit={{ scale: 0, opacity: 0 }}
-                          transition={MOTION.spring}
+                          transition={SPRING}
                         >
                           {moodIndicator.label}
                         </motion.span>

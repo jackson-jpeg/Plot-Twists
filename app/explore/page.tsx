@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { STAGGER } from '@/lib/animations'
+import { STAGGER } from '@/lib/motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/Modal'
@@ -20,7 +20,7 @@ function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSel
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * STAGGER.fast, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay: index * STAGGER, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       className="relative w-full text-left"
     >
       <Card variant="interactive" padding="none" onClick={() => onSelect(pack)} style={{ overflow: 'hidden' }}>

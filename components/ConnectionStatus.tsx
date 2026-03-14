@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MOTION } from '@/lib/animations'
+import { SPRING } from '@/lib/motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { Button } from '@/components/ui/Button'
 
@@ -43,7 +43,7 @@ export function ConnectionStatus() {
           initial={{ opacity: 0, y: -40 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -40 }}
-          transition={MOTION.snappy}
+          transition={SPRING}
           style={{
             position: 'fixed',
             top: 'env(safe-area-inset-top, 0px)',

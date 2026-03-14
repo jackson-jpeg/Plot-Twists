@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MOTION, STAGGER } from '@/lib/animations'
+import { SPRING, STAGGER } from '@/lib/motion'
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from '@stripe/react-stripe-js'
 import { useAuth } from '@/contexts/AuthContext'
 import { CREDIT_PACKAGES } from '@/lib/credits'
@@ -134,7 +134,7 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
-            transition={MOTION.spring}
+            transition={SPRING}
             onClick={e => e.stopPropagation()}
             className="relative w-full overflow-hidden sm:rounded-2xl rounded-t-2xl"
             style={{
@@ -270,7 +270,7 @@ export function PurchaseCreditsModal({ isOpen, onClose, currentBalance }: Purcha
                           }}
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * STAGGER.fast + 0.1 }}
+                          transition={{ delay: i * STAGGER + 0.1 }}
                           whileTap={{ scale: 0.98 }}
                         >
                           {isBest && (

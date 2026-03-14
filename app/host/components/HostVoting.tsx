@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { VARIANTS, MOTION, STAGGER } from '@/lib/animations'
+import { SPRING, SPRING_GENTLE, STAGGER } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { CheckCircleIcon, SpinnerIcon } from '@/components/GameIcons'
 import { Avatar, Badge, SectionHeader, Card } from '@/components/ui'
@@ -23,10 +23,10 @@ export function HostVoting() {
   return (
     <motion.div
       key="voting"
-      variants={VARIANTS.spotlight}
-      initial="initial"
-      animate="animate"
-      exit="exit"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={SPRING_GENTLE}
       className="w-full mx-auto px-5"
       style={{ maxWidth: isDesktop ? '900px' : '100%', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
@@ -87,7 +87,7 @@ export function HostVoting() {
             }}
             initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, rotateY: -90 }}
             animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, rotateY: 0 }}
-            transition={{ delay: i * STAGGER.slow, ...MOTION.gentle }}
+            transition={{ delay: i * STAGGER, ...SPRING_GENTLE }}
           >
             <div className="flex items-center gap-3">
               <Avatar name={player.nickname} size="md" highlighted={player.hasSubmittedVote} />
@@ -102,7 +102,7 @@ export function HostVoting() {
               <motion.div
                 initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0, rotate: -180 }}
                 animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, rotate: 0 }}
-                transition={{ ...MOTION.bouncy, delay: 0.15 }}
+                transition={{ ...SPRING, delay: 0.15 }}
               >
                 <CheckCircleIcon size={24} color="var(--color-accent)" />
               </motion.div>

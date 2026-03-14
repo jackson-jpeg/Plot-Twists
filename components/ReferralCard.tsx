@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE } from '@/lib/motion'
 
 export function ReferralCard() {
   const { socket, isConnected } = useSocket()
@@ -162,7 +162,7 @@ export function ReferralCard() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={MOTION.gentle}
+                  transition={SPRING_GENTLE}
                   className="overflow-hidden"
                 >
                   <div className="flex gap-2">

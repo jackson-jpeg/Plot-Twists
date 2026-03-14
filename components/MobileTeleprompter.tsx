@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion'
 import { getMoodIndicator } from '@/lib/teleprompterUtils'
-import { MOTION } from '@/lib/animations'
+import { SPRING_BOUNCY, SPRING } from '@/lib/motion'
 import type { Script } from '@/lib/types'
 import { isCapacitorNative } from '@/lib/platform'
 import { tapHaptic } from '@/hooks/useHaptics'
@@ -124,7 +124,7 @@ export function MobileTeleprompter({
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 1.2, opacity: 0 }}
-              transition={MOTION.bouncy}
+              transition={SPRING_BOUNCY}
               style={{
                 fontSize: '48px',
                 fontWeight: 800,
@@ -243,7 +243,7 @@ export function MobileTeleprompter({
                 }}
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ ...MOTION.spring, delay: 0.1 }}
+                transition={{ ...SPRING, delay: 0.1 }}
               >
                 <span>{moodIndicator.label}</span>
               </motion.div>

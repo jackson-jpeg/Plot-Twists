@@ -3,7 +3,7 @@
 import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { PlayerRole } from '@/lib/types'
-import { VARIANTS, MOTION } from '@/lib/animations'
+import { ENTER_Y, SPRING_GENTLE, SPRING_BOUNCY } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { EyeIcon, CrownIcon, CheckCircleIcon } from '@/components/GameIcons'
 import { PushPermissionPrompt } from '@/components/PushPermissionPrompt'
@@ -32,10 +32,8 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
   return (
     <motion.div
       key="lobby"
-      variants={VARIANTS.pageTransition}
-      initial="initial"
-      animate="animate"
-      exit="exit"
+      {...ENTER_Y}
+      transition={SPRING_GENTLE}
       className="flex flex-col items-center justify-center"
       style={{ minHeight: '100dvh', padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-bg)' }}
     >
@@ -45,7 +43,7 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
           className="flex justify-center mb-4"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ ...MOTION.bouncy, delay: 0.1 }}
+          transition={{ ...SPRING_BOUNCY, delay: 0.1 }}
         >
           {isSpectator ? (
             <div
@@ -132,7 +130,7 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
                   }}
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.35 + i * 0.05, ...MOTION.gentle }}
+                  transition={{ delay: 0.35 + i * 0.05, ...SPRING_GENTLE }}
                 >
                   {/* Avatar */}
                   <Avatar name={player.nickname} size="sm" highlighted={isMe} />

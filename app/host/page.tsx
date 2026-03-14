@@ -5,8 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import type { RoomSettings, ScriptCustomization, AudioSettings, GameMode } from '@/lib/types'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { SPRING_BOUNCY, ENTER_SCALE, ENTER_Y } from '@/lib/motion'
-import { getVariants } from '@/lib/animations'
+import { SPRING_BOUNCY, ENTER_SCALE } from '@/lib/motion'
 import { withTimeout } from '@/lib/socketTimeout'
 import { useConfetti } from '@/hooks/useConfetti'
 import { OnboardingModal } from '@/components/OnboardingModal'
@@ -40,7 +39,7 @@ function HostPageContent() {
   const { socket, isConnected, connectionState, reconnectAttempt, setActiveRoom, playerSessionId } = useSocket()
   const confetti = useConfetti()
   const prefersReducedMotion = useReducedMotion()
-  const variants = getVariants(prefersReducedMotion)
+
   const toast = useToast()
   const achievementToasts = useAchievementToasts()
 
@@ -331,7 +330,7 @@ function HostPageContent() {
   if (!isConnected) {
     return (
       <PageContainer centered>
-        <motion.div {...variants.scaleIn} className="text-center">
+        <motion.div {...ENTER_SCALE} className="text-center">
           <motion.div className="text-6xl mb-6" animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>⚡</motion.div>
           <p className="text-xl font-display" style={{ color: 'var(--color-text-secondary)' }}>Connecting...</p>
         </motion.div>
@@ -382,7 +381,7 @@ function HostPageContent() {
       {/* Pre-Performance Countdown */}
       <AnimatePresence>
         {countdown !== null && (
-          <motion.div {...variants.fade}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center"
             style={{ background: 'rgba(0, 0, 0, 0.85)' }}>
             <AnimatePresence mode="wait">

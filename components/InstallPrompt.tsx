@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStandaloneMode } from '@/hooks/useStandaloneMode'
-import { MOTION } from '@/lib/animations'
+import { SPRING } from '@/lib/motion'
 import { isCapacitorNative } from '@/lib/platform'
 
 interface BeforeInstallPromptEvent extends Event {
@@ -111,7 +111,7 @@ export function InstallPrompt() {
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 60 }}
-          transition={MOTION.spring}
+          transition={SPRING}
         >
           <div className="flex items-center gap-3 max-w-lg mx-auto">
             <div className="flex-1 flex flex-col gap-0.5">

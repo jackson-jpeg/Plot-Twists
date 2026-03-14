@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MOTION } from '@/lib/animations'
+import { SPRING } from '@/lib/motion'
 
 type BannerState = 'reconnecting' | 'reconnected' | 'failed'
 
@@ -58,7 +58,7 @@ export function ReconnectionBanner({ reconnecting, attempt = 0, maxAttempts = 50
           initial={{ y: -60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -60, opacity: 0 }}
-          transition={MOTION.snappy}
+          transition={SPRING}
           className="fixed top-0 left-0 right-0 z-50 px-4 py-3 text-center text-sm font-medium font-display"
           style={{
             background: current.bg,

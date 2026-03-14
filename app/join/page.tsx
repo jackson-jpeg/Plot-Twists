@@ -11,8 +11,7 @@ import { useConfetti } from '@/hooks/useConfetti'
 import { OnboardingModal } from '@/components/OnboardingModal'
 import { Modal } from '@/components/Modal'
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
-import { SPRING_BOUNCY } from '@/lib/motion'
-import { getVariants } from '@/lib/animations'
+import { SPRING_BOUNCY, ENTER_SCALE } from '@/lib/motion'
 import { withTimeout } from '@/lib/socketTimeout'
 import { analytics } from '@/lib/analytics'
 import { useAuth } from '@/contexts/AuthContext'
@@ -49,7 +48,7 @@ function JoinPageContent() {
   const achievementToasts = useAchievementToasts()
   const confetti = useConfetti()
   const prefersReducedMotion = useReducedMotion()
-  const variants = getVariants(prefersReducedMotion)
+
 
   // Subscriptions ref
   const subscriptionsRef = useRef<(() => void) | null>(null)
@@ -281,11 +280,11 @@ function JoinPageContent() {
       {/* Host Disconnected Overlay */}
       <AnimatePresence>
         {hostDisconnected && (
-          <motion.div {...variants.fade}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ background: 'rgba(0, 0, 0, 0.8)' }}
             role="alert" aria-live="assertive">
-            <motion.div {...variants.scaleIn}
+            <motion.div {...ENTER_SCALE}
               className="max-w-md w-full text-center"
               style={{ padding: '32px 24px', borderRadius: '20px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}>
               <div className="mb-4 flex justify-center">
@@ -307,7 +306,7 @@ function JoinPageContent() {
       {/* Pre-Performance Countdown */}
       <AnimatePresence>
         {countdown !== null && (
-          <motion.div {...variants.fade}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center"
             style={{ background: 'rgba(0, 0, 0, 0.85)' }}
             role="alert" aria-live="assertive">

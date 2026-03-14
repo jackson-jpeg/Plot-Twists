@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { MOTION } from '@/lib/animations'
+import { SPRING_GENTLE } from '@/lib/motion'
 import { CREDIT_PACKAGES } from '@/lib/credits'
 import { getApiBaseUrl } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -96,7 +96,7 @@ function PurchaseSuccessContent() {
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={MOTION.gentle}
+            transition={SPRING_GENTLE}
           >
             <motion.div
               className="text-7xl mb-6"

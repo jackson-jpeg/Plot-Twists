@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import type { LevelInfo } from '@/lib/types'
 import { shareScriptText } from '@/lib/scriptUtils'
-import { VARIANTS, MOTION } from '@/lib/animations'
+import { SPRING_BOUNCY, SPRING_GENTLE } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { analytics } from '@/lib/analytics'
 import { withTimeout } from '@/lib/socketTimeout'
@@ -130,10 +130,10 @@ export function HostResults({
   return (
     <motion.div
       key="results"
-      variants={VARIANTS.spotlight}
-      initial="initial"
-      animate="animate"
-      exit="exit"
+      initial={{ opacity: 0, scale: 0.96 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0 }}
+      transition={SPRING_GENTLE}
       className="min-h-dvh w-full flex flex-col"
       style={{ background: 'var(--color-theater-bg)' }}
     >
@@ -142,9 +142,9 @@ export function HostResults({
         {winner && (
           <motion.div
             className="text-center mb-6"
-            variants={VARIANTS.drumRoll}
-            initial="initial"
-            animate="animate"
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={SPRING_BOUNCY}
             aria-live="polite"
             aria-atomic="true"
           >
@@ -152,7 +152,7 @@ export function HostResults({
               className="mx-auto mb-3"
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
-              transition={{ ...MOTION.bouncy, delay: 0.3 }}
+              transition={{ ...SPRING_BOUNCY, delay: 0.3 }}
             >
               <svg width="48" height="48" viewBox="0 0 18 18" fill="none">
                 <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="var(--color-accent)" />
@@ -193,7 +193,7 @@ export function HostResults({
             onClick={onShowPosterLightbox}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4, ...MOTION.dramatic }}
+            transition={{ delay: 0.4, ...SPRING_GENTLE }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

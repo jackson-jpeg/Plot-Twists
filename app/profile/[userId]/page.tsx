@@ -7,7 +7,7 @@ import type { PlayerStats } from '@/lib/types'
 import { useSocket } from '@/contexts/SocketContext'
 import { GameHistory } from '@/components/GameHistory'
 import { StatsSkeleton } from '@/components/EmptyState'
-import { VARIANTS, MOTION } from '@/lib/animations'
+import { ENTER_Y, SPRING_GENTLE } from '@/lib/motion'
 import { Button, Card, Avatar, Badge } from '@/components/ui'
 
 export default function PublicProfilePage({ params }: { params: Promise<{ userId: string }> }) {
@@ -54,10 +54,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
 
   return (
     <motion.div
-      variants={VARIANTS.pageTransition}
-      initial="initial"
-      animate="animate"
-      exit="exit"
+      {...ENTER_Y}
+      transition={SPRING_GENTLE}
       className="min-h-dvh"
       style={{ background: 'var(--color-bg)' }}
     >
@@ -72,7 +70,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
           className="text-center mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={MOTION.gentle}
+          transition={SPRING_GENTLE}
         >
           <Avatar name={stats.nickname} size="lg" className="mx-auto mb-3" />
           <h1 className="font-display" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text-primary)' }}>
@@ -89,7 +87,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
           className="grid grid-cols-3 gap-3 mb-6"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...MOTION.gentle, delay: 0.15 }}
+          transition={{ ...SPRING_GENTLE, delay: 0.15 }}
         >
           {[
             { label: 'Games', value: stats.gamesPlayed },
@@ -109,7 +107,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
             className="mb-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ ...MOTION.gentle, delay: 0.25 }}
+            transition={{ ...SPRING_GENTLE, delay: 0.25 }}
           >
             <h2 className="font-display text-sm uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
               Achievements
@@ -130,7 +128,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userId
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...MOTION.gentle, delay: 0.35 }}
+          transition={{ ...SPRING_GENTLE, delay: 0.35 }}
         >
           <h2 className="font-display text-sm uppercase tracking-widest mb-3" style={{ color: 'var(--color-text-tertiary)' }}>
             Recent Games

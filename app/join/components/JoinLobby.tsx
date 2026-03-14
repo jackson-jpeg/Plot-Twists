@@ -35,7 +35,11 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
       {...ENTER_Y}
       transition={SPRING_GENTLE}
       className="flex flex-col items-center justify-center"
-      style={{ minHeight: '100dvh', padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-bg)' }}
+      style={{
+        minHeight: '100dvh',
+        padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px',
+        background: `radial-gradient(ellipse 500px 200px at 50% 0%, rgba(201,162,77,0.03), transparent), var(--color-void)`,
+      }}
     >
       <div className="w-full text-center" style={{ maxWidth: isDesktop ? '520px' : '448px' }}>
         {/* Success icon */}
@@ -60,10 +64,11 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
         {/* Title */}
         <motion.h1
           style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '36px',
-            fontWeight: 700,
-            color: isSpectator ? 'var(--color-accent-2)' : 'var(--color-success)',
+            fontFamily: 'var(--font-serif)',
+            fontSize: '40px',
+            fontWeight: 400,
+            fontStyle: 'italic',
+            color: isSpectator ? 'var(--color-accent-2)' : 'var(--color-text-primary)',
             marginBottom: '8px',
           }}
           initial={{ y: 20, opacity: 0 }}
@@ -89,7 +94,10 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
         {selectedPackName && (
           <motion.div
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-6"
-            style={{ background: 'var(--color-highlight)', border: '1px solid var(--color-border)' }}
+            style={{
+              background: 'var(--color-ink)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
@@ -114,51 +122,55 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
             marginBottom: '10px',
             textAlign: 'left',
           }}>
-            Players ({players.length})
+            Cast ({players.length})
           </p>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap gap-2">
             {players.map((player, i) => {
               const isMe = player.id === myPlayerId
+              const isHost = player.isHost
               return (
                 <motion.div
                   key={player.id}
-                  className="flex items-center gap-3 p-3 rounded-xl"
+                  className="inline-flex items-center gap-2"
                   style={{
-                    background: isMe ? 'rgba(245, 158, 66, 0.06)' : 'var(--color-surface-alt)',
-                    border: isMe ? '1.5px solid var(--color-accent)' : '1px solid transparent',
+                    padding: '8px 14px',
+                    borderRadius: '999px',
+                    background: 'var(--color-ink)',
+                    border: isHost
+                      ? '1.5px solid var(--color-stage-gold)'
+                      : isMe
+                        ? '1.5px solid var(--color-accent)'
+                        : '1px solid rgba(255,255,255,0.10)',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: isHost
+                      ? 'var(--color-stage-gold)'
+                      : 'var(--color-text-primary)',
                   }}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.35 + i * 0.05, ...SPRING_GENTLE }}
                 >
-                  {/* Avatar */}
-                  <Avatar name={player.nickname} size="sm" highlighted={isMe} />
-
-                  {/* Name + badges */}
-                  <div className="flex items-center gap-2 flex-1">
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        fontSize: '15px',
-                        color: 'var(--color-text-primary)',
-                      }}
-                    >
-                      {player.nickname}
+                  {isHost && <span style={{ fontSize: '10px' }}>&#9733;</span>}
+                  {player.role === 'SPECTATOR' && <EyeIcon size={14} color="var(--color-text-tertiary)" />}
+                  <span>{player.nickname}</span>
+                  {isMe && (
+                    <span style={{
+                      fontSize: '10px',
+                      padding: '1px 6px',
+                      borderRadius: '999px',
+                      background: 'rgba(245,158,66,0.15)',
+                      color: 'var(--color-accent)',
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
+                    }}>
+                      YOU
                     </span>
-                    {isMe && (
-                      <Badge variant="accent" size="sm">YOU</Badge>
-                    )}
-                    {player.level != null && (
-                      <Badge variant="accent" size="sm">Lv.{player.level}</Badge>
-                    )}
-                  </div>
-
-                  {/* Role indicator */}
-                  {player.isHost && (
-                    <Badge variant="accent" size="sm">HOST</Badge>
                   )}
-                  {player.role === 'SPECTATOR' && <EyeIcon size={16} color="var(--color-text-tertiary)" />}
+                  {player.level != null && (
+                    <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', fontWeight: 400 }}>Lv.{player.level}</span>
+                  )}
                 </motion.div>
               )
             })}
@@ -174,7 +186,7 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
         >
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-success)' }} />
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-accent)' }} />
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-border)' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
         </motion.div>
 
         {/* Auto-start countdown */}

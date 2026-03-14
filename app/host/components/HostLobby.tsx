@@ -58,6 +58,31 @@ function ChevronIcon({ size = 16, direction = 'down' }: { size?: number; directi
   )
 }
 
+/** Animated scan-line overlay for QR code */
+function QRScanLine() {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        height: '2px',
+        background: 'linear-gradient(90deg, transparent, var(--color-stage-gold), transparent)',
+        opacity: 0.55,
+        animation: 'qr-scan 2.6s ease-in-out infinite',
+        zIndex: 2,
+        pointerEvents: 'none',
+      }}
+    />
+  )
+}
+
+function formatDate(): string {
+  const d = new Date()
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
+}
+
 export function HostLobby({
   settings, scriptCustomization, audioSettings, toast,
   onStartGame, onToggleMature, onUpdateGameMode,
@@ -75,6 +100,7 @@ export function HostLobby({
   const creditBalance = useGameStore((s) => s.creditBalance)
   const isConnected = useConnectionStore((s) => s.isConnected)
   const selectedPackId = useSelectionStore((s) => s.selectedPackId)
+  const selectedPackName = useSelectionStore((s) => s.selectedPackName)
   const gameSetupMode = useSelectionStore((s) => s.gameSetupMode)
 
   const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join/invite/${roomCode}` : ''
@@ -105,6 +131,59 @@ export function HostLobby({
     return `${nonHostPlayers.length} of ${min} needed`
   }
 
+  // --- Clapperboard header ---
+  const clapperboardHeader = (
+    <div style={{
+      background: 'var(--color-ink)',
+      borderBottom: '3px solid rgba(255,255,255,0.06)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Diagonal B&W stripes */}
+      <div style={{
+        height: '8px',
+        background: 'repeating-linear-gradient(-45deg, #fff 0px, #fff 8px, currentColor 8px, currentColor 16px)',
+        opacity: 0.12,
+        color: '#000',
+      }} />
+
+      {/* Clap fields */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        padding: '12px 20px 14px',
+        maxWidth: isDesktop ? '1200px' : undefined,
+        margin: isDesktop ? '0 auto' : undefined,
+      }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2px',
+          fontFamily: 'var(--font-code)',
+          fontSize: '11px',
+          letterSpacing: '0.04em',
+          color: 'rgba(255,255,255,0.45)',
+          textTransform: 'uppercase' as const,
+        }}>
+          <span>PROD: <span style={{ color: 'rgba(255,255,255,0.7)' }}>Plot Twists</span></span>
+          <span>SCENE: <span style={{ color: 'rgba(255,255,255,0.7)' }}>{selectedPackName || 'TBD'}</span></span>
+          <span>TAKE: <span style={{ color: 'rgba(255,255,255,0.7)' }}>1</span></span>
+        </div>
+        <span style={{
+          fontFamily: 'var(--font-code)',
+          fontSize: '11px',
+          color: 'rgba(255,255,255,0.35)',
+          letterSpacing: '0.04em',
+          flexShrink: 0,
+          marginLeft: '16px',
+        }}>
+          {formatDate()}
+        </span>
+      </div>
+    </div>
+  )
+
   // --- Shared sub-sections ---
 
   const roomCodeSection = (
@@ -128,12 +207,13 @@ export function HostLobby({
         <>
           <div className="flex items-center gap-3" style={{ justifyContent: isDesktop ? 'flex-start' : 'center' }}>
             <span style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-code)',
               fontSize: isDesktop ? '80px' : '64px',
               fontWeight: 700,
               lineHeight: 1,
               letterSpacing: '0.04em',
               color: 'var(--color-text-primary)',
+              textShadow: '0 0 60px rgba(201,162,77,0.06)',
             }}>
               {roomCode}
             </span>
@@ -163,11 +243,13 @@ export function HostLobby({
           </div>
           <p style={{
             fontSize: 'var(--text-caption)',
-            marginTop: '4px',
+            marginTop: '6px',
             color: 'var(--color-text-tertiary)',
+            fontFamily: 'var(--font-code)',
+            letterSpacing: '0.02em',
             textAlign: isDesktop ? 'left' : 'center',
           }}>
-            Share this code with your friends
+            plottwists.com/join &rarr; {roomCode}
           </p>
           {creditBalance && (
             <p style={{
@@ -193,10 +275,19 @@ export function HostLobby({
       transition={{ delay: 0.2 }}
       style={{ marginTop: '24px' }}
     >
-      <Card variant="surface" padding="md" className="flex items-center gap-5">
+      <div className="flex items-center gap-5" style={{
+        padding: '16px',
+        borderRadius: 'var(--radius-card)',
+        background: 'var(--color-ink)',
+        border: '1px solid rgba(255,255,255,0.06)',
+      }}>
         {joinUrl ? (
-          <div className="flex-shrink-0 rounded-lg overflow-hidden p-2" style={{ background: 'var(--color-surface-alt)' }}>
+          <div
+            className="flex-shrink-0 rounded-lg overflow-hidden p-2"
+            style={{ background: '#fff', position: 'relative' }}
+          >
             <QRCodeSVG value={joinUrl} size={isDesktop ? 140 : 120} level="H" />
+            <QRScanLine />
           </div>
         ) : (
           <div className="animate-pulse flex-shrink-0" style={{ width: '136px', height: '136px', borderRadius: '8px', background: 'var(--color-surface-alt)' }} />
@@ -215,10 +306,10 @@ export function HostLobby({
             lineHeight: 1.5,
             color: 'var(--color-text-secondary)',
           }}>
-            Or go to <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>plot-twists.com</span> and enter the code above
+            Or go to <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>plottwists.com/join</span> and enter the code
           </p>
         </div>
-      </Card>
+      </div>
     </motion.div>
   )
 
@@ -237,7 +328,7 @@ export function HostLobby({
           textTransform: 'uppercase' as const,
           color: 'var(--color-text-tertiary)',
         }}>
-          Players ({nonHostPlayers.length})
+          Cast ({nonHostPlayers.length})
         </p>
         <p style={{
           fontSize: 'var(--text-caption)',
@@ -248,61 +339,93 @@ export function HostLobby({
       </div>
 
       {/* Player list */}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        {/* Host chip */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={SPRING_GENTLE}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            borderRadius: '999px',
+            background: 'var(--color-ink)',
+            border: '1.5px solid var(--color-stage-gold)',
+            color: 'var(--color-stage-gold)',
+            fontSize: '14px',
+            fontWeight: 600,
+          }}
+        >
+          <span style={{ fontSize: '10px' }}>&#9733;</span>
+          Host (You)
+        </motion.div>
+
         <AnimatePresence mode="popLayout">
           {nonHostPlayers.map((player, index) => (
             <motion.div
               key={player.id}
-              initial={{ opacity: 0, x: -40, scale: 0.9 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 40, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
               transition={{ ...SPRING_GENTLE, delay: index * STAGGER }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 14px',
+                borderRadius: '999px',
+                background: 'var(--color-ink)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: player.connected === false ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)',
+              }}
             >
-              <Card variant="surface" padding="sm" className="flex items-center gap-3">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ ...SPRING_BOUNCY, delay: index * STAGGER + 0.1 }}
-                >
-                  <Avatar name={player.nickname} size="md" />
-                </motion.div>
-
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <PlayerConnectionDot connected={player.connected} />
-                    <p style={{
-                      fontWeight: 600,
-                      fontSize: 'var(--text-body)',
-                      color: player.connected === false ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)',
-                    }}>
-                      {player.nickname}
-                    </p>
-                  </div>
-                </div>
-
-                {player.level != null ? (
-                  <Badge variant="default" size="sm">Lv.{player.level}</Badge>
-                ) : (
-                  <Badge variant={player.hasSubmittedSelection ? 'success' : 'default'} size="sm">
-                    {player.hasSubmittedSelection ? 'Ready' : 'Joined'}
-                  </Badge>
-                )}
-              </Card>
+              <PlayerConnectionDot connected={player.connected} />
+              {player.nickname}
+              {player.level != null && (
+                <span style={{ fontSize: '11px', color: 'var(--color-text-tertiary)', fontWeight: 400 }}>Lv.{player.level}</span>
+              )}
             </motion.div>
           ))}
         </AnimatePresence>
 
+        {/* Waiting chip(s) */}
         {!canStartGame && getWaitingText() && (
-          <motion.p
-            className="text-center py-5"
-            style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-tertiary)' }}
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 14px',
+              borderRadius: '999px',
+              background: 'transparent',
+              border: '1.5px dashed rgba(255,255,255,0.10)',
+              fontSize: '13px',
+              color: 'var(--color-text-tertiary)',
+              fontStyle: 'italic',
+            }}
           >
-            {getWaitingText()}
-          </motion.p>
+            waiting...
+          </motion.div>
         )}
       </div>
+
+      {/* Needed count */}
+      {!canStartGame && getNeededText() && (
+        <motion.p
+          className="mt-3"
+          style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-tertiary)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          {getNeededText()}
+        </motion.p>
+      )}
     </motion.div>
   ) : (
     <motion.div
@@ -312,7 +435,7 @@ export function HostLobby({
       transition={{ delay: 0.3 }}
     >
       <p style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
-        Solo mode — you are the star performer. Press Start Game when ready.
+        Solo mode — you are the star performer.
       </p>
     </motion.div>
   )
@@ -345,7 +468,7 @@ export function HostLobby({
           >
             <div className="flex flex-col gap-4">
               {/* Quick/Custom Tabs */}
-              <Card variant="surface" padding="md">
+              <div style={{ padding: '16px', borderRadius: 'var(--radius-card)', background: 'var(--color-ink)', border: '1px solid var(--color-void)' }}>
                 <div className="flex gap-2 mb-3">
                   <Button
                     variant={gameSetupMode === 'quick' ? 'primary' : 'secondary'}
@@ -368,10 +491,10 @@ export function HostLobby({
                 <p className="text-center text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
                   {gameSetupMode === 'quick' ? 'Recommended settings for fast setup' : 'Customize all game options'}
                 </p>
-              </Card>
+              </div>
 
               {/* Game Mode Selection */}
-              <Card variant="surface" padding="md">
+              <div style={{ padding: '16px', borderRadius: 'var(--radius-card)', background: 'var(--color-ink)', border: '1px solid var(--color-void)' }}>
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '12px' }}>Game Mode</h3>
                 <div className="grid gap-3 md:grid-cols-3">
                   {([
@@ -422,12 +545,12 @@ export function HostLobby({
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </Card>
+              </div>
 
               {/* Content Rating */}
               {gameSetupMode === 'quick' && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-                  <Card variant="surface" padding="md">
+                  <div style={{ padding: '16px', borderRadius: 'var(--radius-card)', background: 'var(--color-ink)', border: '1px solid var(--color-void)' }}>
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)' }}>{settings.isMature ? 'After Dark' : 'Family Friendly'}</h3>
@@ -437,14 +560,14 @@ export function HostLobby({
                         Switch
                       </Button>
                     </div>
-                  </Card>
+                  </div>
                 </motion.div>
               )}
 
               {/* Custom settings */}
               {gameSetupMode === 'custom' && (
                 <>
-                  <Card variant="surface" padding="md">
+                  <div style={{ padding: '16px', borderRadius: 'var(--radius-card)', background: 'var(--color-ink)', border: '1px solid var(--color-void)' }}>
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '2px' }}>{settings.isMature ? 'After Dark' : 'Family Friendly'}</h3>
@@ -454,9 +577,9 @@ export function HostLobby({
                         Switch Mode
                       </Button>
                     </div>
-                  </Card>
+                  </div>
                   <CardPackSelector roomCode={roomCode} selectedPackId={selectedPackId} onSelect={(id) => useSelectionStore.getState().setSelectedPackId(id)} showCreateButton={true} />
-                  <Card variant="surface" padding="sm">
+                  <div style={{ padding: '12px', borderRadius: 'var(--radius-card)', background: 'var(--color-ink)', border: '1px solid var(--color-void)' }}>
                     <p className="text-xs font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>Quick Themes</p>
                     <div className="flex gap-1.5 flex-wrap">
                       {[
@@ -484,7 +607,7 @@ export function HostLobby({
                         </Button>
                       ))}
                     </div>
-                  </Card>
+                  </div>
                   <ScriptCustomizationPanel customization={scriptCustomization} onChange={onSetScriptCustomization} />
                   <AudioSettingsPanel settings={audioSettings} onChange={onSetAudioSettings} />
                 </>
@@ -497,7 +620,7 @@ export function HostLobby({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
                 >
-                  <Card variant="surface" padding="md">
+                  <div style={{ padding: '16px', borderRadius: 'var(--radius-card)', background: 'var(--color-ink)', border: '1px solid var(--color-void)' }}>
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
@@ -516,7 +639,7 @@ export function HostLobby({
                         {settings.isPublic ? 'Make Private' : 'Make Public'}
                       </Button>
                     </div>
-                  </Card>
+                  </div>
                 </motion.div>
               )}
             </div>
@@ -533,42 +656,64 @@ export function HostLobby({
         opacity: 1,
         y: 0,
         boxShadow: [
-          '0 4px 20px rgba(245, 158, 66, 0.35)',
-          '0 4px 32px rgba(245, 158, 66, 0.55)',
-          '0 4px 20px rgba(245, 158, 66, 0.35)',
+          '0 4px 20px rgba(255,255,255,0.15)',
+          '0 4px 32px rgba(255,255,255,0.25)',
+          '0 4px 20px rgba(255,255,255,0.15)',
         ],
       } : { opacity: 1, y: 0 }}
       transition={canStartGame ? {
         boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
         ...SPRING_GENTLE,
       } : SPRING_GENTLE}
-      style={{ borderRadius: 'var(--radius-button)' }}
+      style={{ borderRadius: '100px' }}
     >
-      <Button
-        variant="primary"
-        size="lg"
-        fullWidth
+      <button
         disabled={!canStartGame}
         onClick={() => { successHaptic(); onStartGame() }}
         style={{
-          padding: '18px',
-          ...(canStartGame && { boxShadow: '0 4px 20px rgba(245, 158, 66, 0.35)' }),
+          width: '100%',
+          padding: '18px 40px',
+          borderRadius: '100px',
+          border: 'none',
+          cursor: canStartGame ? 'pointer' : 'not-allowed',
+          fontFamily: 'var(--font-display)',
+          fontSize: '20px',
+          fontWeight: 700,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase' as const,
+          background: canStartGame ? '#fff' : 'rgba(255,255,255,0.08)',
+          color: canStartGame ? 'var(--color-void)' : 'var(--color-text-tertiary)',
+          transition: 'background 0.2s, color 0.2s',
         }}
       >
-        {settings.gameMode === 'SOLO' ? 'Start Solo Game' : 'Start Game'}
-      </Button>
+        Action
+      </button>
     </motion.div>
   )
 
   return (
-    <>
+    <div style={{
+      background: `radial-gradient(ellipse 500px 200px at 50% 0%, rgba(201,162,77,0.03), transparent), var(--color-void)`,
+      minHeight: '100dvh',
+    }}>
+      {/* QR scan-line keyframes */}
+      <style>{`
+        @keyframes qr-scan {
+          0%, 100% { top: 0; }
+          50% { top: calc(100% - 2px); }
+        }
+      `}</style>
+
+      {/* Clapperboard header */}
+      {clapperboardHeader}
+
       {/* Top Bar: Back + Connected */}
       <motion.div
         className="flex items-center justify-between px-4 pb-2"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        style={{ paddingTop: 'max(16px, env(safe-area-inset-top, 0px))', maxWidth: isDesktop ? '1200px' : undefined, margin: isDesktop ? '0 auto' : undefined, width: '100%' }}
+        style={{ paddingTop: '16px', maxWidth: isDesktop ? '1200px' : undefined, margin: isDesktop ? '0 auto' : undefined, width: '100%' }}
       >
         <Button
           variant="ghost"
@@ -594,7 +739,7 @@ export function HostLobby({
           maxWidth: '1200px',
           margin: '0 auto',
           padding: '0 40px',
-          minHeight: 'calc(100dvh - 60px)',
+          minHeight: 'calc(100dvh - 140px)',
         }}>
           {/* Left column: Room code + QR */}
           <div style={{ flex: '0 0 40%', paddingTop: '24px' }}>
@@ -624,7 +769,7 @@ export function HostLobby({
         <div className="w-full max-w-lg mx-auto px-5" style={{
           display: 'flex',
           flexDirection: 'column',
-          minHeight: 'calc(100dvh - 60px)',
+          minHeight: 'calc(100dvh - 140px)',
           paddingBottom: 'calc(100px + env(safe-area-inset-bottom, 0px))',
         }}>
           {roomCodeSection}
@@ -641,7 +786,7 @@ export function HostLobby({
             right: 0,
             padding: '16px 20px',
             paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
-            background: 'linear-gradient(to top, var(--color-bg) 70%, transparent)',
+            background: 'linear-gradient(to top, var(--color-void) 70%, transparent)',
             zIndex: 'var(--z-sticky)',
           }}>
             <div className="max-w-lg mx-auto">
@@ -650,6 +795,6 @@ export function HostLobby({
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }

@@ -22,7 +22,8 @@ import { Button, Card, Avatar, PageContainer } from '@/components/ui'
 import type { PaymentTransaction, PlayerStats, Progression, LevelInfo, WeeklyChallenge as WeeklyChallengeType } from '@/lib/types'
 import { getApiBaseUrl } from '@/lib/api'
 import { isAdminUser } from '@/lib/admin'
-import { isIOSNative } from '@/lib/platform'
+import { isIOSNative, isCapacitorNative } from '@/lib/platform'
+import { useStandaloneMode } from '@/hooks/useStandaloneMode'
 import { getAuthHeaders } from '@/lib/authHeaders'
 import { SignInButton } from '@clerk/nextjs'
 
@@ -44,6 +45,9 @@ export default function ProfilePage() {
   const [levelInfo, setLevelInfo] = useState<LevelInfo | null>(null)
   const [weeklyChallenges, setWeeklyChallenges] = useState<WeeklyChallengeType[]>([])
   const creditBalance = useCreditBalance()
+  const isStandalone = useStandaloneMode()
+  const [installDismissed, setInstallDismissed] = useState(false)
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<{ prompt(): Promise<void>; userChoice: Promise<{ outcome: string }> } | null>(null)
 
   const playerId = getPlayerId()
 
@@ -86,6 +90,21 @@ export default function ProfilePage() {
     fetchTransactions()
   }, [fetchTransactions])
 
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('install-dismissed') === 'true') {
+        setInstallDismissed(true)
+      }
+    } catch { /* localStorage unavailable */ }
+
+    const handleBeforeInstall = (e: Event) => {
+      e.preventDefault()
+      setDeferredInstallPrompt(e as unknown as { prompt(): Promise<void>; userChoice: Promise<{ outcome: string }> })
+    }
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall)
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
+  }, [])
+
   const openCustomerPortal = async () => {
     if (!user) return
     setPortalLoading(true)
@@ -116,6 +135,12 @@ export default function ProfilePage() {
 
   const handleSignOut = async () => {
     await signOut()
+  }
+
+  const handleInstall = async () => {
+    if (deferredInstallPrompt) {
+      await deferredInstallPrompt.prompt()
+    }
   }
 
   if (!isConnected || authLoading) {
@@ -433,6 +458,32 @@ export default function ProfilePage() {
             className="mt-6"
           >
             <ReferralCard />
+          </motion.div>
+        )}
+
+        {/* Install prompt card */}
+        {!isStandalone && !installDismissed && !isCapacitorNative() && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-4"
+          >
+            <Card padding="md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                    Install Plot Twists
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                    Add to home screen for the best experience
+                  </p>
+                </div>
+                <Button variant="secondary" size="sm" onClick={handleInstall}>
+                  Install
+                </Button>
+              </div>
+            </Card>
           </motion.div>
         )}
 

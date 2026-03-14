@@ -33,7 +33,7 @@ export function InstallPrompt() {
   const dismiss = useCallback(() => {
     setShowBanner(false)
     try {
-      localStorage.setItem(DISMISS_KEY, Date.now().toString())
+      localStorage.setItem(DISMISS_KEY, 'true')
     } catch {
       // localStorage unavailable
     }
@@ -42,13 +42,9 @@ export function InstallPrompt() {
   useEffect(() => {
     if (isStandalone) return
 
-    // Check if previously dismissed (within last 7 days)
+    // Check if permanently dismissed
     try {
-      const dismissed = localStorage.getItem(DISMISS_KEY)
-      if (dismissed) {
-        const daysSince = (Date.now() - Number(dismissed)) / (1000 * 60 * 60 * 24)
-        if (daysSince < 7) return
-      }
+      if (localStorage.getItem(DISMISS_KEY) === 'true') return
     } catch {
       // localStorage unavailable
     }
@@ -57,13 +53,9 @@ export function InstallPrompt() {
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault()
       deferredPromptRef.current = e as BeforeInstallPromptEvent
-      // Don't show banner if recently dismissed
+      // Don't show banner if permanently dismissed
       try {
-        const dismissed = localStorage.getItem(DISMISS_KEY)
-        if (dismissed) {
-          const daysSince = (Date.now() - Number(dismissed)) / (1000 * 60 * 60 * 24)
-          if (daysSince < 7) return
-        }
+        if (localStorage.getItem(DISMISS_KEY) === 'true') return
       } catch { /* localStorage unavailable */ }
       setShowBanner(true)
     }

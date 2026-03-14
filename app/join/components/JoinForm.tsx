@@ -66,6 +66,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
   const [publicRooms, setPublicRooms] = useState<PublicRoomListing[]>([])
   const [isMatching, setIsMatching] = useState(false)
   const [matchError, setMatchError] = useState<string | null>(null)
+  const [showPublicGames, setShowPublicGames] = useState(false)
   const publicMatchmakingEnabled = isBetaFeatureEnabled('publicMatchmaking')
 
   const validateRoomCode = (code: string): string => {
@@ -289,8 +290,90 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
   // Extract digits for the 4-box display
   const digits = roomCode.padEnd(4, '').split('').slice(0, 4)
 
+  // Card deck illustration for desktop left column
+  const CardDeckIllustration = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
+      <div style={{ position: 'relative', width: '140px', height: '200px' }}>
+        {/* Back card (rotated right) */}
+        <div style={{
+          position: 'absolute',
+          width: '120px',
+          height: '160px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #e76f51, #f4a261)',
+          transform: 'rotate(6deg) translate(12px, 16px)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+        }} />
+        {/* Middle card */}
+        <div style={{
+          position: 'absolute',
+          width: '120px',
+          height: '160px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #264653, #2a9d8f)',
+          transform: 'rotate(0deg) translate(10px, 8px)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+        }} />
+        {/* Front card (rotated left) */}
+        <div style={{
+          position: 'absolute',
+          width: '120px',
+          height: '160px',
+          borderRadius: '14px',
+          background: 'linear-gradient(135deg, #7b2d8e, #e94560)',
+          transform: 'rotate(-6deg) translate(8px, 0px)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.22)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <span style={{ fontSize: '40px', opacity: 0.85 }}>🎭</span>
+        </div>
+      </div>
+      <p style={{
+        color: 'var(--color-text-secondary)',
+        fontSize: '14px',
+        textAlign: 'center',
+        lineHeight: 1.5,
+        maxWidth: '180px',
+      }}>
+        Pick cards. Get a script. Perform it live.
+      </p>
+    </div>
+  )
+
   return (
-    <PageContainer size="narrow" centered>
+    <PageContainer size={isDesktop ? 'wide' : 'narrow'} centered>
+      {/* Two-column layout on desktop */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: isDesktop ? '48px' : '0',
+        width: '100%',
+      }}>
+        {/* Left column: card deck visual (desktop only) */}
+        {isDesktop && (
+          <div style={{
+            width: '40%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '520px',
+            flexShrink: 0,
+          }}>
+            <CardDeckIllustration />
+          </div>
+        )}
+
+        {/* Right column (or full width on mobile): form */}
+        <div style={{
+          width: isDesktop ? '60%' : '100%',
+          flex: isDesktop ? 'none' : '1',
+          background: isDesktop ? 'var(--color-surface)' : 'transparent',
+          borderRadius: isDesktop ? '20px' : '0',
+          padding: isDesktop ? '36px 32px' : '0',
+        }}>
+
       {/* Back button */}
       <motion.div
         className="mb-6"
@@ -355,7 +438,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
               onKeyDown={(e) => handleDigitKeyDown(i, e)}
               onBlur={() => { setFocusedDigit(null); setRoomCodeTouched(true); setRoomCodeError(validateRoomCode(roomCode)) }}
               onFocus={(e) => { setFocusedDigit(i); e.target.select() }}
-              className="text-center outline-none transition-all duration-200"
+              className="text-center outline-none"
               style={{
                 width: '56px',
                 height: '56px',
@@ -372,6 +455,8 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                   : isRoomCodeValid
                   ? '2px solid var(--color-success)'
                   : '2px solid transparent',
+                transform: focusedDigit === i ? 'scale(1.05)' : 'scale(1)',
+                transition: 'border-color 0.15s, transform 0.15s',
               }}
             />
           ))}
@@ -521,111 +606,135 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
         </Button>
       </motion.div>
 
-      {/* Divider */}
-      <div className="flex items-center gap-3 my-8">
-        <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
-        <span
-          className="text-xs font-semibold uppercase tracking-widest"
-          style={{ color: 'var(--color-text-tertiary)' }}
+      {/* Browse public games toggle */}
+      <div className="my-8 text-center">
+        <button
+          onClick={() => setShowPublicGames((v) => !v)}
+          className="text-sm cursor-pointer"
+          style={{
+            color: 'var(--color-text-tertiary)',
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            textDecoration: 'underline',
+            textUnderlineOffset: '3px',
+            fontWeight: 500,
+          }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-secondary)' }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-tertiary)' }}
         >
-          {publicMatchmakingEnabled ? 'or browse public games' : 'private beta'}
-        </span>
-        <div className="flex-1 h-px" style={{ background: 'var(--color-border)' }} />
+          {showPublicGames ? 'hide public games' : 'or browse public games'}
+        </button>
       </div>
 
-      {publicMatchmakingEnabled && (
-        <motion.div
-          className="grid grid-cols-2 gap-3 mb-4"
-          {...ENTER_Y}
-          transition={{ delay: STAGGER * 4, ...SPRING_GENTLE }}
-        >
-          <Card
-            variant="interactive"
-            padding="md"
-            onClick={() => !isMatching && handleQuickPlay('ENSEMBLE')}
-            className="relative text-center"
-          >
-            <div className="text-2xl mb-1">👥</div>
-            <div
-              className="text-[13px] font-bold"
-              style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
-            >
-              Ensemble
-            </div>
-            <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>3-6 performers</div>
-            {isMatching && (
-              <motion.div
-                className="absolute inset-0 rounded-xl flex items-center justify-center"
-                style={{ background: 'rgba(245, 158, 66, 0.1)' }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <span className="text-[13px] font-medium" style={{ color: 'var(--color-accent)' }}>Matching...</span>
-              </motion.div>
-            )}
-          </Card>
-          <Card
-            variant="interactive"
-            padding="md"
-            onClick={() => !isMatching && handleQuickPlay('HEAD_TO_HEAD')}
-            className="relative text-center"
-          >
-            <div className="text-2xl mb-1">⚔️</div>
-            <div
-              className="text-[13px] font-bold"
-              style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
-            >
-              Head-to-Head
-            </div>
-            <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>2-player duel</div>
-          </Card>
-        </motion.div>
-      )}
-
-      {/* Match error */}
       <AnimatePresence>
-        {matchError && (
+        {showPublicGames && (
           <motion.div
-            className="mb-4 p-3 rounded-lg text-center text-sm"
-            style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-danger)' }}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={SPRING_GENTLE}
+            style={{ overflow: 'hidden' }}
           >
-            {matchError}
+            {publicMatchmakingEnabled && (
+              <motion.div
+                className="grid grid-cols-2 gap-3 mb-4"
+                {...ENTER_Y}
+                transition={{ delay: STAGGER * 4, ...SPRING_GENTLE }}
+              >
+                <Card
+                  variant="interactive"
+                  padding="md"
+                  onClick={() => !isMatching && handleQuickPlay('ENSEMBLE')}
+                  className="relative text-center"
+                >
+                  <div className="text-2xl mb-1">👥</div>
+                  <div
+                    className="text-[13px] font-bold"
+                    style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
+                  >
+                    Ensemble
+                  </div>
+                  <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>3-6 performers</div>
+                  {isMatching && (
+                    <motion.div
+                      className="absolute inset-0 rounded-xl flex items-center justify-center"
+                      style={{ background: 'rgba(245, 158, 66, 0.1)' }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      <span className="text-[13px] font-medium" style={{ color: 'var(--color-accent)' }}>Matching...</span>
+                    </motion.div>
+                  )}
+                </Card>
+                <Card
+                  variant="interactive"
+                  padding="md"
+                  onClick={() => !isMatching && handleQuickPlay('HEAD_TO_HEAD')}
+                  className="relative text-center"
+                >
+                  <div className="text-2xl mb-1">⚔️</div>
+                  <div
+                    className="text-[13px] font-bold"
+                    style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}
+                  >
+                    Head-to-Head
+                  </div>
+                  <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>2-player duel</div>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* Match error */}
+            <AnimatePresence>
+              {matchError && (
+                <motion.div
+                  className="mb-4 p-3 rounded-lg text-center text-sm"
+                  style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-danger)' }}
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={SPRING_GENTLE}
+                >
+                  {matchError}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {publicMatchmakingEnabled ? (
+              <div className="flex flex-col gap-3">
+                {publicRooms.length === 0 ? (
+                  <EmptyState
+                    variant="games"
+                    title="No public games right now"
+                    description="Create the first one and invite friends!"
+                    action={{ label: 'Host a Public Game', onClick: onNavigateHome }}
+                  />
+                ) : (
+                  publicRooms.map((room, i) => (
+                    <PublicRoomCard
+                      key={room.code}
+                      room={room}
+                      index={i}
+                      onJoin={() => handleJoinPublicRoom(room.code)}
+                    />
+                  ))
+                )}
+              </div>
+            ) : (
+              <EmptyState
+                variant="games"
+                title="Private beta mode"
+                description="Public matchmaking is currently disabled while we harden the core loop."
+                action={{ label: 'Host a Private Game', onClick: onNavigateHome }}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {publicMatchmakingEnabled ? (
-        <div className="flex flex-col gap-3">
-          {publicRooms.length === 0 ? (
-            <EmptyState
-              variant="games"
-              title="No public games right now"
-              description="Create the first one and invite friends!"
-              action={{ label: 'Host a Public Game', onClick: onNavigateHome }}
-            />
-          ) : (
-            publicRooms.map((room, i) => (
-              <PublicRoomCard
-                key={room.code}
-                room={room}
-                index={i}
-                onJoin={() => handleJoinPublicRoom(room.code)}
-              />
-            ))
-          )}
-        </div>
-      ) : (
-        <EmptyState
-          variant="games"
-          title="Private beta mode"
-          description="Public matchmaking is currently disabled while we harden the core loop."
-          action={{ label: 'Host a Private Game', onClick: onNavigateHome }}
-        />
-      )}
+        </div>{/* end form column */}
+      </div>{/* end two-column flex */}
     </PageContainer>
   )
 }

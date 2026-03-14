@@ -78,67 +78,85 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
   const unlockedAchievements = stats.achievements.filter(a => a.unlockedAt)
   const lockedAchievements = stats.achievements.filter(a => !a.unlockedAt)
 
-  // Show onboarding for new players with no games
+  // Show aspirational preview for new players with no games
   if (stats.gamesPlayed === 0) {
-    return (
-      <div className="text-center py-8">
-        <motion.div
-          className="text-7xl mb-6"
-          animate={{ scale: [1, 1.1, 1], rotate: [0, 5, -5, 0] }}
-          transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-        >
-          🎭
-        </motion.div>
-        <h2 className="text-2xl font-bold text-[var(--color-text-primary)] font-display mb-3">Ready for Your Debut?</h2>
-        <p className="text-[var(--color-text-secondary)] mb-6 max-w-xs mx-auto">
-          Play your first game to start tracking stats and unlock achievements!
-        </p>
+    const previewStats = [
+      { label: 'Games', value: '--' },
+      { label: 'MVP Wins', value: '--' },
+      { label: 'Votes', value: '--' },
+      { label: 'Streak', value: '--' },
+    ]
 
-        {/* What you'll unlock */}
-        <div className="grid grid-cols-3 gap-3 mb-8 text-center">
-          <motion.div
-            className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border)]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <div className="text-2xl mb-1">📊</div>
-            <div className="text-xs text-[var(--color-text-tertiary)]">Stats</div>
-          </motion.div>
-          <motion.div
-            className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border)]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="text-2xl mb-1">🏅</div>
-            <div className="text-xs text-[var(--color-text-tertiary)]">Achievements</div>
-          </motion.div>
-          <motion.div
-            className="p-3 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border)]"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="text-2xl mb-1">🏆</div>
-            <div className="text-xs text-[var(--color-text-tertiary)]">Leaderboard</div>
-          </motion.div>
+    return (
+      <div className="py-4 space-y-6">
+        {/* Faded stat preview cards */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-disabled)' }}>
+            Your Stats
+          </p>
+          <div className="grid grid-cols-4 gap-2" style={{ opacity: 0.4 }}>
+            {previewStats.map((stat) => (
+              <div
+                key={stat.label}
+                className="text-center p-3 rounded-xl"
+                style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
+              >
+                <div className="font-display text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+                  {stat.value}
+                </div>
+                <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
+        {/* Locked achievement placeholders */}
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-disabled)' }}>
+            Achievements
+          </p>
+          <div className="flex gap-3 flex-wrap" style={{ opacity: 0.35 }}>
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex items-center justify-center rounded-full"
+                style={{
+                  width: 48,
+                  height: 48,
+                  background: 'var(--color-surface-alt)',
+                  border: '1px solid var(--color-border)',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--color-text-disabled)' }}>
+                  <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
+                  <path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="text-center pt-2 space-y-3">
           <Button
             variant="primary"
             size="lg"
-            icon={<span className="text-xl">🎬</span>}
-            onClick={() => { window.location.href = '/' }}
+            onClick={() => { window.location.href = '/join' }}
           >
-            Start Playing
+            Play a game to start tracking your stats
           </Button>
-        </motion.div>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
+            <a
+              href="/sign-up"
+              style={{ color: 'var(--color-text-tertiary)', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+            >
+              Create an account
+            </a>
+            {' '}to save progress across devices
+          </p>
+        </div>
       </div>
     )
   }

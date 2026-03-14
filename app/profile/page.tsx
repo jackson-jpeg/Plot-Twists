@@ -189,7 +189,7 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      <div className="pt-8 pb-8">
+      <div className="pt-8 pb-8 max-w-[960px] mx-auto">
         {/* Admin link (top right, if admin) */}
         {user && isAdminUser({ email: user.email, phoneNumber: user.phoneNumber }) && (
           <div className="flex justify-end mb-2">
@@ -668,26 +668,43 @@ export default function ProfilePage() {
           </motion.div>
         )}
 
-        {/* Guest sign-in prompt */}
+        {/* Guest sign-in prompt — subtle muted card */}
         {!user && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="mt-6 text-center"
-            style={{ padding: '24px', borderRadius: '12px', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+            className="mt-6"
+            style={{ padding: '16px 20px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
           >
-            <h3 className="font-display" style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '8px' }}>
-              Create an Account
-            </h3>
-            <p style={{ fontSize: '14px', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
-              Save your stats, compete on leaderboards, and sync across devices.
-            </p>
-            <SignInButton mode="redirect">
-              <Button variant="primary" size="lg" fullWidth>
-                Create Free Account
-              </Button>
-            </SignInButton>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '2px' }}>
+                  Save your progress
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                  Create a free account to sync stats across devices
+                </p>
+              </div>
+              <SignInButton mode="redirect">
+                <button
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    background: 'var(--color-surface-alt)',
+                    color: 'var(--color-text-primary)',
+                    border: '1px solid var(--color-border)',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}
+                >
+                  Create Account
+                </button>
+              </SignInButton>
+            </div>
           </motion.div>
         )}
       </div>

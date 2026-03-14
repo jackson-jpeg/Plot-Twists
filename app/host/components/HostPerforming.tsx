@@ -168,108 +168,137 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
         ) : null}
       </AnimatePresence>
 
-      {/* Scene indicator + timer */}
-      <motion.div className="mb-4" initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-        <div className="flex items-center justify-between gap-4 mb-2">
+      {/* Teleprompter Settings */}
+      <motion.div className="mb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+        <TeleprompterSettingsPanel settings={teleprompterSettings} onPresetChange={onSetTeleprompterPreset} onCustomChange={onSetTeleprompterCustom} onAutoScrollToggle={onToggleTeleprompterAutoScroll} disabled={teleprompterSettingsLoading} />
+      </motion.div>
+
+      {/* Script — Paper on a desk */}
+      <motion.div
+        ref={scriptContainerRef}
+        className="mb-6 relative"
+        style={{
+          background: '#f4f0e8',
+          color: '#1a1812',
+          borderRadius: '4px',
+          boxShadow: 'inset 0 0 30px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.15)',
+          padding: isDesktop ? '2.5rem 3rem' : '1.5rem 1.25rem',
+        }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        {/* LIVE indicator — top right of paper */}
+        <div style={{ position: 'absolute', top: isDesktop ? '1.25rem' : '0.75rem', right: isDesktop ? '1.5rem' : '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span
-            className="text-xs font-semibold uppercase tracking-widest"
-            style={{ color: 'var(--color-theater-muted)', letterSpacing: '0.15em' }}
-          >
-            Line {currentLineIndex + 1} of {script.lines.length}
-          </span>
-          <motion.div
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs shrink-0"
-            style={{ background: 'var(--color-success-bg, rgba(76, 175, 80, 0.2))', color: 'var(--color-success)' }}
-            initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-          >
-            <span style={{ width: 6, height: 6, borderRadius: '50%', display: 'inline-block', background: 'var(--color-success)' }} />
-            <span>LIVE</span>
-          </motion.div>
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: 'var(--color-stage-red, #c23b22)',
+              display: 'inline-block',
+              animation: 'pulse-live 1.5s ease-in-out infinite',
+            }}
+          />
+          <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-stage-red, #c23b22)' }}>LIVE</span>
+        </div>
+        <style>{`@keyframes pulse-live { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
+
+        {/* Script title on paper */}
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem', paddingTop: '0.5rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: isDesktop ? '1.75rem' : '1.35rem', fontWeight: 700, color: '#1a1812', margin: 0 }}>
+            {script.title}
+          </h2>
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: '11px', color: '#8a8478', marginTop: '4px', letterSpacing: '0.05em' }}>
+            A Plot Twists Original
+          </p>
+          <p style={{ fontSize: '10px', color: '#a09a8e', marginTop: '8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            {getCharactersInScene(script).join(' \u00B7 ')}
+          </p>
         </div>
 
-        {/* Title */}
-        <h2
-          className="text-2xl sm:text-3xl font-display font-bold min-w-0 truncate mb-1"
-          style={{ color: 'var(--color-theater-text)' }}
-        >
-          {script.title}
-        </h2>
-        <p className="text-sm italic mb-4" style={{ color: 'var(--color-theater-muted)' }}>{script.synopsis}</p>
-        <p className="text-xs mb-4" style={{ color: 'var(--color-theater-muted)' }}>
-          {getCharactersInScene(script).join(' / ')}
-        </p>
-
-        {/* Progress bar */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: 'rgba(255, 255, 255, 0.08)' }}>
+        {/* Progress bar on paper */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div className="flex items-center justify-between mb-1">
+            <span style={{ fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#a09a8e' }}>
+              Line {currentLineIndex + 1} of {script.lines.length}
+            </span>
+          </div>
+          <div style={{ height: '2px', borderRadius: '1px', background: 'rgba(0,0,0,0.08)', overflow: 'hidden' }}>
             <motion.div
-              className="h-full rounded-full"
-              style={{ background: 'var(--color-accent)' }}
+              style={{ height: '100%', borderRadius: '1px', background: 'var(--color-stage-red, #c23b22)' }}
               initial={{ width: '0%' }}
               animate={{ width: `${((currentLineIndex + 1) / script.lines.length) * 100}%` }}
               transition={{ duration: 0.3 }}
             />
           </div>
         </div>
-      </motion.div>
 
-      {/* Teleprompter Settings */}
-      <motion.div className="mb-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
-        <TeleprompterSettingsPanel settings={teleprompterSettings} onPresetChange={onSetTeleprompterPreset} onCustomChange={onSetTeleprompterCustom} onAutoScrollToggle={onToggleTeleprompterAutoScroll} disabled={teleprompterSettingsLoading} />
-      </motion.div>
-
-      {/* Script */}
-      <motion.div
-        ref={scriptContainerRef}
-        className="mb-6 rounded-xl p-4 sm:p-6"
-        style={{ background: 'rgba(253, 252, 250, 0.03)' }}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
+        {/* Script lines — screenplay format */}
         <AnimatePresence mode="sync">
           {getVisibleLines(script.lines, currentLineIndex, teleprompterSettings).map(({ line, originalIndex }) => {
             const isCurrent = originalIndex === currentLineIndex
             const isPast = originalIndex < currentLineIndex
+            const isFuture = originalIndex > currentLineIndex
             const moodIndicator = getMoodIndicator(line.mood)
             const isStageDirection = line.speaker?.toLowerCase() === 'stage direction' || line.speaker?.toLowerCase() === 'narrator'
 
             return (
               <motion.div
                 key={originalIndex}
-                className="py-3 px-4 rounded-lg mb-2"
+                className="mb-3"
                 style={{
-                  background: isCurrent ? 'rgba(245, 158, 66, 0.08)' : 'transparent',
-                  borderLeft: isCurrent ? '3px solid var(--color-accent)' : '3px solid transparent',
-                  opacity: isPast ? 0.4 : 1,
+                  padding: isDesktop ? '12px 24px' : '10px 16px',
+                  borderRadius: '2px',
+                  background: isCurrent
+                    ? 'linear-gradient(90deg, rgba(255,240,100,0.12) 0%, rgba(255,240,100,0.08) 70%, transparent 100%)'
+                    : 'transparent',
+                  borderLeft: isCurrent ? '2px solid rgba(194,59,34,0.3)' : '2px solid transparent',
+                  opacity: isPast ? 0.15 : isFuture ? 0.25 : 1,
                   transition: 'background 0.2s, opacity 0.2s',
                 }}
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: isPast ? 0.4 : 1, height: 'auto' }}
+                animate={{ opacity: isPast ? 0.15 : isFuture ? 0.25 : 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
                 data-line-index={originalIndex}
               >
                 {isStageDirection ? (
-                  <p className="text-sm italic" style={{ color: 'rgba(245, 158, 66, 0.6)' }}>
+                  <p style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '12px',
+                    fontStyle: 'italic',
+                    color: '#8a8478',
+                    textAlign: 'center',
+                  }}>
                     ({line.text})
                   </p>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between mb-1">
-                      <span
-                        className="text-xs font-bold uppercase tracking-widest"
-                        style={{ color: 'var(--color-accent)', letterSpacing: '0.12em' }}
-                      >
+                    <div style={{ textAlign: 'center', marginBottom: '4px' }}>
+                      <span style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: isCurrent ? '13px' : '12px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.12em',
+                        color: isCurrent ? 'var(--color-stage-gold, #b8860b)' : '#5a5548',
+                      }}>
                         {line.speaker}
                       </span>
                       {isCurrent && moodIndicator.label !== 'Neutral' && (
                         <motion.span
-                          className="text-xs font-medium px-2 py-0.5 rounded-full"
                           style={{
-                            background: `${moodIndicator.color}15`,
+                            display: 'inline-block',
+                            marginLeft: '8px',
+                            fontSize: '10px',
+                            fontWeight: 500,
+                            padding: '1px 8px',
+                            borderRadius: '8px',
+                            background: `${moodIndicator.color}18`,
                             color: moodIndicator.color,
                             border: `1px solid ${moodIndicator.color}30`,
+                            verticalAlign: 'middle',
                           }}
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
@@ -280,10 +309,15 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
                         </motion.span>
                       )}
                     </div>
-                    <p
-                      className="text-base sm:text-lg leading-relaxed"
-                      style={{ color: isCurrent ? 'var(--color-theater-text)' : 'var(--color-theater-muted)' }}
-                    >
+                    <p style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: isCurrent ? '19px' : '16px',
+                      lineHeight: 1.6,
+                      color: isCurrent ? '#1a1812' : '#5a5548',
+                      textAlign: 'center',
+                      maxWidth: '380px',
+                      margin: '0 auto',
+                    }}>
                       {line.text}
                     </p>
                   </>
@@ -292,9 +326,14 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
             )
           })}
         </AnimatePresence>
+
+        {/* Page number */}
+        <div style={{ textAlign: 'right', marginTop: '1rem', fontSize: '10px', color: '#b0a99c', fontFamily: 'var(--font-mono)' }}>
+          {currentLineIndex + 1}
+        </div>
       </motion.div>
 
-      {/* Controls */}
+      {/* Controls — dark surface below the paper */}
       <motion.div
         className="rounded-xl p-4"
         style={{ background: 'rgba(253, 252, 250, 0.05)', border: '1px solid rgba(255, 255, 255, 0.08)' }}
@@ -312,9 +351,9 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
               borderRadius: '12px',
               fontSize: '15px',
               fontWeight: 600,
-              color: 'var(--color-theater-text)',
-              background: 'rgba(253, 252, 250, 0.08)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: !isPlaying ? '#ff6b6b' : 'var(--color-theater-text)',
+              background: !isPlaying ? 'rgba(255, 107, 107, 0.1)' : 'rgba(253, 252, 250, 0.08)',
+              border: !isPlaying ? '1px solid rgba(255, 107, 107, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)',
               cursor: 'pointer',
             }}
             whileHover={{ scale: 1.02 }}

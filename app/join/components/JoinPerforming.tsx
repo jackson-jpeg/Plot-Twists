@@ -72,19 +72,33 @@ export function JoinPerforming({
       {/* Header bar: LIVE / Title / Line count or Spectating */}
       <div
         className="flex items-center justify-between px-4 py-3"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingTop: 'max(12px, env(safe-area-inset-top, 0px))' }}
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingTop: 'max(12px, env(safe-area-inset-top, 0px))' }}
       >
         <div className="flex items-center gap-1.5">
-          <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-success)', display: 'inline-block' }} />
-          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-success)' }}>LIVE</span>
+          <span style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: 'var(--color-stage-red, #c23b22)',
+            display: 'inline-block',
+            animation: 'pulse-live-join 1.5s ease-in-out infinite',
+          }} />
+          <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'var(--color-stage-red, #c23b22)' }}>LIVE</span>
         </div>
-        <span className="font-display font-bold truncate mx-4" style={{ fontSize: '15px', color: 'var(--color-theater-text)' }}>
+        <span className="truncate mx-4" style={{
+          fontFamily: 'var(--font-serif)',
+          fontStyle: 'italic',
+          fontSize: '15px',
+          fontWeight: 700,
+          color: 'var(--color-stage-gold, #b8860b)',
+        }}>
           {script.title}
         </span>
         <span style={{ fontSize: '13px', color: 'var(--color-theater-muted)', whiteSpace: 'nowrap' }}>
           {myRole === 'SPECTATOR' ? '◎ Spectating' : `Line ${currentLineIndex + 1}/${script.lines.length}`}
         </span>
       </div>
+      <style>{`@keyframes pulse-live-join { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }`}</style>
 
       {/* Poster — compact for mobile join view */}
       {scriptImageUrl && (

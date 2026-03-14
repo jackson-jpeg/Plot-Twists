@@ -100,7 +100,7 @@ export function MobileTeleprompter({
   const moodIndicator = getMoodIndicator(currentLine.mood)
 
   return (
-    <div ref={containerRef} className="flex flex-col flex-1" style={{ background: 'var(--color-bg)' }}>
+    <div ref={containerRef} className="flex flex-col flex-1" style={{ background: '#faf7f0' }}>
       {/* YOUR TURN full-screen flash */}
       <AnimatePresence>
         {showYourTurn && (
@@ -116,7 +116,7 @@ export function MobileTeleprompter({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: 'rgba(245, 158, 66, 0.15)',
+              background: 'rgba(194, 59, 34, 0.12)',
               pointerEvents: 'none',
             }}
           >
@@ -128,8 +128,11 @@ export function MobileTeleprompter({
               style={{
                 fontSize: '48px',
                 fontWeight: 800,
-                color: 'var(--color-accent)',
-                textShadow: '0 2px 20px rgba(245,158,66,0.5)',
+                fontFamily: 'var(--font-mono)',
+                color: 'var(--color-stage-red, #c23b22)',
+                textShadow: '0 2px 20px rgba(194,59,34,0.4)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.1em',
               }}
             >
               YOUR TURN
@@ -138,15 +141,31 @@ export function MobileTeleprompter({
         )}
       </AnimatePresence>
 
+      {/* Red "YOUR LINE" tab at top when it's your turn */}
+      {isMyTurn && (
+        <div style={{
+          background: 'var(--color-stage-red, #c23b22)',
+          color: '#ffffff',
+          textAlign: 'center',
+          padding: '8px 16px',
+          fontSize: '10px',
+          fontWeight: 700,
+          letterSpacing: '0.25em',
+          textTransform: 'uppercase',
+        }}>
+          YOUR LINE
+        </div>
+      )}
+
       {/* Font controls + progress bar */}
-      <div className="p-4 pt-safe" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
-        <div className="flex items-center justify-between text-sm mb-2" style={{ color: 'var(--color-text-secondary)' }}>
+      <div className="px-4 py-3" style={{ background: '#f4f0e8', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <div className="flex items-center justify-between text-sm mb-2">
           <div className="flex items-center gap-2">
             {/* Font size controls */}
             <button
               onClick={() => updateFontSize(-2)}
               className="w-10 h-10 rounded-lg flex items-center justify-center text-xs font-semibold"
-              style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
+              style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5548' }}
               aria-label="Decrease font size"
             >
               A-
@@ -154,7 +173,7 @@ export function MobileTeleprompter({
             <button
               onClick={() => updateFontSize(2)}
               className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold"
-              style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
+              style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5548' }}
               aria-label="Increase font size"
             >
               A+
@@ -165,32 +184,33 @@ export function MobileTeleprompter({
             <button
               onClick={toggleFullscreen}
               className="w-10 h-10 rounded-lg flex items-center justify-center"
-              style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-secondary)' }}
+              style={{ background: 'rgba(0,0,0,0.05)', color: '#5a5548' }}
               aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
             >
-              {isFullscreen ? '⊟' : '⊞'}
+              {isFullscreen ? '\u229F' : '\u229E'}
             </button>
           )}
         </div>
-        <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
+        <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.06)' }}>
           <div
             className="h-full transition-all duration-300"
             style={{
               width: `${((currentLineIndex + 1) / script.lines.length) * 100}%`,
-              background: 'var(--color-accent)'
+              background: 'var(--color-stage-red, #c23b22)',
+              borderRadius: '9999px',
             }}
           />
         </div>
       </div>
 
-      {/* Script Display — swipeable */}
+      {/* Script Display — swipeable cue card */}
       <motion.div
-        className="flex-1 flex flex-col items-center justify-center p-4"
+        className="flex-1 flex flex-col items-center justify-center p-6"
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.2}
         onDragEnd={handleDragEnd}
-        style={{ x, opacity, touchAction: 'pan-y' }}
+        style={{ x, opacity, touchAction: 'pan-y', background: '#faf7f0' }}
       >
         <div ref={lineRef}>
           <AnimatePresence mode="wait">
@@ -202,90 +222,91 @@ export function MobileTeleprompter({
               transition={{ duration: 0.2 }}
               className="text-center w-full max-w-2xl"
             >
-              {isMyTurn && (
-                <div style={{
-                  background: 'var(--color-highlight-pink)',
-                  padding: '12px 16px',
-                  borderRadius: '8px',
-                  textAlign: 'center',
-                  fontWeight: 600,
-                  fontSize: '14px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
-                  color: 'var(--color-text-primary)',
-                  marginBottom: '24px',
-                  borderLeft: '3px solid var(--color-accent)',
-                }}>
-                  ★ YOUR TURN
-                </div>
+              {/* Character name */}
+              <p style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '13px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.12em',
+                color: isMyTurn ? 'var(--color-stage-red, #c23b22)' : '#8a8478',
+                marginBottom: '8px',
+              }}>
+                {currentLine.speaker}
+              </p>
+
+              {/* Mood indicator */}
+              {moodIndicator.label !== 'Neutral' && (
+                <motion.div
+                  className="flex items-center justify-center gap-2 mb-4"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ ...SPRING, delay: 0.1 }}
+                >
+                  <span style={{
+                    fontSize: '12px',
+                    fontStyle: 'italic',
+                    color: '#8a8478',
+                  }}>
+                    ({moodIndicator.label})
+                  </span>
+                </motion.div>
               )}
 
-              <div
-                className="inline-block px-6 py-2 rounded-lg mb-3"
-                style={{
-                  background: isMyTurn ? 'var(--color-highlight-pink)' : 'var(--color-surface-alt)',
-                  border: `2px solid ${isMyTurn ? 'var(--color-accent)' : 'var(--color-border)'}`
-                }}
-              >
-                <p className="font-script font-bold text-lg" style={{ color: 'var(--color-text-primary)' }}>
-                  {currentLine.speaker}
-                </p>
-              </div>
-
-              {/* Mood indicator — larger during performance */}
-              <motion.div
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-full font-semibold mb-6 inline-flex"
-                style={{
-                  fontSize: '1.125rem',
-                  background: `${moodIndicator.color}20`,
-                  border: `1px solid ${moodIndicator.color}60`,
-                  color: moodIndicator.color
-                }}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ ...SPRING, delay: 0.1 }}
-              >
-                <span>{moodIndicator.label}</span>
-              </motion.div>
-
-              <div
-                style={{
-                  padding: '32px',
-                  borderRadius: '12px',
-                  background: 'var(--color-surface)',
-                  border: isMyTurn ? '3px solid var(--color-accent)' : '1px solid var(--color-border)',
-                  boxShadow: isMyTurn
-                    ? '0 0 10px var(--color-accent), 0 0 25px var(--color-accent), 0 0 40px rgba(245, 158, 66, 0.3)'
-                    : '0 1px 3px rgba(42, 39, 34, 0.08)',
-                  borderLeft: isMyTurn ? '3px solid var(--color-accent)' : '1px solid var(--color-border)',
-                }}
-              >
-                <p className="font-script leading-relaxed" style={{
-                  color: 'var(--color-text-primary)',
-                  fontSize: isMyTurn ? `${fontSize + 4}px` : `${fontSize}px`,
-                }}>
-                  {currentLine.text}
-                </p>
-              </div>
-
-              {currentLineIndex < script.lines.length - 1 && (
-                <div className="mt-6 p-4 rounded-lg text-left" style={{ background: 'var(--color-surface-alt)' }}>
-                  <p className="text-xs mb-2" style={{ color: 'var(--color-text-tertiary)' }}>COMING UP:</p>
-                  <p className="font-script font-bold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
-                    {script.lines[currentLineIndex + 1].speaker}
-                  </p>
-                  <p className="font-script text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                    {script.lines[currentLineIndex + 1].text}
-                  </p>
-                </div>
-              )}
+              {/* The line — large, mono, dark on cream */}
+              <p style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: isMyTurn ? `${fontSize + 4}px` : `${fontSize}px`,
+                lineHeight: 1.5,
+                color: '#1a1812',
+                textAlign: 'center',
+                maxWidth: '480px',
+                margin: '0 auto',
+              }}>
+                {currentLine.text}
+              </p>
             </motion.div>
           </AnimatePresence>
         </div>
       </motion.div>
 
+      {/* "Up Next" footer */}
+      {currentLineIndex < script.lines.length - 1 && (
+        <div style={{
+          background: '#e8e2d4',
+          borderTop: '1px solid rgba(0,0,0,0.06)',
+          padding: '12px 20px',
+        }}>
+          <p style={{
+            fontSize: '9px',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.15em',
+            color: '#a09a8e',
+            marginBottom: '4px',
+          }}>
+            UP NEXT
+          </p>
+          <p style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '13px',
+            color: '#5a5548',
+            lineHeight: 1.4,
+          }}>
+            <span style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {script.lines[currentLineIndex + 1].speaker}
+            </span>
+            {' \u2014 '}
+            {script.lines[currentLineIndex + 1].text.length > 80
+              ? script.lines[currentLineIndex + 1].text.slice(0, 80) + '\u2026'
+              : script.lines[currentLineIndex + 1].text
+            }
+          </p>
+        </div>
+      )}
+
       {/* Player Navigation Controls */}
-      <div className="p-4 pb-safe" style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-border)' }}>
+      <div className="p-4 pb-safe" style={{ background: '#f4f0e8', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
         <div className="flex items-center justify-between max-w-md mx-auto">
           <motion.button
             onClick={() => { tapHaptic(); onPreviousLine() }}
@@ -296,7 +317,7 @@ export function MobileTeleprompter({
               borderRadius: '10px',
               border: 'none',
               background: 'transparent',
-              color: 'var(--color-text-secondary)',
+              color: '#5a5548',
               fontSize: '14px',
               fontWeight: 600,
               cursor: currentLineIndex === 0 ? 'not-allowed' : 'pointer',
@@ -314,8 +335,8 @@ export function MobileTeleprompter({
               padding: '12px 28px',
               borderRadius: '24px',
               border: 'none',
-              background: 'var(--color-accent)',
-              color: 'white',
+              background: 'var(--color-stage-red, #c23b22)',
+              color: '#ffffff',
               fontSize: '15px',
               fontWeight: 600,
               cursor: currentLineIndex >= script.lines.length - 1 ? 'not-allowed' : 'pointer',
@@ -328,7 +349,7 @@ export function MobileTeleprompter({
         </div>
         <motion.p
           className="text-center text-xs mt-2"
-          style={{ color: 'var(--color-text-tertiary)' }}
+          style={{ color: '#a09a8e' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}

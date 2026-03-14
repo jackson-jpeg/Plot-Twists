@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import { Fredoka, DM_Sans, Courier_Prime } from 'next/font/google'
+import { Fredoka, DM_Sans, Courier_Prime, Instrument_Serif, Space_Mono } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import { SocketProvider } from '@/contexts/SocketContext'
 import { AuthProvider } from '@/contexts/AuthContext'
@@ -34,6 +34,21 @@ const courierPrime = Courier_Prime({
   weight: ['400', '700'],
   style: ['normal', 'italic'],
   variable: '--font-courier-prime',
+  display: 'swap',
+})
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ['latin'],
+  weight: '400',
+  style: ['normal', 'italic'],
+  variable: '--font-instrument-serif',
+  display: 'swap',
+})
+
+const spaceMono = Space_Mono({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-space-mono',
   display: 'swap',
 })
 
@@ -121,7 +136,7 @@ export default function RootLayout({
         },
       }}
     >
-      <html lang="en" className={`${fredoka.variable} ${dmSans.variable} ${courierPrime.variable}`} suppressHydrationWarning>
+      <html lang="en" className={`${fredoka.variable} ${dmSans.variable} ${courierPrime.variable} ${instrumentSerif.variable} ${spaceMono.variable}`} suppressHydrationWarning>
         <head>
           <script
             dangerouslySetInnerHTML={{

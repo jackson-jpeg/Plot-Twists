@@ -15,6 +15,21 @@
   --font-display: var(--font-fredoka, 'Fredoka'), ui-rounded, sans-serif;
   --font-body: var(--font-dm-sans, 'DM Sans'), -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: var(--font-courier-prime, 'Courier Prime'), 'Courier New', monospace;
+  --font-serif: var(--font-instrument-serif, 'Instrument Serif'), Georgia, serif;
+  --font-code: var(--font-space-mono, 'Space Mono'), monospace;
+
+  /* Physical Design System */
+  --color-void: #08070b;
+  --color-ink: #0f0e14;
+  --color-paper: #f4f0e8;
+  --color-cream: #faf7f0;
+  --color-paper-dark: #e8e2d4;
+  --color-stage-red: #c23b22;
+  --color-stage-gold: #c9a24d;
+  --color-stage-blue: #3a5a8c;
+  --color-category-character: var(--color-stage-red);
+  --color-category-setting: var(--color-stage-blue);
+  --color-category-wild: var(--color-stage-gold);
 
   /* Colors - Light Mode */
   --color-bg: #FAFAF9;

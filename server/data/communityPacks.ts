@@ -8,6 +8,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'office',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#3a86ff', '#8338ec'] as [string, string],
     characters: [
       { id: 'office-char-1', name: 'The Micromanaging Boss', description: 'Schedules meetings about meetings and calls them "alignment sessions"' },
       { id: 'office-char-2', name: 'The IT Guy', description: 'Has read your search history and can never look at you the same way' },
@@ -45,6 +46,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'scifi',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#023e8a', '#48cae4'] as [string, string],
     characters: [
       { id: 'scifi-char-1', name: 'The Grizzled Captain', description: 'Has a dramatic speech prepared for every situation, including breakfast' },
       { id: 'scifi-char-2', name: 'The Anxious Robot', description: 'Calculates doom probability and announces it at the worst possible times' },
@@ -82,6 +84,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'fantasy',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#5f0f40', '#9a031e'] as [string, string],
     characters: [
       { id: 'med-char-1', name: 'The Cowardly Knight', description: 'Armor is purely decorative, screams at the first sign of danger' },
       { id: 'med-char-2', name: 'The Peasant Philosopher', description: 'Questions why every village only has one road and one tavern' },
@@ -119,6 +122,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'reality',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#8e44ad', '#3498db'] as [string, string],
     characters: [
       { id: 'rtv-char-1', name: 'The Villain Edit', description: '"I\'m not here to make friends" is tattooed on their soul' },
       { id: 'rtv-char-2', name: 'The Ugly Crier', description: 'Gets emotional about literally everything including the breakfast buffet' },
@@ -156,6 +160,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'superhero',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#264653', '#2a9d8f'] as [string, string],
     characters: [
       { id: 'hero-char-1', name: 'The Burnt-Out Hero', description: 'Hasn\'t saved the world in three weeks and is guiltily enjoying it' },
       { id: 'hero-char-2', name: 'The Reformed Villain', description: 'Old habits die hard — keeps accidentally monologuing at group' },
@@ -193,6 +198,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'horror',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#3d0066', '#6a0dad'] as [string, string],
     characters: [
       { id: 'hh-char-1', name: 'The Ghost Who Hates Renovations', description: 'They took out the ORIGINAL crown molding — this is personal now' },
       { id: 'hh-char-2', name: 'The Oblivious Homeowner', description: '"I\'m sure that blood on the wall was here when we moved in"' },
@@ -230,6 +236,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'scifi',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#457b9d', '#1d3557'] as [string, string],
     characters: [
       { id: 'tt-char-1', name: 'Victorian Gentleman', description: 'Scandalized by ankles, horrified by shorts, genuinely fascinated by zippers' },
       { id: 'tt-char-2', name: 'Confused Caveperson', description: 'Impressed by literally everything, tried to eat a phone' },
@@ -267,6 +274,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'food',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#e63946', '#f1a208'] as [string, string],
     characters: [
       { id: 'cook-char-1', name: 'The Screaming Chef', description: 'WHERE IS THE LAMB SAUCE (there was never any lamb sauce)' },
       { id: 'cook-char-2', name: 'The Food Blogger', description: 'Takes 47 photos and adjusts lighting for 20 minutes before anyone eats' },
@@ -304,6 +312,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'fantasy',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#606c38', '#283618'] as [string, string],
     characters: [
       { id: 'ft-char-1', name: 'The Big Bad Wolf (Vegan Now)', description: 'Blows down doors purely for cardio, very apologetic about the old days' },
       { id: 'ft-char-2', name: 'Cinderella\'s Therapist', description: '"Let\'s explore your attachment to footwear and unavailable men"' },
@@ -341,6 +350,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'business',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#e76f51', '#f4a261'] as [string, string],
     characters: [
       { id: 'st-char-1', name: 'The Delusional Founder', description: 'Valuation: $50 billion. Revenue: $0. Product: "coming soon"' },
       { id: 'st-char-2', name: 'The Stone-Faced Investor', description: 'Has said "I\'m out" 47,000 times and means it every single time' },
@@ -378,6 +388,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'holiday',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#c0392b', '#e74c3c'] as [string, string],
     characters: [
       { id: 'hol-char-1', name: 'The Host Having A Meltdown', description: 'Everything is FINE. The napkins are wrong but it\'s FINE.' },
       { id: 'hol-char-2', name: 'The Uncle Nobody Invited', description: 'Showed up with opinions, a new girlfriend, and an air horn' },
@@ -415,6 +426,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'mystery',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#2b2d42', '#8d99ae'] as [string, string],
     characters: [
       { id: 'noir-char-1', name: 'The Hard-Boiled Detective', description: 'Narrates their own life in third person, even at the DMV' },
       { id: 'noir-char-2', name: 'The Femme Fatale', description: 'Definitely lying — but the lighting is so good nobody cares' },
@@ -452,6 +464,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'comedy',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#6c5b7b', '#c06c84'] as [string, string],
     characters: [
       { id: 'hs-char-1', name: 'The Student Council President', description: 'Has a 5-year plan at age 16 and a panic attack scheduled for 3 PM' },
       { id: 'hs-char-2', name: 'The Jock Who\'s Secretly A Nerd', description: 'Reads manga under the bleachers, knows more Shakespeare than the English teacher' },
@@ -489,6 +502,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'horror',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#2d6a4f', '#40916c'] as [string, string],
     characters: [
       { id: 'zom-char-1', name: 'The Prepper Who\'s Been Waiting', description: 'FINALLY — pulls out a color-coded survival binder and a single joyful tear' },
       { id: 'zom-char-2', name: 'The Polite Zombie', description: '"Excuse me, may I eat your brains? Sorry, is this a bad time?"' },
@@ -526,6 +540,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'drama',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#b08968', '#ddb892'] as [string, string],
     characters: [
       { id: 'roy-char-1', name: 'The Exhausted Monarch', description: 'Didn\'t ask for this job, can\'t quit, crown gives them migraines' },
       { id: 'roy-char-2', name: 'The Power-Hungry Advisor', description: 'Standing just a little too close to the throne, at all times' },
@@ -563,6 +578,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'western',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#bc6c25', '#606c38'] as [string, string],
     characters: [
       { id: 'ww-char-1', name: 'The Sheriff', description: 'Too old for this, too stubborn to retire, too proud to admit either' },
       { id: 'ww-char-2', name: 'The Outlaw With A Heart Of Gold', description: 'Only robs banks with bad customer service reviews' },
@@ -600,6 +616,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'comedy',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#9b5de5', '#f15bb5'] as [string, string],
     characters: [
       { id: 'th-char-1', name: 'The Overwhelmed Therapist', description: 'Needs a therapist for their clients and a therapist for that therapist' },
       { id: 'th-char-2', name: 'The Villain Processing Rejection', description: '"Nobody takes my world domination seriously — it HURTS"' },
@@ -637,6 +654,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'romance',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#d4a373', '#e9c46a'] as [string, string],
     characters: [
       { id: 'wed-char-1', name: 'The Bridezilla', description: 'The napkins are the WRONG shade of eggshell and someone will answer for this' },
       { id: 'wed-char-2', name: 'The Best Man', description: 'Lost the ring, the speech, and his dignity — all before noon' },
@@ -674,6 +692,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'travel',
     isMature: false, isBuiltIn: false, isPublic: true,
+    gradient: ['#00b4d8', '#0077b6'] as [string, string],
     characters: [
       { id: 'air-char-1', name: 'The Frequent Flyer', description: 'Has a routine and your mere existence is disrupting it in real-time' },
       { id: 'air-char-2', name: 'The First-Time Flyer', description: 'Afraid of the moving walkway, the escalator, and also just the floor' },
@@ -711,6 +730,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
     author: 'Plot Twists',
     theme: 'adult',
     isMature: true, isBuiltIn: false, isPublic: true,
+    gradient: ['#7b2d8e', '#e94560'] as [string, string],
     characters: [
       { id: 'ad-char-1', name: 'The Terrible Tinder Date', description: 'Photos were from 2014, personality from a completely different person' },
       { id: 'ad-char-2', name: 'The Bartender Who\'s Seen Too Much', description: 'Could write a memoir that would end several marriages and two careers' },

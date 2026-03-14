@@ -157,6 +157,7 @@ export interface CardPack {
   isMature: boolean
   isBuiltIn: boolean
   isPublic: boolean
+  gradient?: [string, string]  // [startColor, endColor] for pack visual identity
   characters: Card[]
   settings: Card[]
   circumstances: Card[]
@@ -175,6 +176,7 @@ export interface CardPackMetadata {
   theme: string
   isMature: boolean
   isBuiltIn: boolean
+  gradient?: [string, string]  // [startColor, endColor] for pack visual identity
   cardCounts: {
     characters: number
     settings: number

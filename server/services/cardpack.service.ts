@@ -79,6 +79,7 @@ export async function listCardPacks(includePrivate: boolean = false): Promise<Ca
     theme: pack.theme,
     isMature: pack.isMature,
     isBuiltIn: pack.isBuiltIn,
+    gradient: pack.gradient,
     cardCounts: {
       characters: pack.characters.length,
       settings: pack.settings.length,
@@ -364,6 +365,7 @@ export async function searchCardPacks(query: string): Promise<CardPackMetadata[]
         theme: pack.theme,
         isMature: pack.isMature,
         isBuiltIn: pack.isBuiltIn,
+        gradient: pack.gradient,
         cardCounts: {
           characters: pack.characters.length,
           settings: pack.settings.length,

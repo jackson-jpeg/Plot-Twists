@@ -28,14 +28,18 @@ export function ReplayCard({ game, index, onClick }: ReplayCardProps) {
         padding="md"
         className="cursor-pointer"
         onClick={onClick}
-        style={{ transition: 'transform 0.15s ease, box-shadow 0.15s ease' }}
+        style={{
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+          background: 'rgba(255,255,255,0.05)',
+          borderColor: 'rgba(240,236,228,0.1)',
+        }}
       >
         <div className="flex gap-3">
           {/* Poster thumbnail */}
           {game.script?.imageUrl && (
             <div
               className="flex-shrink-0 rounded-lg overflow-hidden"
-              style={{ width: 64, height: 80, background: 'var(--color-surface-alt)' }}
+              style={{ width: 64, height: 80, background: 'rgba(255,255,255,0.06)' }}
             >
               <img
                 src={game.script.imageUrl}
@@ -51,13 +55,13 @@ export function ReplayCard({ game, index, onClick }: ReplayCardProps) {
             {/* Title */}
             <h3
               className="font-display truncate"
-              style={{ fontSize: '16px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '4px' }}
+              style={{ fontSize: '16px', fontWeight: 700, color: '#f0ece4', marginBottom: '4px' }}
             >
               {game.title || 'Untitled'}
             </h3>
 
             {/* Meta row */}
-            <div className="flex items-center gap-2 flex-wrap" style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
+            <div className="flex items-center gap-2 flex-wrap" style={{ fontSize: '13px', color: 'rgba(240,236,228,0.45)' }}>
               <span>{playerCount} player{playerCount !== 1 ? 's' : ''}</span>
               <span style={{ opacity: 0.5 }}>·</span>
               <span>{dateStr}</span>
@@ -73,14 +77,14 @@ export function ReplayCard({ game, index, onClick }: ReplayCardProps) {
             {winner && (
               <div className="flex items-center gap-1 mt-1.5" style={{ fontSize: '13px' }}>
                 <span style={{ color: 'var(--color-accent)' }}>⭐</span>
-                <span style={{ color: 'var(--color-text-secondary)', fontWeight: 600 }}>{winner.playerName}</span>
+                <span style={{ color: 'rgba(240,236,228,0.7)', fontWeight: 600 }}>{winner.playerName}</span>
               </div>
             )}
           </div>
 
           {/* View count */}
           {game.views > 0 && (
-            <div className="flex-shrink-0 text-right" style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+            <div className="flex-shrink-0 text-right" style={{ fontSize: '12px', color: 'rgba(240,236,228,0.4)' }}>
               {game.views} view{game.views !== 1 ? 's' : ''}
             </div>
           )}

@@ -9,7 +9,7 @@ export default function PurchaseCancelledPage() {
   const router = useRouter()
 
   return (
-    <PageContainer size="narrow" centered>
+    <PageContainer size="narrow" centered style={{ background: 'var(--color-void, #08070b)' }}>
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -17,12 +17,18 @@ export default function PurchaseCancelledPage() {
         >
           <div className="text-6xl mb-6">🎬</div>
 
-          <div className="rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] p-8 shadow-sm">
-            <h1 className="text-2xl font-bold font-display mb-3 text-[var(--color-text-primary)]">
+          <div
+            className="rounded-xl p-8"
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(240,236,228,0.12)',
+            }}
+          >
+            <h1 className="text-2xl font-bold font-display mb-3" style={{ color: '#f0ece4' }}>
               No Charges Made
             </h1>
 
-            <p className="mb-6 text-[var(--color-text-secondary)]">
+            <p className="mb-6" style={{ color: 'rgba(240,236,228,0.6)' }}>
               Your checkout was cancelled. You haven&apos;t been charged anything.
             </p>
 
@@ -37,7 +43,8 @@ export default function PurchaseCancelledPage() {
           </div>
 
           <motion.p
-            className="mt-6 text-sm text-[var(--color-text-tertiary)]"
+            className="mt-6 text-sm text-center"
+            style={{ color: 'rgba(240,236,228,0.4)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}

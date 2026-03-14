@@ -55,13 +55,16 @@ export function ConnectionStatus() {
             justifyContent: 'center',
             gap: '8px',
             padding: '10px 16px',
-            background: 'var(--color-error, #E74C3C)',
-            color: 'white',
+            background: 'rgba(8,7,11,0.92)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderBottom: '1px solid rgba(231,76,60,0.3)',
+            color: 'rgba(231,76,60,0.9)',
             fontFamily: 'var(--font-dm-sans), sans-serif',
             fontSize: '14px',
             fontWeight: 600,
             textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            boxShadow: '0 2px 16px rgba(0,0,0,0.6)',
           }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -87,9 +90,9 @@ export function ConnectionStatus() {
               }}
               style={{
                 marginLeft: '8px',
-                background: 'rgba(255,255,255,0.2)',
-                border: '1px solid rgba(255,255,255,0.4)',
-                color: 'white',
+                background: 'rgba(231,76,60,0.15)',
+                border: '1px solid rgba(231,76,60,0.35)',
+                color: 'rgba(231,76,60,0.9)',
               }}
             >
               Retry

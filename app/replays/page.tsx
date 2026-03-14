@@ -58,15 +58,15 @@ export default function ReplaysPage() {
       {...ENTER_Y}
       transition={SPRING_GENTLE}
       className="min-h-dvh"
-      style={{ background: 'var(--color-bg)' }}
+      style={{ background: 'var(--color-void, #08070b)' }}
     >
       <div className="w-full max-w-2xl mx-auto px-5 py-6" style={{ paddingTop: 'max(24px, env(safe-area-inset-top))' }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <Button variant="ghost" size="sm" onClick={() => router.push('/')} style={{ color: 'var(--color-text-tertiary)' }}>
+          <Button variant="ghost" size="sm" onClick={() => router.push('/')} style={{ color: 'rgba(240,236,228,0.5)' }}>
             &#x2039; Back
           </Button>
-          <h1 className="font-display" style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text-primary)' }}>
+          <h1 className="font-display" style={{ fontSize: '24px', fontWeight: 700, color: '#f0ece4' }}>
             Replays
           </h1>
           <div style={{ width: 60 }} />
@@ -108,7 +108,7 @@ export default function ReplaysPage() {
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              style={{ width: 24, height: 24, border: '2px solid var(--color-border)', borderTopColor: 'var(--color-accent)', borderRadius: '50%' }}
+              style={{ width: 24, height: 24, border: '2px solid rgba(240,236,228,0.15)', borderTopColor: 'var(--color-accent)', borderRadius: '50%' }}
             />
           </div>
         )}
@@ -122,8 +122,8 @@ export default function ReplaysPage() {
             transition={SPRING_GENTLE}
           >
             <div className="text-4xl mb-3">🎬</div>
-            <p className="font-display text-lg mb-2" style={{ color: 'var(--color-text-primary)' }}>No replays yet</p>
-            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            <p className="font-display text-lg mb-2" style={{ color: '#f0ece4' }}>No replays yet</p>
+            <p className="text-sm" style={{ color: 'rgba(240,236,228,0.5)' }}>
               Play a game and share it to see it here!
             </p>
           </motion.div>

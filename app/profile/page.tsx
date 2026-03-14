@@ -13,12 +13,12 @@ import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 import { StatsSkeleton, Skeleton } from '@/components/EmptyState'
 import { CreditHeaderBadge, useCreditBalance } from '@/components/CreditBadge'
 import dynamic from 'next/dynamic'
-const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false, loading: () => <div className="rounded-xl p-6" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}><div className="animate-pulse" style={{ width: 200, height: 24, borderRadius: 6, background: 'var(--color-surface-alt)' }} /><div className="animate-pulse mt-4" style={{ width: '80%', height: 14, borderRadius: 6, background: 'var(--color-surface-alt)' }} /></div> })
+const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false, loading: () => <div style={{ borderRadius: '12px', padding: '24px', background: 'var(--color-ink)', border: '1px solid rgba(255,255,255,0.06)' }}><div className="animate-pulse" style={{ width: 200, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.06)' }} /><div className="animate-pulse mt-4" style={{ width: '80%', height: 14, borderRadius: 6, background: 'rgba(255,255,255,0.06)' }} /></div> })
 const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
 import { ReferralCard } from '@/components/ReferralCard'
 import { XPBar } from '@/components/XPBar'
 import { WeeklyChallenges } from '@/components/WeeklyChallenges'
-import { Button, Card, Avatar, PageContainer } from '@/components/ui'
+import { Button } from '@/components/ui'
 import type { PaymentTransaction, PlayerStats, Progression, LevelInfo, WeeklyChallenge as WeeklyChallengeType } from '@/lib/types'
 import { getApiBaseUrl } from '@/lib/api'
 import { isAdminUser } from '@/lib/admin'
@@ -145,16 +145,15 @@ export default function ProfilePage() {
 
   if (!isConnected || authLoading) {
     return (
-      <PageContainer size="narrow" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
-        <div className="pt-4 pb-8 space-y-6">
-          <div className="flex flex-col items-center gap-3 pt-8">
-            <Skeleton variant="circle" width={80} height={80} />
-            <Skeleton variant="text" width="40%" height={28} />
-            <Skeleton variant="text" width="55%" height={14} />
+      <div style={{ minHeight: '100vh', background: 'var(--color-void)', padding: '0 16px', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto', paddingTop: '48px' }}>
+          <div style={{ marginBottom: '32px' }}>
+            <Skeleton variant="text" width="50%" height={36} />
+            <Skeleton variant="text" width="65%" height={16} />
           </div>
           <StatsSkeleton />
         </div>
-      </PageContainer>
+      </div>
     )
   }
 
@@ -170,7 +169,7 @@ export default function ProfilePage() {
   ] : null
 
   return (
-    <PageContainer size="medium" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--color-void)', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       {/* Purchase Credits Modal */}
       <PurchaseCreditsModal
         isOpen={showPurchaseModal}
@@ -189,63 +188,111 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      <div className="pt-8 pb-8 max-w-[960px] mx-auto">
-        {/* Admin link (top right, if admin) */}
+      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 16px' }}>
+        {/* Admin link */}
         {user && isAdminUser({ email: user.email, phoneNumber: user.phoneNumber }) && (
-          <div className="flex justify-end mb-2">
+          <div className="flex justify-end" style={{ paddingTop: '12px' }}>
             <motion.button
               onClick={() => router.push('/admin')}
-              style={{ fontSize: '12px', fontWeight: 600, padding: '4px 10px', borderRadius: '8px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-accent)' }}
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                padding: '4px 10px',
+                borderRadius: '8px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--color-stage-red)',
+                fontFamily: 'var(--font-mono)',
+              }}
               whileTap={{ scale: 0.95 }}
             >
-              Admin →
+              Admin
             </motion.button>
           </div>
         )}
 
-        {/* Profile Hero — centered avatar + name */}
-        {heroStats ? (
+        {/* Page Header */}
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          style={{ paddingTop: '40px', marginBottom: '32px' }}
+        >
+          <h1 style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '36px',
+            fontWeight: 400,
+            color: 'var(--color-cream)',
+            marginBottom: '6px',
+            letterSpacing: '-0.01em',
+          }}>
+            Your Playbill
+          </h1>
+          <p style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '13px',
+            color: 'rgba(255,255,255,0.35)',
+            letterSpacing: '0.02em',
+          }}>
+            Stats, achievements, and settings
+          </p>
+        </motion.div>
+
+        {/* Hero stats for returning players */}
+        {heroStats && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
+            style={{ marginBottom: '28px' }}
           >
-            {/* Avatar */}
-            <div className="flex flex-col items-center mb-6">
-              <div style={{ marginBottom: '12px' }}>
-                <Avatar name={stats!.nickname} size="lg" style={{ width: 80, height: 80, fontSize: '32px' }} />
-              </div>
-              <h1 className="font-display" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+            {/* Name + Level */}
+            <div style={{ marginBottom: '16px' }}>
+              <h2 style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: '28px',
+                fontWeight: 400,
+                color: 'var(--color-paper)',
+                marginBottom: '4px',
+              }}>
                 {stats!.nickname}
-              </h1>
+              </h2>
               {levelInfo && (
-                <p style={{ fontSize: '14px', color: 'var(--color-text-tertiary)' }}>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)' }}>
                   Level {levelInfo.level} — {levelInfo.title || 'Comedy Rookie'}
                 </p>
               )}
             </div>
 
-            {/* XP Progress — compact horizontal */}
+            {/* XP Progress */}
             {levelInfo && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.15 }}
-                className="mb-4"
+                style={{ marginBottom: '16px' }}
               >
                 <div className="flex items-center gap-3">
-                  <span className="font-display text-sm font-bold shrink-0" style={{ color: 'var(--color-text-primary)' }}>
+                  <span style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: 'var(--color-stage-gold)',
+                    flexShrink: 0,
+                  }}>
                     Lv. {levelInfo.level}
                   </span>
-                  <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'var(--color-border)' }}>
+                  <div className="flex-1" style={{ height: '6px', borderRadius: '3px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
                     <div
-                      className="h-full rounded-full transition-all duration-500"
                       style={{
+                        height: '100%',
+                        borderRadius: '3px',
                         width: `${levelInfo.progressPercent}%`,
-                        background: 'var(--color-success)',
+                        background: 'var(--color-stage-gold)',
+                        transition: 'width 0.5s ease',
                       }}
                     />
                   </div>
-                  <span className="text-xs shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
                     {levelInfo.currentXP}/{levelInfo.xpForNextLevel}
                   </span>
                 </div>
@@ -254,47 +301,71 @@ export default function ProfilePage() {
 
             {/* Credits row */}
             <motion.div
-              className="flex items-center justify-center gap-3 mb-6"
+              className="flex items-center gap-3"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
+              style={{ marginBottom: '20px' }}
             >
-              <span
-                className="px-3 py-1.5 rounded-full text-sm font-semibold"
-                style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-primary)', border: '1px solid var(--color-border)' }}
-              >
-                {creditBalance ? `${creditBalance.total} credit${creditBalance.total !== 1 ? 's' : ''}` : '— credits'}
+              <span style={{
+                padding: '4px 12px',
+                borderRadius: '100px',
+                fontSize: '13px',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: 600,
+                background: 'rgba(255,255,255,0.06)',
+                color: 'var(--color-cream)',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}>
+                {creditBalance ? `${creditBalance.total} credit${creditBalance.total !== 1 ? 's' : ''}` : '-- credits'}
               </span>
-              <Button variant="primary" size="sm" onClick={() => setShowPurchaseModal(true)}>
+              <button
+                onClick={() => setShowPurchaseModal(true)}
+                style={{
+                  padding: '4px 14px',
+                  borderRadius: '100px',
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 600,
+                  background: 'var(--color-stage-gold)',
+                  color: 'var(--color-void)',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
                 Buy More
-              </Button>
+              </button>
             </motion.div>
 
             {/* Stat cards — 3 in a row */}
-            <div className="flex gap-3 mb-6">
+            <div className="flex gap-3" style={{ marginBottom: '20px' }}>
               {heroStats.map((stat, i) => (
                 <motion.div
                   key={stat.label}
                   className="flex-1 text-center"
                   style={{
-                    padding: '16px 8px',
-                    borderRadius: '12px',
-                    border: stat.highlight ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
-                    background: stat.highlight ? 'var(--color-accent-light)' : 'var(--color-surface)',
+                    padding: '14px 8px',
+                    borderRadius: '10px',
+                    border: stat.highlight
+                      ? '1px solid var(--color-stage-gold)'
+                      : '1px solid rgba(255,255,255,0.08)',
+                    background: stat.highlight
+                      ? 'rgba(201,162,77,0.08)'
+                      : 'rgba(255,255,255,0.03)',
                   }}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * STAGGER }}
                 >
-                  <div className="font-display" style={{
+                  <div style={{
+                    fontFamily: 'var(--font-serif)',
                     fontSize: '24px',
-                    fontWeight: 800,
-                    color: stat.highlight ? 'var(--color-accent)' : 'var(--color-text-primary)',
+                    color: stat.highlight ? 'var(--color-stage-gold)' : 'var(--color-cream)',
                     marginBottom: '2px',
                   }}>
                     {stat.value}
                   </div>
-                  <div style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
+                  <div style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color: 'rgba(255,255,255,0.35)' }}>
                     {stat.label}
                   </div>
                 </motion.div>
@@ -306,34 +377,35 @@ export default function ProfilePage() {
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="mb-6"
                 style={{
-                  borderRadius: '12px',
+                  borderRadius: '10px',
                   overflow: 'hidden',
-                  border: '1px solid var(--color-border)',
+                  border: '1px solid rgba(194,59,34,0.3)',
+                  background: 'rgba(194,59,34,0.08)',
+                  marginBottom: '20px',
                 }}
               >
-                <div className="flex items-center justify-between p-3"
-                  style={{
-                    background: 'linear-gradient(to right, var(--color-accent-light), var(--color-danger-light))',
-                  }}
-                >
+                <div className="flex items-center justify-between" style={{ padding: '12px 16px' }}>
                   <div className="flex items-center gap-3">
                     <motion.span
                       animate={{ scale: [1, 1.2, 1] }}
                       transition={{ duration: 1, repeat: Infinity }}
-                      style={{ color: 'var(--color-accent)', fontSize: '24px' }}
+                      style={{ color: 'var(--color-stage-red)', fontSize: '20px' }}
                     >
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" fill="currentColor" /></svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" fill="currentColor" /></svg>
                     </motion.span>
                     <div>
-                      <p style={{ fontWeight: 600, fontSize: '14px', color: 'var(--color-accent-dark)' }}>On Fire!</p>
-                      <p style={{ fontSize: '12px', color: 'var(--color-accent)' }}>
+                      <p style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-stage-red)', fontFamily: 'var(--font-mono)' }}>On Fire!</p>
+                      <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
                         {stats!.currentWinStreak} game win streak
                       </p>
                     </div>
                   </div>
-                  <span className="font-display" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-accent)' }}>
+                  <span style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: '28px',
+                    color: 'var(--color-stage-red)',
+                  }}>
                     {stats!.currentWinStreak}
                   </span>
                 </div>
@@ -346,35 +418,16 @@ export default function ProfilePage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="mb-6"
+                style={{ marginBottom: '20px' }}
               >
                 <WeeklyChallenges challenges={weeklyChallenges} />
               </motion.div>
             )}
           </motion.div>
-        ) : (
-          /* Fallback header when no stats */
-          <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="mb-6"
-          >
-            <div className="flex flex-col items-center mb-6">
-              <div style={{ marginBottom: '12px' }}>
-                <Avatar name="?" size="lg" style={{ width: 80, height: 80, fontSize: '32px' }} />
-              </div>
-              <h1 className="font-display" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--color-text-primary)' }}>
-                Your Profile
-              </h1>
-              <p style={{ fontSize: '14px', color: 'var(--color-text-tertiary)' }}>
-                Stats, achievements, and settings
-              </p>
-            </div>
-          </motion.div>
         )}
 
-        {/* Profile / Leaderboard tab nav */}
-        <div className="flex gap-2 mb-5" role="tablist">
+        {/* Tab nav */}
+        <div className="flex gap-2" style={{ marginBottom: '20px' }} role="tablist">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id
             return (
@@ -386,14 +439,15 @@ export default function ProfilePage() {
                 style={{
                   flex: 1,
                   padding: '10px 16px',
-                  borderRadius: '10px',
-                  fontSize: '14px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontFamily: 'var(--font-mono)',
                   fontWeight: isActive ? 600 : 400,
-                  border: 'none',
+                  border: isActive ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(255,255,255,0.06)',
                   cursor: 'pointer',
-                  background: isActive ? 'var(--color-surface)' : 'transparent',
-                  color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-tertiary)',
-                  boxShadow: isActive ? '0 1px 3px rgba(42, 39, 34, 0.08)' : 'none',
+                  background: isActive ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  color: isActive ? 'var(--color-cream)' : 'rgba(255,255,255,0.3)',
+                  transition: 'all 0.15s ease',
                 }}
               >
                 {tab.label}
@@ -412,15 +466,15 @@ export default function ProfilePage() {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.15 }}
             >
-              <Card variant="surface" padding="lg">
-                {playerId ? (
-                  <PlayerProfile playerId={playerId} hideHeader />
-                ) : (
-                  <div className="text-center py-12">
-                    <p style={{ color: 'var(--color-text-secondary)' }}>Sign in to see your stats and achievements.</p>
-                  </div>
-                )}
-              </Card>
+              {playerId ? (
+                <PlayerProfile playerId={playerId} hideHeader />
+              ) : (
+                <div className="text-center" style={{ padding: '48px 0' }}>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-mono)', fontSize: '14px' }}>
+                    Sign in to see your stats and achievements.
+                  </p>
+                </div>
+              )}
             </motion.div>
           ) : (
             <motion.div
@@ -430,9 +484,14 @@ export default function ProfilePage() {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.15 }}
             >
-              <Card variant="surface" padding="lg">
+              <div style={{
+                borderRadius: '12px',
+                padding: '20px',
+                background: 'var(--color-ink)',
+                border: '1px solid rgba(255,255,255,0.06)',
+              }}>
                 <Leaderboard />
-              </Card>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -443,7 +502,7 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mt-6"
+            style={{ marginTop: '24px' }}
           >
             <AccountUpgradeCard />
           </motion.div>
@@ -455,85 +514,117 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mt-6"
+            style={{ marginTop: '24px' }}
           >
             <ReferralCard />
           </motion.div>
         )}
 
-        {/* Install prompt card */}
+        {/* Install prompt card — dark subtle */}
         {!isStandalone && !installDismissed && !isCapacitorNative() && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="mt-4"
+            style={{
+              marginTop: '16px',
+              padding: '14px 18px',
+              borderRadius: '10px',
+              border: '1px solid rgba(255,255,255,0.06)',
+              background: 'var(--color-ink)',
+            }}
           >
-            <Card padding="md">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>
-                    Install Plot Twists
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                    Add to home screen for the best experience
-                  </p>
-                </div>
-                <Button variant="secondary" size="sm" onClick={handleInstall}>
-                  Install
-                </Button>
+            <div className="flex items-center justify-between">
+              <div>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-cream)', fontFamily: 'var(--font-mono)' }}>
+                  Install Plot Twists
+                </p>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
+                  Add to home screen for the best experience
+                </p>
               </div>
-            </Card>
+              <button
+                onClick={handleInstall}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 600,
+                  background: 'rgba(255,255,255,0.08)',
+                  color: 'var(--color-cream)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+              >
+                Install
+              </button>
+            </div>
           </motion.div>
         )}
 
-        {/* Account & Settings — collapsible */}
+        {/* Account & Settings — collapsible dark card */}
         {user && !user.isAnonymous && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="mt-6"
+            style={{ marginTop: '24px' }}
           >
-            <div style={{ borderRadius: '12px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
+            <div style={{
+              borderRadius: '12px',
+              background: 'var(--color-ink)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              overflow: 'hidden',
+            }}>
               <button
                 onClick={() => setAccountExpanded(!accountExpanded)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', textAlign: 'left', border: 'none', cursor: 'pointer', background: 'transparent' }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '14px 16px',
+                  textAlign: 'left',
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: 'transparent',
+                }}
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      color: 'white',
-                      background: 'linear-gradient(to bottom right, var(--color-emerald), var(--color-success))',
-                    }}
-                  >
+                  <div style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-mono)',
+                    color: 'var(--color-void)',
+                    background: 'var(--color-stage-gold)',
+                  }}>
                     {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || user.phoneNumber?.[0] || '?'}
                   </div>
                   <div>
-                    <p className="font-display" style={{ fontWeight: 600, fontSize: '14px', color: 'var(--color-text-primary)' }}>
+                    <p style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-cream)', fontFamily: 'var(--font-mono)' }}>
                       Account & Settings
                     </p>
-                    <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
                       {user.email || user.phoneNumber || 'Manage your account'}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   {!accountExpanded && creditBalance && (
-                    <span className="hidden sm:block" style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                    <span className="hidden sm:block" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
                       {creditBalance.total} script{creditBalance.total !== 1 ? 's' : ''}
                     </span>
                   )}
                   <motion.span
-                    style={{ fontSize: '16px', color: 'var(--color-text-tertiary)' }}
+                    style={{ fontSize: '16px', color: 'rgba(255,255,255,0.3)' }}
                     animate={{ rotate: accountExpanded ? 180 : 0 }}
                     transition={{ duration: 0.3 }}
                   >
@@ -551,61 +642,105 @@ export default function ProfilePage() {
                     transition={{ duration: 0.3 }}
                     style={{ overflow: 'hidden' }}
                   >
-                    <div className="p-4 space-y-4" style={{ borderTop: '1px solid var(--color-border)' }}>
+                    <div className="space-y-4" style={{ padding: '16px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                       {/* Auth status */}
                       <div className="flex items-center justify-between">
-                        <span style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
-                          Signed in as <span style={{ fontWeight: 500, color: 'var(--color-text-primary)' }}>{user.displayName || user.email || user.phoneNumber}</span>
+                        <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>
+                          Signed in as <span style={{ fontWeight: 500, color: 'var(--color-cream)' }}>{user.displayName || user.email || user.phoneNumber}</span>
                         </span>
-                        <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                        <button
+                          onClick={handleSignOut}
+                          style={{
+                            padding: '4px 12px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontFamily: 'var(--font-mono)',
+                            background: 'rgba(255,255,255,0.06)',
+                            color: 'rgba(255,255,255,0.5)',
+                            border: 'none',
+                            cursor: 'pointer',
+                          }}
+                        >
                           Sign Out
-                        </Button>
+                        </button>
                       </div>
 
                       {/* Credit wallet */}
-                      <div style={{ borderRadius: '10px', background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', padding: '12px' }}>
+                      <div style={{
+                        borderRadius: '10px',
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                        padding: '12px',
+                      }}>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--color-accent)' }}><rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="1.8" /><path d="M2 8h20M7 4v4M12 4v4M17 4v4" stroke="currentColor" strokeWidth="1.8" /></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--color-stage-gold)' }}><rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="1.8" /><path d="M2 8h20M7 4v4M12 4v4M17 4v4" stroke="currentColor" strokeWidth="1.8" /></svg>
                             <div>
-                              <p className="font-display" style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                              <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-cream)', fontFamily: 'var(--font-mono)' }}>
                                 {creditBalance ? `${creditBalance.total} Script${creditBalance.total !== 1 ? 's' : ''}` : 'Loading...'}
                               </p>
                               {creditBalance && (
-                                <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>
                                   {creditBalance.free} free + {creditBalance.banked} banked
                                 </p>
                               )}
                             </div>
                           </div>
-                          <Button variant="primary" size="sm" onClick={() => setShowPurchaseModal(true)}>
+                          <button
+                            onClick={() => setShowPurchaseModal(true)}
+                            style={{
+                              padding: '5px 12px',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontFamily: 'var(--font-mono)',
+                              fontWeight: 600,
+                              background: 'var(--color-stage-gold)',
+                              color: 'var(--color-void)',
+                              border: 'none',
+                              cursor: 'pointer',
+                            }}
+                          >
                             Buy More
-                          </Button>
+                          </button>
                         </div>
                       </div>
 
                       {/* Payment History */}
                       <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-display" style={{ fontWeight: 600, fontSize: '14px', color: 'var(--color-text-primary)' }}>
+                        <div className="flex items-center justify-between" style={{ marginBottom: '8px' }}>
+                          <h3 style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-cream)', fontFamily: 'var(--font-mono)' }}>
                             Payment History
                           </h3>
                           {!isIOSNative() && (
-                            <Button variant="secondary" size="sm" onClick={openCustomerPortal} loading={portalLoading}>
-                              View Receipts
-                            </Button>
+                            <button
+                              onClick={openCustomerPortal}
+                              disabled={portalLoading}
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '6px',
+                                fontSize: '11px',
+                                fontFamily: 'var(--font-mono)',
+                                background: 'rgba(255,255,255,0.06)',
+                                color: 'rgba(255,255,255,0.5)',
+                                border: 'none',
+                                cursor: 'pointer',
+                                opacity: portalLoading ? 0.5 : 1,
+                              }}
+                            >
+                              {portalLoading ? 'Loading...' : 'View Receipts'}
+                            </button>
                           )}
                         </div>
                         {portalError && (
-                          <p className="text-right" style={{ fontSize: '12px', color: 'var(--color-danger)', marginTop: '4px' }}>{portalError}</p>
+                          <p className="text-right" style={{ fontSize: '12px', color: 'var(--color-stage-red)', marginTop: '4px' }}>{portalError}</p>
                         )}
 
                         {transactionError ? (
                           <div className="py-3 text-center">
-                            <p style={{ fontSize: '14px', color: 'var(--color-danger)', marginBottom: '8px' }}>{transactionError}</p>
+                            <p style={{ fontSize: '13px', color: 'var(--color-stage-red)', marginBottom: '8px' }}>{transactionError}</p>
                             <button
                               onClick={fetchTransactions}
-                              style={{ fontSize: '14px', color: 'var(--color-accent)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                              style={{ fontSize: '13px', color: 'var(--color-stage-gold)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                             >
                               Try again
                             </button>
@@ -615,32 +750,32 @@ export default function ProfilePage() {
                             <LoadingSpinner size="sm" variant="dots" text="Loading..." />
                           </div>
                         ) : transactions.length === 0 ? (
-                          <p className="text-center py-3" style={{ fontSize: '14px', color: 'var(--color-text-tertiary)' }}>
+                          <p className="text-center py-3" style={{ fontSize: '13px', color: 'rgba(255,255,255,0.3)' }}>
                             No transactions yet.
                           </p>
                         ) : (
-                          <div style={{ border: '1px solid var(--color-border)', borderRadius: '10px', overflow: 'hidden' }}>
+                          <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', overflow: 'hidden' }}>
                             {transactions.slice(0, 5).map(txn => (
-                              <div key={txn.id} className="flex items-center justify-between px-3 py-2.5" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                              <div key={txn.id} className="flex items-center justify-between" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                                 <div className="flex items-center gap-3">
-                                  <span style={{ fontSize: '14px', fontWeight: 500, color: txn.type === 'purchase' ? 'var(--color-success)' : txn.type === 'refund' ? 'var(--color-accent)' : 'var(--color-danger)' }}>
-                                    {txn.type === 'purchase' ? '+' : txn.type === 'refund' ? '←' : txn.type === 'failed' ? '×' : '…'}
+                                  <span style={{ fontSize: '13px', fontWeight: 500, fontFamily: 'var(--font-mono)', color: txn.type === 'purchase' ? '#4ade80' : txn.type === 'refund' ? 'var(--color-stage-gold)' : 'var(--color-stage-red)' }}>
+                                    {txn.type === 'purchase' ? '+' : txn.type === 'refund' ? '<-' : txn.type === 'failed' ? 'x' : '...'}
                                   </span>
                                   <div>
-                                    <p style={{ fontWeight: 500, fontSize: '14px', color: txn.type === 'purchase' ? 'var(--color-success)' : txn.type === 'refund' ? 'var(--color-accent)' : txn.type === 'failed' ? 'var(--color-danger)' : 'var(--color-text-secondary)' }}>
+                                    <p style={{ fontWeight: 500, fontSize: '13px', color: 'var(--color-cream)' }}>
                                       {txn.type === 'purchase' ? txn.packageLabel : txn.type.charAt(0).toUpperCase() + txn.type.slice(1)}
                                     </p>
-                                    <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>
                                       {new Date(txn.createdAt).toLocaleDateString()}
                                     </p>
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <p style={{ fontWeight: 600, fontSize: '14px', color: txn.creditsAdded > 0 ? 'var(--color-success)' : txn.creditsAdded < 0 ? 'var(--color-danger)' : 'var(--color-text-disabled)' }}>
+                                  <p style={{ fontWeight: 600, fontSize: '13px', fontFamily: 'var(--font-mono)', color: txn.creditsAdded > 0 ? '#4ade80' : txn.creditsAdded < 0 ? 'var(--color-stage-red)' : 'rgba(255,255,255,0.2)' }}>
                                     {txn.creditsAdded > 0 ? '+' : ''}{txn.creditsAdded} credits
                                   </p>
                                   {txn.amountCents !== 0 && (
-                                    <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                                    <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>
                                       ${Math.abs(txn.amountCents / 100).toFixed(2)}
                                     </p>
                                   )}
@@ -655,10 +790,10 @@ export default function ProfilePage() {
                       <AccountSettings />
 
                       {/* Legal Links */}
-                      <div className="text-center pt-2" style={{ fontSize: '12px', color: 'var(--color-text-disabled)' }}>
-                        <Link href="/privacy" style={{ color: 'var(--color-text-tertiary)', textDecoration: 'none' }}>Privacy Policy</Link>
+                      <div className="text-center" style={{ paddingTop: '8px', fontSize: '12px' }}>
+                        <Link href="/privacy" style={{ color: 'rgba(255,255,255,0.25)', textDecoration: 'none' }}>Privacy Policy</Link>
                         {' '}&middot;{' '}
-                        <Link href="/terms" style={{ color: 'var(--color-text-tertiary)', textDecoration: 'none' }}>Terms of Service</Link>
+                        <Link href="/terms" style={{ color: 'rgba(255,255,255,0.25)', textDecoration: 'none' }}>Terms of Service</Link>
                       </div>
                     </div>
                   </motion.div>
@@ -668,21 +803,26 @@ export default function ProfilePage() {
           </motion.div>
         )}
 
-        {/* Guest sign-in prompt — subtle muted card */}
+        {/* Guest sign-in prompt — subtle dark card */}
         {!user && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="mt-6"
-            style={{ padding: '16px 20px', borderRadius: '12px', border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
+            style={{
+              marginTop: '24px',
+              padding: '14px 18px',
+              borderRadius: '10px',
+              border: '1px solid rgba(255,255,255,0.06)',
+              background: 'var(--color-ink)',
+            }}
           >
             <div className="flex items-center justify-between gap-4">
               <div>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '2px' }}>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-cream)', fontFamily: 'var(--font-mono)', marginBottom: '2px' }}>
                   Save your progress
                 </p>
-                <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>
+                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
                   Create a free account to sync stats across devices
                 </p>
               </div>
@@ -690,12 +830,13 @@ export default function ProfilePage() {
                 <button
                   style={{
                     padding: '6px 14px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontFamily: 'var(--font-mono)',
                     fontWeight: 600,
-                    background: 'var(--color-surface-alt)',
-                    color: 'var(--color-text-primary)',
-                    border: '1px solid var(--color-border)',
+                    background: 'rgba(255,255,255,0.08)',
+                    color: 'var(--color-cream)',
+                    border: '1px solid rgba(255,255,255,0.1)',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
                     flexShrink: 0,
@@ -708,6 +849,6 @@ export default function ProfilePage() {
           </motion.div>
         )}
       </div>
-    </PageContainer>
+    </div>
   )
 }

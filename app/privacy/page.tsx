@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="min-h-dvh py-12 px-4" style={{ background: 'var(--color-bg)', color: 'var(--color-text-primary)' }}>
+    <main className="min-h-dvh py-12 px-4" style={{ background: 'var(--color-void, #08070b)', color: '#f0ece4' }}>
       <div className="max-w-2xl mx-auto">
         <Link
           href="/"
@@ -18,16 +18,16 @@ export default function PrivacyPolicyPage() {
           <span>&larr;</span> Back to Plot Twists
         </Link>
 
-        <h1 className="text-3xl font-bold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>
+        <h1 className="text-3xl font-bold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>
           Privacy Policy
         </h1>
-        <p className="text-sm mb-8" style={{ color: 'var(--color-text-tertiary)' }}>
+        <p className="text-sm mb-8" style={{ color: 'rgba(240,236,228,0.4)' }}>
           Last updated: February 12, 2026
         </p>
 
-        <div className="space-y-6 text-sm leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
+        <div className="space-y-6 text-sm leading-relaxed" style={{ color: 'rgba(240,236,228,0.7)' }}>
           <section>
-            <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>1. Introduction</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>1. Introduction</h2>
             <p>
               Plot Twists (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) operates the Plot Twists mobile application and
               website at plot-twists.com (the &ldquo;Service&rdquo;). This Privacy Policy explains how we collect, use, and protect
@@ -36,7 +36,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>2. Information We Collect</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>2. Information We Collect</h2>
             <ul className="list-disc pl-5 space-y-2">
               <li><strong>Email address</strong> &mdash; Used for account authentication.</li>
               <li><strong>Display name</strong> &mdash; A nickname you choose that is shown to other players.</li>
@@ -48,7 +48,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>3. How We Use Your Information</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>3. How We Use Your Information</h2>
             <ul className="list-disc pl-5 space-y-2">
               <li>To authenticate your account and provide the Service.</li>
               <li>To generate AI-powered comedy scripts tailored to your game session.</li>
@@ -59,7 +59,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>4. Third-Party Services</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>4. Third-Party Services</h2>
             <p className="mb-2">We use the following third-party services:</p>
             <ul className="list-disc pl-5 space-y-2">
               <li><strong>Clerk</strong> &mdash; Authentication. <a href="https://clerk.com/legal/privacy" className="underline" style={{ color: 'var(--color-accent)' }}>Privacy Policy</a></li>
@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>5. Data Retention</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>5. Data Retention</h2>
             <p>
               We retain your account data for as long as your account is active. Game history is retained indefinitely
               to support replays and leaderboards. You may request deletion of your account and all associated data at
@@ -81,7 +81,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>6. Data Security</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>6. Data Security</h2>
             <p>
               We use industry-standard security measures including encrypted connections (HTTPS/WSS), Firebase security
               rules, and secure payment processing. However, no method of electronic transmission is 100% secure.
@@ -89,7 +89,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>7. Your Rights &amp; Account Deletion</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>7. Your Rights &amp; Account Deletion</h2>
             <p>
               You have the right to:
             </p>
@@ -106,7 +106,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>8. Children&apos;s Privacy</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>8. Children&apos;s Privacy</h2>
             <p>
               The Service is not intended for children under 13. We do not knowingly collect personal information from
               children under 13. If you believe we have collected such information, please contact us immediately.
@@ -114,7 +114,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>9. Changes to This Policy</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>9. Changes to This Policy</h2>
             <p>
               We may update this Privacy Policy from time to time. We will notify you of significant changes by posting
               the new policy on this page with an updated date.
@@ -122,20 +122,20 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-semibold mb-2 font-display" style={{ color: 'var(--color-text-primary)' }}>10. Contact Us</h2>
+            <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>10. Contact Us</h2>
             <p>
               If you have questions about this Privacy Policy or wish to exercise your data rights, contact us at:
             </p>
-            <p className="mt-2 font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            <p className="mt-2 font-medium" style={{ color: '#f0ece4' }}>
               privacy@plot-twists.com
             </p>
           </section>
         </div>
 
-        <div className="mt-12 pt-6 border-t text-center text-xs" style={{ borderColor: 'var(--color-border)', color: 'var(--color-text-disabled)' }}>
-          <Link href="/terms" className="underline" style={{ color: 'var(--color-text-tertiary)' }}>Terms of Service</Link>
+        <div className="mt-12 pt-6 border-t text-center text-xs" style={{ borderColor: 'rgba(240,236,228,0.1)', color: 'rgba(240,236,228,0.3)' }}>
+          <Link href="/terms" className="underline" style={{ color: 'rgba(240,236,228,0.5)' }}>Terms of Service</Link>
           {' '}&middot;{' '}
-          <Link href="/" style={{ color: 'var(--color-text-tertiary)' }}>Plot Twists</Link>
+          <Link href="/" style={{ color: 'rgba(240,236,228,0.5)' }}>Plot Twists</Link>
         </div>
       </div>
     </main>

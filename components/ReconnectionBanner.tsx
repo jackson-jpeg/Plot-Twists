@@ -31,20 +31,23 @@ export function ReconnectionBanner({ reconnecting, attempt = 0, maxAttempts = 50
 
   const visible = reconnecting || showSuccess
 
-  const config: Record<BannerState, { bg: string; text: string; message: string }> = {
+  const config: Record<BannerState, { borderColor: string; textColor: string; dotColor: string; message: string }> = {
     reconnecting: {
-      bg: 'var(--color-warning)',
-      text: '#000',
+      borderColor: 'rgba(212,175,55,0.3)',
+      textColor: 'rgba(212,175,55,0.9)',
+      dotColor: 'rgba(212,175,55,0.8)',
       message: `Reconnecting${attempt > 1 ? ` (attempt ${attempt})` : ''}...`,
     },
     reconnected: {
-      bg: 'var(--color-success)',
-      text: '#fff',
+      borderColor: 'rgba(46,204,113,0.3)',
+      textColor: 'rgba(46,204,113,0.9)',
+      dotColor: 'rgba(46,204,113,0.8)',
       message: 'Reconnected!',
     },
     failed: {
-      bg: 'var(--color-danger)',
-      text: '#fff',
+      borderColor: 'rgba(231,76,60,0.3)',
+      textColor: 'rgba(231,76,60,0.9)',
+      dotColor: 'rgba(231,76,60,0.8)',
       message: 'Connection lost. Please refresh the page.',
     },
   }
@@ -61,9 +64,13 @@ export function ReconnectionBanner({ reconnecting, attempt = 0, maxAttempts = 50
           transition={SPRING}
           className="fixed top-0 left-0 right-0 z-50 px-4 py-3 text-center text-sm font-medium font-display"
           style={{
-            background: current.bg,
-            color: current.text,
+            background: 'rgba(8,7,11,0.92)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderBottom: `1px solid ${current.borderColor}`,
+            color: current.textColor,
             paddingTop: 'max(12px, env(safe-area-inset-top))',
+            boxShadow: '0 2px 16px rgba(0,0,0,0.6)',
           }}
         >
           {current.message}

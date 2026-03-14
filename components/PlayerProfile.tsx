@@ -7,7 +7,7 @@ import { useSocket } from '@/contexts/SocketContext'
 import type { PlayerStats, Achievement, LeaderboardEntry, LeaderboardCategory } from '@/lib/types'
 import { GameHistory } from './GameHistory'
 import { StatsSkeleton } from './EmptyState'
-import { Button, Card, Avatar, Badge } from '@/components/ui'
+import { Button, Badge } from '@/components/ui'
 
 interface PlayerProfileProps {
   playerId: string
@@ -16,16 +16,26 @@ interface PlayerProfileProps {
 }
 
 const RARITY_BADGE_BG: Record<string, string> = {
-  common: 'var(--color-text-tertiary)',
-  rare: 'var(--color-blue)',
-  epic: 'var(--color-purple)',
-  legendary: 'var(--color-gold)',
+  common: 'rgba(255,255,255,0.15)',
+  rare: '#3b82f6',
+  epic: '#a855f7',
+  legendary: 'var(--color-stage-gold)',
 }
 
 const RARITY_FRAME_CLASS: Record<string, string> = {
   rare: 'achievement-card-rare',
   epic: 'achievement-card-epic',
   legendary: 'achievement-card-legendary',
+}
+
+// Lock icon SVG used in empty state and locked achievements
+function LockIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'rgba(255,255,255,0.15)' }}>
+      <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
 }
 
 export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerProfileProps) {
@@ -58,7 +68,7 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
 
   if (loading) {
     return (
-      <div className="py-6 space-y-6">
+      <div style={{ padding: '24px 0' }}>
         <StatsSkeleton />
       </div>
     )
@@ -66,11 +76,24 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
 
   if (error || !stats) {
     return (
-      <div className="text-center py-12 text-[var(--color-danger)]">
-        <p>{error || 'Profile not found'}</p>
-        <Button variant="ghost" size="sm" onClick={fetchStats} className="mt-2" style={{ color: 'var(--color-accent)' }}>
+      <div className="text-center" style={{ padding: '48px 0' }}>
+        <p style={{ color: 'var(--color-stage-red)', fontSize: '14px', fontFamily: 'var(--font-mono)' }}>{error || 'Profile not found'}</p>
+        <button
+          onClick={fetchStats}
+          style={{
+            marginTop: '12px',
+            padding: '6px 16px',
+            borderRadius: '6px',
+            fontSize: '13px',
+            fontFamily: 'var(--font-mono)',
+            background: 'rgba(255,255,255,0.06)',
+            color: 'var(--color-cream)',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
           Try again
-        </Button>
+        </button>
       </div>
     )
   }
@@ -78,107 +101,215 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
   const unlockedAchievements = stats.achievements.filter(a => a.unlockedAt)
   const lockedAchievements = stats.achievements.filter(a => !a.unlockedAt)
 
-  // Show aspirational preview for new players with no games
+  // Empty state: playbill cast bio page
   if (stats.gamesPlayed === 0) {
-    const previewStats = [
-      { label: 'Games', value: '--' },
-      { label: 'MVP Wins', value: '--' },
-      { label: 'Votes', value: '--' },
-      { label: 'Streak', value: '--' },
-    ]
-
     return (
-      <div className="py-4 space-y-6">
-        {/* Faded stat preview cards */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-disabled)' }}>
-            Your Stats
+      <div style={{ padding: '8px 0' }}>
+        {/* The Playbill Paper */}
+        <motion.div
+          initial={{ opacity: 0, y: 20, rotate: -0.5 }}
+          animate={{ opacity: 1, y: 0, rotate: -0.5 }}
+          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          style={{
+            background: 'var(--color-paper)',
+            borderRadius: '4px',
+            padding: '32px 28px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Paper texture overlay */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,0,0,0.03) 28px, rgba(0,0,0,0.03) 29px)',
+            pointerEvents: 'none',
+          }} />
+
+          {/* CAST MEMBER label */}
+          <p style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '10px',
+            fontWeight: 700,
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color: 'var(--color-stage-red)',
+            marginBottom: '8px',
+          }}>
+            Cast Member
           </p>
-          <div className="grid grid-cols-4 gap-2" style={{ opacity: 0.4 }}>
-            {previewStats.map((stat) => (
-              <div
-                key={stat.label}
-                className="text-center p-3 rounded-xl"
-                style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)' }}
-              >
-                <div className="font-display text-xl font-bold" style={{ color: 'var(--color-text-primary)' }}>
+
+          {/* Name placeholder */}
+          <h2 style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: '28px',
+            fontStyle: 'italic',
+            fontWeight: 400,
+            color: 'rgba(8,7,11,0.35)',
+            marginBottom: '20px',
+          }}>
+            Your name here
+          </h2>
+
+          {/* Dashed bio placeholder */}
+          <div style={{
+            border: '2px dashed rgba(8,7,11,0.12)',
+            borderRadius: '6px',
+            padding: '20px',
+            textAlign: 'center',
+            marginBottom: '24px',
+          }}>
+            <p style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '13px',
+              color: 'rgba(8,7,11,0.4)',
+              lineHeight: 1.5,
+            }}>
+              Play your first game to fill in your bio
+            </p>
+          </div>
+
+          {/* Stat placeholders in a row */}
+          <div className="grid grid-cols-4 gap-3" style={{ marginBottom: '24px' }}>
+            {[
+              { label: 'Games', value: '--' },
+              { label: 'MVP Wins', value: '--' },
+              { label: 'Votes', value: '--' },
+              { label: 'Streak', value: '--' },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: '20px',
+                  color: 'rgba(8,7,11,0.2)',
+                  marginBottom: '2px',
+                }}>
                   {stat.value}
                 </div>
-                <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                <div style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '10px',
+                  color: 'rgba(8,7,11,0.3)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}>
                   {stat.label}
                 </div>
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Locked achievement placeholders */}
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--color-text-disabled)' }}>
-            Achievements
-          </p>
-          <div className="flex gap-3 flex-wrap" style={{ opacity: 0.35 }}>
+          {/* Locked achievement circles */}
+          <div className="flex gap-3 justify-center">
             {[0, 1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="flex items-center justify-center rounded-full"
                 style={{
-                  width: 48,
-                  height: 48,
-                  background: 'var(--color-surface-alt)',
-                  border: '1px solid var(--color-border)',
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'rgba(8,7,11,0.06)',
+                  border: '1px solid rgba(8,7,11,0.08)',
                 }}
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--color-text-disabled)' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'rgba(8,7,11,0.2)' }}>
                   <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.8" />
                   <path d="M8 11V7a4 4 0 018 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                 </svg>
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* CTA */}
-        <div className="text-center pt-2 space-y-3">
-          <Button
-            variant="primary"
-            size="lg"
+        {/* CTA below the paper (on dark bg) */}
+        <div style={{ marginTop: '24px' }}>
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
             onClick={() => { window.location.href = '/join' }}
+            style={{
+              width: '100%',
+              padding: '14px 24px',
+              borderRadius: '100px',
+              fontSize: '15px',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 600,
+              background: 'var(--color-cream)',
+              color: 'var(--color-void)',
+              border: 'none',
+              cursor: 'pointer',
+              letterSpacing: '-0.01em',
+            }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            Play a game to start tracking your stats
-          </Button>
-          <p style={{ fontSize: '13px', color: 'var(--color-text-tertiary)' }}>
+            Play a Game
+          </motion.button>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            style={{
+              textAlign: 'center',
+              marginTop: '12px',
+              fontSize: '12px',
+              color: 'rgba(255,255,255,0.25)',
+            }}
+          >
             <a
               href="/sign-up"
-              style={{ color: 'var(--color-text-tertiary)', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+              style={{
+                color: 'rgba(255,255,255,0.35)',
+                textDecoration: 'underline',
+                textUnderlineOffset: '2px',
+              }}
             >
               Create an account
             </a>
             {' '}to save progress across devices
-          </p>
+          </motion.p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* Header */}
       {!hideHeader && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar name={stats.nickname} size="lg" style={{ width: 64, height: 64, fontSize: '30px' }} />
-            <div>
-              <h2 className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats.nickname}</h2>
-              <p className="text-[var(--color-text-secondary)]">
-                Playing since {new Date(stats.joinedAt).toLocaleDateString()}
-              </p>
-            </div>
+        <div className="flex items-center justify-between" style={{ marginBottom: '24px' }}>
+          <div>
+            <h2 style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '24px',
+              fontWeight: 400,
+              color: 'var(--color-cream)',
+            }}>
+              {stats.nickname}
+            </h2>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)', fontFamily: 'var(--font-mono)' }}>
+              Playing since {new Date(stats.joinedAt).toLocaleDateString()}
+            </p>
           </div>
           {onClose && (
-            <Button variant="ghost" size="sm" onClick={onClose} style={{ fontSize: '24px', padding: 0 }}>
-              ×
-            </Button>
+            <button
+              onClick={onClose}
+              style={{
+                fontSize: '20px',
+                padding: '4px 8px',
+                background: 'none',
+                border: 'none',
+                color: 'rgba(255,255,255,0.3)',
+                cursor: 'pointer',
+              }}
+            >
+              x
+            </button>
           )}
         </div>
       )}
@@ -186,35 +317,16 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
       {/* Quick Stats */}
       {!hideHeader && (
         <motion.div
-          className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4"
+          className="grid grid-cols-2 sm:grid-cols-4 gap-3"
           variants={staggerContainer}
           initial="hidden"
           animate="show"
+          style={{ marginBottom: '24px' }}
         >
-          <StatCard
-            icon="🎮"
-            label="Games"
-            value={stats.gamesPlayed}
-            index={0}
-          />
-          <StatCard
-            icon="🏆"
-            label="Wins"
-            value={stats.gamesWon}
-            index={1}
-          />
-          <StatCard
-            icon="📈"
-            label="Win Rate"
-            value={`${Math.round(stats.winRate)}%`}
-            index={2}
-          />
-          <StatCard
-            icon="🔥"
-            label="Best Streak"
-            value={stats.bestWinStreak}
-            index={3}
-          />
+          <StatCard label="Games" value={stats.gamesPlayed} index={0} />
+          <StatCard label="Wins" value={stats.gamesWon} index={1} />
+          <StatCard label="Win Rate" value={`${Math.round(stats.winRate)}%`} index={2} />
+          <StatCard label="Best Streak" value={stats.bestWinStreak} index={3} />
         </motion.div>
       )}
 
@@ -223,53 +335,69 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="rounded-xl p-4 flex items-center justify-between"
           style={{
-            background: 'linear-gradient(to right, var(--color-accent-light), var(--color-danger-light))',
-            border: '1px solid var(--color-accent)',
+            borderRadius: '10px',
+            padding: '12px 16px',
+            background: 'rgba(194,59,34,0.08)',
+            border: '1px solid rgba(194,59,34,0.3)',
+            marginBottom: '24px',
           }}
+          className="flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
-            <span className="text-3xl">🔥</span>
+            <span style={{ color: 'var(--color-stage-red)', fontSize: '20px' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2c-1 4-4 6-4 10a6 6 0 0012 0c0-4-3-6-4-10-1 2-3 3-4 0z" fill="currentColor" /></svg>
+            </span>
             <div>
-              <p className="font-semibold" style={{ color: 'var(--color-accent-dark)' }}>On Fire!</p>
-              <p className="text-sm" style={{ color: 'var(--color-accent)' }}>
+              <p style={{ fontWeight: 600, fontSize: '13px', color: 'var(--color-stage-red)', fontFamily: 'var(--font-mono)' }}>On Fire!</p>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
                 {stats.currentWinStreak} game win streak
               </p>
             </div>
           </div>
-          <span className="text-4xl font-bold" style={{ color: 'var(--color-accent)' }}>
+          <span style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', color: 'var(--color-stage-red)' }}>
             {stats.currentWinStreak}
           </span>
         </motion.div>
       )}
 
-      {/* Tabs - styled as paper tabs */}
-      <div className="flex gap-1 border-b border-[var(--color-border)] pb-0 relative">
-        {(['stats', 'achievements', 'history'] as const).map((tab, index) => {
-          const rotations = [-1, 0.5, -0.5]
+      {/* Sub-tabs */}
+      <div className="flex gap-1" style={{
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        paddingBottom: 0,
+        position: 'relative',
+        marginBottom: '20px',
+      }}>
+        {(['stats', 'achievements', 'history'] as const).map((tab) => {
           const isActive = activeTab === tab
+          const labels: Record<string, string> = {
+            stats: 'Stats',
+            achievements: `Achievements (${unlockedAchievements.length})`,
+            history: 'History',
+          }
 
           return (
-            <motion.button
+            <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2.5 rounded-t-lg font-medium transition-all border border-b-0 relative -mb-px ${
-                isActive
-                  ? 'bg-[var(--color-surface)] border-[var(--color-border)] text-[var(--color-text-primary)] z-10'
-                  : 'bg-[var(--color-surface-alt)] border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)]'
-              }`}
               style={{
-                transform: isActive ? 'rotate(0deg) translateY(-2px)' : `rotate(${rotations[index]}deg)`,
-                boxShadow: isActive ? 'var(--shadow-2)' : 'none'
+                padding: '8px 14px',
+                borderRadius: '6px 6px 0 0',
+                fontSize: '12px',
+                fontFamily: 'var(--font-mono)',
+                fontWeight: isActive ? 600 : 400,
+                border: isActive ? '1px solid rgba(255,255,255,0.1)' : '1px solid transparent',
+                borderBottom: isActive ? '1px solid var(--color-void)' : '1px solid transparent',
+                cursor: 'pointer',
+                background: isActive ? 'rgba(255,255,255,0.06)' : 'transparent',
+                color: isActive ? 'var(--color-cream)' : 'rgba(255,255,255,0.3)',
+                position: 'relative',
+                marginBottom: '-1px',
+                transition: 'all 0.15s ease',
               }}
-              whileHover={!isActive ? { y: -2, rotate: 0 } : {}}
-              whileTap={{ scale: 0.98 }}
             >
-              {tab === 'stats' && '📊 Stats'}
-              {tab === 'achievements' && `🏅 Achievements (${unlockedAchievements.length})`}
-              {tab === 'history' && '📜 History'}
-            </motion.button>
+              {labels[tab]}
+            </button>
           )
         })}
       </div>
@@ -282,7 +410,7 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="space-y-6"
+            className="space-y-4"
           >
             {/* Favorite Character */}
             {stats.favoriteCharacter && (
@@ -290,26 +418,27 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                whileHover={{ scale: 1.02 }}
+                style={{
+                  borderRadius: '10px',
+                  padding: '16px',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                }}
               >
-                <Card variant="surface" padding="lg">
-                  <h3 className="text-sm text-[var(--color-text-tertiary)] mb-2 font-display">Favorite Character</h3>
-                  <div className="flex items-center gap-3">
-                    <motion.span
-                      className="text-3xl"
-                      animate={{ rotate: [-5, 5, -5] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    >
-                      🎭
-                    </motion.span>
-                    <div>
-                      <p className="font-semibold text-[var(--color-text-primary)] text-lg">{stats.favoriteCharacter}</p>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
-                        Played {stats.characterCounts[stats.favoriteCharacter]} times
-                      </p>
-                    </div>
+                <h3 style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                  Favorite Character
+                </h3>
+                <div className="flex items-center gap-3">
+                  <span style={{ fontSize: '24px', color: 'var(--color-stage-gold)' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 8c0 0 3-4 9-4s9 4 9 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><circle cx="9" cy="13" r="2" stroke="currentColor" strokeWidth="1.5" /><circle cx="15" cy="13" r="2" stroke="currentColor" strokeWidth="1.5" /><path d="M9 18c1.5 1 4.5 1 6 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+                  </span>
+                  <div>
+                    <p style={{ fontWeight: 500, color: 'var(--color-cream)', fontSize: '15px', fontFamily: 'var(--font-serif)' }}>{stats.favoriteCharacter}</p>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)' }}>
+                      Played {stats.characterCounts[stats.favoriteCharacter]} times
+                    </p>
                   </div>
-                </Card>
+                </div>
               </motion.div>
             )}
 
@@ -318,28 +447,21 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              whileHover={{ scale: 1.02 }}
+              style={{
+                borderRadius: '10px',
+                padding: '16px',
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.06)',
+              }}
             >
-              <Card variant="surface" padding="lg">
-                <h3 className="text-sm text-[var(--color-text-tertiary)] mb-3 font-display">Game Mode Performance</h3>
-                <div className="space-y-3">
-                  <ModeStatRow
-                    mode="Solo"
-                    icon="🎤"
-                    stats={stats.gameModeStats.solo}
-                  />
-                  <ModeStatRow
-                    mode="Head to Head"
-                    icon="⚔️"
-                    stats={stats.gameModeStats.headToHead}
-                  />
-                  <ModeStatRow
-                    mode="Ensemble"
-                    icon="👥"
-                    stats={stats.gameModeStats.ensemble}
-                  />
-                </div>
-              </Card>
+              <h3 style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: '12px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                Game Mode Performance
+              </h3>
+              <div className="space-y-3">
+                <ModeStatRow mode="Solo" stats={stats.gameModeStats.solo} />
+                <ModeStatRow mode="Head to Head" stats={stats.gameModeStats.headToHead} />
+                <ModeStatRow mode="Ensemble" stats={stats.gameModeStats.ensemble} />
+              </div>
             </motion.div>
 
             {/* Audience Love */}
@@ -347,24 +469,25 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              whileHover={{ scale: 1.02 }}
+              style={{
+                borderRadius: '10px',
+                padding: '16px',
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.06)',
+              }}
             >
-              <Card variant="surface" padding="lg">
-                <h3 className="text-sm text-[var(--color-text-tertiary)] mb-2 font-display">Audience Reactions</h3>
-                <div className="flex items-center gap-4">
-                  <motion.div
-                    className="text-4xl"
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  >
-                    😂
-                  </motion.div>
-                  <div>
-                    <p className="text-2xl font-bold text-[var(--color-text-primary)] font-display">{stats.totalReactionsReceived}</p>
-                    <p className="text-sm text-[var(--color-text-secondary)]">total reactions received</p>
-                  </div>
+              <h3 style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginBottom: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                Audience Reactions
+              </h3>
+              <div className="flex items-center gap-4">
+                <span style={{ fontSize: '28px', color: 'var(--color-stage-gold)' }}>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /><circle cx="9" cy="9" r="1.5" fill="currentColor" /><circle cx="15" cy="9" r="1.5" fill="currentColor" /><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.8" /></svg>
+                </span>
+                <div>
+                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', color: 'var(--color-cream)' }}>{stats.totalReactionsReceived}</p>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)' }}>total reactions received</p>
                 </div>
-              </Card>
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -380,11 +503,22 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
             {/* Unlocked Achievements */}
             {unlockedAchievements.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] font-display mb-4 flex items-center gap-2">
-                  <span className="font-display text-[var(--color-accent)]">★</span>
+                <h3 style={{
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'var(--color-cream)',
+                  fontFamily: 'var(--font-serif)',
+                  marginBottom: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}>
+                  <span style={{ color: 'var(--color-stage-gold)' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" /></svg>
+                  </span>
                   Unlocked ({unlockedAchievements.length})
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {unlockedAchievements.map((achievement, index) => (
                     <AchievementCard key={achievement.id} achievement={achievement} unlocked index={index} />
                   ))}
@@ -395,7 +529,13 @@ export function PlayerProfile({ playerId, onClose, hideHeader = false }: PlayerP
             {/* Locked Achievements */}
             {lockedAchievements.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold text-[var(--color-text-tertiary)] font-display mb-4">
+                <h3 style={{
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.3)',
+                  fontFamily: 'var(--font-serif)',
+                  marginBottom: '12px',
+                }}>
                   Locked ({lockedAchievements.length})
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -439,75 +579,63 @@ const staggerItem = {
   show: { opacity: 1, y: 0 }
 }
 
-const emojiWiggle = {
-  initial: { rotate: 0 },
-  animate: {
-    rotate: [-3, 3, -3],
-    transition: {
-      duration: 2,
-      repeat: Infinity,
-      ease: "easeInOut" as const
-    }
-  }
-}
-
 // Sub-components
 
-function StatCard({ icon, label, value, index = 0 }: { icon: string, label: string, value: string | number, index?: number }) {
-  const rotations = [-1, 1, -0.5, 1.5]
-  const rotation = rotations[index % rotations.length]
-
+function StatCard({ label, value, index = 0 }: { label: string, value: string | number, index?: number }) {
   return (
     <motion.div
-      className="p-4 text-center relative rounded-xl"
-      style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+      className="text-center"
+      style={{
+        padding: '14px 8px',
+        borderRadius: '10px',
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.06)',
+      }}
       variants={staggerItem}
-      whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
     >
-      <motion.div
-        className="text-2xl mb-1"
-        variants={emojiWiggle}
-        initial="initial"
-        animate="animate"
-      >
-        {icon}
-      </motion.div>
-      <div className="text-xl font-bold text-[var(--color-text-primary)] font-display">{value}</div>
-      <div className="text-xs text-[var(--color-text-tertiary)]">{label}</div>
+      <div style={{
+        fontFamily: 'var(--font-serif)',
+        fontSize: '22px',
+        color: 'var(--color-cream)',
+        marginBottom: '2px',
+      }}>
+        {value}
+      </div>
+      <div style={{
+        fontSize: '11px',
+        fontFamily: 'var(--font-mono)',
+        color: 'rgba(255,255,255,0.3)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+      }}>
+        {label}
+      </div>
     </motion.div>
   )
 }
 
 function ModeStatRow({
   mode,
-  icon,
   stats
 }: {
   mode: string
-  icon: string
   stats: { played: number, won: number }
 }) {
   const winRate = stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0
 
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <span>{icon}</span>
-        <span className="text-[var(--color-text-secondary)]">{mode}</span>
-      </div>
-      <div className="flex items-center gap-4 text-sm">
-        <span className="text-[var(--color-text-tertiary)]">{stats.played} played</span>
-        <span className="text-[var(--color-success)]">{stats.won} won</span>
-        <span className="text-[var(--color-accent)]">{winRate}%</span>
+      <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>{mode}</span>
+      <div className="flex items-center gap-4" style={{ fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
+        <span style={{ color: 'rgba(255,255,255,0.3)' }}>{stats.played} played</span>
+        <span style={{ color: '#4ade80' }}>{stats.won} won</span>
+        <span style={{ color: 'var(--color-stage-gold)' }}>{winRate}%</span>
       </div>
     </div>
   )
 }
 
 function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Achievement, unlocked: boolean, index?: number }) {
-  const rotations = [-1, 1, -0.5, 1.5, 0.5, -1.5]
-  const rotation = rotations[index % rotations.length]
-  const rarityClass = RARITY_FRAME_CLASS[achievement.rarity] || ''
   const progressPct = (!unlocked && achievement.progress !== undefined && achievement.target)
     ? Math.min((achievement.progress / achievement.target) * 100, 100)
     : 0
@@ -527,80 +655,105 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, rotate: unlocked ? rotation + 5 : 0 }}
-      animate={{ opacity: 1, y: 0, rotate: unlocked ? rotation : 0 }}
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.06, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ scale: 1.03, rotate: 0 }}
-      className={`relative transition-all ${
-        unlocked
-          ? `polaroid-card ${rarityClass}`
-          : 'bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg opacity-60'
-      }`}
+      style={{
+        borderRadius: '10px',
+        border: unlocked ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.04)',
+        background: unlocked ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
+        opacity: unlocked ? 1 : 0.6,
+      }}
     >
-      {/* Tape decoration for unlocked achievements */}
-      {unlocked && (
-        <div
-          className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
-          style={{ background: 'var(--color-accent)' }}
-        />
-      )}
-
-      <div className="p-4">
+      <div style={{ padding: '14px' }}>
         <div className="flex items-start gap-3">
           <div className="relative">
-            <motion.div
-              className="text-3xl"
-              style={!unlocked ? { filter: 'blur(1px) saturate(0.3)', opacity: 0.5 } : undefined}
-              animate={unlocked ? { rotate: [-3, 3, -3] } : {}}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            <span
+              style={{
+                fontSize: '24px',
+                display: 'block',
+                ...((!unlocked) ? { filter: 'blur(1px) saturate(0.3)', opacity: 0.5 } : {}),
+              }}
             >
               {achievement.icon}
-            </motion.div>
-            {!unlocked && <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '16px', zIndex: 1 }}>🔒</div>}
+            </span>
+            {!unlocked && (
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                <LockIcon size={12} />
+              </div>
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className={`font-semibold truncate ${unlocked ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-disabled)]'}`}>
+              <h4 style={{
+                fontWeight: 600,
+                fontSize: '13px',
+                color: unlocked ? 'var(--color-cream)' : 'rgba(255,255,255,0.25)',
+                fontFamily: 'var(--font-mono)',
+              }} className="truncate">
                 {achievement.name}
               </h4>
               <Badge
                 size="sm"
                 style={{
-                  background: RARITY_BADGE_BG[achievement.rarity] || 'var(--color-text-tertiary)',
-                  color: achievement.rarity === 'legendary' ? 'var(--color-text-primary)' : 'white',
+                  background: RARITY_BADGE_BG[achievement.rarity] || 'rgba(255,255,255,0.15)',
+                  color: achievement.rarity === 'legendary' ? 'var(--color-void)' : 'white',
+                  fontSize: '10px',
+                  padding: '1px 6px',
+                  borderRadius: '4px',
                 }}
               >
                 {achievement.rarity}
               </Badge>
             </div>
-            <p className={`text-xs mt-1 ${unlocked ? 'text-[var(--color-text-secondary)]' : 'text-[var(--color-text-disabled)]'}`}>
+            <p style={{
+              fontSize: '12px',
+              marginTop: '4px',
+              color: unlocked ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)',
+            }}>
               {achievement.description}
             </p>
-            {/* Animated progress bar for locked achievements */}
+            {/* Progress bar for locked achievements */}
             {!unlocked && achievement.progress !== undefined && achievement.target && (
-              <div className="mt-2">
-                <div className="h-1.5 bg-[var(--color-border)] rounded-full overflow-hidden">
+              <div style={{ marginTop: '8px' }}>
+                <div style={{ height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
                   <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: progressPct >= 75 ? 'var(--color-success)' : 'var(--color-accent)' }}
+                    style={{
+                      height: '100%',
+                      borderRadius: '2px',
+                      background: progressPct >= 75 ? '#4ade80' : 'var(--color-stage-gold)',
+                    }}
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPct}%` }}
                     transition={{ duration: 0.8, delay: index * 0.06 + 0.2, ease: [0.22, 1, 0.36, 1] }}
                   />
                 </div>
-                <p className="text-xs text-[var(--color-text-disabled)] mt-1">
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.2)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>
                   {achievement.progress} / {achievement.target}
                 </p>
               </div>
             )}
             {unlocked && achievement.unlockedAt && (
-              <div className="flex items-center justify-between mt-1">
-                <p className="text-xs text-[var(--color-text-tertiary)] font-display">
+              <div className="flex items-center justify-between" style={{ marginTop: '6px' }}>
+                <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', fontFamily: 'var(--font-mono)' }}>
                   {new Date(achievement.unlockedAt).toLocaleDateString()}
                 </p>
-                <Button variant="ghost" size="sm" onClick={handleShare} style={{ fontSize: '12px', padding: '2px 8px' }}>
+                <button
+                  onClick={handleShare}
+                  style={{
+                    fontSize: '11px',
+                    padding: '2px 8px',
+                    fontFamily: 'var(--font-mono)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.35)',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '2px',
+                  }}
+                >
                   Share
-                </Button>
+                </button>
               </div>
             )}
           </div>
@@ -641,34 +794,41 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
   ]
 
   const medals = ['1st', '2nd', '3rd']
-  const medalColors = ['var(--color-accent)', 'var(--color-text-tertiary)', 'var(--color-text-disabled)']
+  const medalColors = ['var(--color-stage-gold)', 'rgba(255,255,255,0.4)', 'rgba(255,255,255,0.25)']
 
-  // Split entries into podium (top 3) and remaining rows
   const hasPodium = entries.length >= 3
   const podiumEntries = hasPodium ? entries.slice(0, 3) : []
   const rowEntries = hasPodium ? entries.slice(3) : entries
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-[var(--color-text-primary)] font-display">
+      <h2 style={{
+        fontFamily: 'var(--font-serif)',
+        fontSize: '20px',
+        fontWeight: 400,
+        color: 'var(--color-cream)',
+      }}>
         Leaderboard
       </h2>
 
-      {/* Tabs */}
+      {/* Category tabs */}
       <div className="flex gap-1 overflow-x-auto">
         {categories.map(cat => (
           <button
             key={cat.key}
             onClick={() => setActiveCategory(cat.key)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
-              activeCategory === cat.key
-                ? 'text-white'
-                : 'text-[var(--color-text-tertiary)]'
-            }`}
             style={{
-              background: activeCategory === cat.key ? 'var(--color-accent)' : 'var(--color-surface-alt)',
-              border: activeCategory === cat.key ? 'none' : '1px solid var(--color-border)',
+              padding: '5px 12px',
+              borderRadius: '6px',
+              fontSize: '11px',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: activeCategory === cat.key ? 600 : 400,
+              background: activeCategory === cat.key ? 'var(--color-stage-gold)' : 'rgba(255,255,255,0.04)',
+              color: activeCategory === cat.key ? 'var(--color-void)' : 'rgba(255,255,255,0.35)',
+              border: activeCategory === cat.key ? 'none' : '1px solid rgba(255,255,255,0.06)',
               cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              transition: 'all 0.15s ease',
             }}
           >
             {cat.label}
@@ -678,15 +838,21 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
 
       {/* Entries */}
       {loading ? (
-        <div className="text-center py-8 text-[var(--color-text-secondary)]">Loading...</div>
+        <div className="text-center" style={{ padding: '32px 0', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)', fontSize: '13px' }}>
+          Loading...
+        </div>
       ) : entries.length === 0 ? (
-        <div className="text-center py-8">
-          <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">The Hall of Fame Awaits</h3>
-          <p className="text-[var(--color-text-secondary)]">Play more games to compete on the leaderboard!</p>
+        <div className="text-center" style={{ padding: '32px 0' }}>
+          <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', color: 'var(--color-cream)', marginBottom: '8px' }}>
+            The Hall of Fame Awaits
+          </h3>
+          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '13px', fontFamily: 'var(--font-mono)' }}>
+            Play more games to compete on the leaderboard!
+          </p>
         </div>
       ) : (
         <>
-          {/* Top 3 podium — only when >= 3 entries */}
+          {/* Top 3 podium */}
           {hasPodium && (
             <motion.div
               className="grid grid-cols-3 gap-3"
@@ -697,15 +863,24 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
               {podiumEntries.map((entry, index) => (
                 <motion.div
                   key={entry.playerId}
-                  className="text-center rounded-xl p-3"
-                  style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+                  className="text-center"
+                  style={{
+                    borderRadius: '10px',
+                    padding: '12px 8px',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: index === 0 ? '1px solid rgba(201,162,77,0.3)' : '1px solid rgba(255,255,255,0.06)',
+                  }}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <div className="text-xs font-bold mb-1" style={{ color: medalColors[index] }}>{medals[index]}</div>
-                  <div className="text-sm font-semibold text-[var(--color-text-primary)] font-display truncate">{entry.nickname}</div>
-                  <div className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, marginBottom: '4px', color: medalColors[index], fontFamily: 'var(--font-mono)' }}>
+                    {medals[index]}
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-cream)', fontFamily: 'var(--font-serif)' }} className="truncate">
+                    {entry.nickname}
+                  </div>
+                  <div style={{ fontSize: '11px', marginTop: '2px', color: 'rgba(255,255,255,0.3)', fontFamily: 'var(--font-mono)' }}>
                     {entry.value}{activeCategory === 'winRate' ? '%' : ''}
                   </div>
                 </motion.div>
@@ -713,7 +888,7 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
             </motion.div>
           )}
 
-          {/* Remaining rows (4-10, or all if < 3 entries) */}
+          {/* Remaining rows */}
           {rowEntries.length > 0 && (
             <div className="space-y-1">
               {rowEntries.map((entry, i) => {
@@ -724,17 +899,21 @@ export function Leaderboard({ category = 'wins' }: { category?: LeaderboardCateg
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: actualIndex * 0.04 }}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg"
-                    style={{ background: 'var(--color-surface-alt)' }}
+                    className="flex items-center gap-3"
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      background: 'rgba(255,255,255,0.03)',
+                    }}
                   >
-                    <span className="text-xs font-bold w-6 text-center" style={{ color: 'var(--color-text-disabled)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 700, width: '24px', textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontFamily: 'var(--font-mono)' }}>
                       {!hasPodium && actualIndex < 3
                         ? medals[actualIndex]
                         : `#${entry.rank}`
                       }
                     </span>
-                    <span className="flex-1 text-sm font-medium text-[var(--color-text-primary)] truncate">{entry.nickname}</span>
-                    <span className="text-sm font-semibold" style={{ color: 'var(--color-accent)' }}>
+                    <span className="flex-1 truncate" style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-cream)' }}>{entry.nickname}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-stage-gold)', fontFamily: 'var(--font-mono)' }}>
                       {entry.value}{activeCategory === 'winRate' ? '%' : ''}
                     </span>
                   </motion.div>

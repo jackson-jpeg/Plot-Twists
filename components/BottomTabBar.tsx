@@ -24,7 +24,10 @@ export function BottomTabBar() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50"
       style={{
-        background: 'var(--color-surface)',
+        background: 'rgba(8,7,11,0.92)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderTop: '1px solid rgba(255,255,255,0.03)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
       role="tablist"
@@ -46,17 +49,18 @@ export function BottomTabBar() {
               onClick={() => { if (!isActive) tapHaptic() }}
               className="flex flex-col items-center justify-center flex-1 py-3 relative"
               style={{
-                color: isActive ? 'var(--color-text-primary)' : 'var(--color-text-disabled)',
+                color: isActive ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.25)',
                 WebkitTapHighlightColor: 'transparent',
                 fontWeight: isActive ? 600 : 400,
                 fontSize: '13px',
+                transition: 'color 0.2s ease',
               }}
             >
               {isActive && (
                 <motion.div
                   layoutId="tab-indicator"
                   className="absolute top-0 left-1/2 -translate-x-1/2 rounded-full"
-                  style={{ width: 24, height: 2, background: 'var(--color-text-primary)' }}
+                  style={{ width: 24, height: 2, background: 'var(--color-stage-gold)' }}
                   transition={SPRING}
                 />
               )}

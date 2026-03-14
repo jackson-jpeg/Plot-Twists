@@ -14,21 +14,11 @@ const TABS = [
   { href: '/profile', label: 'Profile' },
 ] as const
 
-/** Pages where the tab bar should be visible (excludes /host and /join — those are active game sessions) */
-const TAB_PAGES = new Set(['/', '/profile'])
-
-function shouldShowTabBar(pathname: string): boolean {
-  if (TAB_PAGES.has(pathname)) return true
-  if (pathname === '/explore') return true
-  if (pathname.startsWith('/replay/')) return true
-  return false
-}
-
 export function BottomTabBar() {
   const pathname = usePathname()
   const { user, loading } = useAuth()
 
-  if (loading || !user || !shouldShowTabBar(pathname)) return null
+  if (loading || !user) return null
 
   return (
     <nav

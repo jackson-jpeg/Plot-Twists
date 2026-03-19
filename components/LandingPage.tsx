@@ -51,12 +51,13 @@ export function LandingPage() {
                 transition={{ ...SPRING_GENTLE, delay: 0.3 }}
                 style={{
                   position: 'absolute',
-                  width: '90px',
-                  top: '-62px',
+                  width: '80px',
+                  top: '-52px',
                   left: '52%',
                   transform: 'translateX(-50%)',
                   zIndex: 2,
                   pointerEvents: 'none',
+                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.4))',
                 }}
               />
             )}
@@ -104,11 +105,12 @@ export function LandingPage() {
                 transition={{ ...SPRING_GENTLE, delay: 0.5 }}
                 style={{
                   position: 'absolute',
-                  width: '80px',
-                  bottom: '-10px',
-                  left: '-60px',
+                  width: '70px',
+                  bottom: '-8px',
+                  left: '-50px',
                   zIndex: 3,
                   pointerEvents: 'none',
+                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.4))',
                 }}
               />
             )}
@@ -123,11 +125,12 @@ export function LandingPage() {
                 transition={{ ...SPRING_GENTLE, delay: 0.7 }}
                 style={{
                   position: 'absolute',
-                  width: '75px',
-                  bottom: '-18px',
-                  right: '-55px',
+                  width: '70px',
+                  bottom: '-8px',
+                  right: '-50px',
                   zIndex: 3,
                   pointerEvents: 'none',
+                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.4))',
                 }}
               />
             )}

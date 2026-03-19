@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
+import { SPRING } from '@/lib/motion'
 
 interface DeleteConfirmModalProps {
   isOpen: boolean
@@ -34,16 +35,23 @@ export function DeleteConfirmModal({
         onClick={(e) => e.target === e.currentTarget && !isDeleting && onCancel()}
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
+          initial={{ scale: 0.92, opacity: 0, y: 16 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.92, opacity: 0, y: 16 }}
+          transition={SPRING}
           className="bg-[var(--color-surface)] rounded-2xl w-full max-w-md overflow-hidden"
         >
           <div className="p-6">
             {/* Warning icon */}
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ background: 'var(--color-danger-light)' }}>
+            <motion.div
+              className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center"
+              style={{ background: 'var(--color-danger-light)' }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ ...SPRING, delay: 0.1 }}
+            >
               <span className="text-3xl">⚠️</span>
-            </div>
+            </motion.div>
 
             {/* Title */}
             <h2 className="text-xl font-bold text-center mb-2" style={{ color: 'var(--color-text-primary)' }}>

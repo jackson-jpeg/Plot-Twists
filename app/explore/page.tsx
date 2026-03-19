@@ -18,7 +18,8 @@ function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSel
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
       transition={{ delay: index * STAGGER, ...SPRING_GENTLE }}
       style={{ paddingTop: 8, position: 'relative' }}
     >
@@ -35,7 +36,8 @@ function PackCard({ pack, onSelect, index = 0 }: { pack: CardPackMetadata; onSel
       {/* Folder body */}
       <motion.div
         onClick={() => onSelect(pack)}
-        whileHover={{ y: -2, boxShadow: '0 6px 18px rgba(0,0,0,0.35)' }}
+        whileHover={{ y: -3, scale: 1.01, boxShadow: '0 8px 24px rgba(0,0,0,0.35)' }}
+        whileTap={{ scale: 0.98 }}
         style={{
           background: 'linear-gradient(135deg, #d4c9a8, #c8bc98)',
           borderRadius: '4px 10px 10px 10px',

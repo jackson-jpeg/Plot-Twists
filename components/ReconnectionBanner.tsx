@@ -73,7 +73,18 @@ export function ReconnectionBanner({ reconnecting, attempt = 0, maxAttempts = 50
             boxShadow: '0 2px 16px rgba(0,0,0,0.6)',
           }}
         >
-          {current.message}
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={bannerState}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: bannerState === 'reconnected' ? [1.08, 1] : 1 }}
+              exit={{ opacity: 0, scale: 0.92 }}
+              transition={{ duration: 0.25 }}
+              style={{ display: 'inline-block' }}
+            >
+              {current.message}
+            </motion.span>
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>

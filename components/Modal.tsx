@@ -146,7 +146,10 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
         >
           {/* Header */}
           {title && (
-            <div
+            <motion.div
+              initial={shouldReduceMotion ? false : { opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...SPRING, delay: 0.05 }}
               style={{
                 padding: '24px 24px 16px',
                 borderBottom: '1px solid var(--color-border)',
@@ -180,11 +183,14 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
               >
                 ×
               </Button>
-            </div>
+            </motion.div>
           )}
 
           {/* Body */}
-          <div
+          <motion.div
+            initial={shouldReduceMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ ...SPRING, delay: 0.1 }}
             style={{
               padding: '24px',
               overflowY: 'auto',
@@ -194,7 +200,7 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = '600px' }: 
             }}
           >
             {children}
-          </div>
+          </motion.div>
         </motion.div>
       </motion.div>}
     </AnimatePresence>

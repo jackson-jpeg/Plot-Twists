@@ -121,6 +121,7 @@ export function Toast({
       initial={shouldReduceMotion ? false : { opacity: 0, y: -20, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95, y: -10, transition: { duration: shouldReduceMotion ? 0 : 0.15 } }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.9}
@@ -156,13 +157,16 @@ export function Toast({
 
       <div className={`flex items-center gap-2.5 ${isCompact ? 'px-3.5 py-2.5' : 'p-3.5'}`}>
         {/* Icon */}
-        <div
+        <motion.div
           className={`font-bold flex-shrink-0 flex items-center justify-center rounded-full ${isCompact ? 'text-xs w-5 h-5' : 'text-sm w-6 h-6'}`}
           style={{ color: colors.icon, background: colors.bg }}
           aria-hidden="true"
+          initial={shouldReduceMotion ? false : { scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 15, delay: 0.1 }}
         >
           {icons[type]}
-        </div>
+        </motion.div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
@@ -303,7 +307,16 @@ export function InlineToast({ message, type = 'info', onClose, className = '' }:
         border: `1px solid ${colors.border}`
       }}
     >
-      <span className="font-bold" style={{ color: colors.icon }} aria-hidden="true">{icons[type]}</span>
+      <motion.span
+        className="font-bold"
+        style={{ color: colors.icon }}
+        aria-hidden="true"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 15, delay: 0.1 }}
+      >
+        {icons[type]}
+      </motion.span>
       <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)' }}>{message}</span>
       {onClose && (
         <button

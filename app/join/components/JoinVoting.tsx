@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { SPRING_GENTLE, SPRING_BOUNCY } from '@/lib/motion'
+import { SPRING_GENTLE, SPRING_BOUNCY, STAGGER } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { successHaptic } from '@/hooks/useHaptics'
 import { Avatar, Badge } from '@/components/ui'
@@ -49,7 +49,7 @@ export function JoinVoting({ myPlayerId, myCharacter }: JoinVotingProps) {
       key="voting"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
+      exit={{ opacity: 0, y: -10 }}
       transition={SPRING_GENTLE}
       className="flex flex-col items-center justify-center"
       style={{
@@ -228,9 +228,9 @@ export function JoinVoting({ myPlayerId, myCharacter }: JoinVotingProps) {
                     transform: isSelected ? 'translateX(8px)' : 'translateX(0)',
                     transition: 'transform 0.15s ease, border-color 0.15s ease',
                   }}
-                  initial={{ opacity: 0, x: -15 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.08, ...SPRING_GENTLE }}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * STAGGER, ...SPRING_GENTLE }}
                   whileHover={!prefersReducedMotion ? { x: 4 } : undefined}
                   whileTap={!prefersReducedMotion ? { scale: 0.98 } : undefined}
                 >

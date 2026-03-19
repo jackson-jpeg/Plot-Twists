@@ -71,6 +71,7 @@ export function JoinSelection({
       <motion.div
         key="spectator-waiting"
         {...ENTER_Y}
+        exit={{ opacity: 0, y: -10 }}
         transition={SPRING_GENTLE}
         className="flex flex-col items-center justify-center min-h-dvh bg-[var(--color-bg)]"
         style={{ padding: '24px 16px calc(24px + env(safe-area-inset-bottom, 0px))' }}
@@ -122,6 +123,7 @@ export function JoinSelection({
       <motion.div
         key="waiting"
         {...ENTER_Y}
+        exit={{ opacity: 0, y: -10 }}
         transition={SPRING_GENTLE}
         className="flex flex-col items-center justify-center min-h-dvh bg-[var(--color-bg)]"
         style={{ padding: '24px 16px calc(24px + env(safe-area-inset-bottom, 0px))' }}
@@ -223,6 +225,7 @@ export function JoinSelection({
     <motion.div
       key="selection"
       {...ENTER_Y}
+      exit={{ opacity: 0, y: -10 }}
       transition={SPRING_GENTLE}
       style={{ background: 'var(--color-void)', padding: '24px 16px', minHeight: '100dvh' }}
     >

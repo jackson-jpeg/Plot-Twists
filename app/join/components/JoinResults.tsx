@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import type { LevelInfo } from '@/lib/types'
 import { SignInButton } from '@clerk/nextjs'
 import { copyScriptToClipboard, shareScriptText } from '@/lib/scriptUtils'
@@ -10,7 +10,7 @@ import { withTimeout } from '@/lib/socketTimeout'
 import { successHaptic } from '@/hooks/useHaptics'
 import { useConfetti } from '@/hooks/useConfetti'
 import { Modal } from '@/components/Modal'
-import { SPRING_BOUNCY, SPRING_GENTLE } from '@/lib/motion'
+import { SPRING_BOUNCY, SPRING_GENTLE, STAGGER } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { DoorIcon, StarIcon, SpinnerIcon } from '@/components/GameIcons'
 import { Button, Card } from '@/components/ui'
@@ -38,6 +38,7 @@ export function JoinResults({
   onShowPosterLightbox,
 }: JoinResultsProps) {
   const router = useRouter()
+  const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
   const { fireWinnerConfetti, fireCelebration } = useConfetti()
@@ -135,7 +136,7 @@ export function JoinResults({
   const winnerCharacter = winnerPlayer?.assignedCharacter
 
   return (
-    <motion.div key="results" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={SPRING_GENTLE} className="relative overflow-hidden" style={{ padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-void)' }}>
+    <motion.div key="results" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }} transition={SPRING_GENTLE} className="relative overflow-hidden" style={{ padding: 'calc(24px + env(safe-area-inset-top, 0px)) 16px 24px', background: 'var(--color-void)' }}>
       {/* Film strip sprocket holes — left */}
       <div style={{
         position: 'absolute', top: 0, left: 0, bottom: 0, width: '20px',
@@ -255,15 +256,21 @@ export function JoinResults({
               THE CAST
             </p>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-3">
-              {castList.map((c) => (
-                <div key={c.name} className="text-center">
+              {castList.map((c, index) => (
+                <motion.div
+                  key={c.name}
+                  className="text-center"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * STAGGER }}
+                >
                   <p style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(253, 252, 250, 0.7)' }}>{c.name}</p>
                   {c.character && (
                     <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'rgba(155, 149, 144, 0.4)' }}>
                       as {c.character}
                     </p>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>

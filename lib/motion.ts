@@ -12,8 +12,23 @@ export const SPRING_BOUNCY = { type: 'spring', stiffness: 500, damping: 22 } as 
 export const ENTER_Y = { initial: { y: 16, opacity: 0 }, animate: { y: 0, opacity: 1 } }
 export const ENTER_SCALE = { initial: { scale: 0.96, opacity: 0 }, animate: { scale: 1, opacity: 1 } }
 
+// Page transition (enter + exit for AnimatePresence phase changes)
+export const PAGE_TRANSITION = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 },
+}
+
+// Reduced-motion fallback (simple opacity, no transforms)
+export const PAGE_TRANSITION_REDUCED = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+}
+
 // Interaction
 export const PRESS = { whileTap: { scale: 0.97 } }
+export const HOVER_LIFT = { whileHover: { scale: 1.02, y: -1 } }
 
 // Stagger delay (seconds)
 export const STAGGER = 0.04

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { STAGGER } from '@/lib/motion'
+import { STAGGER, SPRING_GENTLE } from '@/lib/motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { PlayerProfile, Leaderboard } from '@/components/PlayerProfile'
@@ -13,7 +13,7 @@ import { AccountUpgradeCard } from '@/components/AccountUpgradeCard'
 import { StatsSkeleton, Skeleton } from '@/components/EmptyState'
 import { CreditHeaderBadge, useCreditBalance } from '@/components/CreditBadge'
 import dynamic from 'next/dynamic'
-const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false, loading: () => <div style={{ borderRadius: '12px', padding: '24px', background: 'var(--color-ink)', border: '1px solid rgba(255,255,255,0.06)' }}><div className="animate-pulse" style={{ width: 200, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.06)' }} /><div className="animate-pulse mt-4" style={{ width: '80%', height: 14, borderRadius: 6, background: 'rgba(255,255,255,0.06)' }} /></div> })
+const AccountSettings = dynamic(() => import('@/components/AccountSettings').then(m => ({ default: m.AccountSettings })), { ssr: false, loading: () => <div style={{ borderRadius: '12px', padding: '24px', background: 'var(--color-ink)', border: '1px solid rgba(255,255,255,0.06)' }}><div className="skeleton-shimmer" style={{ width: 200, height: 24, borderRadius: 6, background: 'rgba(255,255,255,0.06)' }} /><div className="skeleton-shimmer mt-4" style={{ width: '80%', height: 14, borderRadius: 6, background: 'rgba(255,255,255,0.06)' }} /></div> })
 const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
 import { ReferralCard } from '@/components/ReferralCard'
 import { XPBar } from '@/components/XPBar'
@@ -117,15 +117,7 @@ export default function ProfilePage() {
       })
       const data = await res.json()
       if (data.url) {
-        if (isIOSNative()) {
-          import('@capacitor/browser').then(({ Browser }) => {
-            Browser.open({ url: data.url })
-          }).catch(() => {
-            setPortalError('Visit plot-twists.com/profile to manage billing')
-          })
-        } else {
-          window.open(data.url, '_blank')
-        }
+        window.open(data.url, '_blank')
       }
     } catch {
       setPortalError('Could not open billing portal')
@@ -147,11 +139,22 @@ export default function ProfilePage() {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--color-void)', padding: '0 16px', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto', paddingTop: '48px' }}>
-          <div style={{ marginBottom: '32px' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={SPRING_GENTLE}
+            style={{ marginBottom: '32px' }}
+          >
             <Skeleton variant="text" width="50%" height={36} />
             <Skeleton variant="text" width="65%" height={16} />
-          </div>
-          <StatsSkeleton />
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08, ...SPRING_GENTLE }}
+          >
+            <StatsSkeleton />
+          </motion.div>
         </div>
       </div>
     )
@@ -431,11 +434,12 @@ export default function ProfilePage() {
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id
             return (
-              <button
+              <motion.button
                 key={tab.id}
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => setActiveTab(tab.id)}
+                whileTap={{ scale: 0.97 }}
                 style={{
                   flex: 1,
                   padding: '10px 16px',
@@ -443,15 +447,30 @@ export default function ProfilePage() {
                   fontSize: '13px',
                   fontFamily: 'var(--font-mono)',
                   fontWeight: isActive ? 600 : 400,
-                  border: isActive ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(255,255,255,0.06)',
+                  border: '1px solid transparent',
                   cursor: 'pointer',
-                  background: isActive ? 'rgba(255,255,255,0.08)' : 'transparent',
+                  background: 'transparent',
                   color: isActive ? 'var(--color-cream)' : 'rgba(255,255,255,0.3)',
-                  transition: 'all 0.15s ease',
+                  transition: 'color 0.15s ease',
+                  position: 'relative',
+                  overflow: 'hidden',
                 }}
               >
-                {tab.label}
-              </button>
+                {isActive && (
+                  <motion.div
+                    layoutId="tab-indicator"
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      borderRadius: '8px',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                    }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  />
+                )}
+                <span style={{ position: 'relative', zIndex: 1 }}>{tab.label}</span>
+              </motion.button>
             )
           })}
         </div>
@@ -464,7 +483,7 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.15 }}
+              transition={SPRING_GENTLE}
             >
               {playerId ? (
                 <PlayerProfile playerId={playerId} hideHeader />
@@ -482,7 +501,7 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.15 }}
+              transition={SPRING_GENTLE}
             >
               <div style={{
                 borderRadius: '12px',
@@ -755,8 +774,15 @@ export default function ProfilePage() {
                           </p>
                         ) : (
                           <div style={{ border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', overflow: 'hidden' }}>
-                            {transactions.slice(0, 5).map(txn => (
-                              <div key={txn.id} className="flex items-center justify-between" style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                            {transactions.slice(0, 5).map((txn, i) => (
+                              <motion.div
+                                key={txn.id}
+                                className="flex items-center justify-between"
+                                style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
+                                initial={{ opacity: 0, x: -8 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * STAGGER, ...SPRING_GENTLE }}
+                              >
                                 <div className="flex items-center gap-3">
                                   <span style={{ fontSize: '13px', fontWeight: 500, fontFamily: 'var(--font-mono)', color: txn.type === 'purchase' ? '#4ade80' : txn.type === 'refund' ? 'var(--color-stage-gold)' : 'var(--color-stage-red)' }}>
                                     {txn.type === 'purchase' ? '+' : txn.type === 'refund' ? '<-' : txn.type === 'failed' ? 'x' : '...'}
@@ -780,7 +806,7 @@ export default function ProfilePage() {
                                     </p>
                                   )}
                                 </div>
-                              </div>
+                              </motion.div>
                             ))}
                           </div>
                         )}

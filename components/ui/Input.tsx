@@ -29,21 +29,22 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         <input
           ref={ref}
           id={inputId}
-          className="
+          className={`
             w-full h-12 px-4
             text-base font-[var(--font-body)]
             bg-[var(--color-surface-inset)]
             text-[var(--color-text-primary)]
             rounded-xl outline-none
             transition-[border-color,box-shadow] duration-150
-            focus:border-[var(--color-accent)] focus:ring-[3px] focus:ring-[var(--color-accent-light)]
-          "
+            focus-visible:border-[var(--color-accent)] focus-visible:ring-[3px] focus-visible:ring-[var(--color-accent-light)] focus-visible:outline-none
+            ${!error && !success ? 'border-[1.5px] border-[var(--color-border)] hover:border-[var(--color-border-strong)] disabled:hover:border-[var(--color-border)]' : ''}
+          `}
           style={{
-            border: error
-              ? '2px solid var(--color-danger)'
+            ...(error
+              ? { border: '2px solid var(--color-danger)' }
               : success
-              ? '2px solid var(--color-success)'
-              : '1.5px solid var(--color-border)',
+              ? { border: '2px solid var(--color-success)' }
+              : {}),
             paddingRight: success ? '44px' : undefined,
             ...style,
           }}

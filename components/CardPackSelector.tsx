@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { STAGGER, SPRING_GENTLE } from '@/lib/motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { CardPackMetadata } from '@/lib/types'
 import dynamic from 'next/dynamic'
-const CardPackCreator = dynamic(() => import('./CardPackCreator').then(m => ({ default: m.CardPackCreator })), { ssr: false, loading: () => <div className="rounded-xl p-6" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}><div className="animate-pulse" style={{ width: 200, height: 24, borderRadius: 6, background: 'var(--color-surface-alt)' }} /></div> })
+const CardPackCreator = dynamic(() => import('./CardPackCreator').then(m => ({ default: m.CardPackCreator })), { ssr: false, loading: () => <div className="rounded-xl p-6" style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}><div className="skeleton-shimmer" style={{ width: 200, height: 24, borderRadius: 6, background: 'var(--color-surface-alt)' }} /></div> })
 import { CardPackEditor } from './CardPackEditor'
 import { DeleteConfirmModal } from './DeleteConfirmModal'
 import { StarRating } from './StarRating'
@@ -243,12 +244,16 @@ export function CardPackSelector({
                 </div>
               ) : (
                 <>
-                  {packs.map(pack => {
+                  {packs.map((pack, packIndex) => {
                     const isSelected = selectedPackId === pack.id
                     return (
                     <motion.div
                       key={pack.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: packIndex * STAGGER, ...SPRING_GENTLE }}
                       whileHover={{ scale: disabled ? 1 : 1.02 }}
+                      whileTap={{ scale: disabled ? 1 : 0.98 }}
                       className="w-full p-4 rounded-xl text-left transition-all"
                       style={{
                         position: 'relative',

@@ -22,17 +22,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
     "@apple/app-store-server-library": "^2.0.0",
-    "@capacitor/android": "^8.1.0",
-    "@capacitor/app": "^8.0.1",
-    "@capacitor/browser": "^8.0.1",
-    "@capacitor/core": "^8.1.0",
-    "@capacitor/haptics": "^8.0.0",
-    "@capacitor/ios": "^8.1.0",
-    "@capacitor/keyboard": "^8.0.0",
-    "@capacitor/push-notifications": "^8.0.1",
-    "@capacitor/splash-screen": "^8.0.1",
-    "@capacitor/status-bar": "^8.0.1",
-    "@clerk/backend": "^2.32.1",
+"@clerk/backend": "^2.32.1",
     "@clerk/nextjs": "^6.38.2",
     "@google/genai": "^1.39.0",
     "@stripe/react-stripe-js": "^5.6.0",
@@ -65,8 +55,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
-    "@capacitor/cli": "^8.1.0",
-    "@testing-library/jest-dom": "^6.9.1",
+"@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/canvas-confetti": "^1.9.0",
     "@types/cors": "^2.8.19",

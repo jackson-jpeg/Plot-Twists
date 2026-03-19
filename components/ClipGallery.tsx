@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { SPRING_GENTLE, STAGGER } from '@/lib/motion'
 
 interface Clip {
   id: string
@@ -128,13 +129,15 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
 
           {/* Play + waveform */}
           <div className="flex flex-col items-center py-6 gap-4">
-            <button
+            <motion.button
               onClick={() => onPlayClip?.(featured.id)}
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}
               aria-label="Play clip"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
               <PlayButton size={56} />
-            </button>
+            </motion.button>
             <div className="flex items-center gap-3 w-full px-5">
               <WaveformIcon />
               <span
@@ -186,10 +189,10 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
             className="flex gap-3 items-center"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 + i * 0.05 }}
+            transition={{ delay: 0.1 + i * STAGGER, ...SPRING_GENTLE }}
           >
             {/* Thumbnail */}
-            <button
+            <motion.button
               onClick={() => onPlayClip?.(clip.id)}
               className="relative rounded-xl overflow-hidden shrink-0"
               style={{
@@ -200,6 +203,8 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
                 cursor: 'pointer',
               }}
               aria-label={`Play ${clip.showTitle}`}
+              whileHover={{ scale: 1.05, boxShadow: '0 4px 16px rgba(0,0,0,0.4)' }}
+              whileTap={{ scale: 0.97 }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
                 <PlayButton size={32} />
@@ -210,7 +215,7 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
               >
                 {formatDuration(clip.duration)}
               </span>
-            </button>
+            </motion.button>
 
             {/* Info */}
             <div className="flex-1 min-w-0">

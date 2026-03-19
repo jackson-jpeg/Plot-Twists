@@ -30,6 +30,7 @@ export function TopBar() {
       <div className="flex items-center justify-between px-5 mx-auto"
         style={{ maxWidth: 960, height: 52 }}>
         <Link href="/"
+          className="transition-opacity duration-150 hover:opacity-80"
           style={{
             fontFamily: 'var(--font-serif)',
             fontSize: 16,
@@ -45,14 +46,12 @@ export function TopBar() {
           <nav className="flex items-center gap-6">
             {NAV_ITEMS.map(item => (
               <Link key={item.href} href={item.href}
-                className="text-sm font-medium transition-colors"
-                style={{
-                  color: pathname === item.href
-                    ? 'rgba(240,236,228,0.8)'
-                    : 'rgba(240,236,228,0.25)',
-                  textDecoration: 'none',
-                  fontSize: 13,
-                }}>
+                className={`font-medium no-underline transition-colors duration-150 ${
+                  pathname === item.href
+                    ? 'text-[rgba(240,236,228,0.8)]'
+                    : 'text-[rgba(240,236,228,0.25)] hover:text-[rgba(240,236,228,0.5)]'
+                }`}
+                style={{ fontSize: 13 }}>
                 {item.label}
               </Link>
             ))}
@@ -60,13 +59,10 @@ export function TopBar() {
         )}
 
         <Link href="/join"
+          className="no-underline text-[rgba(240,236,228,0.4)] border border-[rgba(255,255,255,0.08)] rounded-full transition-all duration-150 hover:border-[rgba(255,255,255,0.18)] hover:text-[rgba(240,236,228,0.6)]"
           style={{
             fontSize: 12,
-            color: 'rgba(240,236,228,0.4)',
-            textDecoration: 'none',
             padding: '5px 14px',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 100,
           }}>
           Join Game
         </Link>

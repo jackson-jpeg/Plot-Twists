@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { getCharactersInScene } from '@/lib/scriptUtils'
 import { getMoodIndicator, getVisibleLines } from '@/lib/teleprompterUtils'
 import dynamic from 'next/dynamic'
@@ -26,6 +26,7 @@ export interface HostPerformingProps {
 }
 
 export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
+  const prefersReducedMotion = useReducedMotion()
   const scriptContainerRef = useRef<HTMLDivElement | null>(null)
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
@@ -138,7 +139,7 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
       key="performing"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
+      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
       transition={SPRING_GENTLE}
       className="w-full max-w-5xl mx-auto px-5"
       style={{

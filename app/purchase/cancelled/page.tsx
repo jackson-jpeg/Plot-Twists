@@ -15,32 +15,59 @@ export default function PurchaseCancelledPage() {
           animate={{ scale: 1, opacity: 1 }}
           transition={SPRING_GENTLE}
         >
-          <div className="text-6xl mb-6">🎬</div>
+          <motion.div
+            className="text-6xl mb-6"
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.15, type: 'spring', stiffness: 300, damping: 20 }}
+          >
+            🎬
+          </motion.div>
 
-          <div
+          <motion.div
             className="rounded-xl p-8"
             style={{
               background: 'rgba(255,255,255,0.05)',
               border: '1px solid rgba(240,236,228,0.12)',
             }}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
           >
-            <h1 className="text-2xl font-bold font-display mb-3" style={{ color: '#f0ece4' }}>
+            <motion.h1
+              className="text-2xl font-bold font-display mb-3"
+              style={{ color: '#f0ece4' }}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
               No Charges Made
-            </h1>
+            </motion.h1>
 
-            <p className="mb-6" style={{ color: 'rgba(240,236,228,0.6)' }}>
+            <motion.p
+              className="mb-6"
+              style={{ color: 'rgba(240,236,228,0.6)' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
               Your checkout was cancelled. You haven&apos;t been charged anything.
-            </p>
+            </motion.p>
 
-            <div className="flex flex-col gap-3">
+            <motion.div
+              className="flex flex-col gap-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
               <Button variant="primary" size="md" fullWidth onClick={() => router.push('/')}>
                 Back to Home
               </Button>
               <Button variant="secondary" size="md" fullWidth onClick={() => router.back()}>
                 Try Again
               </Button>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           <motion.p
             className="mt-6 text-sm text-center"

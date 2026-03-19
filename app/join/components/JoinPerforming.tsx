@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import dynamic from 'next/dynamic'
 import type { PlayerRole } from '@/lib/types'
 import { MobileTeleprompter } from '@/components/MobileTeleprompter'
@@ -28,6 +28,7 @@ export interface JoinPerformingProps {
 export function JoinPerforming({
   myCharacter, myRole, onShowPosterLightbox,
 }: JoinPerformingProps) {
+  const prefersReducedMotion = useReducedMotion()
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
 
@@ -59,7 +60,7 @@ export function JoinPerforming({
       key="performing"
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
+      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
       transition={SPRING_GENTLE}
       className="min-h-dvh flex flex-col"
       style={{

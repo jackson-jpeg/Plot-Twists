@@ -44,6 +44,7 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
     <motion.div
       key="loading"
       {...ENTER_Y}
+      exit={{ opacity: 0, y: -10 }}
       transition={SPRING_GENTLE}
       className="min-h-screen w-full flex flex-col items-center justify-center px-5 py-10"
       style={{

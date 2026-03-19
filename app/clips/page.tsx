@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { motion } from 'framer-motion'
+import { SPRING_GENTLE, ENTER_Y } from '@/lib/motion'
 import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -87,11 +89,11 @@ export default function ClipsPage() {
     return (
       <div style={{ minHeight: '100dvh', background: 'var(--color-theater-bg, #0f0f0f)', color: 'white', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="px-5 pt-8 pb-4">
-          <div className="h-7 w-16 rounded animate-pulse" style={{ background: 'rgba(255,255,255,0.1)' }} />
+          <div className="h-7 w-16 rounded skeleton-shimmer" style={{ background: 'rgba(255,255,255,0.1)' }} />
         </div>
         <div className="px-5 space-y-4">
           {[1, 2, 3].map(i => (
-            <div key={i} className="rounded-2xl animate-pulse" style={{ height: 200, background: 'rgba(255,255,255,0.05)' }} />
+            <div key={i} className="rounded-2xl skeleton-shimmer" style={{ height: 200, background: 'rgba(255,255,255,0.05)' }} />
           ))}
         </div>
       </div>
@@ -99,12 +101,12 @@ export default function ClipsPage() {
   }
 
   return (
-    <div style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+    <motion.div {...ENTER_Y} transition={SPRING_GENTLE} style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       <ClipGallery
         clips={clips}
         onPlayClip={(clipId) => router.push(`/replay/${clipId}`)}
         onPlayGame={() => router.push('/host')}
       />
-    </div>
+    </motion.div>
   )
 }

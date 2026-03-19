@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import dynamic from 'next/dynamic'
-const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => ({ default: m.QRCodeSVG })), { ssr: false, loading: () => <div className="animate-pulse" style={{ width: 140, height: 140, borderRadius: '8px', background: 'var(--color-surface-alt)' }} /> })
+const QRCodeSVG = dynamic(() => import('qrcode.react').then(m => ({ default: m.QRCodeSVG })), { ssr: false, loading: () => <div className="skeleton-shimmer" style={{ width: 140, height: 140, borderRadius: '8px', background: 'var(--color-surface-alt)' }} /> })
 import type { RoomSettings, ScriptCustomization, AudioSettings, GameMode } from '@/lib/types'
 const ScriptCustomizationPanel = dynamic(() => import('@/components/ScriptCustomizationPanel').then(m => ({ default: m.ScriptCustomizationPanel })), { ssr: false, loading: () => null })
 const CardPackSelector = dynamic(() => import('@/components/CardPackSelector').then(m => ({ default: m.CardPackSelector })), { ssr: false, loading: () => null })
@@ -90,6 +90,7 @@ export function HostLobby({
   onSetAudioSettings, onSetSettings,
   onShowOnboarding, onNavigateHome,
 }: HostLobbyProps) {
+  const prefersReducedMotion = useReducedMotion()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
@@ -263,7 +264,7 @@ export function HostLobby({
           )}
         </>
       ) : (
-        <div className="animate-pulse" style={{ width: '280px', height: '72px', display: 'inline-block', borderRadius: 12, background: 'var(--color-surface-alt)' }} />
+        <div className="skeleton-shimmer" style={{ width: '280px', height: '72px', display: 'inline-block', borderRadius: 12, background: 'var(--color-surface-alt)' }} />
       )}
     </motion.div>
   )
@@ -290,7 +291,7 @@ export function HostLobby({
             <QRScanLine />
           </div>
         ) : (
-          <div className="animate-pulse flex-shrink-0" style={{ width: '136px', height: '136px', borderRadius: '8px', background: 'var(--color-surface-alt)' }} />
+          <div className="skeleton-shimmer flex-shrink-0" style={{ width: '136px', height: '136px', borderRadius: '8px', background: 'var(--color-surface-alt)' }} />
         )}
         <div>
           <p style={{
@@ -692,7 +693,7 @@ export function HostLobby({
   )
 
   return (
-    <div style={{
+    <motion.div key="lobby" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }} transition={{ type: 'spring', stiffness: 260, damping: 24 }} style={{
       background: `radial-gradient(ellipse 500px 200px at 50% 0%, rgba(201,162,77,0.03), transparent), var(--color-void)`,
       minHeight: '100dvh',
     }}>
@@ -795,6 +796,6 @@ export function HostLobby({
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

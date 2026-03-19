@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { Player, PlayerRole, GameMode, PublicRoomListing } from '@/lib/types'
 import { analytics } from '@/lib/analytics'
 import { successHaptic, errorHaptic } from '@/hooks/useHaptics'
-import { isCapacitorNative } from '@/lib/platform'
 import { withTimeout } from '@/lib/socketTimeout'
 import { SPRING_GENTLE, ENTER_Y, STAGGER, PRESS } from '@/lib/motion'
 import { EyeIcon, WarningIcon } from '@/components/GameIcons'
@@ -253,9 +252,6 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
         const role = response.role || 'PLAYER'
         analytics.gameJoined(role === 'SPECTATOR' ? 'spectator' : 'player')
         successHaptic()
-        if (isCapacitorNative()) {
-          import('@capacitor/keyboard').then(({ Keyboard }) => Keyboard.hide().catch(() => {})).catch(() => {})
-        }
         if (role === 'SPECTATOR') toast.info('Room is full! You joined as a Spectator.')
         else toast.success(`Joined room ${upperRoomCode}!`)
 
@@ -432,9 +428,21 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                 />
               ))}
             </div>
-            {roomCodeTouched && roomCodeError && (
-              <p className="text-center mt-2 text-xs" style={{ color: 'var(--color-danger)' }}>{roomCodeError}</p>
-            )}
+            <AnimatePresence>
+              {roomCodeTouched && roomCodeError && (
+                <motion.p
+                  key="roomCodeError"
+                  className="text-center mt-2 text-xs"
+                  style={{ color: 'var(--color-danger)' }}
+                  initial={{ opacity: 0, y: -6, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, y: -6, height: 0 }}
+                  transition={SPRING_GENTLE}
+                >
+                  {roomCodeError}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </motion.div>
 
           {/* Room Preview */}
@@ -451,10 +459,10 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                   className="flex items-center gap-3 p-3 rounded-xl"
                   style={{ background: 'rgba(26,24,18,0.04)', border: '1px solid rgba(26,24,18,0.08)' }}
                 >
-                  <div className="w-8 h-8 rounded-full animate-pulse" style={{ background: 'rgba(26,24,18,0.08)' }} />
+                  <div className="w-8 h-8 rounded-full skeleton-shimmer" style={{ background: 'rgba(26,24,18,0.08)' }} />
                   <div className="flex-1">
-                    <div className="h-4 w-24 rounded animate-pulse mb-1" style={{ background: 'rgba(26,24,18,0.08)' }} />
-                    <div className="h-3 w-16 rounded animate-pulse" style={{ background: 'rgba(26,24,18,0.08)' }} />
+                    <div className="h-4 w-24 rounded skeleton-shimmer mb-1" style={{ background: 'rgba(26,24,18,0.08)' }} />
+                    <div className="h-3 w-16 rounded skeleton-shimmer" style={{ background: 'rgba(26,24,18,0.08)' }} />
                   </div>
                 </div>
               </motion.div>
@@ -561,25 +569,41 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             {nickname.length > 12 && (
               <p className="text-right text-xs mt-1" style={{ color: TICKET_MUTED }}>{nickname.length}/20</p>
             )}
-            {nicknameTouched && nicknameError && (
-              <p className="text-xs mt-1" style={{ color: 'var(--color-danger)' }}>{nicknameError}</p>
-            )}
+            <AnimatePresence>
+              {nicknameTouched && nicknameError && (
+                <motion.p
+                  key="nicknameError"
+                  className="text-xs mt-1"
+                  style={{ color: 'var(--color-danger)' }}
+                  initial={{ opacity: 0, y: -6, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, y: -6, height: 0 }}
+                  transition={SPRING_GENTLE}
+                >
+                  {nicknameError}
+                </motion.p>
+              )}
+            </AnimatePresence>
           </motion.div>
 
           {/* Error banner */}
-          {error && (
-            <motion.div
-              className="mb-5 p-3 rounded-xl text-center"
-              style={{ background: 'var(--color-danger)', color: 'white' }}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={SPRING_GENTLE}
-              role="alert"
-              aria-live="polite"
-            >
-              <p className="font-semibold text-sm">{error}</p>
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                key="error-banner"
+                className="mb-5 p-3 rounded-xl text-center"
+                style={{ background: 'var(--color-danger)', color: 'white' }}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={SPRING_GENTLE}
+                role="alert"
+                aria-live="polite"
+              >
+                <p className="font-semibold text-sm">{error}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Join button */}
           <motion.div

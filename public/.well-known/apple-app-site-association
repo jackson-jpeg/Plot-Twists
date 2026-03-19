@@ -3,7 +3,7 @@
     "apps": [],
     "details": [
       {
-        "appIDs": ["XXXXXXXXXX.com.plottwists.app"],
+        "appIDs": ["2MU4PC84GZ.com.plottwists.app"],
         "components": [
           { "/": "/join/*", "comment": "Join game flow" },
           { "/": "/join/invite/*", "comment": "Direct invite links" },
@@ -15,6 +15,6 @@
     ]
   },
   "webcredentials": {
-    "apps": ["XXXXXXXXXX.com.plottwists.app"]
+    "apps": ["2MU4PC84GZ.com.plottwists.app"]
   }
 }

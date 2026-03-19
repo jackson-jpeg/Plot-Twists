@@ -1,40 +1,30 @@
 /**
- * Platform detection for Capacitor native shells (iOS + Android).
+ * Platform detection via user-agent parsing.
  *
- * WKWebView UA contains "AppleWebKit" but NOT "Safari/" — that's the key
- * signal that distinguishes the Capacitor shell from mobile Safari.
+ * The native app is now pure SwiftUI — Capacitor is no longer used.
+ * These helpers detect mobile browsers and PWA standalone mode only.
  */
 
 export type Platform = 'ios-native' | 'android-native' | 'web-ios' | 'web-android' | 'web-desktop'
 
-/** True when running inside the Capacitor native shell (iOS or Android) */
+/** Always returns false — the Capacitor native shell has been removed. */
 export function isCapacitorNative(): boolean {
-  if (typeof window === 'undefined') return false
-  // Capacitor injects this on the window object
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if ((window as any).Capacitor?.isNativePlatform?.()) return true
-  // Fallback: WKWebView UA has "AppleWebKit" but lacks "Safari/"
-  const ua = navigator.userAgent
-  return /AppleWebKit/.test(ua) && !/Safari\//.test(ua)
+  return false
 }
 
-/** True when running inside the iOS Capacitor shell specifically */
+/** Always returns false — the Capacitor iOS shell has been removed. */
 export function isIOSNative(): boolean {
-  if (!isCapacitorNative()) return false
-  return /iPhone|iPad|iPod/.test(navigator.userAgent)
+  return false
 }
 
-/** True when running inside the Android Capacitor shell specifically */
+/** Always returns false — the Capacitor Android shell has been removed. */
 export function isAndroidNative(): boolean {
-  if (!isCapacitorNative()) return false
-  return /Android/.test(navigator.userAgent)
+  return false
 }
 
 /** Categorized platform for branching logic */
 export function getPlatform(): Platform {
   if (typeof window === 'undefined') return 'web-desktop'
-  if (isIOSNative()) return 'ios-native'
-  if (isAndroidNative()) return 'android-native'
   const ua = navigator.userAgent
   if (/iPhone|iPad|iPod/.test(ua)) return 'web-ios'
   if (/Android/.test(ua)) return 'web-android'

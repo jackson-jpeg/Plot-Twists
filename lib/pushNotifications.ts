@@ -1,4 +1,3 @@
-import { isCapacitorNative } from '@/lib/platform'
 import { getApiBaseUrl } from '@/lib/api'
 import { getAuthHeaders } from '@/lib/authHeaders'
 import { logger } from '@/lib/logger'
@@ -7,46 +6,18 @@ import { logger } from '@/lib/logger'
 let _getAuthToken: (() => Promise<string | null>) | null = null
 
 /**
- * Register for push notifications (native or web).
+ * Register for push notifications (web only — native is handled by SwiftUI).
  * Returns the FCM token or null on failure/denial.
  * @param getAuthToken - Clerk's getToken() function for authenticated API calls
  */
 export async function registerPushNotifications(getAuthToken?: () => Promise<string | null>): Promise<string | null> {
   if (getAuthToken) _getAuthToken = getAuthToken
   try {
-    if (isCapacitorNative()) {
-      return await registerNativePush()
-    }
     return await registerWebPush()
   } catch (error) {
     logger.error('[Push] Registration failed:', error)
     return null
   }
-}
-
-/** Native (iOS/Android) via @capacitor/push-notifications */
-async function registerNativePush(): Promise<string | null> {
-  const { PushNotifications } = await import('@capacitor/push-notifications')
-
-  const permResult = await PushNotifications.requestPermissions()
-  if (permResult.receive !== 'granted') {
-    logger.info('[Push] Native permission denied')
-    return null
-  }
-
-  await PushNotifications.register()
-
-  return new Promise((resolve) => {
-    PushNotifications.addListener('registration', async (token) => {
-      logger.info('[Push] Native token:', token.value)
-      await saveTokenToServer(token.value)
-      resolve(token.value)
-    })
-    PushNotifications.addListener('registrationError', (error) => {
-      logger.error('[Push] Native registration error:', error)
-      resolve(null)
-    })
-  })
 }
 
 /** Web push via Firebase Cloud Messaging */
@@ -107,7 +78,7 @@ async function saveTokenToServer(token: string): Promise<void> {
       headers,
       body: JSON.stringify({
         token,
-        platform: isCapacitorNative() ? 'native' : 'web',
+        platform: 'web',
       }),
     })
   } catch (error) {
@@ -115,20 +86,5 @@ async function saveTokenToServer(token: string): Promise<void> {
   }
 }
 
-/** Set up notification tap handler for native */
-export async function setupPushListeners(): Promise<void> {
-  if (!isCapacitorNative()) return
-
-  try {
-    const { PushNotifications } = await import('@capacitor/push-notifications')
-
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-      const roomCode = notification.notification.data?.roomCode
-      if (roomCode) {
-        window.location.assign(`/join?code=${roomCode}`)
-      }
-    })
-  } catch {
-    // Push notifications not available
-  }
-}
+/** No-op — native push listeners were handled by Capacitor, now by SwiftUI */
+export async function setupPushListeners(): Promise<void> {}

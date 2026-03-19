@@ -88,6 +88,7 @@ export function HostSelection({
       <motion.div
         key="solo-waiting"
         {...ENTER_Y}
+        exit={{ opacity: 0, y: -10 }}
         transition={SPRING_GENTLE}
         className="w-full max-w-lg mx-auto px-5 text-center"
       >
@@ -162,6 +163,7 @@ export function HostSelection({
       <motion.div
         key="solo-selection"
         {...ENTER_Y}
+        exit={{ opacity: 0, y: -10 }}
         transition={SPRING_GENTLE}
         className="w-full mx-auto px-5"
         style={{ maxWidth: isDesktop ? '900px' : '672px', background: 'var(--color-void)', minHeight: '100dvh' }}
@@ -238,6 +240,7 @@ export function HostSelection({
     <motion.div
       key="selection"
       {...ENTER_Y}
+      exit={{ opacity: 0, y: -10 }}
       transition={SPRING_GENTLE}
       className="w-full max-w-2xl mx-auto px-5 text-center"
     >

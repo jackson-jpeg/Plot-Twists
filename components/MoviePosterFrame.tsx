@@ -132,7 +132,7 @@ export function MoviePosterSkeleton({ maxWidth = 320 }: { maxWidth?: number }) {
   return (
     <div className="mx-auto mb-6 flex flex-col items-center">
       <div
-        className="animate-pulse rounded-lg"
+        className="skeleton-shimmer rounded-lg"
         style={{
           maxWidth,
           width: '100%',

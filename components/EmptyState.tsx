@@ -157,7 +157,7 @@ export function Skeleton({
   height,
   className = ''
 }: SkeletonProps) {
-  const baseClasses = 'bg-[var(--color-surface-alt)] animate-pulse'
+  const baseClasses = 'skeleton-shimmer'
 
   const variantClasses = {
     text: 'h-4 rounded',

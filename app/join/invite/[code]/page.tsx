@@ -41,13 +41,13 @@ function SkeletonCard() {
       style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)' }}
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="h-8 w-28 rounded animate-pulse" style={{ background: 'var(--color-border)' }} />
-        <div className="h-6 w-14 rounded-full animate-pulse" style={{ background: 'var(--color-border)' }} />
+        <div className="h-8 w-28 rounded skeleton-shimmer" style={{ background: 'var(--color-border)' }} />
+        <div className="h-6 w-14 rounded-full skeleton-shimmer" style={{ background: 'var(--color-border)' }} />
       </div>
-      <div className="h-4 w-20 rounded animate-pulse mb-3" style={{ background: 'var(--color-border)' }} />
+      <div className="h-4 w-20 rounded skeleton-shimmer mb-3" style={{ background: 'var(--color-border)' }} />
       <div className="flex gap-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="w-7 h-7 rounded-full animate-pulse" style={{ background: 'var(--color-border)' }} />
+          <div key={i} className="w-7 h-7 rounded-full skeleton-shimmer" style={{ background: 'var(--color-border)' }} />
         ))}
       </div>
     </div>
@@ -192,7 +192,7 @@ export function InvitePage() {
           transition={{ delay: 0.05, ...SPRING_GENTLE }}
         >
           {loading ? (
-            <div className="rounded-full animate-pulse" style={{ width: 80, height: 80, background: 'var(--color-border)' }} />
+            <div className="rounded-full skeleton-shimmer" style={{ width: 80, height: 80, background: 'var(--color-border)' }} />
           ) : preview ? (
             <div
               className="flex items-center justify-center rounded-full"

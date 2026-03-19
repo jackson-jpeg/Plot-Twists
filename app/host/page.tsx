@@ -381,18 +381,37 @@ function HostPageContent() {
       {/* Pre-Performance Countdown */}
       <AnimatePresence>
         {countdown !== null && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          <motion.div
+            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            animate={{ opacity: 1, backdropFilter: 'blur(8px)' }}
+            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            transition={{ duration: 0.3 }}
             className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ background: 'rgba(0, 0, 0, 0.85)' }}>
+            style={{ background: 'rgba(0, 0, 0, 0.9)' }}>
             <AnimatePresence mode="wait">
               <motion.div key={countdown}
-                initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0.3, opacity: 0 }}
-                animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, opacity: 1 }}
-                exit={prefersReducedMotion ? { opacity: 0 } : { scale: 2, opacity: 0 }}
+                initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0.5, opacity: 0, filter: 'blur(8px)' }}
+                animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, opacity: 1, filter: 'blur(0px)' }}
+                exit={prefersReducedMotion ? { opacity: 0 } : { scale: 1.4, opacity: 0, filter: 'blur(4px)' }}
                 transition={SPRING_BOUNCY}
                 className="text-center" role="status" aria-live="assertive">
-                <div style={{ fontSize: '120px', fontWeight: 800, color: 'var(--color-accent)', lineHeight: 1 }}>{countdown}</div>
-                <div style={{ fontSize: '18px', color: 'var(--color-text-tertiary)', marginTop: '16px' }}>Curtain up!</div>
+                <motion.div
+                  style={{ fontSize: '140px', fontWeight: 800, lineHeight: 1 }}
+                  className="relative"
+                >
+                  <span style={{
+                    color: 'var(--color-accent)',
+                    textShadow: '0 0 40px rgba(245, 158, 66, 0.5), 0 0 80px rgba(245, 158, 66, 0.2)',
+                  }}>{countdown}</span>
+                </motion.div>
+                <motion.div
+                  style={{ fontSize: '18px', color: 'var(--color-text-tertiary)', marginTop: '20px', letterSpacing: '0.15em', textTransform: 'uppercase' }}
+                  initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                >
+                  Curtain up!
+                </motion.div>
               </motion.div>
             </AnimatePresence>
           </motion.div>

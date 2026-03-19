@@ -33,6 +33,7 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
     <motion.div
       key="lobby"
       {...ENTER_Y}
+      exit={{ opacity: 0, y: -10 }}
       transition={SPRING_GENTLE}
       className="flex flex-col items-center justify-center"
       style={{

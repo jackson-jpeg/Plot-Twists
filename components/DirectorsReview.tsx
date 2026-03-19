@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
+import { SPRING_BOUNCY } from '@/lib/motion'
 import type { DirectorsReview as DirectorsReviewType } from '@/lib/types'
 
 interface DirectorsReviewProps {
@@ -31,7 +32,7 @@ export function DirectorsReview({ review, showTitle, date, delay = 0, onShare }:
           The review is in
         </span>
         {onShare && (
-          <button
+          <motion.button
             onClick={onShare}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
             style={{
@@ -42,12 +43,14 @@ export function DirectorsReview({ review, showTitle, date, delay = 0, onShare }:
               border: '1px solid var(--color-border)',
               cursor: 'pointer',
             }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" /><polyline points="5 12 12 5 19 12" />
             </svg>
             Share
-          </button>
+          </motion.button>
         )}
       </div>
 
@@ -64,7 +67,14 @@ export function DirectorsReview({ review, showTitle, date, delay = 0, onShare }:
         <div className="flex items-center gap-2 mb-4">
           <div className="flex gap-0.5">
             {[1, 2, 3, 4, 5].map(i => (
-              <StarIcon key={i} filled={i <= review.rating} />
+              <motion.span
+                key={i}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: delay + 0.3 + i * 0.06, ...SPRING_BOUNCY }}
+              >
+                <StarIcon filled={i <= review.rating} />
+              </motion.span>
             ))}
           </div>
           <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-accent)' }}>

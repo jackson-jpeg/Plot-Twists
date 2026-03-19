@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
+import { SPRING_GENTLE, STAGGER } from '@/lib/motion'
 
 interface ReconnectingOverlayProps {
   /** Only show during active game phases */
@@ -31,19 +32,28 @@ export function ReconnectingOverlay({ gameState }: ReconnectingOverlayProps) {
           style={{ background: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(4px)' }}
         >
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.9, opacity: 0, y: 12 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 12 }}
+            transition={SPRING_GENTLE}
             className="text-center p-8 rounded-2xl max-w-xs mx-4"
             style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
           >
-            <motion.div
-              className="text-5xl mb-4"
-              animate={{ rotate: [0, 10, -10, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              📡
-            </motion.div>
+            <div className="relative flex justify-center mb-4">
+              <motion.div
+                className="absolute inset-0 m-auto w-16 h-16 rounded-full"
+                style={{ background: 'var(--color-accent)', filter: 'blur(18px)' }}
+                animate={{ opacity: [0.2, 0.45, 0.2] }}
+                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              />
+              <motion.div
+                className="relative text-5xl"
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                📡
+              </motion.div>
+            </div>
             <h2 className="text-xl font-display font-bold mb-2" style={{ color: 'var(--color-text-primary)' }}>
               Reconnecting...
             </h2>
@@ -64,8 +74,8 @@ export function ReconnectingOverlay({ gameState }: ReconnectingOverlayProps) {
                     key={i}
                     className="w-2 h-2 rounded-full"
                     style={{ background: 'var(--color-accent)' }}
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
+                    animate={{ opacity: [0.3, 1, 0.3], scale: [0.85, 1.1, 0.85] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: i * STAGGER * 5 }}
                   />
                 ))}
               </motion.div>

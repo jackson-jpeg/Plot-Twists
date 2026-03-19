@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import type { SavedGame, ScriptLine, TeleprompterSettings } from '@/lib/types'
+import { SPRING_GENTLE, STAGGER } from '@/lib/motion'
 import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
 import dynamic from 'next/dynamic'
 const TeleprompterSettingsPanel = dynamic(() => import('@/components/TeleprompterSettings').then(m => ({ default: m.TeleprompterSettings })), { ssr: false, loading: () => <div style={{ height: 40 }} /> })
@@ -12,7 +13,6 @@ import { getVisibleLines } from '@/lib/teleprompterUtils'
 import React from 'react'
 import { ReplayJsonLd } from '@/components/JsonLd'
 import { analytics } from '@/lib/analytics'
-import { isIOSNative } from '@/lib/platform'
 import { withTimeout } from '@/lib/socketTimeout'
 
 // Share button configuration
@@ -157,14 +157,7 @@ export default function ReplayPage() {
   const handleSocialShare = (platform: typeof SHARE_PLATFORMS[number]) => {
     if (!game) return
     const url = platform.getUrl(shareUrl, game.title)
-    // window.open() fails in WKWebView — use Capacitor Browser plugin on iOS
-    if (isIOSNative()) {
-      import('@capacitor/browser').then(({ Browser }) => {
-        Browser.open({ url })
-      }).catch(() => {})
-    } else {
-      window.open(url, '_blank', 'width=600,height=400')
-    }
+    window.open(url, '_blank', 'width=600,height=400')
     setShowShareMenu(false)
   }
 
@@ -196,33 +189,33 @@ export default function ReplayPage() {
         {/* Skeleton header */}
         <div className="p-4" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: 60, height: 20, borderRadius: 6 }} />
+            <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: 60, height: 20, borderRadius: 6 }} />
             <div className="text-center">
-              <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: 160, height: 20, borderRadius: 6, margin: '0 auto 6px' }} />
-              <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: 80, height: 14, borderRadius: 6, margin: '0 auto' }} />
+              <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: 160, height: 20, borderRadius: 6, margin: '0 auto 6px' }} />
+              <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: 80, height: 14, borderRadius: 6, margin: '0 auto' }} />
             </div>
-            <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: 70, height: 30, borderRadius: 8 }} />
+            <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: 70, height: 30, borderRadius: 8 }} />
           </div>
         </div>
         <div className="max-w-4xl mx-auto p-4 space-y-6">
           {/* Cast skeleton */}
           <div className="rounded-xl p-6" style={{ background: 'var(--color-surface-alt)' }}>
-            <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: '60%', height: 16, borderRadius: 6, marginBottom: 12 }} />
-            <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: '90%', height: 14, borderRadius: 6, marginBottom: 8 }} />
-            <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: '75%', height: 14, borderRadius: 6 }} />
+            <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: '60%', height: 16, borderRadius: 6, marginBottom: 12 }} />
+            <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: '90%', height: 14, borderRadius: 6, marginBottom: 8 }} />
+            <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: '75%', height: 14, borderRadius: 6 }} />
           </div>
           {/* Script player skeleton */}
           <div className="rounded-xl p-6" style={{ background: 'var(--color-surface-alt)' }}>
-            <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: '100%', height: 8, borderRadius: 4, marginBottom: 24 }} />
+            <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: '100%', height: 8, borderRadius: 4, marginBottom: 24 }} />
             <div className="flex flex-col items-center gap-3 py-8">
-              <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: 80, height: 24, borderRadius: 12 }} />
-              <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: 120, height: 20, borderRadius: 6 }} />
-              <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: '80%', height: 28, borderRadius: 6 }} />
+              <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: 80, height: 24, borderRadius: 12 }} />
+              <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: 120, height: 20, borderRadius: 6 }} />
+              <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: '80%', height: 28, borderRadius: 6 }} />
             </div>
             <div className="flex justify-center gap-4 mt-4">
-              <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: 44, height: 44, borderRadius: '50%' }} />
-              <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: 100, height: 44, borderRadius: 22 }} />
-              <div className="animate-pulse" style={{ background: 'var(--color-surface-alt)', width: 44, height: 44, borderRadius: '50%' }} />
+              <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: 44, height: 44, borderRadius: '50%' }} />
+              <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: 100, height: 44, borderRadius: 22 }} />
+              <div className="skeleton-shimmer" style={{ background: 'var(--color-surface-alt)', width: 44, height: 44, borderRadius: '50%' }} />
             </div>
           </div>
         </div>
@@ -306,11 +299,12 @@ export default function ReplayPage() {
             <AnimatePresence>
               {showShareMenu && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-48 rounded-lg shadow-xl overflow-hidden z-20"
-                  style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-border)' }}
+                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className="absolute right-0 mt-2 w-48 rounded-xl overflow-hidden z-20"
+                  style={{ background: 'var(--color-surface-elevated)', border: '1px solid var(--color-border)', boxShadow: 'var(--shadow-elevated)' }}
                 >
                   <button
                     onClick={handleCopyLink}

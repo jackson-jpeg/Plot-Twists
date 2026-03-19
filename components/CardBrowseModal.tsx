@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SPRING } from '@/lib/motion'
+import { SPRING, STAGGER } from '@/lib/motion'
 import { Modal } from './Modal'
 import { EmptyState } from './EmptyState'
 import { ContentItem, CATEGORIES } from '@/lib/content-types'
@@ -127,7 +127,9 @@ export function CardBrowseModal({
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name, source, or tags..."
             className="w-full px-3 py-2 rounded-lg text-sm"
-            style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none', paddingLeft: '44px' }}
+            style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none', paddingLeft: '44px', transition: 'border-color 150ms, box-shadow 150ms' }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-accent-light)' }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.boxShadow = 'none' }}
           />
           <span
             className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xl"
@@ -209,10 +211,10 @@ export function CardBrowseModal({
                         border: isSelected ? `2px solid ${color}` : '1px solid var(--color-border)',
                         boxShadow: isSelected ? `0 0 12px ${color}40` : 'none'
                       }}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ delay: index * 0.02, duration: 0.15 }}
+                      initial={{ opacity: 0, scale: 0.92, y: 8 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.92 }}
+                      transition={{ delay: index * STAGGER, ...SPRING }}
                       whileHover={{
                         scale: 1.02,
                         boxShadow: `0 4px 12px rgba(0,0,0,0.1)`

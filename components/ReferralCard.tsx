@@ -112,7 +112,9 @@ export function ReferralCard() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  {copied ? 'Copied!' : 'Share'}
+                  <motion.span key={copied ? 'copied' : 'share'} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.15 }}>
+                    {copied ? '✓ Copied!' : 'Share'}
+                  </motion.span>
                 </motion.button>
               </div>
             )}
@@ -142,8 +144,15 @@ export function ReferralCard() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="text-sm text-[var(--color-success)] text-center font-medium"
+                  className="text-sm text-[var(--color-success)] text-center font-medium flex items-center justify-center gap-1.5"
                 >
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 15, delay: 0.15 }}
+                  >
+                    ✓
+                  </motion.span>
                   Referral code redeemed! Bonus credits added.
                 </motion.p>
               )}
@@ -175,7 +184,9 @@ export function ReferralCard() {
                       }}
                       placeholder="Enter code"
                       maxLength={6}
-                      className="flex-1 text-center tracking-widest font-bold uppercase px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none' }}
+                      className="flex-1 text-center tracking-widest font-bold uppercase px-3 py-2 rounded-lg text-sm" style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border)', color: 'var(--color-text-primary)', outline: 'none', transition: 'border-color 150ms, box-shadow 150ms' }}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent)'; e.currentTarget.style.boxShadow = '0 0 0 3px var(--color-accent-light)' }}
+                      onBlur={(e) => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.boxShadow = 'none' }}
                     />
                     <button
                       onClick={handleRedeem}

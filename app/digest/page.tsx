@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { motion } from 'framer-motion'
+import { SPRING_GENTLE, ENTER_Y } from '@/lib/motion'
 import { useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
@@ -127,13 +129,13 @@ export default function DigestPage() {
     return (
       <div style={{ minHeight: '100dvh', background: 'var(--color-surface)', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
         <div className="w-full max-w-md mx-auto" style={{ padding: '32px 20px' }}>
-          <div className="h-4 w-32 rounded animate-pulse mb-2" style={{ background: 'var(--color-border)' }} />
-          <div className="h-10 w-48 rounded animate-pulse mb-6" style={{ background: 'var(--color-border)' }} />
+          <div className="h-4 w-32 rounded skeleton-shimmer mb-2" style={{ background: 'var(--color-border)' }} />
+          <div className="h-10 w-48 rounded skeleton-shimmer mb-6" style={{ background: 'var(--color-border)' }} />
           <div className="flex gap-3 mb-8" style={{ minHeight: 180 }}>
-            <div className="flex-1 rounded-2xl animate-pulse" style={{ background: 'var(--color-border)' }} />
+            <div className="flex-1 rounded-2xl skeleton-shimmer" style={{ background: 'var(--color-border)' }} />
             <div className="flex flex-col gap-3" style={{ width: '45%' }}>
-              <div className="flex-1 rounded-2xl animate-pulse" style={{ background: 'var(--color-border)' }} />
-              <div className="flex-1 rounded-2xl animate-pulse" style={{ background: 'var(--color-border)' }} />
+              <div className="flex-1 rounded-2xl skeleton-shimmer" style={{ background: 'var(--color-border)' }} />
+              <div className="flex-1 rounded-2xl skeleton-shimmer" style={{ background: 'var(--color-border)' }} />
             </div>
           </div>
         </div>
@@ -142,7 +144,7 @@ export default function DigestPage() {
   }
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--color-surface)', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+    <motion.div {...ENTER_Y} transition={SPRING_GENTLE} style={{ minHeight: '100dvh', background: 'var(--color-surface)', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       <WeeklyDigest
         dateRange={digest.dateRange}
         stats={digest.stats}
@@ -151,6 +153,6 @@ export default function DigestPage() {
         onShare={handleShare}
         onPlay={() => router.push('/host')}
       />
-    </div>
+    </motion.div>
   )
 }

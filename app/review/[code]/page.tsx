@@ -64,8 +64,8 @@ export default function ReviewPage() {
         style={{ background: 'var(--color-cinematic-gradient, linear-gradient(180deg, #0f1a26 0%, #0a0f14 100%))' }}
       >
         <div className="w-full max-w-md mx-auto" style={{ padding: '32px 20px' }}>
-          <div className="h-4 w-24 rounded animate-pulse mb-3" style={{ background: 'rgba(255,255,255,0.1)' }} />
-          <div className="rounded-2xl animate-pulse" style={{ height: 380, background: 'rgba(255,255,255,0.05)' }} />
+          <div className="h-4 w-24 rounded skeleton-shimmer mb-3" style={{ background: 'rgba(255,255,255,0.1)' }} />
+          <div className="rounded-2xl skeleton-shimmer" style={{ height: 380, background: 'rgba(255,255,255,0.05)' }} />
         </div>
       </div>
     )

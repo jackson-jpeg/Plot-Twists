@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import type { LevelInfo } from '@/lib/types'
 import { shareScriptText } from '@/lib/scriptUtils'
-import { SPRING_BOUNCY, SPRING_GENTLE } from '@/lib/motion'
+import { SPRING_BOUNCY, SPRING_GENTLE, STAGGER } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { analytics } from '@/lib/analytics'
 import { withTimeout } from '@/lib/socketTimeout'
@@ -36,6 +36,7 @@ export function HostResults({
   onShowPosterLightbox, onRequestNewGame,
 }: HostResultsProps) {
   const router = useRouter()
+  const prefersReducedMotion = useReducedMotion()
   const { fireWinnerConfetti, fireCelebration } = useConfetti()
   const confettiFiredRef = useRef(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
@@ -145,7 +146,7 @@ export function HostResults({
       key="results"
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0 }}
+      exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -10 }}
       transition={SPRING_GENTLE}
       className="min-h-dvh w-full flex flex-col relative overflow-hidden"
       style={{ background: 'var(--color-void)' }}
@@ -274,15 +275,21 @@ export function HostResults({
               THE CAST
             </p>
             <div className="flex flex-wrap justify-center gap-x-6 gap-y-3">
-              {castList.map((c) => (
-                <div key={c.name} className="text-center">
+              {castList.map((c, index) => (
+                <motion.div
+                  key={c.name}
+                  className="text-center"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * STAGGER }}
+                >
                   <p style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(253, 252, 250, 0.7)' }}>{c.name}</p>
                   {c.character && (
                     <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'rgba(155, 149, 144, 0.4)' }}>
                       as {c.character}
                     </p>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
@@ -350,7 +357,7 @@ export function HostResults({
               <summary className="p-4 cursor-pointer text-center font-semibold text-sm" style={{ color: 'var(--color-theater-muted)' }}>Game Highlights</summary>
               <div className="px-4 pb-4 grid grid-cols-2 gap-3">
                 {gameResults.highlights.map((h, i) => (
-                  <motion.div key={h.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }} className="text-center p-3 rounded-lg" style={{ background: 'rgba(253, 252, 250, 0.04)', border: '1px solid rgba(155, 149, 144, 0.1)' }}>
+                  <motion.div key={h.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * STAGGER }} className="text-center p-3 rounded-lg" style={{ background: 'rgba(253, 252, 250, 0.04)', border: '1px solid rgba(155, 149, 144, 0.1)' }}>
                     <div className="text-2xl mb-1">{h.icon}</div>
                     <div className="text-xs" style={{ color: 'var(--color-theater-muted)' }}>{h.label}</div>
                     <div className="font-semibold text-sm" style={{ color: 'var(--color-theater-text)' }}>{h.value}</div>

@@ -41,23 +41,31 @@ export function LandingPage() {
         >
           {/* Title block with Reely characters around it */}
           <div style={{ position: 'relative', display: 'inline-block' }}>
-            {/* Reely sitting on top of the "O" — desktop only */}
+            {/* Reely sitting on top of the title — desktop only */}
             {isDesktop && (
               <motion.img
                 src="/mascot/reely-sitting.png"
                 alt=""
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ ...SPRING_GENTLE, delay: 0.3 }}
+                initial={{ opacity: 0, y: 30, rotate: -5 }}
+                animate={{
+                  opacity: 1,
+                  y: [0, -6, 0],
+                  rotate: [-2, 2, -2],
+                }}
+                transition={{
+                  opacity: { duration: 0.6, delay: 0.3 },
+                  y: { duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 0.3 },
+                  rotate: { duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.3 },
+                }}
                 style={{
                   position: 'absolute',
                   width: '80px',
                   top: '-52px',
                   left: '52%',
-                  transform: 'translateX(-50%)',
+                  marginLeft: '-40px',
                   zIndex: 2,
                   pointerEvents: 'none',
-                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.4))',
+                  filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.5))',
                 }}
               />
             )}
@@ -67,13 +75,22 @@ export function LandingPage() {
               <motion.img
                 src="/mascot/reely-hero.png"
                 alt="Reely mascot"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ ...SPRING_GENTLE, delay: 0.2 }}
+                initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                animate={{
+                  opacity: 1,
+                  scale: 1,
+                  y: [0, -8, 0],
+                }}
+                transition={{
+                  opacity: { duration: 0.5, delay: 0.2 },
+                  scale: { duration: 0.5, delay: 0.2 },
+                  y: { duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: 0.7 },
+                }}
                 style={{
                   width: '120px',
                   margin: '0 auto 12px',
                   display: 'block',
+                  filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.5))',
                 }}
               />
             )}
@@ -100,37 +117,57 @@ export function LandingPage() {
               <motion.img
                 src="/mascot/reely-peek.png"
                 alt=""
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ ...SPRING_GENTLE, delay: 0.5 }}
+                initial={{ opacity: 0, x: -30 }}
+                animate={{
+                  opacity: 1,
+                  x: [0, 5, 0],
+                  y: [0, -4, 0],
+                  rotate: [0, -3, 0],
+                }}
+                transition={{
+                  opacity: { duration: 0.5, delay: 0.5 },
+                  x: { duration: 2.8, repeat: Infinity, ease: 'easeInOut', delay: 0.5 },
+                  y: { duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 },
+                  rotate: { duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 0.5 },
+                }}
                 style={{
                   position: 'absolute',
                   width: '70px',
                   bottom: '-8px',
-                  left: '-50px',
+                  left: '-55px',
                   zIndex: 3,
                   pointerEvents: 'none',
-                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.4))',
+                  filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.5))',
                 }}
               />
             )}
 
-            {/* Reely walking on the right — desktop only */}
+            {/* Reely waving on the right — desktop only */}
             {isDesktop && (
               <motion.img
                 src="/mascot/reely-wave.png"
                 alt=""
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ ...SPRING_GENTLE, delay: 0.7 }}
+                initial={{ opacity: 0, x: 30 }}
+                animate={{
+                  opacity: 1,
+                  x: [0, -4, 0],
+                  y: [0, -6, 0],
+                  rotate: [0, 4, 0],
+                }}
+                transition={{
+                  opacity: { duration: 0.5, delay: 0.7 },
+                  x: { duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: 0.7 },
+                  y: { duration: 2.6, repeat: Infinity, ease: 'easeInOut', delay: 0.7 },
+                  rotate: { duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 0.7 },
+                }}
                 style={{
                   position: 'absolute',
                   width: '70px',
                   bottom: '-8px',
-                  right: '-50px',
+                  right: '-55px',
                   zIndex: 3,
                   pointerEvents: 'none',
-                  filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.4))',
+                  filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.5))',
                 }}
               />
             )}

@@ -10,6 +10,7 @@ import express from 'express'
 import { registerStripeRoutes } from './stripe'
 import { registerAppleRoutes } from './apple'
 import { registerApiRoutes } from './api'
+import { registerPushRoutes } from './push'
 
 type SocketIOServer_ = SocketIOServer<ClientToServerEvents, ServerToClientEvents>
 
@@ -45,6 +46,10 @@ export async function registerRoutes(
   // Apple IAP routes (need express.json)
   app.use('/api/apple', express.json())
   registerAppleRoutes(app)
+
+  // Push notification token registration (native app)
+  app.use('/api/push', express.json())
+  registerPushRoutes(app)
 
   // General API routes (game metadata, account deletion)
   app.use('/api/account', express.json())

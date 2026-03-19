@@ -1,0 +1,20 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["XXXXXXXXXX.com.plottwists.app"],
+        "components": [
+          { "/": "/join/*", "comment": "Join game flow" },
+          { "/": "/join/invite/*", "comment": "Direct invite links" },
+          { "/": "/replay/*", "comment": "Game replays" },
+          { "/": "/explore", "comment": "Card pack browser" },
+          { "/": "/profile", "comment": "Player profile" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["XXXXXXXXXX.com.plottwists.app"]
+  }
+}

@@ -12,6 +12,73 @@
 
 **Server types reference:** `lib/types.ts` — all Swift Codable types must match this file exactly.
 
+**Native app repo:** `/Users/jackson/PlotTwists-Native/` — 54 Swift files, 6,798 lines, 38 tests
+
+---
+
+## Implementation Status (updated 2026-03-19)
+
+| Phase | Status | Notes |
+|-------|--------|-------|
+| **Phase 0: Socket.IO Spike** | DONE | `socket.io-client-swift` v16.1.1 validated against Railway server. Key finding: native app connects to `web-production-c7981.up.railway.app`, not `plot-twists.com` (Vercel serves frontend). Results: `docs/superpowers/plans/spike-results.md` |
+| **Phase 1.1: Xcode Project** | DONE | SPM + xcodegen project with iOS and tvOS targets. `xcodebuild BUILD SUCCEEDED` on iPhone 17 Pro sim. |
+| **Phase 1.2: Theme Constants** | DONE | Colors, Typography (Instrument Serif + SF Pro), Animations with reduce-motion support |
+| **Phase 1.3: Data Models** | DONE | 5 model files matching `lib/types.ts` exactly. Custom decoders for `LineVisibility`, `ErrorAction`, `AnyCodableValue`. 19 decode tests. |
+| **Phase 2.1: PersistenceService** | DONE | Keychain (session tokens, room code, userId) + UserDefaults (nickname, sound, onboarding) |
+| **Phase 2.2: SocketService** | DONE | Connection, typed event streams via `AsyncStream<T>`, `emitWithAck`, auto-reconnection with `rejoin_room` + snapshot hydration |
+| **Phase 2.3: HapticsService** | DONE | UIKit haptics with tvOS no-op via `#if canImport` |
+| **Phase 2.4: AuthService** | DONE | Clerk API token exchange for Sign in with Apple (real HTTP POST to `clerk.plot-twists.com`), JWT expiry checking, session restore, anonymous play. Google Sign-In not yet implemented (medium priority). |
+| **Phase 3: GameViewModel** | DONE | State machine with 15+ socket event subscriptions, host/player/spectator actions, reconnection hydration, state reset. 4 unit tests. |
+| **Phase 4: Game Phase Views** | DONE | All 6 views (Lobby, Selection, Loading, Performing, Voting, Results) + GameView router + TeleprompterLine component + PreviewData helpers |
+| **Phase 5: Navigation Shell** | DONE | AppRootView, WelcomeView (Sign in with Apple + Guest), HomeTab, ExploreTab, ProfileTab, tab navigation |
+| **Phase 6.1: StoreKitService** | DONE | StoreKit 2 purchase flow, server verification via `signedTransaction` JWS. CreditStoreSheet UI for browsing/buying products. |
+| **Phase 6.2: Deep Links** | DONE | DeepLinkService with URL parsing (8 tests). `.onOpenURL` in AppRootView. AASA file with real team ID `2MU4PC84GZ`. |
+| **Phase 7: Apple TV** | DONE | TVLobbyView (full-screen QR), TVPerformingView (large teleprompter), TVResultsView. tvOS simulator not installed but code compiles. |
+| **Phase 8: Push (Client)** | DONE | PushService with APNs registration, permission handling, userId-aware server registration |
+| **Phase 8: Push (Server)** | DONE | `POST /api/push/register` and `/api/push/unregister` routes added to Express backend |
+| **Phase 9: Audience Features** | DONE | AudienceViewModel, ReactionBar, PlotTwistOverlay, SpectatorChat |
+| **Task A.1: Font Bundling** | DONE | Instrument Serif Regular + Italic TTFs bundled, UIAppFonts in both Info.plists |
+| **Task A.4: QR Scanner** | DONE | AVCaptureSession-based QRScannerView with viewfinder overlay, wired into HomeTab join sheet |
+| **Task A.5: Audience Features** | DONE | See Phase 9 |
+| **Task A.6: Sub-ViewModels** | DONE | LobbyViewModel, SelectionViewModel, PerformingViewModel, VotingViewModel, ResultsViewModel |
+| **Task A.8: Preview Data** | DONE | PreviewData with mock players, script, results, review, cards |
+| **Task A.9: GameError Conformance** | DONE | `GameError: Codable, Error, LocalizedError` with `ErrorAction` tagged union |
+
+### Additional Work (beyond original plan)
+
+| Item | Status |
+|------|--------|
+| Xcode project (xcodegen) | DONE — `PlotTwists.xcodeproj` with iOS + tvOS targets, entitlements, Info.plists |
+| Asset catalog | DONE — `Assets.xcassets` with generated AppIcon (1024x1024) and AccentColor (gold) |
+| Privacy manifest | DONE — `PrivacyInfo.xcprivacy` declaring UserDefaults API |
+| Network monitor | DONE — `NetworkMonitor` (NWPathMonitor) + `OfflineBanner` in AppRootView |
+| Leave room button | DONE — X button with confirmation alert in GameView |
+| Settings sheet | DONE — Nickname, sound toggle, teleprompter mode, about section. Wired to ProfileTab + LobbyView. |
+| Credit store UI | DONE — `CreditStoreSheet` displaying StoreKit products with purchase flow |
+| Error handling | DONE — createRoom/joinRoom errors now shown to user (was silently swallowed) |
+| Next-line debounce | DONE — 500ms cooldown on teleprompter advance button |
+| Reduce motion | DONE — LoadingView spinner respects `accessibilityReduceMotion` |
+| Accessibility | DONE — VoiceOver labels on room codes, player lists, card buttons, vote targets, progress bars, winner announcements |
+| Capacitor cleanup | DONE — Removed 10 `@capacitor/*` packages from web app, deleted `capacitor.config.ts`, simplified `lib/platform.ts` |
+| AASA team ID | DONE — Fixed from placeholder `XXXXXXXXXX` to `2MU4PC84GZ` in static file |
+| Push registration endpoint | DONE — Server routes at `/api/push/register` and `/api/push/unregister` |
+
+### Remaining (requires developer account / device)
+
+| Item | Blocker |
+|------|---------|
+| Set Development Team in Xcode signing | Needs Apple Developer account |
+| Run on real device | Needs provisioning profile |
+| TestFlight upload | Needs App Store Connect |
+| Replace generated app icon with real design | Design decision |
+| Google Sign-In via ASWebAuthenticationSession | Needs Clerk OAuth config |
+| Delete `ios/` and `android/` dirs from web app | Manual cleanup (low risk) |
+| Task A.3: Google Sign-In | Medium priority, not blocking v1 |
+| Task A.7: Integration test (full game flow) | Needs running server connection |
+| Task 9.4: Web app host flow removal | Deferred — web join still works |
+
+---
+
 **Review fixes applied (2026-03-18):**
 - Socket auth sends both `token` and `playerSessionId` via `handshake.auth`, not `connectParams`
 - `rejoin_room` uses `emitWithAck` and hydrates from `RoomRecoverySnapshot`

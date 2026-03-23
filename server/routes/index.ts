@@ -11,6 +11,7 @@ import { registerStripeRoutes } from './stripe'
 import { registerAppleRoutes } from './apple'
 import { registerApiRoutes } from './api'
 import { registerPushRoutes } from './push'
+import { registerAdminRoutes } from './admin'
 
 type SocketIOServer_ = SocketIOServer<ClientToServerEvents, ServerToClientEvents>
 
@@ -54,4 +55,8 @@ export async function registerRoutes(
   // General API routes (game metadata, account deletion)
   app.use('/api/account', express.json())
   registerApiRoutes(app)
+
+  // Admin routes (user management, credit granting, monitoring)
+  app.use('/api/admin', express.json())
+  registerAdminRoutes(app)
 }

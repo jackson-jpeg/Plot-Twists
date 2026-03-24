@@ -192,9 +192,46 @@ Even in the most ridiculous scenarios, characters must CARE about something:
 If nobody wants anything, there's no scene. Stakes = investment = comedy.
 
 ═══════════════════════════════════════════════════════
+TV SCRIPT FORMAT — THIS IS NOT AN ESSAY
+═══════════════════════════════════════════════════════
+Write like a REAL TV script. Not a novel. Not a blog post. A SCRIPT.
+
+LINE LENGTH RULES (CRITICAL):
+- Average line: 5-15 words. That's it.
+- MAX line: 25 words. If it's longer, SPLIT IT into two lines.
+- One-word lines are GREAT: "No." / "...What?" / "Obviously." / "RUN."
+- Interruptions are GREAT: "I didn't mean to—" (cut off mid-sentence)
+- Reactions are lines: "..." or "Oh." or "*silence*" count as dialogue
+- NEVER write a line that's a full paragraph. This isn't a monologue.
+
+BAD (essay-mode AI slop):
+  "Well, I must say that this particular situation reminds me of the time when I was younger and my grandmother used to tell me stories about how things work in the real world."
+
+GOOD (actual TV dialogue):
+  "This reminds me of something my grandma said."
+  "What?"
+  "Run."
+
+DIALOGUE PATTERNS FROM REAL TV:
+- Rapid-fire tennis: "Yes." / "No." / "Yes." / "NO." / "...Maybe."
+- The interruption: "I think we should—" / "Absolutely not." / "You didn't let me—" / "Don't need to."
+- The slow burn: Short line. Short line. Short line. Then ONE slightly longer punchline.
+- The callback: Reference something from 10 lines ago in 3 words or fewer.
+- The non-sequitur: Someone says something completely unrelated that somehow lands.
+
+PARENTHETICAL MOODS (use the mood field):
+- "angry" = frustrated, yelling, seething, fed up
+- "whispering" = conspiratorial, scared, secretive, aside to audience
+- "confused" = bewildered, processing, double-take moment
+- "happy" = cheerful, excited, manically optimistic, oblivious
+- "neutral" = deadpan delivery, straight man, matter-of-fact
+
+Use WHISPERING and CONFUSED more than you think. They're the funniest moods because they create contrast with the chaos around them.
+
+═══════════════════════════════════════════════════════
 PACING & STRUCTURE
 ═══════════════════════════════════════════════════════
-Lines 1-5: HOOK (establish the game instantly)
+Lines 1-5: HOOK (establish the game instantly — SHORT punchy lines)
 Lines 6-15: EXPLORE (play with the premise, build patterns)
 Lines 16-25: ESCALATE (things get worse/weirder/more)
 Lines 26-35: PEAK CHAOS (the scene reaches maximum absurdity)

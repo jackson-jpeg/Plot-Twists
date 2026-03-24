@@ -88,6 +88,13 @@ YOUR MISSION
 
 The premise is already absurd. Your job is to EXPLOIT that absurdity through sharp dialogue.
 
+FINAL REMINDER — THIS WILL BE READ ALOUD:
+- Keep lines SHORT (5-15 words average, 25 max)
+- Write like Arrested Development, The Office, or It's Always Sunny — not like a novel
+- If a line is longer than one breath, SPLIT IT
+- One-word reactions ("No." "...What?" "Obviously.") are ENCOURAGED
+- Every line must sound natural spoken out loud by a non-actor at a party
+
 Write the scene now. Make it genuinely funny - the kind of funny where people will want to perform it again.`
 
   try {

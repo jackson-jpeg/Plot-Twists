@@ -120,7 +120,20 @@ export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx:
     notifyGameStarting(room).catch(() => {})
 
     // Send available cards to all players
-    const content = getFilteredContent(room.isMature)
-    io.to(roomCode).emit('available_cards', content)
+    // Solo: full catalog (players can search/browse everything)
+    // Multiplayer: random hand of 8 per category (keeps pace fast, forces strategy)
+    if (room.gameMode === 'SOLO') {
+      const content = getFilteredContent(room.isMature)
+      io.to(roomCode).emit('available_cards', content)
+    } else {
+      const handSize = 8
+      const content = getFilteredContent(room.isMature)
+      const shuffled = {
+        characters: [...content.characters].sort(() => Math.random() - 0.5).slice(0, handSize),
+        settings: [...content.settings].sort(() => Math.random() - 0.5).slice(0, handSize),
+        circumstances: [...content.circumstances].sort(() => Math.random() - 0.5).slice(0, handSize),
+      }
+      io.to(roomCode).emit('available_cards', shuffled)
+    }
   }))
 }

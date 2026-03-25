@@ -197,7 +197,12 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
     startTeleprompterSync(room, io)
   } catch (error) {
     logger.error('Script generation failed:', error)
-    io.to(room.code).emit('error', 'Failed to generate script. Please try again.')
+    io.to(room.code).emit('game_error', {
+      code: 'SCRIPT_GENERATION_FAILED',
+      message: 'Failed to generate script. Please try again.',
+      recoverable: true,
+      action: { type: 'RETRY', event: 'retry_script_generation' },
+    })
 
     // Refund the deducted credit
     if (room.hostUid) {

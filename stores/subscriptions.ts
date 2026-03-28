@@ -238,7 +238,7 @@ export function initStoreSubscriptions(
     callbacks.toast.info(`${data.name} disconnected`)
   }))
 
-  unsubs.push(manager.on('error', (message) => {
+  unsubs.push(manager.on('game_error_message', (message) => {
     useConnectionStore.getState().setError(message)
     callbacks.toast.error(message)
   }))

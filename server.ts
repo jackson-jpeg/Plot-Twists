@@ -105,6 +105,12 @@ app.prepare().then(async () => {
   // Apply Firebase auth middleware to socket connections
   io.use(createSocketAuthMiddleware())
 
+  // Log Engine.IO connection details for debugging native client issues
+  io.engine.on('connection', (rawSocket: unknown) => {
+    const s = rawSocket as { transport?: { name?: string }; protocol?: number }
+    logger.debug(`[Engine.IO] New connection — transport: ${s.transport?.name ?? 'unknown'}, protocol: ${s.protocol ?? 'unknown'}`)
+  })
+
   // Register all socket handlers (9 handler modules + disconnect)
   registerAllHandlers(io)
 
@@ -129,8 +135,9 @@ app.prepare().then(async () => {
     shuttingDown = true
     logger.info(`[Shutdown] Received ${signal}, shutting down gracefully...`)
 
-    // Notify all connected clients
-    io.emit('error', 'Server is restarting. You will be reconnected shortly.')
+    // Notify all connected clients — use 'server_restarting' instead of 'error'
+    // to avoid triggering the circuit breaker on native clients during deployments
+    io.emit('server_restarting', 'Server is restarting. You will be reconnected shortly.')
 
     // Stop accepting new connections
     server.close(() => {

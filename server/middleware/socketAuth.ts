@@ -33,10 +33,15 @@ async function verifyClerkToken(token: string): Promise<{ sub: string; email?: s
  */
 export function createSocketAuthMiddleware() {
   return async (socket: Socket, next: (err?: Error) => void) => {
+    // Native iOS client sends via connect(withPayload:) which goes into handshake.query,
+    // while web client sends via auth option which goes into handshake.auth
     const token = socket.handshake.auth?.token
-    const playerSessionId = typeof socket.handshake.auth?.playerSessionId === 'string'
+      ?? (socket.handshake.query?.token as string | undefined)
+    const playerSessionId = (typeof socket.handshake.auth?.playerSessionId === 'string'
       ? socket.handshake.auth.playerSessionId
-      : null
+      : typeof socket.handshake.query?.playerSessionId === 'string'
+        ? socket.handshake.query.playerSessionId as string
+        : null)
 
     socket.data.playerSessionId = playerSessionId
 

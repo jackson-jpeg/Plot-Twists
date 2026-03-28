@@ -41,10 +41,18 @@ export function useGameErrors({ socket, toast }: UseGameErrorsParams) {
       warn(warning.message, { duration: 5000 })
     }
 
+    // Simple string error messages (room not found, validation failures)
+    const handleErrorMessage = (message: string) => {
+      logger.warn('game.error_message', { message })
+      toast.error(message, { duration: 6000 })
+    }
+
     socket.on('game_error', handleError)
+    socket.on('game_error_message', handleErrorMessage)
     socket.on('game_warning', handleWarning)
     return () => {
       socket.off('game_error', handleError)
+      socket.off('game_error_message', handleErrorMessage)
       socket.off('game_warning', handleWarning)
     }
   }, [socket, toast, router])

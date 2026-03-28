@@ -193,7 +193,7 @@ export async function registerStripeRoutes(
 
           for (const [, s] of io.sockets.sockets) {
             if (s.data.uid === userId) {
-              s.emit('error', 'Your checkout session expired. No charges were made.')
+              s.emit('game_error_message', 'Your checkout session expired. No charges were made.')
               break
             }
           }
@@ -217,7 +217,7 @@ export async function registerStripeRoutes(
 
           for (const [, s] of io.sockets.sockets) {
             if (s.data.uid === userId) {
-              s.emit('error', 'Payment failed. Please try again or use a different payment method.')
+              s.emit('game_error_message', 'Payment failed. Please try again or use a different payment method.')
               break
             }
           }

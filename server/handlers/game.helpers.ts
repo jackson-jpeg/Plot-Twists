@@ -53,7 +53,7 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
   const hostSocketId = room.host.socketId
   if (!scriptGenerationLimiter.check(hostSocketId)) {
     logger.warn(`Script generation rate limit exceeded for room ${room.code}`)
-    io.to(room.code).emit('error', 'Too many script generation requests. Please wait a moment.')
+    io.to(room.code).emit('game_error_message', 'Too many script generation requests. Please wait a moment.')
     room.gameState = 'SELECTION'
     room.selections.clear()
     for (const player of room.players.values()) {
@@ -87,7 +87,7 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
   const allSelections = Array.from(room.selections.values())
   if (allSelections.length === 0) {
     logger.error(`No selections found for room ${room.code}, cannot generate script`)
-    io.to(room.code).emit('error', 'No card selections found. Please try again.')
+    io.to(room.code).emit('game_error_message', 'No card selections found. Please try again.')
     room.gameState = 'SELECTION'
     io.to(room.code).emit('game_state_change', 'SELECTION')
     return

@@ -16,14 +16,14 @@ const dev = process.env.NODE_ENV !== 'production'
 export type SocketIOServer_ = SocketIOServer<ClientToServerEvents, ServerToClientEvents>
 
 /** Validate room exists and return it, or emit error and return null */
-export function validateRoom(roomCode: string, socket: { emit: (event: 'error', message: string) => void }): Room | null {
+export function validateRoom(roomCode: string, socket: { emit: (event: 'game_error_message', message: string) => void }): Room | null {
   if (!roomCode || !isValidRoomCode(roomCode)) {
-    socket.emit('error', 'Invalid room code')
+    socket.emit('game_error_message', 'Invalid room code')
     return null
   }
   const room = roomService.getRoomFromCache(roomCode.toUpperCase())
   if (!room) {
-    socket.emit('error', 'Room not found')
+    socket.emit('game_error_message', 'Room not found')
     return null
   }
   return room
@@ -92,12 +92,12 @@ export async function deductCreditOrReject(
       }
     } catch (creditError) {
       logger.error(`Credit check failed for host ${room.hostUid}:`, creditError)
-      io.to(room.code).emit('error', 'Failed to verify credits. Please try again.')
+      io.to(room.code).emit('game_error_message', 'Failed to verify credits. Please try again.')
       return false
     }
   } else if (!dev) {
     logger.warn(`Operation blocked: no hostUid for room ${room.code}`)
-    io.to(room.code).emit('error', 'Authentication required to generate scripts.')
+    io.to(room.code).emit('game_error_message', 'Authentication required to generate scripts.')
     return false
   }
   return true

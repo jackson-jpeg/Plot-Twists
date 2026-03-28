@@ -40,7 +40,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
     room.gameState = 'SELECTION'
     const allSelections = Array.from(room.selections.values())
     if (allSelections.length === 0) {
-      io.to(roomCode).emit('error', 'No card selections found. Please go back to lobby and try again.')
+      io.to(roomCode).emit('game_error_message', 'No card selections found. Please go back to lobby and try again.')
       io.to(roomCode).emit('game_state_change', 'SELECTION')
       return
     }
@@ -345,7 +345,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       startTeleprompterSync(room, io)
     } catch (error) {
       logger.error('Sequel generation failed:', error)
-      io.to(roomCode).emit('error', 'Failed to generate sequel. Please try again.')
+      io.to(roomCode).emit('game_error_message', 'Failed to generate sequel. Please try again.')
 
       // Refund the deducted credit
       if (room.hostUid) {

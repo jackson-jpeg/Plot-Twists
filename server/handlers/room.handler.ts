@@ -367,7 +367,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
     // Feature 8: Public Games
     if (settings.isPublic !== undefined) {
       if (settings.isPublic && !isBetaFeatureEnabled('publicMatchmaking')) {
-        socket.emit('error', 'Public matchmaking is disabled for this beta build.')
+        socket.emit('game_error_message', 'Public matchmaking is disabled for this beta build.')
         return
       }
       room.isPublic = settings.isPublic

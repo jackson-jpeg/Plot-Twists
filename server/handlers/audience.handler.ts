@@ -168,7 +168,7 @@ export function registerAudienceHandlers(io: AppServer, socket: AppSocket, ctx: 
           }
         }).catch(error => {
           logger.error(`Solo plot twist injection failed for room ${roomCode}:`, error)
-          io.to(roomCode).emit('error', 'Plot twist failed — the show goes on!')
+          io.to(roomCode).emit('game_error_message', 'Plot twist failed — the show goes on!')
         })
       }
       return
@@ -235,7 +235,7 @@ export function registerAudienceHandlers(io: AppServer, socket: AppSocket, ctx: 
         }
       } catch (error) {
         logger.error(`Plot twist injection failed for room ${roomCode}:`, error)
-        io.to(roomCode).emit('error', 'Plot twist failed — the show goes on!')
+        io.to(roomCode).emit('game_error_message', 'Plot twist failed — the show goes on!')
       } finally {
         roomService.clearPlotTwistTimeout(roomCode)
       }

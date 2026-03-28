@@ -98,7 +98,7 @@ export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx:
     if (!requireHost(room, socket)) return
 
     if (room.gameState !== 'LOBBY') {
-      socket.emit('error', 'Game can only be started from the lobby')
+      socket.emit('game_error_message', 'Game can only be started from the lobby')
       return
     }
 
@@ -107,7 +107,7 @@ export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx:
     )
     const requiredPlayers = getRequiredPlayersForMode(room.gameMode)
     if (activePlayers.length < requiredPlayers) {
-      socket.emit('error', `Need at least ${requiredPlayers} player${requiredPlayers === 1 ? '' : 's'} to start ${room.gameMode.toLowerCase().replaceAll('_', '-')}`)
+      socket.emit('game_error_message', `Need at least ${requiredPlayers} player${requiredPlayers === 1 ? '' : 's'} to start ${room.gameMode.toLowerCase().replaceAll('_', '-')}`)
       return
     }
 

@@ -31,7 +31,7 @@ export function withErrorHandler<TArgs extends unknown[]>(
       } else {
         // Otherwise emit a generic error event
         // Must emit a string to match ServerToClientEvents['error'] type
-        socket.emit('error', 'An unexpected error occurred. Please try again.')
+        socket.emit('game_error_message', 'An unexpected error occurred. Please try again.')
       }
     }
   }

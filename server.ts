@@ -114,6 +114,15 @@ app.prepare().then(async () => {
   // Register all socket handlers (9 handler modules + disconnect)
   registerAllHandlers(io)
 
+  // Health check — registered early to avoid Next.js catch-all interception
+  expressApp.get('/api/health', (_req, res) => {
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      sockets: io.engine?.clientsCount ?? 0,
+    })
+  })
+
   // Register all HTTP routes (Stripe, Auth, Apple, API)
   await registerRoutes(expressApp, io, port)
 

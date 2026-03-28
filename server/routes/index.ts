@@ -60,12 +60,4 @@ export async function registerRoutes(
   app.use('/api/admin', express.json())
   registerAdminRoutes(app)
 
-  // Health check — used by Railway health checks and iOS client pre-flight
-  app.get('/api/health', (_req, res) => {
-    res.json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      sockets: io.engine?.clientsCount ?? 0,
-    })
-  })
 }

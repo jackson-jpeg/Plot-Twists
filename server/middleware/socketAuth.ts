@@ -41,8 +41,7 @@ export function createSocketAuthMiddleware() {
     socket.data.playerSessionId = playerSessionId
 
     if (!token) {
-      // Allow connection without auth — guests can still play,
-      // but credit/purchase features will require sign-in.
+      logger.info(`[SocketAuth] No token for socket ${socket.id} — guest mode`)
       socket.data.userId = null
       socket.data.uid = null
       return next()
@@ -51,8 +50,7 @@ export function createSocketAuthMiddleware() {
     try {
       const decoded = await verifyClerkToken(token)
       if (!decoded) {
-        // Clerk not configured or token invalid — allow connection in fallback mode
-        logger.warn('[SocketAuth] Token verification failed, allowing connection without auth')
+        logger.warn(`[SocketAuth] Token verification failed for socket ${socket.id} — allowing without auth. CLERK_SECRET_KEY set: ${!!process.env.CLERK_SECRET_KEY}`)
         socket.data.userId = null
         socket.data.uid = null
         return next()

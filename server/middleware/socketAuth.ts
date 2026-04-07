@@ -55,7 +55,7 @@ export function createSocketAuthMiddleware() {
     try {
       const decoded = await verifyClerkToken(token)
       if (!decoded) {
-        logger.warn(`[SocketAuth] Token verification failed for socket ${socket.id} — allowing without auth. CLERK_SECRET_KEY set: ${!!process.env.CLERK_SECRET_KEY}`)
+        logger.warn(`[SocketAuth] Token verification failed for socket ${socket.id} — allowing without auth`)
         socket.data.userId = null
         socket.data.uid = null
         return next()

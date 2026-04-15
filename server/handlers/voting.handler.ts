@@ -7,6 +7,8 @@ import * as roomService from '../services/room.service'
 export function registerVotingHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
   // Submit vote
   socket.on('submit_vote', withErrorHandler(socket, 'submit_vote', (roomCode, targetPlayerId) => {
+    if (typeof roomCode !== 'string' || typeof targetPlayerId !== 'string') return
+
     const room = roomService.getRoomFromCache(roomCode)
     if (!room) return
 

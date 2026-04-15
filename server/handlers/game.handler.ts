@@ -8,7 +8,7 @@ import { generateScript } from '../services/scriptGeneration.service'
 import { startTeleprompterSync } from '../services/teleprompter.service'
 import { calculateResults } from '../services/voting.service'
 import { enhanceScriptWithAudio, getAmbienceTrack } from '../services/audio.service'
-import { resetReactionCounts, preGenerateTwistsForRoom, regenerateTwistsForRoom } from '../services/audience.service'
+import { resetReactionCounts, preGenerateTwistsForRoom } from '../services/audience.service'
 import { generateTitleCard } from '../services/image.service'
 import { addBankedCredits, getCredits } from '../services/credit.service'
 import { notifyVotingOpen } from '../services/notification.service'
@@ -20,12 +20,12 @@ import {
 } from '../socket/helpers'
 import { startScriptGeneration, pushOnStateChange } from './game.helpers'
 import * as roomService from '../services/room.service'
-import * as matchmakingService from '../services/matchmaking.service'
 import { logger } from '@/lib/logger'
 
 export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
   // Retry script generation — re-generates with existing selections without going back to card selection
   socket.on('retry_script_generation', withErrorHandler(socket, 'retry_script_generation', async (roomCode) => {
+    if (typeof roomCode !== 'string') return
     const room = roomService.getRoomFromCache(roomCode)
     if (!room) return
     if (!requireHost(room, socket)) return
@@ -51,6 +51,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // End performance — host manually triggers transition to voting/results
   socket.on('end_performance', withErrorHandler(socket, 'end_performance', (roomCode) => {
+    if (typeof roomCode !== 'string') return
     const room = roomService.getRoomFromCache(roomCode)
     if (!room) return
     if (!requireHost(room, socket)) return
@@ -82,6 +83,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Advance script line
   socket.on('advance_script_line', withErrorHandler(socket, 'advance_script_line', (roomCode) => {
+    if (typeof roomCode !== 'string') return
     const room = roomService.getRoomFromCache(roomCode)
     if (!room || !room.script) return
     if (room.gameState !== 'PERFORMING') return
@@ -100,6 +102,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Pause script
   socket.on('pause_script', withErrorHandler(socket, 'pause_script', (roomCode) => {
+    if (typeof roomCode !== 'string') return
     const room = roomService.getRoomFromCache(roomCode)
     if (!room || !room.script) return
     if (room.gameState !== 'PERFORMING') return
@@ -121,6 +124,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Resume script
   socket.on('resume_script', withErrorHandler(socket, 'resume_script', (roomCode) => {
+    if (typeof roomCode !== 'string') return
     const room = roomService.getRoomFromCache(roomCode)
     if (!room || !room.script) return
     if (room.gameState !== 'PERFORMING') return
@@ -138,6 +142,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Jump to specific line (host control)
   socket.on('jump_to_line', withErrorHandler(socket, 'jump_to_line', (roomCode, lineIndex) => {
+    if (typeof roomCode !== 'string' || typeof lineIndex !== 'number') return
     const room = roomService.getRoomFromCache(roomCode)
     if (!room || !room.script) return
     if (!requireHost(room, socket)) return
@@ -173,6 +178,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Player jump to line (synced navigation - all clients move together)
   socket.on('player_jump_to_line', withErrorHandler(socket, 'player_jump_to_line', (roomCode, lineIndex) => {
+    if (typeof roomCode !== 'string' || typeof lineIndex !== 'number') return
     const room = validateRoom(roomCode, socket)
     if (!room || room.gameState !== 'PERFORMING' || !room.script) return
     if (!requireRoomMember(room, socket)) return
@@ -222,6 +228,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Request sequel
   socket.on('request_sequel', withErrorHandler(socket, 'request_sequel', async (roomCode) => {
+    if (typeof roomCode !== 'string') return
     const room = roomService.getRoomFromCache(roomCode)
     if (!room || !room.script) {
       logger.info(`Cannot generate sequel: room or script not found for ${roomCode}`)
@@ -376,6 +383,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Request new game (keeps players in room, no page reload)
   socket.on('request_new_game', withErrorHandler(socket, 'request_new_game', (roomCode, options?: NewGameOptions) => {
+    if (typeof roomCode !== 'string') return
     const room = roomService.getRoomFromCache(roomCode)
     if (!room) {
       logger.info(`Cannot start new game: room not found for ${roomCode}`)
@@ -442,6 +450,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Request resync after reconnection
   socket.on('request_resync', withErrorHandler(socket, 'request_resync', (roomCode: string, playerId: string, callback: (response: { success: boolean; gameState?: string; players?: Player[]; script?: Script; currentLineIndex?: number; hasSubmittedSelection?: boolean; assignedCharacter?: string; selection?: CardSelection; error?: string }) => void) => {
+    if (typeof roomCode !== 'string' || typeof playerId !== 'string') return
     try {
       const upperCode = roomCode.toUpperCase()
       const room = roomService.getRoomFromCache(upperCode)

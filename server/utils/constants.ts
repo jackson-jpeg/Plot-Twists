@@ -19,6 +19,7 @@ export const ROOM_INACTIVITY_TIMEOUT = 60 * 60 * 1000 // 1 hour
 
 export const DISCONNECT_GRACE_PERIOD = 3000 // 3 seconds
 export const VOTING_TIMEOUT = 60_000 // 60 seconds — auto-resolve if not all players vote
+export const PLOT_TWIST_VOTING_DURATION = 15_000 // 15 seconds for audience to vote on plot twists
 
 export const AI_MAX_TOKENS = {
   ENSEMBLE: 10000,

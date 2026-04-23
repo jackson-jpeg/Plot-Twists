@@ -2,8 +2,9 @@
 import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
 import { SocketRateLimiter } from '../middleware/rateLimiter'
-import type { SoundEffectType, Script } from '@/lib/types'
+import type { SoundEffectType, Script, Player } from '@/lib/types'
 import { sanitizeInput as sanitizeUserInput } from '../utils/validation'
+import { PLOT_TWIST_VOTING_DURATION } from '../utils/constants'
 import {
   canSendReaction,
   recordReaction,
@@ -41,7 +42,7 @@ export function registerAudienceHandlers(io: AppServer, socket: AppSocket, ctx: 
     if (!requireRoomMember(room, socket)) return
 
     // Find sender
-    let sender: import('@/lib/types').Player | undefined
+    let sender: Player | undefined
     for (const player of room.players.values()) {
       if (player.socketId === socket.id) {
         sender = player
@@ -77,7 +78,7 @@ export function registerAudienceHandlers(io: AppServer, socket: AppSocket, ctx: 
     if (!requireRoomMember(room, socket)) return
 
     // Find sender
-    let sender: import('@/lib/types').Player | undefined
+    let sender: Player | undefined
     for (const player of room.players.values()) {
       if (player.socketId === socket.id) {
         sender = player
@@ -116,7 +117,7 @@ export function registerAudienceHandlers(io: AppServer, socket: AppSocket, ctx: 
     if (room.audienceInteraction.activePlotTwist?.isActive) return
 
     // Use pre-generated AI twists if available (pass roomCode)
-    const twist = startPlotTwist(room.audienceInteraction, 15000, roomCode) // 15 seconds to vote
+    const twist = startPlotTwist(room.audienceInteraction, PLOT_TWIST_VOTING_DURATION, roomCode)
     room.lastActivity = Date.now()
 
     // Emit dramatic sound effect when twist starts
@@ -239,7 +240,7 @@ export function registerAudienceHandlers(io: AppServer, socket: AppSocket, ctx: 
       } finally {
         roomService.clearPlotTwistTimeout(roomCode)
       }
-    }, 15000)
+    }, PLOT_TWIST_VOTING_DURATION)
 
     roomService.setPlotTwistTimeout(roomCode, timeout)
   }))

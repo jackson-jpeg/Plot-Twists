@@ -20,6 +20,7 @@ import type {
 } from '../../lib/types'
 import { logger } from '../../lib/logger'
 import { sanitizeInput } from '../utils/validation'
+import { PLOT_TWIST_VOTING_DURATION } from '../utils/constants'
 
 // Initialize Anthropic client for AI-powered twists
 const anthropic = new Anthropic({
@@ -194,7 +195,7 @@ export function generatePlotTwistOptions(
  */
 export function startPlotTwist(
   state: AudienceInteractionState,
-  durationMs: number = 15000,
+  durationMs: number = PLOT_TWIST_VOTING_DURATION,
   roomCode?: string
 ): { id: string, options: PlotTwistOption[], expiresAt: number } {
   // Try to use pre-generated AI twists first

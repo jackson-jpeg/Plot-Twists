@@ -1,6 +1,9 @@
 [variables]
 # These NEXT_PUBLIC_* variables must be available at build time
-# for Next.js to embed them in the client bundle
+# for Next.js to embed them in the client bundle.
+# NEXT_PUBLIC_* values are public by design — they ship in the client bundle.
+# Clerk's publishable key was missing here, which broke `next build`.
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}"
 NEXT_PUBLIC_FIREBASE_API_KEY = "${NEXT_PUBLIC_FIREBASE_API_KEY}"
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN = "${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}"
 NEXT_PUBLIC_FIREBASE_PROJECT_ID = "${NEXT_PUBLIC_FIREBASE_PROJECT_ID}"

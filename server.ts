@@ -30,6 +30,11 @@ const handle = app.getRequestHandler()
 function getAllowedOrigins(): string[] {
   if (dev) return ['http://localhost:3000', 'http://localhost:3001']
   const origins = [
+    // New name. Added ahead of the DNS cutover so the rename is never atomic —
+    // both domains are accepted during the transition. Remove the plot-twists.com
+    // entries once the cutover has settled (CHUNKS.md, Chunk 5 step 7).
+    'https://plotslop.com',
+    'https://www.plotslop.com',
     'https://plot-twists.com',
     'https://www.plot-twists.com',
     'https://web-production-c7981.up.railway.app',
@@ -43,7 +48,8 @@ function getAllowedOrigins(): string[] {
   return origins
 }
 
-const VERCEL_PREVIEW_REGEX = /^https:\/\/plot-twists(-[a-z0-9-]+)*\.vercel\.app$/
+// Matches either project name so a Vercel rename doesn't silently break previews.
+const VERCEL_PREVIEW_REGEX = /^https:\/\/(plotslop|plot-twists)(-[a-z0-9-]+)*\.vercel\.app$/
 
 function isAllowedOrigin(origin: string): boolean {
   if (getAllowedOrigins().includes(origin)) return true

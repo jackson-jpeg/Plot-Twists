@@ -49,7 +49,7 @@ describe('validateRoom', () => {
     const emit = jest.fn()
     const result = validateRoom('!!', { emit })
     expect(result).toBeNull()
-    expect(emit).toHaveBeenCalledWith('error', 'Invalid room code')
+    expect(emit).toHaveBeenCalledWith('game_error_message', 'Invalid room code')
   })
 
   it('should return null and emit error for non-existent room', () => {
@@ -57,7 +57,7 @@ describe('validateRoom', () => {
     const emit = jest.fn()
     const result = validateRoom('ABCD', { emit })
     expect(result).toBeNull()
-    expect(emit).toHaveBeenCalledWith('error', 'Room not found')
+    expect(emit).toHaveBeenCalledWith('game_error_message', 'Room not found')
   })
 
   it('should return room for valid code', () => {

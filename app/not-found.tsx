@@ -1,5 +1,11 @@
 import Link from 'next/link'
 
+// Rendered at request time rather than prerendered. This page needs no auth,
+// but it inherits <ClerkProvider> from the root layout, and prerendering it
+// instantiates Clerk — which failed the whole build when
+// NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY was absent from the build environment.
+export const dynamic = 'force-dynamic'
+
 export default function NotFound() {
   return (
     <main

@@ -112,7 +112,7 @@ describe('initStoreSubscriptions', () => {
       'performance_resumed',
       'player_reconnected',
       'player_disconnected',
-      'error',
+      'game_error_message',
       'kicked',
       'spectator_message_received',
       'green_room_prompt',
@@ -339,8 +339,8 @@ describe('initStoreSubscriptions', () => {
     expect(mockCallbacks.toast.success).toHaveBeenCalledWith('Alice reconnected')
   })
 
-  it('error → connectionStore.setError + toast', () => {
-    manager._simulate('error', 'Something went wrong')
+  it('game_error_message → connectionStore.setError + toast', () => {
+    manager._simulate('game_error_message', 'Something went wrong')
     expect(useConnectionStore.getState().error).toBe('Something went wrong')
     expect(mockCallbacks.toast.error).toHaveBeenCalledWith('Something went wrong')
   })

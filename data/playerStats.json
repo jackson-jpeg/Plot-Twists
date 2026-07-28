@@ -1,0 +1,1157 @@
+{
+  "items": [
+    {
+      "playerId": "6a1efb9b-3be6-4106-a21f-fec5f6225da8",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263410732
+        }
+      ],
+      "recentGames": [
+        "fa6fc9aa-bcb1-47a3-9dbf-da0f6c4a32fd"
+      ],
+      "joinedAt": 1785263410732,
+      "lastPlayedAt": 1785263410732,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "6a1efb9b-3be6-4106-a21f-fec5f6225da8",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "e160c7f6-b07b-4d42-bdd7-2ce9fe9a613e",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263410738
+        }
+      ],
+      "recentGames": [
+        "fa6fc9aa-bcb1-47a3-9dbf-da0f6c4a32fd"
+      ],
+      "joinedAt": 1785263410737,
+      "lastPlayedAt": 1785263410738,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "e160c7f6-b07b-4d42-bdd7-2ce9fe9a613e",
+      "totalXP": 495,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "6dcfacbc-cd06-43b0-8df0-5d1efdaecf8f",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263410747
+        }
+      ],
+      "recentGames": [
+        "fa6fc9aa-bcb1-47a3-9dbf-da0f6c4a32fd"
+      ],
+      "joinedAt": 1785263410747,
+      "lastPlayedAt": 1785263410747,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "6dcfacbc-cd06-43b0-8df0-5d1efdaecf8f",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "dac7657c-239c-441c-ae24-8e3649c49ef8",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263438493
+        }
+      ],
+      "recentGames": [
+        "300ef0ca-9491-4ccf-94ed-6e293dd164ea"
+      ],
+      "joinedAt": 1785263438492,
+      "lastPlayedAt": 1785263438493,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "dac7657c-239c-441c-ae24-8e3649c49ef8",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "220e2c57-41f4-4359-987c-34ef6d555016",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263438505
+        }
+      ],
+      "recentGames": [
+        "300ef0ca-9491-4ccf-94ed-6e293dd164ea"
+      ],
+      "joinedAt": 1785263438503,
+      "lastPlayedAt": 1785263438505,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "220e2c57-41f4-4359-987c-34ef6d555016",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "1b7986a2-ec30-4a02-a050-51e2a9277a89",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263438517
+        }
+      ],
+      "recentGames": [
+        "300ef0ca-9491-4ccf-94ed-6e293dd164ea"
+      ],
+      "joinedAt": 1785263438517,
+      "lastPlayedAt": 1785263438517,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "1b7986a2-ec30-4a02-a050-51e2a9277a89",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "f7fb6c3f-4502-474a-ac87-fce3cc7fe278",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263519190
+        }
+      ],
+      "recentGames": [
+        "476b59ae-8a4b-42b2-9232-e52ab4bf7b1e"
+      ],
+      "joinedAt": 1785263519190,
+      "lastPlayedAt": 1785263519190,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "f7fb6c3f-4502-474a-ac87-fce3cc7fe278",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "7cff521d-cdae-4116-be51-7908ee7ab239",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263519194
+        }
+      ],
+      "recentGames": [
+        "476b59ae-8a4b-42b2-9232-e52ab4bf7b1e"
+      ],
+      "joinedAt": 1785263519194,
+      "lastPlayedAt": 1785263519194,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "7cff521d-cdae-4116-be51-7908ee7ab239",
+      "totalXP": 495,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "f4024d72-dd7a-4653-9d54-8d33a7b6128e",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263519197
+        }
+      ],
+      "recentGames": [
+        "476b59ae-8a4b-42b2-9232-e52ab4bf7b1e"
+      ],
+      "joinedAt": 1785263519196,
+      "lastPlayedAt": 1785263519197,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "f4024d72-dd7a-4653-9d54-8d33a7b6128e",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "37fca8c0-8a93-4f42-8436-fd978e354597",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263619217
+        }
+      ],
+      "recentGames": [
+        "dfba36e5-96f2-4d62-bf7b-4e6ecffa5ef2"
+      ],
+      "joinedAt": 1785263619216,
+      "lastPlayedAt": 1785263619217,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "37fca8c0-8a93-4f42-8436-fd978e354597",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "cf9ae174-58cd-48c5-87a9-8c3acc77e096",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263619225
+        }
+      ],
+      "recentGames": [
+        "dfba36e5-96f2-4d62-bf7b-4e6ecffa5ef2"
+      ],
+      "joinedAt": 1785263619223,
+      "lastPlayedAt": 1785263619225,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "cf9ae174-58cd-48c5-87a9-8c3acc77e096",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "75c2842d-19b7-4e83-b373-88c3999cbb1f",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263619227
+        }
+      ],
+      "recentGames": [
+        "dfba36e5-96f2-4d62-bf7b-4e6ecffa5ef2"
+      ],
+      "joinedAt": 1785263619227,
+      "lastPlayedAt": 1785263619227,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "75c2842d-19b7-4e83-b373-88c3999cbb1f",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "f5b4734c-19ba-4599-b420-8aac64a60b09",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263685834
+        }
+      ],
+      "recentGames": [
+        "f90ceac5-9a5e-4261-bade-0124bbd0e538"
+      ],
+      "joinedAt": 1785263685833,
+      "lastPlayedAt": 1785263685834,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "f5b4734c-19ba-4599-b420-8aac64a60b09",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "0cc1bc00-9453-431b-a0ad-87d1103a73d6",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263685839
+        }
+      ],
+      "recentGames": [
+        "f90ceac5-9a5e-4261-bade-0124bbd0e538"
+      ],
+      "joinedAt": 1785263685837,
+      "lastPlayedAt": 1785263685839,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "0cc1bc00-9453-431b-a0ad-87d1103a73d6",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "8d7326d6-0775-4a85-b478-8c0772549a9d",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263685844
+        }
+      ],
+      "recentGames": [
+        "f90ceac5-9a5e-4261-bade-0124bbd0e538"
+      ],
+      "joinedAt": 1785263685843,
+      "lastPlayedAt": 1785263685844,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "8d7326d6-0775-4a85-b478-8c0772549a9d",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "a2a993d0-63c2-4f3c-8baa-769c24a6f85a",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263699381
+        }
+      ],
+      "recentGames": [
+        "bce45e9b-3055-401d-94be-1f412b41b135"
+      ],
+      "joinedAt": 1785263699380,
+      "lastPlayedAt": 1785263699380,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "a2a993d0-63c2-4f3c-8baa-769c24a6f85a",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "1dbe447f-86c0-4dc7-bdca-0bd56ad675db",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263699388
+        }
+      ],
+      "recentGames": [
+        "bce45e9b-3055-401d-94be-1f412b41b135"
+      ],
+      "joinedAt": 1785263699386,
+      "lastPlayedAt": 1785263699388,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "1dbe447f-86c0-4dc7-bdca-0bd56ad675db",
+      "totalXP": 495,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "e6291d84-d0c3-4d47-8074-cac4398c9745",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263699391
+        }
+      ],
+      "recentGames": [
+        "bce45e9b-3055-401d-94be-1f412b41b135"
+      ],
+      "joinedAt": 1785263699391,
+      "lastPlayedAt": 1785263699391,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "e6291d84-d0c3-4d47-8074-cac4398c9745",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "bae6f75f-d945-4180-8003-d7f09d6ff61b",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263766038
+        }
+      ],
+      "recentGames": [
+        "b3a892c1-1d44-47b1-aa6a-83fcc17d657a"
+      ],
+      "joinedAt": 1785263766038,
+      "lastPlayedAt": 1785263766038,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "bae6f75f-d945-4180-8003-d7f09d6ff61b",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "b271d9a7-dc05-4241-ad55-591d33fac117",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263766042
+        }
+      ],
+      "recentGames": [
+        "b3a892c1-1d44-47b1-aa6a-83fcc17d657a"
+      ],
+      "joinedAt": 1785263766041,
+      "lastPlayedAt": 1785263766041,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "b271d9a7-dc05-4241-ad55-591d33fac117",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "0d5094a9-d142-41ab-a189-fe7089ae38b2",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263766044
+        }
+      ],
+      "recentGames": [
+        "b3a892c1-1d44-47b1-aa6a-83fcc17d657a"
+      ],
+      "joinedAt": 1785263766043,
+      "lastPlayedAt": 1785263766044,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "0d5094a9-d142-41ab-a189-fe7089ae38b2",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "ff6f01e8-4b67-4aa5-a981-d509d7c95668",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263809355
+        }
+      ],
+      "recentGames": [
+        "44dd481f-10cf-44cf-8555-1ec0a3ec550c"
+      ],
+      "joinedAt": 1785263809354,
+      "lastPlayedAt": 1785263809354,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "ff6f01e8-4b67-4aa5-a981-d509d7c95668",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "278fc12b-b356-4ca7-bae9-9448b05ba078",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263809365
+        }
+      ],
+      "recentGames": [
+        "44dd481f-10cf-44cf-8555-1ec0a3ec550c"
+      ],
+      "joinedAt": 1785263809365,
+      "lastPlayedAt": 1785263809365,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "278fc12b-b356-4ca7-bae9-9448b05ba078",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "e1283424-975f-47df-bc6f-65f7761bb3fe",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A swamp ogre": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785263809370
+        }
+      ],
+      "recentGames": [
+        "44dd481f-10cf-44cf-8555-1ec0a3ec550c"
+      ],
+      "joinedAt": 1785263809370,
+      "lastPlayedAt": 1785263809370,
+      "favoriteCharacter": "A swamp ogre",
+      "id": "e1283424-975f-47df-bc6f-65f7761bb3fe",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie"
+    }
+  ],
+  "savedAt": 1785263809374
+}

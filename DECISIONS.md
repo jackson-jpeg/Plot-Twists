@@ -120,17 +120,95 @@ So if and when iOS comes off the shelf, changing all four bundle IDs is **free**
 
 # OPEN
 
-## 5. Redeploy target — Railway, Vercel, or this VPS?
+**Reordered by risk on Jackson's instruction, 2026-07-28.** Firestore rules first:
 
-**Recommendation: Railway.** It is what the code is written for (custom `server.ts` running Next.js + Express + Socket.IO in one process), it is already configured, and it is one env var away from working. Vercel's serverless model **cannot** host a long-lived Socket.IO server without splitting the game server out.
+> "The database is reachable whether or not the app is" means production data is exposed right now under rules neither of us has read, and that is true whether or not I ever fix the deploy.
 
-**Whichever you pick: pin to one replica.** All game state is process-local with no Socket.IO adapter — two instances means two players in the same room can land on different processes and never see each other.
-
-**Blocked:** Chunk 1 completion. Everything I can do without credentials is done.
+Order: **7 (rules) → 5/6 (Railway) → DNS.**
 
 ---
 
-## 6. Is the Railway project deleted, or just unlinked?
+## 🔴 7. Firestore + Storage rules — EXPORT THESE FIRST
+
+**This is the top open item.** There is no `firestore.rules`, `storage.rules`, or `firebase.json` in either repo, so nobody has read the deployed rules. `firebase-admin` bypasses rules server-side, but `firebase` (client SDK) is a direct dependency and `lib/firebase.ts` initialises it in the browser — so there is a client-reachable path to the same project, live right now, independent of the deploy.
+
+### How to export — the honest answer
+
+**There is no CLI command that fetches rules.** I verified this rather than guessing:
+
+```
+[VPS] npx firebase-tools@latest firestore --help
+→ firestore:delete, firestore:bulkdelete, firestore:indexes,
+  firestore:locations, firestore:operations, firestore:databases, firestore:backups
+```
+
+No `rules` subcommand. The CLI can only *deploy* rules, not retrieve them. There is also no Firebase CLI or `gcloud` installed on either machine, and no Firebase project ID anywhere in either repo (only `your-project.appspot.com` placeholders).
+
+**So it's the console. `[MACBOOK]` — or any browser you're signed into Firebase with. ~60 seconds:**
+
+1. https://console.firebase.google.com → select the project
+2. **Firestore Database → Rules** tab → select all → paste into a file
+3. **Storage → Rules** tab → same
+4. Send me both, plus the **project ID** (it's in the console URL: `/project/<PROJECT_ID>/overview`)
+
+Send them however is easiest — paste them straight into chat is fine, rules are not secrets.
+
+### What I'll do with them
+
+Per your instruction — *"assume each one is wrong until a test proves otherwise, same standard as the harness, not a read-through"* — I will not eyeball them. Plan:
+
+1. Commit them as `firestore.rules` / `storage.rules` + a `firebase.json` so they are version-controlled and deployable.
+2. Stand up `@firebase/rules-unit-testing` against the Firestore emulator `[VPS]` — same red/green discipline as the socket harness.
+3. Write a **deny-by-default** test matrix: for every collection the server touches (`gameHistory`, `playerStats`, `progression`, `users`, `rooms`, `cardPacks`, …), assert that an **unauthenticated** client and a **wrong-user authenticated** client can neither read nor write. Each assertion must fail against a permissive rule before it passes against a correct one.
+4. Report as `N/M` alongside the socket harness.
+
+If the deployed rules turn out to be the `firebase init` 30-day open default, that is an S1 and it jumps ahead of everything else in Chunk 2.
+
+**Blocked:** nothing waits on this — but I would not put the app back online without it, and it is exposed right now regardless.
+
+### 7b. "I wouldn't care if we bailed on Firebase too" — this is viable, and it changes #7
+
+Jackson floated this 2026-07-28. Investigated rather than acted on. **It is a real option and it is cheaper than it sounds.**
+
+Firebase does exactly three jobs here:
+
+| Job | Replacement | Cost |
+|---|---|---|
+| **Firestore (database)** | The JSON adapter **already exists and already works** — it ran this entire audit's harness. It implements the full `DatabaseAdapter` interface including `runTransaction`. And `server/db/index.ts:12-15` **already auto-falls-back to it** when `FIREBASE_SERVICE_ACCOUNT_KEY` / `NEXT_PUBLIC_FIREBASE_PROJECT_ID` are absent. | **Zero code change — just don't set the env vars** |
+| **Storage** (poster images → `storage.googleapis.com`) | Local disk + nginx static serving. `image.service.ts:116-134` is the only consumer. | ~3h |
+| **FCM push** (`push.service.ts:33`) | No drop-in. But push is only used for `pushOnStateChange` host notifications — not the core loop. | Goes dark until replaced |
+
+**Two caveats I am not going to soften:**
+
+1. **The JSON adapter's `runTransaction` is a process-local promise lock**, not a real transaction — `server/db/json.ts:17` says "dev-only adapter". That is *sufficient* here only because the deploy is pinned to one replica anyway (game state is process-local). If you ever run two, credit deduction can double-spend. Postgres is already running on this box at `127.0.0.1:5432` if you want to do it properly later.
+2. **Bailing does not delete this decision item.** New data would go to JSON, but the *existing* Firestore project still holds whatever it holds, still under rules nobody has read. So #7 becomes simpler, not moot: **lock down or delete the old Firebase project.** That is a console action, and it stops being deploy-blocking.
+
+**Recommendation: bail on Firestore, keep the decision on Storage/push for later.** Deploy with no Firebase env vars set — the JSON adapter picks it up with zero code change, on a VPS with a persistent disk. Then either delete the old Firebase project outright (cleanest — kills the exposure) or export its rules per #7 above if there is data in it worth keeping. **Tell me which, and whether there is anything in that project you care about.**
+
+---
+
+## ✅ 5. Redeploy target — THIS VPS (Railway is out)
+
+**Railway free trial ended (Jackson, 2026-07-28). Recommendation: host it on this VPS.** Not a compromise — it is a better fit than Railway was, for concrete reasons:
+
+| | Evidence |
+|---|---|
+| WebSocket proxying already solved | `/etc/nginx/sites-enabled/sang3r.com` already carries the exact headers Socket.IO needs: `proxy_set_header Upgrade $http_upgrade`, `Connection "upgrade"`, `proxy_buffering off`, `proxy_read_timeout 600s`. Copy it. |
+| The service pattern exists | `sanger-next.service` runs a Next.js prod server on port 3000 with `Restart=always` and memory caps. Same shape. |
+| **Persistent disk** | The JSON db adapter writes to `data/*.json`. On Railway's ephemeral filesystem that silently loses everything on redeploy. On the VPS it survives. **Railway was actively worse for this.** |
+| Single replica is required anyway | All game state is process-local with no Socket.IO adapter, so horizontal scale was never available. The VPS's single-box nature costs nothing. |
+| Postgres already running | `127.0.0.1:5432`, active — available if the JSON adapter is outgrown. |
+| Cost | Already paid for. |
+
+**Vercel remains wrong** regardless of Railway: its serverless model cannot host a long-lived Socket.IO server without splitting the game server out.
+
+**What I need from you:** point `plotslop.com` at `187.77.218.14` in Hostinger DNS (it currently resolves to `2.57.91.91`, the Hostinger parked-page host). I can do nginx, systemd, and TLS from here.
+
+**Still blocked on secrets:** `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`. Nothing deploys without those three.
+
+---
+
+## ✅ 6. (moot) Is the Railway project deleted or unlinked?
 
 `web-production-c7981.up.railway.app` returns `Application not found`.
 
@@ -139,18 +217,6 @@ So if and when iOS comes off the shelf, changing all four bundle IDs is **free**
 **What I still need from you:** open the Railway dashboard, confirm whether the project exists, and if it does, grab the last build log. If it shows that Clerk error, this is already solved and you just need to redeploy. You will also need to set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in the Railway environment — the `nixpacks.toml` change references it but cannot supply it.
 
 **Blocked:** Chunk 1 completion.
-
----
-
-## 7. What are the deployed Firestore security rules?
-
-There is no `firestore.rules` or `firebase.json` in either repo. The server uses `firebase-admin` (which bypasses rules), but `firebase` (the client SDK) is also a direct dependency and `lib/firebase.ts` exists — so there is a client-side path to the same project.
-
-If the deployed rules are the `firebase init` 30-day open default, every game record, player stat, and user profile is world-readable. **The database is reachable whether or not the app is deployed**, so this does not wait for Chunk 1.
-
-**What I need:** export the current rules from the Firebase console. I will commit them and wire them into the deploy.
-
-**Blocked:** nothing formally — but I would not put the app back online without knowing.
 
 ---
 

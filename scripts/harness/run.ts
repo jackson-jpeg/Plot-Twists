@@ -192,9 +192,42 @@ scenarios.hostAbandon = async () => {
 
   record('hostAbandon', 'players told the host vanished', p1.saw('player_disconnected') || p1.saw('host_disconnected'),
     `events: ${[...new Set(p1.events.map(e => e.name))].join(', ')}`)
-  record('hostAbandon', 'game does NOT auto-advance to VOTING without the host',
-    !p1.states.includes('VOTING'),
-    `states: ${p1.states.join('→')} — end_performance is host-only, so nobody can reach VOTING`)
+  // RED until host migration lands (CHUNKS.md chunk 2 item 3).
+  // This previously asserted `!states.includes('VOTING')` and PASSED — it
+  // documented the defect as expected behaviour instead of gating on a fix.
+  record('hostAbandon', 'the round survives an abandoned host and reaches VOTING',
+    p1.states.includes('VOTING'),
+    p1.states.includes('VOTING')
+      ? `recovered: ${p1.states.join('→')}`
+      : `stranded in ${p1.states.join('→')} — end_performance is host-only and there is no host migration. The 2-min sweep then jumps PERFORMING→RESULTS with zero votes.`)
+
+  ;[host, p1, p2, p3].forEach(c => c.close())
+}
+
+/** 2b. A zero-vote round must not be presented as a normal game_over. */
+scenarios.emptyResults = async () => {
+  const host = new Client('Host')
+  const p1 = new Client('Alice'), p2 = new Client('Bob'), p3 = new Client('Carol')
+  await Promise.all([host, p1, p2, p3].map(c => c.connected()))
+  const code = await makeRoom(host, 'ENSEMBLE')
+  await joinAll(code, [p1, p2, p3])
+  host.socket.emit('start_game', code)
+  await p1.waitForState('SELECTION')
+  await submitAll(code, [p1, p2, p3])
+  await p1.waitForState('PERFORMING', 30000)
+
+  host.socket.emit('end_performance', code)
+  await p1.waitForState('VOTING')
+
+  // Nobody votes. Let VOTING_TIMEOUT (60s) force the tally.
+  const reached = await p1.waitForState('RESULTS', 70000).then(() => true).catch(() => false)
+  const res = p1.last('game_over') as { winner?: unknown; allResults?: unknown[] } | undefined
+
+  record('emptyResults', 'a zero-vote round is not emitted as a normal game_over',
+    !reached || Boolean(res?.winner),
+    reached && !res?.winner
+      ? 'game_over emitted with winner=undefined and allResults=[] — a results screen with no winner and no scores, presented as the outcome (voting.service.ts:162-176)'
+      : 'guarded')
 
   ;[host, p1, p2, p3].forEach(c => c.close())
 }
@@ -406,6 +439,93 @@ scenarios.identity = async () => {
       : `rejected: ${r?.error}`)
 
   ;[host, p1, p2, imposter].forEach(c => c.close())
+}
+
+/**
+ * 8b. Credential disclosure + takeover with a server-issued ID.
+ * The realistic attack: no guessing required, because `players_update`
+ * broadcasts every player's identifiers to everyone in the room.
+ */
+scenarios.identityBroadcast = async () => {
+  const host = new Client('Host')
+  const p1 = new Client('Alice', 'sess-a'), p2 = new Client('Bob', 'sess-b'), p3 = new Client('Carol', 'sess-c')
+  await Promise.all([host, p1, p2, p3].map(c => c.connected()))
+  const code = await makeRoom(host, 'ENSEMBLE')
+  await joinAll(code, [p1, p2, p3])
+  await sleep(300)
+
+  // What does an ordinary player receive about everyone else?
+  const roster = playersFrom(p2) as unknown as Array<Record<string, unknown>>
+  const leaked = new Set<string>()
+  for (const p of roster) {
+    for (const k of ['sessionId', 'uid', 'socketId']) if (p[k] !== undefined) leaked.add(k)
+  }
+  record('identityBroadcast', 'players_update does not broadcast other players\' credentials',
+    leaked.size === 0,
+    leaked.size
+      ? `players_update leaks ${[...leaked].join(', ')} for every player to every client (room.handler.ts:182 emits full Player objects)`
+      : 'roster carries no credential fields')
+
+  // Take the HOST's seat using the id the server already handed us.
+  const hostEntry = roster.find(p => p.isHost === true)
+  const hostPlayerId = String(hostEntry?.id ?? '')
+  host.kill()
+  await sleep(500)
+
+  const thief = new Client('Thief')
+  await thief.connected()
+  const r = await thief.emitAck<{ success: boolean; error?: string; snapshot?: { isHost?: boolean; nickname?: string } }>(
+    'rejoin_room', code, hostPlayerId)
+
+  record('identityBroadcast', 'a broadcast playerId cannot be used to claim a seat', !r?.success,
+    r?.success
+      ? `rejoin_room accepted playerId ${hostPlayerId.slice(0, 8)}… for the HOST seat — an id the server broadcast to every client in players_update. findPlayerInRoomByUserId matches \`playerId === userId\` (room.service.ts:346), so no guessing is required and host powers transfer with the seat.`
+      : `rejected: ${r?.error}`)
+
+  ;[p1, p2, p3, thief].forEach(c => c.close())
+}
+
+/** 8c. Spectators can vote, and their votes count toward the winner. */
+scenarios.spectatorVote = async () => {
+  const host = new Client('Host')
+  const players = Array.from({ length: 6 }, (_, i) => new Client(`P${i + 1}`))
+  const spectator = new Client('Lurker')
+  await Promise.all([host, ...players, spectator].map(c => c.connected()))
+  const code = await makeRoom(host, 'ENSEMBLE')
+  await joinAll(code, players)
+
+  // 7th joiner overflows the 6-player cap and is silently demoted to SPECTATOR.
+  const specJoin = await spectator.emitAck<{ success: boolean; role?: string }>('join_room', code, 'Lurker')
+  if (specJoin.role !== 'SPECTATOR') {
+    record('spectatorVote', 'setup: 7th joiner became a spectator', false, `role was ${specJoin.role}`)
+    ;[host, ...players, spectator].forEach(c => c.close())
+    return
+  }
+
+  host.socket.emit('start_game', code)
+  await players[0].waitForState('SELECTION')
+  await submitAll(code, players)
+  await players[0].waitForState('PERFORMING', 30000)
+  host.socket.emit('end_performance', code)
+  await players[0].waitForState('VOTING')
+
+  const roster = playersFrom(players[0]).filter(p => p.role === 'PLAYER')
+  const target = roster.find(p => p.nickname === 'P1')!
+
+  // Only the spectator votes. No PLAYER votes at all.
+  spectator.socket.emit('submit_vote', code, target.id)
+  await sleep(1500)
+
+  const reached = await players[0].waitForState('RESULTS', 70000).then(() => true).catch(() => false)
+  const res = players[0].last('game_over') as { allResults?: Array<{ playerName: string; votes: number }> } | undefined
+  const p1Votes = res?.allResults?.find(r => r.playerName === 'P1')?.votes ?? 0
+
+  record('spectatorVote', 'a spectator vote does not count toward the winner', p1Votes === 0,
+    p1Votes > 0
+      ? `spectator vote tallied (P1 = ${p1Votes}). voting.handler.ts:19-26 resolves the voter by socketId across ALL room.players with no role filter — only the vote TARGET is role-checked — and calculateResults counts every entry in room.votes. Combined with the silent spectator demotion, an overflow joiner who thinks they are playing silently decides the winner.`
+      : `not counted${reached ? '' : ' (results never reached)'}`)
+
+  ;[host, ...players, spectator].forEach(c => c.close())
 }
 
 /** 9. AI failure modes — what the room sees when generation breaks. */

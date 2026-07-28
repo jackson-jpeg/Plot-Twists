@@ -15,13 +15,68 @@ Ranked by expected impact, ignoring track boundaries.
 | 1 | S1 | Nothing is deployed. No domain resolves, the Railway app is gone, and the iOS binary points at a dead URL. | 10 |
 | 2 | S1 | The content library ships 252 named characters across 114 owned franchises, including a living person by name — the core premise is unlicensed IP. | 4 |
 | 3 | S1 | `next build` fails. You cannot produce a deployable artifact from a clean checkout. | 10 |
-| 4 | S1 | Any client can take another player's seat by guessing a `playerSessionId` string. Demonstrated. | 7 |
+| 4 | S1 | **Any player can take any other player's seat — including the host's — using an ID the server broadcast to them.** No guessing. Demonstrated. *(Escalated 2026-07-28; originally reported as a guessable string.)* | 7 |
 | 5 | S1 | Player card text is never checked against the catalog and is interpolated verbatim into the Claude prompt. Demonstrated prompt injection. | 3 |
 | 6 | S2 | No moderation pass on generated scripts, and the "mature" toggle is a self-declared boolean with no age gate. | 3 |
 | 7 | S2 | When the host disconnects during PERFORMING, the room can never reach VOTING. The night ends. Demonstrated. | 2 |
 | 8 | S2 | AI generation failure is invisible on web — the server emits `game_error`, the web store subscribes only to `game_error_message`. | 1 |
 | 9 | S2 | Room-creation rate limit is keyed on `socket.id`. 50 rooms in ~2 s by reconnecting. Rooms live in process memory. | 7 |
-| 10 | S2 | ENSEMBLE needs 4 devices minimum and the 7th+ joiner is silently demoted to spectator with `success: true`. | 1 |
+| 10 | S2 | **Spectators' votes count toward the winner** — and the 7th+ joiner is silently made a spectator while told `success: true`. So an overflow player who thinks they are playing decides who wins. *(Added 2026-07-28.)* | 1, 2 |
+
+---
+
+## Defect → harness case map
+
+**Harness: 16/28.** Added 2026-07-28 on Jackson's instruction — the denominator was interrogated before Chunk 2 lands any fixes, on the principle that *a fix with no red test is a fix you cannot verify*.
+
+Run: `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts`
+
+### Defects with a red case (gate-ready)
+
+| # | Defect | Sev | Scenario → case | Cases |
+|---|---|---|---|---|
+| D1 | Card text unvalidated → prompt injection | S1 | `abuse` → *server REJECTS off-catalog card text*; *injected text does NOT reach the model prompt* | 2 🔴 |
+| D2 | Reconnect identity: unverified client string | S1 | `identity` → *a guessed/stolen playerSessionId cannot claim a seat* | 1 🔴 |
+| **D2b** | **Reconnect identity: server-broadcast credentials** | **S1** | `identityBroadcast` → *players_update does not broadcast credentials*; *a broadcast playerId cannot claim a seat* | **2 🔴 NEW** |
+| D3 | Host abandonment strands the round | S2 | `hostAbandon` → *the round survives an abandoned host and reaches VOTING* | 1 🔴 **reframed** |
+| **D3b** | **Zero-vote round emitted as a normal `game_over`** | **S3** | `emptyResults` → *a zero-vote round is not emitted as a normal game_over* | **1 🔴 NEW** |
+| D4 | Dropped voter stalls the room ≤60s | S2 | `voterDrop` → *results resolve promptly when a voter drops* | 1 🔴 |
+| D5 | Rate limits keyed on `socket.id` | S2 | `rateLimit` → *reconnecting does NOT reset the room-creation limit* | 1 🔴 |
+| D6 | AI failure silent on web | S2 | `aiFailure` → *mode=malformed*; *mode=error* | 2 🔴 |
+| **D7** | **Spectator votes count toward the winner** | **S2** | `spectatorVote` → *a spectator vote does not count toward the winner* | **1 🔴 NEW** |
+
+### What changed, and why it mattered
+
+**`hostAbandon` was asserting the defect as expected behaviour.** The original case read `!states.includes('VOTING')` and **passed** — it documented that the round strands, rather than gating on it being fixed. A green test over a known S2 is worse than no test: it reads as coverage. Reframed to `states.includes('VOTING')`, which is now correctly red and goes green when host migration lands.
+
+**D2b is an escalation of D2, not a duplicate — and it is materially worse than the audit originally said.** `players_update` emits `Array.from(room.players.values())` — the full `Player` object, whose interface (`lib/types.ts:246-261`) includes `sessionId` and `uid`. Measured leak: `sessionId, socketId` broadcast to every client. And `findPlayerInRoomByUserId` (`room.service.ts:346`) matches `player.uid === userId || playerId === userId`, while `rejoin_room` (`reconnection.handler.ts:57-58`) tries **both** lookups against the client-supplied argument. So **three** distinct strings are each a valid reconnect credential, and the server hands two of them to every player in the room. The harness took the **host's** seat using a `playerId` the server had broadcast — no guessing.
+
+**D7 was found while interrogating the denominator, not by reading code.** `voting.handler.ts:19-26` resolves the voter by `socketId` across *all* `room.players` with no role filter; only the vote *target* is role-checked. `calculateResults` counts every entry in `room.votes`. Demonstrated: one spectator voted, zero players voted, and the spectator's pick won with 1 vote. It compounds with the silent spectator demotion — the 7th joiner is told `success: true`, believes they are playing, and decides the winner.
+
+### Defects with NO harness case — and why
+
+Stated explicitly so they are not mistaken for covered.
+
+| Defect | Sev | Why no case | Verification instrument |
+|---|---|---|---|
+| Process-local state, no Socket.IO adapter | S1 | Not observable in a single process — needs two server instances behind a load balancer | Deferred; deploy pinned to 1 replica in the meantime |
+| Biased card shuffle (`sort(() => Math.random() - 0.5)`) | S3 | Statistical, not behavioural — needs N-sample distribution analysis, not a pass/fail assertion | Add a chi-square check in Chunk 3, or accept as read-from-algorithm |
+| `next build` failure | S1 | Build-time, not runtime | Fixed in Chunk 1; CI gates it in Chunk 6 |
+| ENSEMBLE needs 4 devices; overflow demoted silently | S2 | Server behaviour is correct — the defect is that the **UI** doesn't surface `role` from the join ack | Needs a client-side test, not a socket test |
+| Firestore rules | unknown | Different subsystem entirely | `@firebase/rules-unit-testing` against the emulator — see `DECISIONS.md` #7 |
+
+### Is 28 the right denominator? No — here is what is still unexercised
+
+The harness does not currently drive these paths at all:
+
+1. **Host reconnect within the grace period.** `hostAbandon` kills the host and never returns. The `rejoin_room` → `markPlayerReconnected` → auto-resume path (`reconnection.handler.ts:88`) is untested.
+2. **Simultaneous final-card submission.** Guarded at `game.helpers.ts:43-47`, never exercised — the double-invocation race it guards against is exactly the kind of thing that only appears under real concurrency.
+3. **Timer expiry racing a client action.** `VOTING_TIMEOUT` firing at the same moment as the last vote.
+4. **Room-code collision.** `Math.random()` over ~1.05M codes; no forced-collision case.
+5. **Reconnect during SELECTION or LOADING.** Only VOTING and PERFORMING disconnects are covered.
+6. **`request_sequel`.** The replay path is covered via `request_new_game` only.
+
+These are gaps, not defects — I have no evidence any of them is broken. They are listed so the 28 is not read as completeness.
 
 ---
 
@@ -568,6 +623,61 @@ The design system there is also the better one of the two — see Track 8.
 **Fix:** Server-issued reconnect tokens. On join, mint a random secret server-side, return it once in the join ack, store the hash on the player. `rejoin_room` verifies the hash. Never accept an unverified client-supplied identity. ~1 day.
 
 **Confidence:** High — demonstrated.
+
+---
+
+### Investigation: is defect D2 caused by a half-finished Clerk migration?
+
+Asked 2026-07-28: *"Is Firebase Auth still live alongside Clerk? If both are running, I want to know which one issues `playerSessionId` — defect #2 is exactly the bug a half-finished auth cutover produces."*
+
+**Short answer: the auth migration is finished, Firebase Auth is dead code, and `playerSessionId` is issued by neither system. But the instinct was right — the bug is migration-shaped, just not in the way expected.**
+
+**Firebase Auth is not live.**
+- `lib/firebase.ts:1-6` — *"Auth is handled by Clerk. Firebase is used only for Firestore database and Firebase Storage."*
+- **Zero `firebase/auth` imports client-side.** Only `firebase/app`, dynamically.
+- `server/routes/auth.ts` still contains a full Firebase phone-auth flow (`admin.auth().verifyIdToken` / `createCustomToken` / `getUserByPhoneNumber`) — but `registerAuthRoutes` is **never called**. `server/routes/index.ts:45`: *"Auth routes removed — Clerk handles all auth client-side."* Dead module, ~120 lines, still importing `firebase-admin`.
+
+**`playerSessionId` is issued by neither auth system.** `lib/playerSession.ts`:
+```ts
+const PLAYER_SESSION_KEY = 'plottwists_player_session_id'
+function createSessionId(): string { return `ps_${crypto.randomUUID()}` }
+// read/write localStorage
+```
+A client-generated UUID in `localStorage`. Never issued, signed, or validated by a server. It predates and is orthogonal to Clerk.
+
+**Where the migration *did* cause the bug — and this is the part that matters:**
+
+Each new identity mechanism was added as an **additional accepted credential** rather than replacing the old one. Three generations are simultaneously valid:
+
+```ts
+// room.handler.ts:49,172,463 — precedence is INVERTED
+sessionId: socket.data.playerSessionId ?? socket.data.userId ?? `legacy_${uuidv4()}`
+```
+The unverified client string is preferred **over** the cryptographically verified Clerk subject. Even for a signed-in player, the reconnect identity is the one the client made up.
+
+```ts
+// reconnection.handler.ts:57-58 — BOTH lookups, against the same client argument
+findPlayerInRoomBySessionId(code, playerSessionId)
+  ?? findPlayerInRoomByUserId(code, playerSessionId)
+
+// room.service.ts:346
+if (player.uid === userId || playerId === userId) { ... }
+```
+
+So the accepted credentials are: the localStorage string, the **Clerk user ID** (public — it is the path segment in `/profile/[userId]`), and the room-scoped **`playerId`** (broadcast to every client in `players_update`). That is accretion, and it is exactly the shape a migration leaves behind.
+
+**So the proposed reframe — "one auth system owns identity" — is half right, and needs one correction.** It cannot be the whole fix, because the game is deliberately guest-friendly: `socketAuth.ts:47-53` allows tokenless connections, so a large fraction of players will never have a Clerk identity to delegate to. And none of the three currently-accepted credentials can become *the* credential — the Clerk ID is public, the `playerId` is broadcast, and the localStorage string is client-generated.
+
+**The fix is therefore two-sided, and it is a stronger claim than "validation patch":**
+1. **Authenticated players:** identity is the Clerk `sub`, verified server-side. Never the client string. Fix the `??` precedence.
+2. **Guests:** a server-issued reconnect secret — because there is no auth system to own it.
+3. **Delete the other two lookup paths** and stop broadcasting `sessionId`/`uid` in `players_update`.
+
+Items 1 and 3 are the migration cleanup. Item 2 is the thing no auth system can give you. Chunk 2 item 5 is updated to all three.
+
+**Also worth deleting while in there:** the dead `server/routes/auth.ts`, and `user.service.ts:369` — a function named `verifyIdToken` (Firebase's name) that actually calls Clerk's `verifyToken`. Neither is a defect; both are traps for the next person.
+
+**Confidence:** High. Every claim is a file:line, and the takeover is demonstrated by `identityBroadcast`.
 
 ---
 

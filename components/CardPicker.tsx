@@ -112,8 +112,7 @@ export function CardPicker({
       const query = debouncedQuery.toLowerCase().trim()
       filtered = filtered.filter(item =>
         item.name.toLowerCase().includes(query) ||
-        item.tags.some(tag => tag.toLowerCase().includes(query)) ||
-        (item.source && item.source.toLowerCase().includes(query))
+        item.tags.some(tag => tag.toLowerCase().includes(query))
       )
     }
 
@@ -481,11 +480,6 @@ export function CardPicker({
                             <p style={{ fontWeight: 600, fontSize: '14px', lineHeight: 1.3, color: '#1a1812', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                               {item.name}
                             </p>
-                            {item.source && (
-                              <p style={{ fontSize: '9px', color: '#8a8578', margin: '4px 0 0', textTransform: 'uppercase', letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {item.source}
-                              </p>
-                            )}
                           </div>
                           {isSelected && (
                             <motion.div

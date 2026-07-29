@@ -90,8 +90,7 @@ export function CardBrowseModal({
       const query = debouncedQuery.toLowerCase().trim()
       filtered = filtered.filter(item =>
         item.name.toLowerCase().includes(query) ||
-        item.tags.some(tag => tag.toLowerCase().includes(query)) ||
-        (item.source && item.source.toLowerCase().includes(query))
+        item.tags.some(tag => tag.toLowerCase().includes(query))
       )
     }
 
@@ -228,16 +227,6 @@ export function CardBrowseModal({
                       >
                         {item.name}
                       </p>
-
-                      {/* Source */}
-                      {item.source && (
-                        <p
-                          className="text-xs mb-2 line-clamp-1"
-                          style={{ color: 'var(--color-text-tertiary)' }}
-                        >
-                          {item.source}
-                        </p>
-                      )}
 
                       {/* Tags */}
                       <div className="flex flex-wrap gap-1">

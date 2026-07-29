@@ -1,6 +1,26 @@
 import { ContentItem } from './content-types'
 
 // ============================================================================
+// SOURCE ATTRIBUTION IS NOT ALLOWED IN THIS FILE — INCLUDING IN COMMENTS.
+//
+// Chunk 4 layer 1 deleted the `source:` field from all 375 entries. It did not touch the
+// section comments, and FOUR of them still named the exact franchise the entries beneath
+// them were derived from. Found 2026-07-29 while building the playtest packet, a session
+// after layer 1 was called complete. (The four names are in the commit that removed them,
+// not here — writing them back into this file to explain their removal would be silly.)
+//
+// Two reasons this is not pedantry. First, the file's entire purpose is that the catalog
+// carries no franchise attribution, and a comment is attribution — deleting the data field
+// while leaving the label is filing off a serial number and writing it on the box. Second,
+// nothing was ever going to catch it: the layer-3 screen only ever sees runtime strings, and
+// its term list was generated from CHARACTER names, so it holds no franchise TITLES at all
+// and returned clean on every one of the four when tested in isolation.
+//
+// Gated by __tests__/unit/lib/contentSource.test.ts, which reads this file as TEXT.
+// Comments here describe genre and tone. Never a title.
+// ============================================================================
+
+// ============================================================================
 // CHARACTERS
 // ============================================================================
 
@@ -216,7 +236,7 @@ export const CHARACTERS: ContentItem[] = [
   { id: 'char-anxious-grandson-dragged-across-dimensions', name: 'An anxious grandson dragged across dimensions', category: 'animation', tags: ['sidekick', 'anxious', 'grandson', 'average'], maturity: 'mature' },
   { id: 'char-older-sister-would-like-to', name: 'An older sister who would like to be included for once', category: 'animation', tags: ['teenager', 'sister', 'popular', 'capable'], maturity: 'mature' },
 
-  // Dark Comedy - Archer
+  // Dark Comedy - spy agency
   { id: 'char-vain-super-spy-drinking-problem', name: 'A vain super-spy with a drinking problem and mother issues', category: 'animation', tags: ['spy', 'narcissist', 'drunk', 'mommy-issues'], maturity: 'mature' },
   { id: 'char-competent-field-agent-surrounded-by', name: 'A competent field agent surrounded by idiots', category: 'animation', tags: ['spy', 'competent', 'hands', 'ex'], maturity: 'mature' },
   { id: 'char-hr-director-most-dangerous-person', name: 'An HR director who is the most dangerous person here', category: 'animation', tags: ['hr', 'strong', 'crude', 'drift-racing'], maturity: 'mature' },
@@ -233,11 +253,11 @@ export const CHARACTERS: ContentItem[] = [
   { id: 'char-illiterate-bar-worker-handles-rat', name: 'An illiterate bar worker who handles the rat problem', category: 'sitcom', tags: ['janitor', 'illiterate', 'rats', 'stalker'], maturity: 'mature' },
   { id: 'char-aspiring-actress-group-treats-as', name: 'An aspiring actress the group treats as a bird', category: 'sitcom', tags: ['bird', 'actress', 'delusional', 'gangly'], maturity: 'mature' },
 
-  // Dark Comedy - Lucifer
+  // Dark Comedy - supernatural procedural
   { id: 'char-devil-running-nightclub-consulting-police', name: 'The devil running a nightclub and consulting for police', category: 'fantasy', tags: ['devil', 'charming', 'desires', 'piano'], maturity: 'mature' },
   { id: 'char-demon-bodyguard-excellent-knives', name: 'A demon bodyguard with excellent knives', category: 'fantasy', tags: ['demon', 'bounty-hunter', 'fierce', 'knives'], maturity: 'mature' },
 
-  // Antiheroes - The Boys
+  // Antiheroes - superhero deconstruction
   { id: 'char-beloved-super-patriot-deeply-unwell', name: 'A beloved super-patriot who is deeply unwell', category: 'action', tags: ['superman', 'psycho', 'milk', 'mommy-issues'], maturity: 'mature' },
   { id: 'char-trenchcoated-brawler-grudge-against-superheroes', name: 'A trenchcoated brawler with a grudge against superheroes', category: 'action', tags: ['vigilante', 'british', 'revenge', 'crude'], maturity: 'mature' },
   { id: 'char-ordinary-man-dragged-into-war', name: 'An ordinary man dragged into a war he cannot survive', category: 'action', tags: ['everyman', 'nervous', 'conscience', 'music'], maturity: 'mature' },
@@ -259,7 +279,7 @@ export const CHARACTERS: ContentItem[] = [
   { id: 'char-cannibal-psychiatrist-impeccable-taste', name: 'A cannibal psychiatrist with impeccable taste', category: 'horror', tags: ['cannibal', 'psychiatrist', 'refined', 'census-taker'], maturity: 'mature' },
   { id: 'char-trainee-agent-interviewing-monster', name: 'A trainee agent interviewing a monster', category: 'crime', tags: ['fbi', 'rookie', 'lambs', 'determined'], maturity: 'mature' },
 
-  // Antiheroes - Ozark
+  // Antiheroes - crime family
   { id: 'char-financial-adviser-laundering-money-by', name: 'A financial adviser laundering money by the lake', category: 'crime', tags: ['accountant', 'money-laundering', 'calm', 'family'], maturity: 'mature' },
   { id: 'char-political-operative-turns-out-to', name: 'A political operative who turns out to be the ruthless one', category: 'crime', tags: ['wife', 'ambitious', 'ruthless', 'political'], maturity: 'mature' },
 

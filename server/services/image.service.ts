@@ -8,9 +8,9 @@ import { getStorage } from '../db/firestore'
 import { v4 as uuidv4 } from 'uuid'
 import { logger } from '../../lib/logger'
 import {
-  HOMEPAGE_POSTER_FALLBACK_MODEL,
-  HOMEPAGE_POSTER_PRIMARY_MODEL,
-} from '../../lib/homepagePosterBriefs'
+  POSTER_IMAGE_FALLBACK_MODEL,
+  POSTER_IMAGE_PRIMARY_MODEL,
+} from '../../lib/imageModels'
 
 const PLACEHOLDER_IMAGE_URL = '/images/default-poster.svg'
 
@@ -23,9 +23,9 @@ function getGenAI(): GoogleGenAI {
   return genAIInstance
 }
 
-async function generateImageBuffer(prompt: string, preferredModel = HOMEPAGE_POSTER_PRIMARY_MODEL): Promise<Buffer> {
+async function generateImageBuffer(prompt: string, preferredModel = POSTER_IMAGE_PRIMARY_MODEL): Promise<Buffer> {
   const genAI = getGenAI()
-  const modelsToTry = [preferredModel, HOMEPAGE_POSTER_FALLBACK_MODEL].filter(
+  const modelsToTry = [preferredModel, POSTER_IMAGE_FALLBACK_MODEL].filter(
     (model, index, models) => models.indexOf(model) === index
   )
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { HOMEPAGE_POSTER_BRIEFS } from '@/lib/homepagePosterBriefs'
+import { HOMEPAGE_SHOWCASE } from '@/lib/homepageShowcase'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 
 interface HomepagePosterCardProps {
@@ -161,11 +161,11 @@ export function HomepagePosterShowcase() {
   const [activeIndex, setActiveIndex] = useState(0)
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
-  const activePoster = HOMEPAGE_POSTER_BRIEFS[activeIndex]
+  const activePoster = HOMEPAGE_SHOWCASE[activeIndex]
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % HOMEPAGE_POSTER_BRIEFS.length)
+      setActiveIndex((current) => (current + 1) % HOMEPAGE_SHOWCASE.length)
     }, 4800)
 
     return () => window.clearInterval(timer)
@@ -213,7 +213,7 @@ export function HomepagePosterShowcase() {
             margin: 0,
           }}
         >
-          Five absurd premieres. One impossible lineup.
+          Six absurd premieres. One impossible lineup.
         </p>
       </div>
 
@@ -235,10 +235,10 @@ export function HomepagePosterShowcase() {
             <HomepagePosterCard
               title={activePoster.title}
               hook={activePoster.hook}
-              imagePath={`/poster-showcase/${activePoster.slug}.png`}
-              fallbackBackground={activePoster.fallbackPalette.background}
-              accent={activePoster.fallbackPalette.accent}
-              text={activePoster.fallbackPalette.text}
+              imagePath={activePoster.imagePath}
+              fallbackBackground={activePoster.palette.background}
+              accent={activePoster.palette.accent}
+              text={activePoster.palette.text}
               active
             />
           </motion.div>
@@ -254,7 +254,7 @@ export function HomepagePosterShowcase() {
             paddingBottom: isDesktop ? undefined : '4px',
           }}
         >
-          {HOMEPAGE_POSTER_BRIEFS.map((poster, index) => (
+          {HOMEPAGE_SHOWCASE.map((poster, index) => (
             <button
               key={poster.slug}
               type="button"
@@ -268,13 +268,13 @@ export function HomepagePosterShowcase() {
                 padding: '12px',
                 borderRadius: '18px',
                 border: index === activeIndex
-                  ? `1.5px solid ${poster.fallbackPalette.accent}`
+                  ? `1.5px solid ${poster.palette.accent}`
                   : '1px solid rgba(255,255,255,0.06)',
                 background: index === activeIndex
                   ? 'rgba(255,255,255,0.04)'
                   : 'rgba(255,255,255,0.02)',
                 boxShadow: index === activeIndex
-                  ? `0 12px 28px rgba(0, 0, 0, 0.36), 0 0 0 1px ${poster.fallbackPalette.accent}18`
+                  ? `0 12px 28px rgba(0, 0, 0, 0.36), 0 0 0 1px ${poster.palette.accent}18`
                   : 'none',
                 textAlign: 'left',
                 cursor: 'pointer',
@@ -286,7 +286,7 @@ export function HomepagePosterShowcase() {
                 style={{
                   aspectRatio: '2 / 3',
                   borderRadius: '12px',
-                  background: poster.fallbackPalette.background,
+                  background: poster.palette.background,
                   overflow: 'hidden',
                   position: 'relative',
                   flexShrink: 0,
@@ -294,20 +294,22 @@ export function HomepagePosterShowcase() {
                   transition: 'opacity 0.2s',
                 }}
               >
-                <img
-                  src={`/poster-showcase/${poster.slug}.png`}
-                  alt=""
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                  onError={(event) => {
-                    event.currentTarget.style.display = 'none'
-                  }}
-                />
+                {poster.imagePath && (
+                  <img
+                    src={poster.imagePath}
+                    alt=""
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                    onError={(event) => {
+                      event.currentTarget.style.display = 'none'
+                    }}
+                  />
+                )}
               </div>
 
               {/* Text */}

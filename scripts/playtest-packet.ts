@@ -3,25 +3,21 @@
  *
  *   [VPS] npx tsx scripts/playtest-packet.ts > PLAYTEST-2026-07-29.md
  *
- * Nobody has read a dealt hand since 375 catalog entries were rewritten from named
- * characters to archetypes. The tests prove the rewrite is LEGAL. Nothing proves it is still
- * FUNNY, and losing specificity is the exact cost an archetype rewrite risks: "Shrek" is a
- * joke, "a large green ogre" is a description.
+ * The tests prove the deck is LEGAL. Nothing proves it is FUNNY, and that is the whole risk of
+ * this rewrite: the previous version of this catalog was funny BECAUSE it was still the protected
+ * characters with their names removed. Trading that away for real archetypes is the trade Jackson
+ * asked for, and 40 hands is how he checks what it cost.
  *
- * WHAT THIS DOES AND DOES NOT USE. Hands come from the real `dealCards` against the real
- * catalog — the same function `start_game` calls — so what appears below is what a player is
- * actually dealt, not a plausible reconstruction. Screening runs the real
- * contentScreen matchers rather than a reimplementation, for the same reason.
+ * WHAT THIS USES. Hands come from the real `dealCards` against the real catalog — the same
+ * function `start_game` calls — so what appears below is what a player is actually dealt, not a
+ * plausible reconstruction. Prompts are built by the real prompt path, screening runs the real
+ * `contentScreen` matchers. No reimplementations: a second copy of any of these would be a second
+ * thing to keep in sync, and the point is to report what production would do.
  *
  * WHAT IS MISSING, AND WHY. Three complete generated scripts were asked for and are NOT here.
- * There is no ANTHROPIC_API_KEY on this box or in /etc/plotslop/env, so a real script cannot
- * be generated, and the harness mock returns deterministic filler ("Harness line 1. This is
- * deterministic filler dialogue...") which would tell a reader nothing about comedy. Printing
- * that under the heading "generated script" would be worse than printing nothing.
- *
- * What is here instead is the exact system+user prompt the model WOULD receive for three of
- * these hands, built by the real prompt path. That is the input under our control and it is
- * the part the catalog rewrite actually changed.
+ * There is no ANTHROPIC_API_KEY on this box or in /etc/plotslop/env, so a real script cannot be
+ * generated, and the harness mock returns deterministic filler that would say nothing about
+ * comedy. Printing that under the heading "generated script" would be worse than printing nothing.
  */
 
 import type { Room } from '../lib/types'
@@ -30,7 +26,7 @@ import { getSystemPrompt, getModeInstructions } from '../server/services/prompts
 import { screenScript, type ScreenHit } from '../server/services/contentScreen.service'
 import { CHARACTERS, SETTINGS, CIRCUMSTANCES } from '../lib/content'
 
-const HANDS = 25
+const HANDS = 40
 const PROMPTS_SHOWN = 3
 
 function fakeRoom(code: string): Room {
@@ -50,13 +46,7 @@ function fakeRoom(code: string): Room {
   } as Room
 }
 
-/**
- * Screen arbitrary prose with the PRODUCTION matcher.
- *
- * screenScript only accepts a Script, so text is wrapped in one rather than duplicating the
- * regex table here. A second copy of the matcher would be a second thing to keep in sync, and
- * the whole point of this section is to report what the real screen would say.
- */
+/** Screen arbitrary prose with the PRODUCTION matcher, by wrapping it in the shape it accepts. */
 function screenText(text: string, label: string): ScreenHit[] {
   const script = { title: '', synopsis: text, lines: [] } as unknown as Parameters<typeof screenScript>[0]
   return screenScript(script, label).hits
@@ -72,22 +62,28 @@ async function main() {
 
   p('# PlotSlop — playtest packet')
   p()
-  p('**Generated 2026-07-29 from the rewritten archetype catalog.**')
+  p('**Generated 2026-07-29, second pass, from the restructured catalog.**')
   p()
   p('Read this to answer the one question the test suite cannot: *is it still funny?*')
-  p('Everything below comes from the real dealing path (`cardCatalog.service.dealCards`), so')
-  p('these are hands players actually get.')
   p()
-  p(`Catalog: **${CHARACTERS.length} characters · ${SETTINGS.length} settings · ${CIRCUMSTANCES.length} circumstances**.`)
+  p('**This is a different deck from the packet you read this morning.** That one was a rename of')
+  p('the old catalog and it read well because every card was still a protected character with the')
+  p('name filed off. This one changes the card GRAMMAR: the character slot is a trait or a flaw,')
+  p('and the specificity moved into setting and situation. The comedy now has to come from the')
+  p('collision of a trait with a predicament, not from recognition.')
+  p()
+  p('Everything below comes from the real dealing path (`cardCatalog.service.dealCards`).')
+  p()
+  p(`Catalog: **${CHARACTERS.length} traits · ${SETTINGS.length} settings · ${CIRCUMSTANCES.length} situations**.`)
   p()
 
-  // ── 25 hands ──────────────────────────────────────────────────────────────
+  // ── 40 hands ──────────────────────────────────────────────────────────────
   p('---')
   p()
-  p('## 25 dealt hands')
+  p(`## ${HANDS} dealt hands`)
   p()
-  p('Format: `character / setting / situation`. Each line is one card taken from a real')
-  p('eight-card deal, which is what a player picks from.')
+  p('Format: `trait / setting / situation`. Each line is one card taken from a real eight-card')
+  p('deal, which is what a player picks from.')
   p()
   p('```')
 
@@ -116,11 +112,12 @@ async function main() {
   p('**Three complete generated scripts were asked for and are not here.** There is no')
   p('`ANTHROPIC_API_KEY` on this box or in `/etc/plotslop/env`, so no real script can be')
   p('generated; the harness mock returns deterministic filler that would say nothing about')
-  p('comedy. Printing that under a "generated script" heading would be worse than printing')
-  p('nothing. **This is blocked on the same key the deploy is blocked on.**')
+  p('comedy. **This is blocked on the same key the deploy is blocked on.**')
   p()
-  p('What follows is the exact prompt three of the hands above produce, built by the real')
-  p('prompt path — the input under our control, and the part the catalog rewrite changed.')
+  p('Note the `someone who …` wrapper below. Trait cards do not read as subjects on their own —')
+  p('*"The human player will perform as Insists nothing is wrong at increasing volume"* — so the')
+  p('prompt path wraps each one at the point it enters the template. That is the only code change')
+  p('the grammar switch required.')
   p()
 
   const systemPrompt = getSystemPrompt(false)
@@ -135,9 +132,9 @@ async function main() {
     p(`### Round ${i + 1}`)
     p()
     p('```')
-    p(`characters:   ${h.character}, ${hands[i + 1].character}, ${hands[i + 2].character}`)
+    p(`traits:       ${cast.join(' / ')}`)
     p(`setting:      ${h.setting}`)
-    p(`circumstance: ${h.circumstance}`)
+    p(`situation:    ${h.circumstance}`)
     p('```')
     p()
     p('<details><summary>mode instructions sent for this round</summary>')
@@ -162,9 +159,9 @@ async function main() {
     ...hands.map((h, i) => ({ label: `hand ${i + 1}`, text: `${h.character} ${h.setting} ${h.circumstance}` })),
     { label: 'system prompt', text: systemPrompt },
     { label: 'mode instructions', text: getModeInstructions('ENSEMBLE', ['a', 'b', 'c'], 'a place', 'a situation') },
-    { label: 'FULL character catalog', text: CHARACTERS.map(c => c.name).join('\n') },
+    { label: 'FULL trait catalog', text: CHARACTERS.map(c => c.name).join('\n') },
     { label: 'FULL setting catalog', text: SETTINGS.map(c => c.name).join('\n') },
-    { label: 'FULL circumstance catalog', text: CIRCUMSTANCES.map(c => c.name).join('\n') },
+    { label: 'FULL situation catalog', text: CIRCUMSTANCES.map(c => c.name).join('\n') },
   ]
 
   let totalHits = 0
@@ -177,15 +174,20 @@ async function main() {
     }
   }
 
+  const total = CHARACTERS.length + SETTINGS.length + CIRCUMSTANCES.length
   if (totalHits === 0) {
-    p('**Zero hits.** Nothing in the 25 hands, the prompts, or all 501 catalog entries matches')
-    p('a protected term or a real person.')
+    p(`**Zero hits.** Nothing in the ${HANDS} hands, the prompts, or all ${total} catalog entries`)
+    p('matches a protected term or a real person.')
     p()
-    p('Read that as narrowly as it is meant. The screen is a **fixed denylist**: it finds terms')
-    p('someone already thought to add. A clean sweep means no *named* entity survived the')
-    p('rewrite — it does not mean nothing is recognisable. "A wheezing tyrant in black armour')
-    p('who is secretly your father" passes this clean, and would pass it forever. The semantic')
-    p('pass has not been built.')
+    p('**Read that as narrowly as it is meant, because this morning it was a false green.** The')
+    p('screen is a fixed denylist. It finds terms somebody already thought to add — and it does not')
+    p('read source files, so it returned this same clean sweep while the ensemble prompt said')
+    p('*Structure it like "The Office" or "Community."* and the user prompt said *"Yoda talks like')
+    p('Yoda"*. Both were shipping to the model on every round. Both are fixed, and a build-time')
+    p('gate that reads the files as text now covers five of them.')
+    p()
+    p('What a clean sweep means: no *named* entity survived. It does not mean nothing is')
+    p('recognisable, and it never will.')
   } else {
     p(`**${totalHits} hit(s).**`)
     p()
@@ -195,63 +197,67 @@ async function main() {
   }
   p()
 
-  // ── near misses ───────────────────────────────────────────────────────────
-  p('### Near misses — flagged, deliberately not redacted')
+  // ── public domain ─────────────────────────────────────────────────────────
+  p('---')
   p()
-  p('Catalog entries that read as *evocative of* something specific without naming it. The')
-  p('screen does not and should not catch these; a human should look at them.')
+  p('## Deliberate public domain — a judgement call to confirm or overrule')
   p()
-  const NEAR = [
-    /ogre|swamp/i, /wizard|chosen one|scar/i, /armour|armor|helmet|breathing/i,
-    /rat|chef|kitchen/i, /sponge|pineapple/i, /mouse|castle|kingdom/i,
-    /detective|deerstalker|violin/i, /archaeolog|whip|fedora/i,
-  ]
-  const near = [...CHARACTERS, ...SETTINGS, ...CIRCUMSTANCES]
-    .filter(c => NEAR.some(re => re.test(c.name)))
-  if (near.length === 0) {
-    p('_None matched the heuristics used._')
-  } else {
-    p('```')
-    near.forEach(c => p(`- ${c.name}`))
-    p('```')
-  }
+  p('You said genre and public domain are allowed and under-used. They are now used, and only in')
+  p('SETTINGS, never in the trait deck. The reason is that your two rules pull against each other:')
+  p('a Holmes or a Dracula card would be perfectly legal and would fail your own done-criterion,')
+  p('because I can name it. So public domain enters as a SCENE rather than as a person.')
+  p()
+  const PD = SETTINGS.filter(s =>
+    /Heath|King Has|Balcony|Ferryman|Labyrinth|Chained|Confectionery|Tower With No Door|Ends At Midnight|Round Table|Hand Coming Out|Carpathians|Ship’s Log|Thunderstorm|Opera House|Whaling|Tea Table|Debtors|Counting House|Moor At Night|Five Daughters|Fog At The Window/.test(
+      s.name,
+    ),
+  )
+  p('```')
+  PD.forEach(s => p(`- ${s.name}`))
+  p('```')
+  p()
+  p('**Two of those deserve a second look and I am flagging them rather than quietly keeping them:**')
+  p()
+  p('- *A Laboratory In A Thunderstorm With A Sheet Over Something.* Frankenstein is public domain')
+  p('  (1818) but the lightning-powered laboratory is not in the novel — it is the 1931 film, which')
+  p('  is not. The imagery I reached for is the copyrighted one.')
+  p('- *An Opera House Box That Is Always Kept Empty.* Box Five is from the 1910 Leroux novel and')
+  p('  is genuinely public domain, but public association runs through the musical, which is not.')
+  p()
+  p('Both are cheap to cut. Neither is load-bearing. Say the word.')
   p()
 
   // ── the judgment call ─────────────────────────────────────────────────────
   p('---')
   p()
-  p('## 🔴 What I have to flag: not generic — the opposite')
+  p('## What I have to flag: the cost landed where you predicted')
   p()
-  p('You asked me to flag anything reading as *generic* rather than *absurd*, because losing')
-  p('specificity is the real cost of the archetype rewrite. **That is not what happened.**')
+  p('You asked me to flag anything reading as *generic* rather than *absurd*. Here is the honest')
+  p('report, and it is mixed.')
   p()
-  p('Read the hands above again. "A noodle-shop panda who became a martial arts prodigy."')
-  p('"A cheerful fish with no short-term memory." "A grey wizard who arrives precisely when he')
-  p('means to." "A grumpy swamp ogre who just wants to be left alone", dealt alongside "a')
-  p('talkative pack animal who will not stop narrating".')
+  p('**The trait deck is not generic, but it is quieter.** "Apologises for things that have not')
+  p('happened yet" and "Performs grief beautifully and feels none of it" are jokes. They are not')
+  p('the *same kind* of joke as a talkative pack animal who will not stop narrating, because they')
+  p('do not arrive pre-loaded with a voice everyone at the table already does. A player has to')
+  p('build the character rather than do an impression. That is a real change in what the game asks')
+  p('of people, and eight non-friends at a party are exactly the test of whether it is too much.')
   p()
-  p('These are not archetypes. They are the same protected characters with the names removed —')
-  p('and they are still individually identifiable, which is why they are still funny. The')
-  p('catalog kept its franchise-by-franchise ordering: the first eight characters are one')
-  p('sitcom ensemble in cast order, then another, then the superheroes, then the space opera.')
+  p('**The situations got much stronger and are now carrying the scene.** The old deck offered')
+  p('"Stuck in an elevator with strangers", which is a genre of situation rather than a situation.')
+  p('The new ones commit: *a eulogy is required in nine minutes for somebody nobody liked*, *one of')
+  p('you has been replaced and the replacement is doing better*, *there is one chair too few and')
+  p('nobody will mention it*. Read the hands above and notice where your eye goes — for most of')
+  p('them it is the second and third line, which is the opposite of the old deck.')
   p()
-  p('So the comedy question you were going to answer has a good answer, and a bad one behind')
-  p('it. **The specificity survived. It survived because the IP did.**')
+  p('**Where I think it is weakest.** Ensemble mode assigns the first trait as STRAIGHT MAN, and')
+  p('some traits refuse that job — "Reacts to everything at maximum volume" cannot be the')
+  p('reasonable one. The old deck had the same problem and hid it, because a named character')
+  p('carries an implied status the model could read. Worth watching in the first live scripts; it')
+  p('is a prompt fix, not a catalog one, and I have not made it because it needs real generations')
+  p('to confirm rather than my guess.')
   p()
-  p('`DECISIONS.md` #4 defines layer 1 as "252 named characters → archetypes". What shipped is')
-  p('paraphrase, not archetype, and paraphrase is arguably a worse artefact than the original:')
-  p('a description engineered to evoke a character without naming it is the same class of thing')
-  p('as the poster briefs — your words: *exposure is what you did; intent is what you wrote')
-  p('down about doing it.*')
-  p()
-  p('**Layer 3 passes clean on every line of it**, and always will. It is a fixed denylist of')
-  p('names, so it cannot see a character that is described rather than named. That was recorded')
-  p('as a known limitation; this packet is what it looks like in practice.')
-  p()
-  p('This is your call, not mine — a true archetype rewrite trades away exactly the')
-  p('recognisability that makes the mashups land, and how much to trade is a product decision.')
-  p('It is top of `NEEDS-JACKSON.md`. **Chunk 4 should not be treated as closed until it is')
-  p('answered.**')
+  p('**What I am not doing is telling you whether it is funnier.** That is your call and it is the')
+  p('reason this file exists.')
   p()
 
   p('---')

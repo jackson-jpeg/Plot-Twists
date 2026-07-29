@@ -1,70 +1,35 @@
 # NEEDS-JACKSON
 
 **The single queue.** Everything blocked on you, ordered by what unblocks the most.
-Updated 2026-07-29. Machine labels: `[VPS]` = the Linux box, `[MACBOOK]` = your Mac.
+Updated 2026-07-29 (second pass). Machine labels: `[VPS]` = the Linux box, `[MACBOOK]` = your Mac.
 
 Nothing below is waiting on me. Where I could do the part that did not need you, I did it and
 said so.
 
----
-
-## 1. 🔴 Chunk 4 layer 1 did not do what it claims — how far do you want to go?
-
-**This is a decision, not a task, and it is the one that changes the product.**
-
-Read `PLAYTEST-2026-07-29.md` (also in your Downloads) before answering. The short version:
-the 252-character rewrite produced **paraphrase, not archetype**. Every entry is still an
-individually identifiable description of the same protected character, and the catalog kept its
-franchise-by-franchise ordering.
-
-```
-A noodle-shop panda who became a martial arts prodigy
-A cheerful fish with no short-term memory
-A grey wizard who arrives precisely when he means to
-A grumpy swamp ogre who just wants to be left alone
-    ...dealt alongside "a talkative pack animal who will not stop narrating"
-```
-
-**Why this is your call.** The specificity is what makes the mashups funny. A true archetype
-rewrite trades it away, and how much to trade is a product decision you explicitly reserved —
-"do not judge whether it is funny — that is my call." I am not going to rewrite 252 entries a
-second time on a guess about where you want that line.
-
-**What you should know before deciding.** In your own framing about the poster briefs: *exposure
-is what you did, intent is what you wrote down about doing it.* A description engineered to
-evoke a character without naming it is the second thing. And layer 3 passes clean on every line
-of it, permanently — it is a fixed denylist of names and cannot see a character that is
-described rather than named.
-
-**Roughly, the options:**
-
-| | What it means | Cost |
-|---|---|---|
-| **A. True archetypes** | "A noodle-shop panda who became a martial arts prodigy" → "An unlikely martial arts prodigy". Break the 1:1 mapping and the franchise ordering. | The mashups get less funny. This is the real cost and I am not going to pretend otherwise. |
-| **B. Thin the tail** | Keep archetypes that are genuinely generic (a regional manager, a consulting detective); rewrite only the ones that map to exactly one character. | Half the work, most of the exposure removed. Needs a judgement call per entry — mine, checkable by you. |
-| **C. Accept it, documented** | Decide the exposure is acceptable pre-launch and record why. | Defensible for a playtest with eight people. Not for a public launch, and the record would need to say so plainly. |
-
-**Answer this and I will execute it.** Until then Chunk 4 stays reopened and the scope freeze's
-"chunks 1–4 ship first" is not satisfied.
+**Closed since this morning:** Q1, the catalog rewrite. You ruled Option A restructured; it is
+built, gated, and regenerated into a 40-hand playtest packet. Details in `HANDOFF.md` §8.
 
 ---
 
-## 2. 🔴 Three secrets → `/etc/plotslop/env`
+## 1. 🔴 Three secrets → `/etc/plotslop/env`
 
 `ANTHROPIC_API_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`. All three are
 empty right now. The publishable key is needed at **build** time and is not a secret.
 
 `[VPS] bash scripts/cutover.sh --check` refuses on exactly these and will keep refusing.
-Verified today: exit 1, 4 preconditions failed, nothing touched.
+Verified again today: exit 1, preconditions failed, nothing touched.
 
-**This also blocks two things that are not the deploy:**
-- The three generated scripts missing from the playtest packet. No key, no scripts — the harness
-  mock returns filler that says nothing about comedy.
-- The live-unit cgroup checklist (item 4), which cannot start until the service can.
+**This is now the top of the queue, and it blocks more than the deploy:**
+- **The three generated scripts are still missing from the playtest packet.** No key, no scripts —
+  the harness mock returns filler that says nothing about comedy. This matters more than it did
+  this morning, because the catalog grammar changed underneath it: the packet shows you 40 hands
+  and the exact prompts, but nobody has seen what the model *does* with a trait deck. That is the
+  one remaining unknown about the rewrite you just approved.
+- The live-unit cgroup checklist, which cannot start until the service can.
 
 ---
 
-## 3. 🔴 DNS — point `plotslop.com` at `187.77.218.14`
+## 2. 🔴 DNS — point `plotslop.com` at `187.77.218.14`
 
 Currently `2.57.91.91`, the Hostinger parked page.
 
@@ -73,9 +38,13 @@ A stale or absent-but-expected AAAA makes certbot validate over IPv6 and fail wh
 looks healthy over v4 — and it surfaces as a renewal failure two months later with no obvious
 cause. `cutover.sh --check` checks this.
 
+**Your web-first decision needs no change to the staged config.** I checked: the nginx I staged
+already serves the marketing page and the game from one origin on `plotslop.com`, with
+`/socket.io/` proxied to the same backend. That is exactly what you described. Nothing to re-stage.
+
 ---
 
-## 4. 🔴 Firestore — does the project exist at all?
+## 3. 🔴 Firestore — does the project exist at all?
 
 Unchanged and still first among the deploy-blockers by risk, in your ordering.
 
@@ -96,9 +65,9 @@ the live database off the JSON adapter and onto a project whose rules nobody has
 
 ---
 
-## 5. 🟠 Fire the cutover
+## 4. 🟠 Fire the cutover
 
-Everything is staged, validated and unexecuted. When 2, 3 and 4 are answered:
+Everything is staged, validated and unexecuted. When 1, 2 and 3 are answered:
 
 ```
 [VPS] bash scripts/cutover.sh --check     # must pass clean
@@ -106,12 +75,34 @@ Everything is staged, validated and unexecuted. When 2, 3 and 4 are answered:
 [VPS] bash scripts/cutover.sh --apply
 ```
 
-Validated today, offline: `nginx -t` passes on both configs, `systemd-analyze verify` is clean,
+Validated offline: `nginx -t` passes on both configs, `systemd-analyze verify` is clean,
 `systemd-analyze security` went 6.7 MEDIUM → 3.1 OK.
 
 **Step 6 of that script is yours and is blocking** — the five-box cgroup re-verification on the
 *running* unit. Every isolation measurement so far was on a transient `systemd-run` unit. That
 proves the directives work; it does not prove this unit gets them.
+
+---
+
+## 5. 🟠 NEW — the install prompt fires on the player join path
+
+Small, and it directly contradicts the decision you just made.
+
+`InstallPrompt` renders globally from `app/layout.tsx:159`, so it appears on `/join`. On iOS
+Safari it fires on a timer regardless of which page the player is on. Under *"players join in a
+phone browser with a room code, no install, ever"*, an install banner over the join flow
+interrupts the exact moment that must not be interrupted — somebody who was handed a code at a
+party and has thirty seconds of patience.
+
+**I did not change it**, because it is not obviously wrong everywhere: offering PWA install to a
+**host**, who will run this repeatedly on the same device, is reasonable. Which surfaces keep it
+is a UX call.
+
+| | |
+|---|---|
+| **A** | Suppress on `/join` and `/game`, keep elsewhere *(my recommendation)* |
+| **B** | Remove entirely — "no install, ever" means what it says |
+| **C** | Leave it |
 
 ---
 
@@ -123,9 +114,34 @@ My recommendation is unchanged: commit to the bit in user-facing copy, leave `co
 earnest — it is craft instruction to the model and making it ironic will measurably degrade
 output.
 
+One addition since this morning: `app/terms/TermsContent.tsx:76` states the refund policy as
+"Stripe or Apple App Store". True today, wrong the moment iOS is host-only and no player ever
+buys through Apple. It is a legal page, so it should be right. Folds into the same pass.
+
 ---
 
-## 7. 🟡 NEW — account-required room creation, eventually
+## 7. 🟡 NEW — two public-domain settings I flagged rather than quietly kept
+
+Both are legal. Both are arguable, and you should get the choice.
+
+- **"A Laboratory In A Thunderstorm With A Sheet Over Something."** Frankenstein is public domain
+  (1818), but the lightning-powered laboratory is not in the novel — it is the 1931 film, which
+  is not public domain. I reached for the copyrighted imagery, not the book's.
+- **"An Opera House Box That Is Always Kept Empty."** Box Five is from the 1910 Leroux novel and
+  is genuinely public domain, but public association runs through the musical, which is not.
+
+Both are cheap to cut and neither is load-bearing. Default if you say nothing: they stay.
+
+There is also a rule conflict I resolved by interpretation and should flag: your rule 2 ("no entry
+may map 1:1 to an identifiable character") and rule 3 ("public domain is allowed") pull against
+each other, because a Holmes or Dracula card is legal *and* nameable. I kept public domain out of
+the character deck entirely and used it only in settings, where what is evoked is a scene rather
+than a person. If you want named public-domain characters in the character slot, rule 2 needs an
+explicit exemption.
+
+---
+
+## 8. 🟡 Account-required room creation, eventually
 
 Not blocking, but you should know the ceiling exists before it bites.
 
@@ -135,16 +151,19 @@ subscribers in one bucket.** At playtest volume this cannot bite — it needs el
 behind one carrier IP creating rooms inside the same five minutes. At scale it will, and it will
 present as *"the game is broken on mobile data"*, not as a rate limit.
 
+**Your web-first decision makes this more likely to matter, not less**, because every player is
+now on a phone browser rather than an installed app, and phone browsers are where CGNAT lives.
+
 Mitigated for now: both limits are env knobs, answerable from `/etc/plotslop/env` without a
 deploy (`ROOM_CREATE_MAX`, `ROOM_CREATE_WINDOW_MS`, `MAX_LIVE_ROOMS_PER_CREATOR`). Signed-in
 hosts are already immune — their key is the Clerk subject, not the IP.
 
-The durable fix is requiring an account to create a room. That is a product decision, so it is
-yours, and it is not urgent.
+The durable fix is requiring an account to create a room. Product decision, so it is yours, and
+it is not urgent.
 
 ---
 
-## 8. 🟡 NEW — you removed a feature and should know it stuck
+## 9. 🟡 You removed a feature and should know it stuck
 
 Not a question, a notification, repeated because it is user-visible and easy to lose.
 
@@ -152,10 +171,18 @@ Not a question, a notification, repeated because it is user-visible and easy to 
 Option B in `AUDIT.md`. As recorded there: *Option B is not dead, but it cannot return as a text
 box on the submit path.*
 
+A second one joins it today: **the card browser no longer shows a source line under each card.**
+`CardBrowseModal` and `CardPicker` both rendered `item.source`, which was the franchise name. The
+field is deleted, so the badge is gone. Nobody would have seen it recently — layer 1 emptied the
+data a session ago — but the code was still there and would have rendered attribution to players
+the moment anything repopulated it.
+
 ---
 
 ## Not waiting on you
 
-For completeness, so you can see what moved without you: Chunk 2 items 2–7 and all of Chunk 3
-are done (harness 38/46 → 49/49, suite 436/436), the cutover is staged, and the playtest packet
-is generated. Details in `HANDOFF.md` §7.
+For completeness, so you can see what moved without you: the catalog restructure is done and
+gated, four more IP leaks were found and fixed (one of them shipping to the model on every
+request), the source-audit gate went from one file to five, the playtest packet is regenerated at
+40 hands, and both `DECISIONS.md` #4 and #12 are written. Suite 448/448, harness 49/49, typecheck
+clean. Details in `HANDOFF.md` §7 and §8.

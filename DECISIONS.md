@@ -78,7 +78,7 @@ My checks, 2026-07-28: iTunes Search API returned 10 results for `plotslop`, non
 
 | Layer | What | Why it fails alone |
 |---|---|---|
-| **1. Catalog rewrite** | 252 named characters → archetypes, server-side source of truth | A player types "Shrek" and bypasses it entirely |
+| **1. Catalog grammar** | The character slot is a TRAIT or FLAW, not a person — full definition below | A player types "Shrek" and bypasses it entirely |
 | **2. Server-side validation** | Submitted card **IDs** resolve against the catalog. Free text never interpolated into a system prompt | Without layer 1 it validates against a library full of owned IP |
 | **3. Output screening** | Generated content screened for named real people and owned franchises | Without 1 and 2 it is the only thing standing between a player's input and the screen |
 
@@ -95,6 +95,34 @@ Note the layer-2 refinement: validation is on **card IDs**, not on string equali
 Agreed, and it is worth being precise about why: the file does not merely name Shrek, it specifies how to render him — *"broad ogre silhouette, expressive animated face, textured green skin… Do not make Shrek photorealistic."* In an infringement analysis, exposure is what you did; intent is what you wrote down about doing it. This is the latter. It is deleted first, on its own commit, ahead of the rest of Chunk 4.
 
 **Options B (user-supplied names, client-side only) and C (public-domain pack) are parked** in `BACKLOG.md`. Option A is the base library.
+
+---
+
+### Layer 1, redefined — 2026-07-29
+
+**The old definition of layer 1 was "252 named characters → archetypes". That definition is what let paraphrase ship as archetypes, and it is hereby replaced.**
+
+It failed because "archetype" is a word you can satisfy by deleting a name. The first pass did exactly that and passed every check: 252 entries became things like *"A grumpy swamp ogre who just wants to be left alone"* and *"A noodle-shop panda who became a martial arts prodigy"*. No name anywhere, layer 3 clean on every line — and every single entry still an individually identifiable description of one protected character, with the catalog still ordered franchise by franchise in cast order, so the grouping identified even the entries that were individually deniable.
+
+That is a worse artefact than the names were, in Jackson's own framing about the poster briefs: *exposure is what you did, intent is what you wrote down about doing it.* A description engineered to evoke a character without naming it is the second thing.
+
+**Layer 1 is now defined structurally, so it cannot be satisfied by wording:**
+
+1. **The character slot is a TRAIT or FLAW, never a person.** No job title, no species, no era, no silhouette. *"Insists nothing is wrong at increasing volume"*, not *"a grumpy swamp ogre"*. A trait is a way of being any player can put on; a person is somebody you can point at.
+2. **No entry maps 1:1 to an identifiable character.** The binding constraint. Checked by a human — see the done-criterion below.
+3. **No franchise-derived ordering.** File order is a seeded shuffle produced by `scripts/build-catalog.ts`; there is no hand-maintained order left to group. Gated by an adjacency test against the rate a random permutation of the same category distribution would produce — the old file ran **5.0× over chance**, the new file runs **0.98×**.
+4. **The specificity budget moves to SETTING and SITUATION.** Not IP-constrained, and carrying almost none of the comedy before. This is where the game gets its particularity back.
+5. **Genre and public domain are explicitly allowed and are not property.** Noir, Cold War, Western, Shakespeare, Greek myth, Grimm, Arthurian, Gothic, Dickens, Austen, Brontë. Settings only — see the conflict note.
+
+**The done-criterion, because rules 1 and 2 need a human:**
+
+> Take a random sample of 30 entries and name the character each one maps to. If you can name one, it fails.
+
+Run 2026-07-29 against a deterministic random sample: **30/30 could not be named.** The one flagged as arguable was *"Is certain the room is a simulation and keeps testing it"* — genre-adjacent, but there is no single character whose defining trait that is. Kept, and flagged rather than quietly kept.
+
+**Where rules 2 and 5 conflict, and how it was resolved.** A Holmes card or a Dracula card would be perfectly legal — both public domain — and would fail rule 2, because you can name them. So the trait deck contains no public-domain characters at all, and public domain enters only through settings, where what is evoked is a *scene* rather than a person: *A Detective's Sitting Room, Fog At The Window, Two Armchairs*. **This is an interpretation of two rules that pull against each other, not a rule that was given.** If named public-domain characters should be allowed back into the character slot, rule 2 needs an explicit exemption written into it.
+
+**What the automated gates can and cannot do.** `__tests__/unit/lib/contentSource.test.ts` now reads **five files as TEXT** — the catalog, its generator, the type definitions, and both prompt files — because every other IP check in this repo inspects runtime values and structurally cannot see a comment or a prompt template. It checks grammar, ordering, franchise titles, and named entities. **It cannot check rule 2, and nothing can.** That is why the done-criterion is a human step and why it is written down here rather than left as a habit.
 
 ---
 
@@ -249,3 +277,45 @@ Affects ~122 `Plot Twists` copy occurrences during the rename.
 **Recommendation: keep it, and make the 7 failures the acceptance criteria for Chunks 2–3.** It is the only test exercising `game.handler.ts` or `voting.handler.ts`, both at 0% coverage. Wire it into CI in Chunk 6.
 
 **Blocked:** nothing. Already written and pushed.
+
+---
+
+## ✅ 12. Where the game ships — THE WEB, AND ONLY THE WEB
+
+**Decided by Jackson, 2026-07-29. This is a product decision and it settles several open questions at once.**
+
+> the game ships on the web. plotslop.com hosts the actual game — marketing page and product on the same domain. Players join in a phone browser with a room code, no install, ever. iOS unshelves later as a HOST/TV experience only and is never required for players.
+>
+> — Jackson, 2026-07-29
+
+**What this means concretely:**
+
+| | |
+|---|---|
+| **One domain** | `plotslop.com` serves the marketing page *and* the game. No app subdomain, no split origin. |
+| **Player path** | Phone browser → room code → playing. No install, no account required to join, no store. |
+| **iOS** | Unshelves later as a **host/TV** surface only. Never on the critical path for a player. |
+| **Consequence** | The install experience is not a funnel step. Anything treating it as one is now wrong. |
+
+### Audit against the current architecture
+
+Asked for, and done. Three categories.
+
+**Already correct — no work needed:**
+
+- **The staged nginx config is exactly right and needs no change.** `deploy/nginx/plotslop.com.conf` proxies both `/` and `/socket.io/` to `127.0.0.1:3100` under one `server_name plotslop.com www.plotslop.com`. Marketing and product on one origin, as decided. The cutover does not need re-staging.
+- **No auth gate on the join path.** There is no `middleware.ts`, and `app/join/page.tsx` requires no session. Anonymous browser join already works.
+- **Room codes already work both ways.** `app/join/[code]` deep link *and* `?code=` query param are both wired.
+- **Purchases branch correctly.** `PurchaseCreditsModal` calls `isIOSNative()` and routes to StoreKit on native or **Stripe embedded checkout** on web. This was flagged as a likely native-only assumption and checked; it is fine. The web has a real payment path.
+
+**Contradicts the decision — needs your call:**
+
+- **`InstallPrompt` renders globally from `app/layout.tsx:159`, so it fires on `/join`.** On iOS Safari it shows on a timer regardless of which page the player is on. Under "no install, ever", an install banner over the join flow interrupts the exact moment that must not be interrupted — a player who was handed a room code at a party. It is not wrong to offer PWA install to a *host*; it is wrong on the player's path. **Not changed, because which surfaces should still offer it is a UX decision.** See `NEEDS-JACKSON.md`.
+- **`app/terms/TermsContent.tsx:76`** states the refund policy as "Stripe or Apple App Store". Accurate while an iOS player app exists; wrong the moment iOS is host-only and no player ever buys through Apple. Cosmetic, but it is a legal page. Folds naturally into the Chunk 5 copy pass.
+
+**Implication worth stating plainly:**
+
+- **`/root/PlotTwists-Native` is currently a complete player app** — lobby, selection, loading, performing, voting, results. Under this decision that is no longer what it is for; it becomes a host/TV surface, which is a re-scope rather than a rename, and most of those screens stop being needed. Nothing to do now (iOS is shelved), but the shelved thing is a different shape from the thing that comes back.
+- **Monetisation centre of gravity moves to Stripe.** Apple IAP (`server/services/apple.service.ts`, `server/routes/apple.ts`, the StoreKit half of `lib/purchases.ts`) stops being the primary path. It is not dead — a host app can still sell — but it is no longer the one that has to work. Do not delete it; do stop treating it as the default.
+
+**This decision does not unblock the deploy.** The cutover is still waiting on the three secrets, DNS, and the Firestore answer.

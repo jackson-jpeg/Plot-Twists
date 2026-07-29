@@ -10,13 +10,13 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 
 | | |
 |---|---|
-| **Canonical repo** | `/root/Plot-Twists` — Next.js 16 + Socket.IO game server. The game logic, AI layer, IP content library live here. |
+| **Canonical repo** | `/root/Plot-Twists` — Next.js 16 + Socket.IO game server. **This is the product.** The game ships on the web at `plotslop.com`, marketing and game on one domain, players join in a phone browser with a room code and never install anything (`DECISIONS.md` #12). |
 | **Branch** | `audit/2026-07-28-snapshot` (tracks `origin/`). **Not** `master`, **not** `v2`. |
-| **iOS repo** | `/root/PlotTwists-Native` — SwiftUI/tvOS. **Shelved.** See §6. |
+| **iOS repo** | `/root/PlotTwists-Native` — SwiftUI/tvOS. **Shelved, and re-scoped 2026-07-29:** when it returns it is a HOST/TV surface only, never required for players. See §6 and `DECISIONS.md` #12. |
 | **Harness** | **49/49** — `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts` (~2 min) |
-| **Unit suite** | **436/436** — `[VPS] npx jest`. All eight assertion-audit gates are now green. See §3 before you relax. |
+| **Unit suite** | **448/448** — `[VPS] npx jest`. Denominator moved 436 → 448: the source-audit suite grew 4 → 16 tests. Coverage, not behaviour. See §3 before you relax. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
-| **Current chunk** | **Chunks 2 and 3 complete** (2026-07-29). **Chunk 1** code-complete, cutover STAGED and unexecuted, blocked on Jackson. **🔴 Chunk 4 is REOPENED** — layer 1 did not do what it claimed; see §8. |
+| **Current chunk** | **Chunks 2 and 3 complete.** **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** code-complete, cutover STAGED and unexecuted, blocked on Jackson. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
 `/root/PlotTwists-Native/AUDIT-iOS.md`.
@@ -116,18 +116,19 @@ Always say which kind of movement a number represents. "The harness went up" is 
 Explicitly still uncovered: multi-instance behaviour (see CONSTRAINT-1), reconnect during LOADING
 specifically, Firestore rules.
 
-### 🔴 The IP fix is three layers, and LAYER 1 DID NOT DO WHAT IT CLAIMS.
+### 🔴 The IP fix is three layers, and LAYER 1 TOOK TWO ATTEMPTS.
 
 Jackson's original correction still stands and is the most important non-obvious fact here:
 
-1. Catalog rewrite of 252 named characters → archetypes
+1. Catalog grammar — the character slot is a TRAIT, not a person (`DECISIONS.md` #4)
 2. **Server-side validation that submitted card IDs resolve against the catalog**, with free
    text never interpolated into a system prompt
 3. Output screening for named real people and owned franchises
 
-**Layers 2 and 3 landed and hold.** Layer 1 did not, and this was only discovered on
-2026-07-29 when the playtest packet made someone read the catalog. See §8. Do not repeat the
-earlier claim in this file that all three landed — that claim was mine and it was wrong.
+**Layers 2 and 3 landed first pass and hold. Layer 1 took two**: the first attempt produced
+paraphrase and was only caught when a playtest packet made somebody read the catalog. It was
+redone on 2026-07-29 against a structural definition. See §8. Do not repeat the earlier claim in
+this file that all three landed first time — that claim was mine and it was wrong.
 
 Still true, and now demonstrated rather than hypothesised:
 
@@ -137,10 +138,14 @@ Still true, and now demonstrated rather than hypothesised:
   most of the catalog.
 - Layer 2 removed the **"✎ Write your own" free-text card**. A user-visible feature removal
   that partly contradicts AUDIT.md Option B.
-- **Runtime checks cannot see source files.** The layer-3 screen inspects generated scripts and
-  the catalog tests inspect exported names; neither can see a comment. That is how four section
-  comments naming franchises survived layer 1 with every check passing. Now gated by
-  `__tests__/unit/lib/contentSource.test.ts`, which reads `lib/content.ts` as text.
+- **Runtime checks cannot see source files, and this is the single most expensive lesson in
+  this document.** The layer-3 screen inspects generated scripts; the catalog tests inspect
+  exported names. Neither can see a comment or a prompt template. That is how four section
+  comments survived layer 1 with every check passing — and then how four MORE leaks in three
+  OTHER files survived the gate written to catch the first four, because that gate audited one
+  file. One of them, `"Yoda talks like Yoda"`, was in the live user prompt on every request ever
+  sent. Now gated by `__tests__/unit/lib/contentSource.test.ts` across **five** files. §8 has the
+  table. **Add new prompt or catalog files to `AUDITED_FILES` or they are unwatched.**
 
 ### 🟠 Settled. Do not re-raise.
 
@@ -173,6 +178,11 @@ Still true, and now demonstrated rather than hypothesised:
    **`187.77.218.14`**. Note this box also has IPv6 `2a02:4780:4:1c0b::1` — an AAAA record makes
    HTTP-01 validate over v6, which must reach the same nginx.
 4. **`DECISIONS.md` #10** — copy voice. Blocks Chunk 5 only.
+
+**Q1 (how far to rewrite the catalog) was answered on 2026-07-29 and is closed** — Option A,
+restructured rather than sanded. See §8. Two new items opened in its place: whether the install
+prompt should still fire on the player join path, and two public-domain settings I flagged as
+arguable. Both in `NEEDS-JACKSON.md`.
 
 ---
 
@@ -270,7 +280,13 @@ just below actual. It is a regression guard, not a target.
 
 ---
 
-## 6. iOS — shelved, with a blocking gate
+## 6. iOS — shelved, re-scoped, with a blocking gate
+
+**Re-scoped 2026-07-29 (`DECISIONS.md` #12): when iOS returns it is a HOST/TV surface only and is
+never required for a player.** The game ships on the web; players join in a phone browser with a
+room code and never install anything. `/root/PlotTwists-Native` is currently a complete *player*
+app — lobby, selection, loading, performing, voting, results — so what comes off the shelf is a
+different shape from what went on it. That is a re-scope, not a rename. Nothing to do now.
 
 No rename of its 349 occurrences, no bundle-ID decision, tvOS target kept. Bundle IDs
 (`com.plottwists.*`) were never submitted, so changing them later is free. The only permitted
@@ -325,47 +341,91 @@ so real peak with in-flight generation is higher by an unmeasured amount.
 
 ---
 
-## 8. 🔴 CHUNK 4 IS REOPENED — read this before touching the catalog
+### Afternoon pass — 2026-07-29, on Jackson's Q1 ruling
 
-**Layer 1 did not do what it claims, and the record in this file said otherwise for a session.**
+| What | Where |
+|---|---|
+| Catalog restructured: 251 traits / 126 settings / 133 situations, seeded shuffle | `scripts/build-catalog.ts` → generates `lib/content.ts` |
+| Trait cards wrapped as `someone who …` at the prompt boundary | `comedyPrompts.ts` — one wrapper, all 13 interpolation sites |
+| **`"Yoda talks like Yoda"` removed from the live user prompt**; `Yoda` added to the denylist | `scriptGeneration.service.ts:82`, `protectedTerms.ts` |
+| `"The Office" / "Community"` removed from ensemble mode instructions | `comedyPrompts.ts:367` |
+| `Michael Scott` / `The Office` removed from type-doc comments; `source` field deleted | `lib/content-types.ts` |
+| Franchise-attribution UI badge deleted (it rendered `item.source` to players) | `CardBrowseModal.tsx`, `CardPicker.tsx` |
+| Source-audit gate widened 1 file → **5**, plus grammar and ordering gates | `contentSource.test.ts` — 4 tests → 16 |
+| Playtest packet regenerated at **40 hands** against the new grammar | `PLAYTEST-2026-07-29.md` |
+| Layer 1 redefined structurally; web-first product decision recorded | `DECISIONS.md` #4, #12 |
 
-`b0277826` is described above as "375 catalog entries rewritten to archetypes". They were
-rewritten to **paraphrase**, not archetype. Every entry is still an individually identifiable
-description of the same protected character, and the catalog kept its franchise-by-franchise
-ordering — the first eight characters are one sitcom ensemble in cast order, then another, then
-the superheroes, then the space opera.
+**Verification.** Unit suite **448/448** (was 436/436; +12 is the source-audit suite growing,
+coverage not behaviour). Harness **49/49**, denominator unchanged — correct, nothing here touched
+realtime behaviour. Typecheck 0 errors.
 
-    "A noodle-shop panda who became a martial arts prodigy"
-    "A cheerful fish with no short-term memory"
-    "A grey wizard who arrives precisely when he means to"
-    "A grumpy swamp ogre who just wants to be left alone"
+**Gate proved fail-before-fix.** Against the pre-fix tree the new gate ran **9 failed / 5 passed**,
+every failure a real defect. Re-inserting `"Yoda talks like Yoda"` alone after the fix produced
+`1 failed` with the term named. Two of my own gate assertions were wrong on the first run and are
+recorded in §9 rather than quietly corrected.
 
-Found 2026-07-29 by generating `PLAYTEST-2026-07-29.md` and reading 25 real dealt hands. Nothing
-automated could have found it: layer 3 is a fixed denylist of NAMES and returns clean on all of
-it, permanently.
+---
 
-**Why this may be worse than the original**, in Jackson's own framing about the poster briefs:
-exposure is what you did, intent is what you wrote down about doing it. A description engineered
-to evoke a character without naming it is the second thing.
+## 8. ✅ CHUNK 4 LAYER 1 — REDONE 2026-07-29. Read this before touching the catalog.
 
-**NOT fixed, deliberately.** A true archetype rewrite trades away exactly the recognisability
-that makes the mashups land, and how much to trade is a product decision Jackson reserved. Top
-item in `NEEDS-JACKSON.md`.
+**It was reopened this morning and closed this afternoon on Jackson's ruling.** He chose Option A
+but restructured rather than sanded: *"Do not sand down the existing entries — change the card
+grammar."* The binding definition now lives in `DECISIONS.md` #4 under "Layer 1, redefined".
 
-**What WAS fixed:** four section comments in `lib/content.ts` still named the franchise the
-entries beneath them came from. Layer 1 deleted the `source:` field from all 375 entries and
-never touched the comments. Now gated by `__tests__/unit/lib/contentSource.test.ts`, which reads
-the file as TEXT — because every other IP check inspects runtime values and none of them can see
-a comment.
+**What was wrong.** Commit `b0277826` was described as "375 catalog entries rewritten to
+archetypes". They were rewritten to **paraphrase** — every entry still an individually
+identifiable description of the same protected character, with franchise-by-franchise cast
+ordering intact. Found by generating a playtest packet and reading real dealt hands. Nothing
+automated could have caught it: layer 3 is a fixed denylist of NAMES and returned clean on all
+of it, permanently.
+
+**What the catalog is now.** `lib/content.ts` is **generated** — do not hand-edit it. The
+authored source is `scripts/build-catalog.ts`; regenerate with `[VPS] npx tsx
+scripts/build-catalog.ts`. 251 traits, 126 settings, 133 situations.
+
+- The **character slot is a trait or flaw**, never a person: *"Insists nothing is wrong at
+  increasing volume"*. No job title, no species, no era.
+- **Specificity moved to settings and situations**, which are not IP-constrained and were
+  carrying almost none of the comedy.
+- **Order is a seeded shuffle.** This is load-bearing, not cosmetic — the grouping alone used to
+  identify entries that were individually deniable.
+- **Public domain is used deliberately, in settings only.** Rules 2 and 5 of the definition
+  conflict for a Holmes or Dracula card; the resolution is written up in `DECISIONS.md` #4 and is
+  an interpretation, not something Jackson specified.
+
+**🔴 THE THING A FRESH SESSION MOST NEEDS TO KNOW: `lib/content.ts` WAS NEVER THE WHOLE SURFACE.**
+
+The first gate audited one file, because everyone assumed the catalog was one file. Four more
+leaks were found on 2026-07-29 in three other files, and one of them had been shipping to the
+model on every single request ever made:
+
+| Where | What | Caught by the runtime screen? |
+|---|---|---|
+| `scriptGeneration.service.ts:82` | Live user prompt read *"Write in the distinct voice of each character (Yoda talks like Yoda…)"* | **No** — and `Yoda` was not even in `protectedTerms.ts`, so the screen could not have caught it coming back either. Both fixed. |
+| `comedyPrompts.ts:367` | Ensemble mode instructions read *`Structure it like "The Office" or "Community."`* — sent every ensemble round | **No.** The term list holds character names, not franchise titles. |
+| `lib/content-types.ts:3,7` | Field docs read `// "Michael Scott"` and `// "The Office"` | Yes, 2 hits — but nothing was ever pointing it at this file. |
+| `lib/content.ts:647` | Live catalog **entry name**: *"Trapped in a Saw-like scenario"* | **No.** "Saw" is ordinary English and is not on the denylist. |
+
+`__tests__/unit/lib/contentSource.test.ts` now reads **five files as TEXT**. If you add a file
+that carries catalog or prompt text, add it to `AUDITED_FILES` — that list is the whole defence,
+because every other IP check in this repo inspects runtime values and structurally cannot see a
+comment or a prompt template.
+
+**What the gates cannot do.** They check grammar, ordering, franchise titles and named entities.
+They **cannot** check "does this map 1:1 to a character" — nothing can. That is the human
+done-criterion in `DECISIONS.md` #4: sample 30, try to name them. Run 2026-07-29, 30/30 could not
+be named.
 
 ---
 
 ## 9. Corrections to the record found on 2026-07-29
 
-Four, and they are listed because the pattern matters more than any one of them: **the written
-record has now been wrong about a completed item three sessions running.** Go looking.
+**Seven now, across two passes**, and they are listed because the pattern matters more than any
+one of them: **the written record has been wrong about a completed item four sessions running.**
+Go looking. The afternoon pass found three more (5–7) *inside the fix for number 1*, which is the
+strongest available argument for not trusting a completion claim — including one made hours ago.
 
-1. **Chunk 4 layer 1** — above. Called complete; was paraphrase.
+1. **Chunk 4 layer 1** — above. Called complete; was paraphrase. Redone 2026-07-29.
 2. **The "2-minute PERFORMING sweep"** at `room.service.ts:463`, which CHUNKS.md item 3 and the
    harness both describe as ending an abandoned round with zero votes, is inside
    `loadRoomsFromFirestore` and **only runs at server startup**. During a live session nothing
@@ -375,6 +435,23 @@ record has now been wrong about a completed item three sessions running.** Go lo
 4. **`aiFailure` × 2 in the harness** were instrument artefacts, not defects: they asserted on
    two event names the server never emits, and their own failure text contradicted the state
    path printed beside it. Verified green with zero product changes.
+
+5. **The source-audit gate itself was scoped to one file** and called sufficient the same day.
+   Widening it to the other files carrying catalog and prompt text immediately turned up three
+   more leaks, including `"Yoda talks like Yoda"` in the live user prompt — a protected name
+   handed to the model on every request, with `Yoda` absent from `protectedTerms.ts` so the
+   screen could not have caught it returning. §8 has the table.
+6. **My own first ordering gate was wrong in the dangerous direction.** It demanded no run of
+   more than three same-category entries, which a genuinely random shuffle cannot satisfy — the
+   trait deck is ~48% one category, so chance alone produces runs of eight. It failed the
+   CORRECT file, and the obvious way to "fix" it would have been to un-randomise the order.
+   Replaced with an adjacency rate measured against the random expectation for the same category
+   distribution (old file 5.0× over chance, new file 0.98×).
+7. **My own franchise-title matcher produced two false positives on its first run**, flagging
+   `A Community Centre Mid-Refurbishment` and this repo's own phrase "to keep off the wire". Both
+   ordinary English. Ordinary-English titles now match only in attributive position (quoted, or
+   `X-like`), and the resulting blind spot is written into the test file rather than left
+   implicit — a gate that cries wolf gets ignored, which is worse than no gate.
 
 One correction on the record: when the `publicId` approach was chosen, it was justified partly by
 "`player.id` is `playerSessionId ?? userId ?? legacy_uuid`". **That was wrong** — that expression

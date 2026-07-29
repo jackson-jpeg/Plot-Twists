@@ -1,0 +1,78 @@
+[Unit]
+Description=PlotSlop — game server (Next.js + Socket.IO)
+Documentation=file:///root/Plot-Twists/AUDIT.md
+After=network.target
+Wants=network.target
+StartLimitBurst=5
+StartLimitIntervalSec=300
+
+[Service]
+Type=simple
+User=plotslop
+Group=plotslop
+
+# WorkingDirectory is load-bearing, not cosmetic.
+# server/db/json.ts:11 is `path.join(process.cwd(), 'data')` — cwd-relative, NOT absolute.
+# The JSON adapter's data files live inside PlotSlop's own tree only because of this line.
+# Changing it silently relocates rooms.json / playerStats.json / progression.json /
+# gameHistory.json. ReadWritePaths below makes any escape fail closed rather than silently
+# write somewhere else.
+WorkingDirectory=/srv/plotslop
+ExecStart=/srv/plotslop/node_modules/.bin/tsx server.ts
+
+# Secrets live outside /root and outside the app tree. chmod 640 root:plotslop.
+EnvironmentFile=/etc/plotslop/env
+Environment=NODE_ENV=production
+
+Restart=always
+RestartSec=5
+
+# ── Resource limits ───────────────────────────────────────────────────────────
+# Sized 2026-07-29 against a 2-core / 7940 MB box that was ALREADY under pressure:
+# 969 MB free and swap 1.7 GB of 2 GB consumed before PlotSlop existed.
+# sanger-next.service holds MemoryMax=1500M, so this reserves 2.27 GB of 7.9 GB total.
+#
+# MemorySwapMax=0 is the important one. Swap was 87% full at sizing time, so an
+# unbounded PlotSlop would thrash the box and take sang3r.com down with it WITHOUT ever
+# tripping an OOM kill. At 0, PlotSlop dies alone. This is the line that makes the
+# demonstrated abuse path (50 rooms in ~2s, rooms evicted only after 60 min idle) a
+# PlotSlop outage instead of a host outage.
+MemoryMax=768M
+# MemoryHigh raised 640M -> 700M after measurement, deliberately narrowing the throttle band.
+# At 640M a runaway allocator did NOT get killed — it got reclaim-throttled into a 2-minute
+# stall and had to be timed out by hand. A stalled game server is worse than a dead one:
+# Restart=always never fires because the process never exits, so it serves nobody AND does
+# not recover. At 700M there is still a ~68M back-pressure window for the GC to reclaim
+# before the hard kill at 768M, but the stall cannot last long.
+MemoryHigh=700M
+MemorySwapMax=0
+
+# One full core of two, so a spin loop cannot starve sanger-next.
+# CPUWeight=50 (default 100) makes Sanger win contention below the quota.
+CPUQuota=100%
+CPUWeight=50
+TasksMax=256
+
+# ── Isolation from Sanger ─────────────────────────────────────────────────────
+# ProtectHome=true makes /root INVISIBLE to this process — not merely unreadable.
+# That covers /root/Sanger, /root/.sanger-monitor.env, /root/.sanger-vps-api.env and
+# every other co-tenant secret in one kernel-enforced stroke, rather than relying on
+# file modes that a future chmod could undo.
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/plotslop/data /srv/plotslop/.next/cache
+PrivateTmp=true
+NoNewPrivileges=true
+RestrictSUIDSGID=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+LockPersonality=true
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=plotslop
+
+[Install]
+WantedBy=multi-user.target

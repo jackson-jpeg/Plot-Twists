@@ -454,6 +454,100 @@ follows from them plus a harness case that is currently red.
 
 ---
 
+## VPS co-tenancy — isolation from Sanger. VERIFIED 2026-07-29
+
+**The problem.** `sang3r.com` runs on this box and holds Jackson's personal data.
+`sanger-next.service` runs as **`User=root`**, `WorkingDirectory=/root/Sanger`. `/root` is mode
+**755**. PlotSlop has a demonstrated memory-exhaustion path — 50 rooms in ~2s against a limit of
+10 per 5 min, with rooms evicted only after 60 min idle — and five open defects. As configured
+before this change, a stranger abusing a game lobby could take down the life OS.
+
+**Everything below was demonstrated, not asserted.** Where a check was weak, it was redone.
+
+### Sizing, and why these numbers
+
+Measured at sizing time: **7940 MB RAM with 969 MB free**, **2 cores**, **swap 1.7 GB of 2 GB
+already consumed**. The box was under memory pressure *before* PlotSlop existed. `sanger-next`
+holds `MemoryMax=1500M`; PlotSlop's 768M brings the reserved total to 2.27 GB of 7.9 GB.
+
+**`MemorySwapMax=0` is the load-bearing line.** With swap already 87% full, an unbounded PlotSlop
+would thrash the box and take Sanger down *without ever tripping an OOM kill*. At 0, PlotSlop dies
+alone. That single directive is what converts the abuse path from a host outage into a PlotSlop
+outage.
+
+`CPUQuota=100%` is one full core of two, so a spin loop cannot starve `sanger-next`;
+`CPUWeight=50` (default 100) makes Sanger win contention below the quota.
+
+### The four confirmations
+
+| Claim | Verified how | Result |
+|---|---|---|
+| **Separate unprivileged user** | `useradd --system --no-create-home --shell /usr/sbin/nologin` | `uid=995(plotslop) gid=985(plotslop)`. Sanger runs as `root`. Distinct. |
+| **Limits active** | Allocation test under the unit's settings, outcome read from the journal | `plotslop-memtest.service: A process of this unit has been killed by the OOM killer` / `Failed with result 'oom-kill'`. The allocator never reached its target. |
+| **CPU capped** | 4 spinner threads, 8s wall, on a 2-core box, uncapped vs `CPUQuota=100%` | Uncapped **14.515s** CPU consumed; capped **8.092s**. Exactly one core. |
+| **No shared paths / secrets / db** | `systemd-run -p User=plotslop -p ProtectHome=true` against Sanger's tree | All denied — see below. |
+| **JSON data inside PlotSlop's tree** | Ran the real `path.join(process.cwd(),'data')` resolution under the unit's `WorkingDirectory` + `ReadWritePaths` | `DATA_DIR resolves to: /srv/plotslop/data`; write inside OK; write outside → **`EROFS` (fails closed)**. |
+
+### What DAC alone was leaking — why ProtectHome is required, not decorative
+
+Running as an unprivileged user is **not sufficient on this box**, because `/root` is 755. Measured,
+as `plotslop`, with no `ProtectHome`:
+
+```
+read Sanger source?      { "name": "sanger", "version": "0.1.0", "private": tru
+list Sanger env files?   -rw------- 1 root root 2166 Jul 28 13:30 /root/Sanger/.env.local
+read PlotSlop dev tree?  { "name": "plot-twists", "version":
+```
+
+Sanger's source readable; `.env.local` **enumerable** (contents held only by mode 600 — its
+existence, size and mtime leaked). Same commands with `ProtectHome=true`:
+
+```
+read Sanger source?      Permission denied
+list Sanger env files?   Permission denied
+read PlotSlop dev tree?  Permission denied
+```
+
+Kernel-enforced, and it covers `/root/Sanger`, `/root/.sanger-monitor.env`,
+`/root/.sanger-vps-api.env` and every future co-tenant secret in one directive — rather than
+depending on file modes a later `chmod` could undo.
+
+**No shared database.** PlotSlop's runtime code contains **zero** references to
+`postgres` / `supabase` / `drizzle` / `5432`. Sanger's `package.json` carries `drizzle` and
+`postgres`. PlotSlop persists through the JSON adapter (`server/db/index.ts:13-16` falls back to it
+when the Firebase env vars are absent, which they deliberately are). Different stores entirely.
+
+**No shared secret file.** PlotSlop reads `/etc/plotslop/env` (640 `root:plotslop`), deliberately
+**not** under `/root` — the unit could not read it there. Sanger's live under `/root/.sanger-*.env`.
+The unit references nothing under `/root`.
+
+### One measurement that changed the configuration
+
+The first memory test at `MemoryHigh=640M` **did not kill** — it reclaim-throttled the process into
+a **2-minute stall** that had to be timed out by hand. A stalled game server is worse than a dead
+one: `Restart=always` never fires because the process never exits, so it serves nobody *and* does
+not recover. `MemoryHigh` was raised to **700M**, narrowing the throttle band to ~68M before the
+hard kill at 768M — enough back-pressure for the GC, not enough for a long stall. Recorded because
+the first number was wrong and the test is what found it.
+
+### Deploy shape
+
+Source stays at `/root/Plot-Twists` (root-owned, editable, autosync'd). Runtime is
+`/srv/plotslop` (plotslop-owned), populated by `scripts/deploy.sh` (`npm ci` → `next build` →
+`rsync --delete`, with `data/` excluded so the live database is never deleted). The two trees exist
+precisely so `ProtectHome=true` is possible.
+
+### Not yet done — blocked, not skipped
+
+The unit is **installed but not enabled and not started**. It cannot run yet: `next build` requires
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` at build time (the Chunk 1 root cause) and the runtime needs
+`ANTHROPIC_API_KEY` + `CLERK_SECRET_KEY`. All three are placeholders in `/etc/plotslop/env`.
+**So the effective-cgroup values on the real long-running service are unverified** — every
+measurement above is a transient unit carrying identical properties. That is a real gap and it
+closes the moment the secrets land.
+
+---
+
 ## TRACK 3 — The AI layer
 
 ### [S1] Player free text reaches the model prompt unvalidated

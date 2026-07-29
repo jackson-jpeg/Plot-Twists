@@ -236,11 +236,18 @@ Use WHISPERING and CONFUSED more than you think. They're the funniest moods beca
 ═══════════════════════════════════════════════════════
 PACING & STRUCTURE
 ═══════════════════════════════════════════════════════
-Lines 1-5: HOOK (establish the game instantly — SHORT punchy lines)
-Lines 6-15: EXPLORE (play with the premise, build patterns)
-Lines 16-25: ESCALATE (things get worse/weirder/more)
-Lines 26-35: PEAK CHAOS (the scene reaches maximum absurdity)
-Lines 36-40: BUTTON (callback, twist, or perfect punchline to end on)
+Expressed as FRACTIONS of the line budget you are given, not as fixed line numbers — the budget
+changes from scene to scene and the shape has to fit inside whatever it is:
+
+First 15%:  HOOK (establish the game instantly — SHORT punchy lines)
+Next 25%:   EXPLORE (play with the premise, build patterns)
+Next 25%:   ESCALATE (things get worse/weirder/more)
+Next 25%:   PEAK CHAOS (the scene reaches maximum absurdity)
+Final 10%:  BUTTON (callback, twist, or perfect punchline to end on)
+
+If you find yourself at PEAK CHAOS with most of the budget already spent, you have over-explored.
+Cut to the button. A scene that ends early is fine; a scene that overruns is not, because eight
+people are reading it aloud in a living room and the last third is where they lose the room.
 
 Every scene needs a BEGINNING (what's the situation?), MIDDLE (how does it escalate?), and END (what's the button?).
 
@@ -385,14 +392,20 @@ This is a CHAOTIC GROUP scene. Structure it like a workplace mockumentary: one e
 straight man, a ring of people each pursuing an unrelated private agenda, and a plan that
 survives roughly forty seconds.
 
-ROLE ASSIGNMENTS:
-- ${characters[0]} is the STRAIGHT MAN (the reasonable one trying to manage the situation)
-- ${characters.slice(1).join(', ')} are AGENTS OF CHAOS (derailing the plan with their antics)
+ROLE ASSIGNMENTS — YOU CAST THIS, NOT US:
+Of these traits, choose the ONE best able to play the reasonable one, and cast the rest as chaos.
+
+${characters.map(c => `  - ${c}`).join('\n')}
+
+The straight man is not the first name on the list — it is whichever trait can plausibly hold a
+clipboard and believe the plan will work. Some of these traits are constitutionally incapable of
+that, and a couple of them are almost defined by it. Pick on that basis, then commit: the one you
+chose tries to run the scene, everyone else derails it.
 
 CRITICAL: You have ${characters.length} characters. You MUST give every single one of them dialogue and a personality. Do not leave anyone out.
 
 STRUCTURE:
-- Straight Man tries to execute the Circumstance logically
+- The straight man tries to execute the Circumstance logically
 - Each Chaos Agent has their own agenda/misunderstanding that conflicts with the plan
 - The scene spirals as multiple characters talk over each other
 
@@ -468,8 +481,11 @@ LINE DISTRIBUTION:
 CRITICAL REQUIREMENTS:
 - You MUST generate 2-3 AI characters (not 1, not 4+)
 - The AI characters MUST fit the setting logically (don't put a caped vigilante in "A Suburban Living Room With A Permanently Dented Sofa")
-- If the setting is from a known show/universe, USE THOSE CHARACTERS
-- If the setting is generic, CREATE archetypal characters that fit the vibe
+- If the setting EVOKES a known show or universe, that is exactly when you must NOT reach for
+  its characters. Cast the ROLE that would exist in such a place — "A Middle-Ranking Officer
+  With A Clipboard", not the officer everyone has already met. The recognisable setting does
+  the referencing; the cast does the comedy.
+- CREATE archetypal characters that fit the vibe, in every case, generic setting or not
 - ${characters[0]} should feel like an outsider trying to navigate this strange world
 - Build to a comedic climax where the culture clash reaches peak absurdity
 

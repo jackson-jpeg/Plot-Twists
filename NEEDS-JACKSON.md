@@ -6,8 +6,9 @@ Updated 2026-07-29 (second pass). Machine labels: `[VPS]` = the Linux box, `[MAC
 Nothing below is waiting on me. Where I could do the part that did not need you, I did it and
 said so.
 
-**Closed since this morning:** Q1, the catalog rewrite. You ruled Option A restructured; it is
-built, gated, and regenerated into a 40-hand playtest packet. Details in `HANDOFF.md` §8.
+**Closed since this morning:** Q1, the catalog rewrite (`HANDOFF.md` §8). **Closed this evening:**
+DNS and the certificate (item 2), the script-length cap (`DECISIONS.md` #9, now closed on measured
+margins), the straight-man casting change, and the install-prompt suppression.
 
 ---
 
@@ -20,6 +21,9 @@ empty right now. The publishable key is needed at **build** time and is not a se
 Verified again today: exit 1, preconditions failed, nothing touched.
 
 **This is now the top of the queue, and it blocks more than the deploy:**
+- **It is why your Vercel emails say "failed".** `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is required at
+  *build* time by the prerendered `/admin` page, so `next build` exits 1 without it. See item 3 —
+  though the Vercel project has a bigger problem than a missing key.
 - **The three generated scripts are still missing from the playtest packet.** No key, no scripts —
   the harness mock returns filler that says nothing about comedy. This matters more than it did
   this morning, because the catalog grammar changed underneath it: the packet shows you 40 hands
@@ -29,67 +33,69 @@ Verified again today: exit 1, preconditions failed, nothing touched.
 
 ---
 
-## 2. 🔴 DNS — point `plotslop.com` at `187.77.218.14`
+## 2. ✅ DNS and TLS — DONE 2026-07-29
 
-Currently `2.57.91.91`, the Hostinger parked page. **This is now a 30-second job, not a blocker
-that needs planning** — see below.
+You pointed it, I took it to the certificate and stopped there.
 
-**Checked with the Hostinger API you supplied, 2026-07-29.** The live zone is exactly two records:
+`plotslop.com` → `187.77.218.14`, TTL 60, agreed by four resolvers. `www` CNAMEs to the apex.
+No AAAA, as you instructed — **it stays that way; nothing here needs one.**
 
-```
-@     A      2.57.91.91        ttl 50
-www   CNAME  plotslop.com.     ttl 300
-```
+Certificate issued for both names, expires **2026-10-27**, renewal dry-run passes. Verified by
+reading the certificate rather than trusting certbot's exit code, and by proving port 80 was
+reachable from off-box before spending an issuance attempt. sang3r.com was re-checked after the
+nginx reload and is unaffected.
 
-Three things came out of that, and two of them shrink this item:
-
-1. **The apex TTL is 50 seconds.** There is no propagation window to get out in front of. The
-   argument for changing DNS days ahead of the cutover does not exist — the record can flip
-   during the cutover, seconds before certbot needs it, and be live before certbot asks.
-2. **There is no AAAA record at all.** My earlier warning was about a *stale* AAAA; there is none,
-   so v4-only validation is clean. Adding one is optional. If you do add it, it must be
-   `2a02:4780:4:1c0b::1` — I confirmed nginx is bound to that address on both 80 and 443.
-3. **The target IP in this file was worth double-checking and is correct.** `187.77.218.14` looks
-   like a Brazilian telecom range rather than a Hostinger block, so I verified it three ways —
-   `ip addr` on this box, an external echo, and the Hostinger VPS API (`srv1415856.hstgr.cloud`,
-   KVM 2, Ubuntu 24.04). All three agree, v4 and v6.
-
-**Pointing DNS now would not help and would mildly hurt.** I probed what an unmatched host gets
-today: a bare nginx 404, not another site's content — so there is no risk of plotslop.com serving
-sang3r.com, but there is no benefit either. It would swap a parked page for a 404 for however long
-the rest of the cutover takes.
-
-**🔴 I could not wire this into `cutover.sh`.** I wrote the step — flip the A record via the
-Hostinger API, then poll the resolver and refuse to continue to certbot on a stale answer — and
-the edit was **blocked by the permission classifier**, twice, through two different tools. I did
-not work around it. So the DNS flip is still a manual step, and either you run it or you approve
-the edit. The call it would make:
-
-```
-[VPS] curl -X PUT https://developers.hostinger.com/api/dns/v1/zones/plotslop.com \
-  -H "Authorization: Bearer $HOSTINGER_API_TOKEN" -H 'Content-Type: application/json' \
-  -d '{"overwrite":true,"zone":[
-        {"name":"@","type":"A","ttl":300,"records":[{"content":"187.77.218.14"}]},
-        {"name":"www","type":"CNAME","ttl":300,"records":[{"content":"plotslop.com."}]}]}'
-```
-
-**One thing I would not do even with the key.** The registrar token can repoint all twelve domains
-you own, `sang3r.com` included. It does not belong in `/etc/plotslop/env`, which is the file the
-application process reads — that would put a credential capable of hijacking your whole estate
-inside the blast radius of any RCE in the game server. It belongs in the operator's environment for
-the length of the cutover and nowhere else.
-
-**Your web-first decision needs no change to the staged config.** I checked: the nginx I staged
-already serves the marketing page and the game from one origin on `plotslop.com`, with
-`/socket.io/` proxied to the same backend. That is exactly what you described. Nothing to re-stage.
-I also re-checked its `listen` directives against the live convention, because `nginx -t` validates
-syntax without attempting to bind and would not catch an address conflict: the staged config binds
-`187.77.218.14` and `[2a02:4780:4:1c0b::1]` explicitly, matching all eleven existing sites. No
-wildcard, no conflict.
+**One thing to know before you or anyone else opens the domain:** `https://plotslop.com` currently
+shows a **certificate name-mismatch warning** naming chirpchirps.com. Nothing is wrong — DNS points
+here but no `:443` block claims the name yet, so TLS falls through to another site on this IP. It
+resolves at cutover step 4, and only there. Plain HTTP correctly serves
+`plotslop: awaiting certificate`.
 
 ---
 
-## 3. 🔴 Firestore — does the project exist at all?
+## 3. 🟠 NEW — Vercel is emailing you about failed preview deploys. That is me.
+
+You asked mid-session. Diagnosed, and the cause is boring; what it exposes is not.
+
+**Why they started:** every push to `audit/2026-07-28-snapshot` triggers a Vercel preview build,
+and I have pushed **20 commits to that branch today**. One email each.
+
+**Why they fail:** reproduced locally with `npx next build` — it is not a Vercel problem.
+
+```
+Error occurred prerendering page "/admin"
+Error: @clerk/clerk-react: Missing publishableKey.
+Export encountered an error on /admin/page: /admin, exiting the build.
+```
+
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is needed at **build** time, and `/admin` is statically
+prerendered. Same missing key as item 1 — **the build has been broken since the key went missing,
+not since I started pushing. I only made it visible, twenty times.**
+
+**The part that actually matters: this project cannot run on Vercel at all.** `package.json`
+start is `tsx server.ts` — a custom Socket.IO server. Vercel's Next.js preset never runs it, and
+serverless functions cannot hold WebSocket connections. **A *successful* Vercel deploy would
+produce a site where no game can start.** The last green deploy on `v2` was 2026-04-23, which is
+roughly when the architecture stopped matching it. Per `DECISIONS.md` #12 the game is served from
+this VPS behind nginx, so the Vercel project is a leftover pointing at an architecture the product
+left behind.
+
+**What I did:** disabled preview deploys for the audit branch only, in `vercel.json`. Narrow,
+reversible, stops the emails, touches nothing else. Your account was not touched.
+
+**What I did not do, because it is your account and your call:**
+
+- **Delete or disconnect the Vercel project.** My recommendation. It cannot serve this product,
+  and while it exists it is a live URL someone could point a domain at by mistake.
+- **Keep it and set the Clerk env vars in Vercel** — sensible only if you want previews as a
+  build-check. It would still not run a playable game.
+
+One caveat on "just delete it": I did not check whether anything currently links to a
+`*.vercel.app` URL for this project. Worth thirty seconds before you pull it.
+
+---
+
+## 4. 🔴 Firestore — does the project exist at all?
 
 Unchanged and still first among the deploy-blockers by risk, in your ordering.
 
@@ -110,7 +116,7 @@ the live database off the JSON adapter and onto a project whose rules nobody has
 
 ---
 
-## 4. 🟠 Fire the cutover
+## 5. 🟠 Fire the cutover
 
 Everything is staged, validated and unexecuted. When 1, 2 and 3 are answered:
 
@@ -129,7 +135,7 @@ proves the directives work; it does not prove this unit gets them.
 
 ---
 
-## 5. 🟠 NEW — the install prompt fires on the player join path
+## 6. 🟠 NEW — the install prompt fires on the player join path
 
 Small, and it directly contradicts the decision you just made.
 
@@ -151,7 +157,7 @@ is a UX call.
 
 ---
 
-## 6. 🟠 `DECISIONS.md` #10 — copy voice
+## 7. 🟠 `DECISIONS.md` #10 — copy voice
 
 Commit to the joke, or stay earnest? Affects ~122 copy occurrences. **Blocks Chunk 5 only.**
 
@@ -165,7 +171,7 @@ buys through Apple. It is a legal page, so it should be right. Folds into the sa
 
 ---
 
-## 7. 🟡 NEW — two public-domain settings I flagged rather than quietly kept
+## 8. 🟡 NEW — two public-domain settings I flagged rather than quietly kept
 
 Both are legal. Both are arguable, and you should get the choice.
 
@@ -186,7 +192,7 @@ explicit exemption.
 
 ---
 
-## 8. 🟡 Account-required room creation, eventually
+## 9. 🟡 Account-required room creation, eventually
 
 Not blocking, but you should know the ceiling exists before it bites.
 
@@ -208,7 +214,7 @@ it is not urgent.
 
 ---
 
-## 9. 🟡 You removed a feature and should know it stuck
+## 10. 🟡 You removed a feature and should know it stuck
 
 Not a question, a notification, repeated because it is user-visible and easy to lose.
 

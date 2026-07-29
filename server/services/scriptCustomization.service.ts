@@ -16,15 +16,34 @@ import type {
 const SCRIPT_LENGTH_RANGES: Record<ScriptLength, { min: number, max: number }> = {
   lightning: { min: 8, max: 12 },
   quick: { min: 15, max: 25 },
-  standard: { min: 30, max: 40 },
+  // 2026-07-29, Jackson's ruling: 30-38, down from 30-40. Not a cost tweak — eight people
+  // performing seventy lines is where a party stops being fun, and it is better that they
+  // want another round than check out mid-scene. The cost saving is a side effect.
+  standard: { min: 30, max: 38 },
   epic: { min: 45, max: 60 }
 }
 
-// Max tokens for each script length
+/**
+ * Output ceilings, in tokens.
+ *
+ * THESE ARE CEILINGS, NOT TARGETS. Nothing is spent by raising one; the model stops when it is
+ * done. The reason to LOWER one is to bound the worst case, and the reason to be careful about
+ * lowering one is that a ceiling reached mid-JSON is not a short script — it is a PARSE FAILURE,
+ * i.e. a generation that dies in front of a room full of people rather than one that runs long.
+ *
+ * `standard` is derived from measurement rather than guessed. Three real 8-player ENSEMBLE
+ * generations on 2026-07-29 produced 59/70/73 lines at 2267/2538/2704 output tokens — a stable
+ * 36-38 tokens per line across all three. A 38-line script is therefore ~1,450 tokens including
+ * title and synopsis, and 2,600 leaves ~80% headroom over the target while still cutting the
+ * worst case roughly in half. See `.real-generation.json` and HANDOFF.md.
+ *
+ * The others are left over-provisioned on purpose: they are unmeasured, and an over-provisioned
+ * ceiling costs nothing while an under-provisioned one breaks the scene.
+ */
 const SCRIPT_LENGTH_TOKENS: Record<ScriptLength, number> = {
   lightning: 2048,
   quick: 4096,
-  standard: 8192,
+  standard: 2600,
   epic: 12000
 }
 
@@ -206,10 +225,16 @@ export function getLineCountRange(length: ScriptLength): { min: number, max: num
 /**
  * Get max tokens for script length
  */
-export function getMaxTokens(length: ScriptLength, gameMode: string): number {
-  const baseTokens = SCRIPT_LENGTH_TOKENS[length] || SCRIPT_LENGTH_TOKENS.standard
-  // Add extra tokens for ENSEMBLE mode
-  return gameMode === 'ENSEMBLE' ? Math.min(baseTokens * 1.25, 15000) : baseTokens
+export function getMaxTokens(length: ScriptLength): number {
+  // The ENSEMBLE ×1.25 that used to be applied here is GONE, and removing it is the point of
+  // this change rather than a tidy-up. It re-inflated `standard` to 3,250 on exactly the mode
+  // Jackson capped at 2,600 — so capping the table alone would have left the live 8-player path
+  // uncapped while every test of the change looked correct.
+  //
+  // It was also never justified. Cast size does not change tokens-per-LINE: the 2026-07-29
+  // measurements are 8-player ENSEMBLE at 36-38 tokens/line, the same rate a two-hander produces.
+  // More performers means each speaks less often, not that the script is denser.
+  return SCRIPT_LENGTH_TOKENS[length] || SCRIPT_LENGTH_TOKENS.standard
 }
 
 /**

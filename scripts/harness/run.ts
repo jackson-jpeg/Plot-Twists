@@ -51,11 +51,36 @@ const VOTE_TIMEOUT_MS = VOTING_TIMEOUT
  * One round fires several Anthropic calls — the script, plot-twist pre-generation, the
  * director's review. An early version of `concurrentSubmit` counted `stats.requests` and
  * reported "2 generations for one round" as a duplicate-generation defect. It was not: the
- * second call was plot-twist pre-generation. Script generation asks for max_tokens 10000;
- * plot twists ask for 500. Discriminating on that is what makes the count mean what the
- * check claims it means.
+ * second call was plot-twist pre-generation. The script call asks for far more output than
+ * the others, and discriminating on that is what makes the count mean what the check claims.
+ *
+ * THE FLOOR WAS 5000 AND THAT WAS WRONG, IN THE DIRECTION A GATE MUST NEVER FAIL.
+ * It was calibrated to the one value ENSEMBLE happened to request (10,000). When the script
+ * ceiling dropped to 2,600 on 2026-07-29, every script generation stopped being counted and
+ * three checks reported "0 generation requests reached the model" — a fully working product
+ * reported as broken by its own instrument. Worse, the same bug was ALREADY latent: the
+ * `lightning` length asks for 2,048, so any harness run against a lightning-length game had
+ * been silently counting zero scripts for as long as the floor existed.
+ *
+ * The floor now sits between the two populations rather than on top of one of them, and
+ * `assertFloorSeparates` fails loudly the next time a real value crosses it instead of
+ * quietly returning zero.
  */
-const SCRIPT_MAX_TOKENS_FLOOR = 5000
+const NON_SCRIPT_MAX_TOKENS = [400, 500] as const // director's review, plot twists
+const SCRIPT_MAX_TOKENS_MIN = 2048               // the smallest script ceiling (lightning)
+const SCRIPT_MAX_TOKENS_FLOOR = 1000             // strictly between the two
+
+function assertFloorSeparates() {
+  const bad = NON_SCRIPT_MAX_TOKENS.filter(t => t >= SCRIPT_MAX_TOKENS_FLOOR)
+  if (bad.length || SCRIPT_MAX_TOKENS_MIN <= SCRIPT_MAX_TOKENS_FLOOR) {
+    throw new Error(
+      `harness miscalibrated: SCRIPT_MAX_TOKENS_FLOOR=${SCRIPT_MAX_TOKENS_FLOOR} no longer ` +
+        `separates script calls (min ${SCRIPT_MAX_TOKENS_MIN}) from non-script calls ` +
+        `(${NON_SCRIPT_MAX_TOKENS.join(', ')}). Script counts would silently read zero.`,
+    )
+  }
+}
+assertFloorSeparates()
 function scriptGenerations() {
   return mockStats.log.filter(r => r.maxTokens >= SCRIPT_MAX_TOKENS_FLOOR).length
 }

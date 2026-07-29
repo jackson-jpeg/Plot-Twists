@@ -248,15 +248,59 @@ Firebase does exactly three jobs here:
 
 ---
 
-## 9. Does credit pricing cover inference cost?
+## 9. Does credit pricing cover inference cost? — CLOSED 2026-07-29
 
-Measured: 2,985 input tokens per script generation (real, read off the wire). Estimated output 2,000–3,000. At Sonnet-tier rates, **~$0.05–$0.07 per round** plus Gemini poster generation.
+**Yes, on the web. No repricing.** Jackson's ruling, on measured numbers.
 
-Generation is credit-gated (`server/socket/helpers.ts:74-104`) — authenticated host, one credit deducted, guests rejected in production. So cost is bounded by credits sold. **What I need:** what one credit costs, and how many credits a game consumes.
+The original estimate was right and slightly low: **~$0.05–$0.07 per round** became a measured
+$0.0531, then **$0.0407** after the length cap below.
 
-A credit priced below ~$0.10 loses money on every game before Gemini, Firestore, hosting, and Stripe's cut.
+**What one round actually costs**, measured through the production path against the live API
+(`scripts/real-generation.ts`, raw data in `.real-generation.json`, list price $3/M in, $15/M out):
 
-**Blocked:** nothing technical. Gates any growth spending.
+| call | in | out | cost |
+|---|---:|---:|---:|
+| script generation, 8-player ENSEMBLE | 4,377 | 1,532 | $0.0361 |
+| director's review (fires every completed round) | 258 | 255 | $0.0046 |
+| **round** | **4,635** | **1,787** | **$0.0407** |
+
+A round is two API calls, not one. `generateDirectorsReview` fires after voting whenever a key is
+present, and omitting it understates the round by 11%.
+
+**Margin against `lib/credits.ts`.** One credit is one round (`deductCreditOrReject`).
+
+| tier | list $/credit | via Stripe (2.9% + $0.30) | via Apple IAP (30%) |
+|---|---:|---:|---:|
+| Starter, $5 / 20 | $0.250 | $0.228 → **5.6×** | $0.175 → 4.3× |
+| Party, $10 / 50 | $0.200 | $0.188 → **4.6×** | $0.140 → 3.4× |
+| Pro, $50 / 300 | $0.167 | $0.161 → **4.0×** | $0.117 → 2.9× |
+| Studio Head, $100 / 1000 | $0.100 | $0.097 → **2.4×** | $0.070 → **1.7×** |
+
+Stripe's **$0.30 fixed fee** is why Starter is not the best tier despite the highest list price
+per credit: it is 6% of a $5 purchase and 0.3% of a $100 one. A flat "~3%" would have overstated
+Starter's net by 6%.
+
+Every tier clears cost on the web. Nothing is priced below the ~$0.10 line the original entry
+warned about — Studio Head sits exactly on it, and that is the tier to watch.
+
+**Recorded, and this is the operative constraint: Studio Head is web/Stripe only.** At 1.7× on
+observed mean cost it survives Apple's cut on paper, but the margin is thin enough that it is not
+a business — a run of long scripts eats it, and the pre-cap measurements (2,704 output tokens)
+would have put it at 1.2×. If Studio Head is ever offered through Apple IAP, that tier gets
+re-run against fresh numbers before it ships. This is not a prohibition on iOS; it is a
+prohibition on assuming this table still holds when the payment rail changes.
+
+**Why this stopped being close.** The prompt asked for 30–40 lines and nothing enforced it;
+scripts came back at 59–73. Output was 83% of round cost, so length *was* the unit economics.
+Capped to 30–38 lines with a 2,600-token ceiling on 2026-07-29 (Jackson's target, not mine — I
+had proposed 35–45, which is too long to perform). Three fresh generations came back at 38/38/38,
+un-truncated: output fell 39%, and output's share of a round fell from 83% to 56%.
+
+**Not in this table:** Gemini poster generation, hosting, Firestore. Hosting is now a fixed VPS
+cost rather than per-round (#12). Posters are per-round and unmeasured — the one remaining hole,
+and the reason "4.0×" is not the same claim as "profitable".
+
+**Closed.** Gates nothing further.
 
 ---
 

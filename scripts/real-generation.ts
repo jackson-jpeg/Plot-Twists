@@ -54,6 +54,23 @@ const cost = (i: number, o: number) => (i / 1e6) * USD_PER_MTOK_IN + (o / 1e6) *
 const PLAYERS = 8
 const SCRIPTS = 3
 
+/**
+ * The customization a real game sends.
+ *
+ * CHANGED 2026-07-29, AND THE CHANGE IS THE POINT. The first run passed `undefined` here, which
+ * took generateScript's DEFAULT branch. The host UI defaults scriptLength:'standard' and emits it
+ * with the room settings, so a real game takes the CUSTOMIZATION branch — a different line range,
+ * a different token ceiling, and several hundred extra input tokens of style/difficulty prompt.
+ * Measuring the branch nobody plays is how a length cap gets validated green and ships inert.
+ */
+const PRODUCTION_CUSTOMIZATION = {
+  comedyStyle: 'witty',
+  scriptLength: 'standard',
+  difficulty: 'intermediate',
+  physicalComedy: 'minimal',
+  enableCallbacks: true,
+} as const
+
 function fakeRoom(code: string): Room {
   return {
     code,
@@ -108,7 +125,7 @@ async function main() {
       false,
       'ENSEMBLE',
       undefined,
-      undefined,
+      PRODUCTION_CUSTOMIZATION as never,
       undefined,
       u => { usage = u },
     )
@@ -122,8 +139,32 @@ async function main() {
       usage,
       hits: screened.hits.map(h => `${h.term} (${h.category})`),
     })
-    console.error(`      ${usage.inputTokens} in / ${usage.outputTokens} out — $${cost(usage.inputTokens, usage.outputTokens).toFixed(4)}`)
+    console.error(`      ${script.lines.length} lines · ${usage.inputTokens} in / ${usage.outputTokens} out — $${cost(usage.inputTokens, usage.outputTokens).toFixed(4)}`)
   }
+
+  // ── the ceiling on a mode nobody measured ────────────────────────────────
+  // `standard` is now 2,600 tokens for EVERY mode, but every measurement behind that number is
+  // 8-player ENSEMBLE. SOLO has one performer and three AI parts, which is the shape most likely
+  // to produce long speeches and therefore more tokens per line. Shipping an unmeasured ceiling
+  // on the strength of a measured one is the guess this run exists to avoid: one generation is
+  // ~$0.05 and turns it into a fact. A truncation here throws, by design, and fails this script.
+  let soloUsage = { inputTokens: 0, outputTokens: 0 }
+  const soloDealt = await dealCards(fakeRoom('SOLO'))
+  const soloScript = await generateScript(
+    [pick(soloDealt.characters, 17).name],
+    pick(soloDealt.settings, 9).name,
+    pick(soloDealt.circumstances, 4).name,
+    false,
+    'SOLO',
+    undefined,
+    PRODUCTION_CUSTOMIZATION as never,
+    undefined,
+    u => { soloUsage = u },
+  )
+  console.error(
+    `SOLO ceiling check: ${soloScript.lines.length} lines · ` +
+      `${soloUsage.inputTokens} in / ${soloUsage.outputTokens} out — not truncated`,
+  )
 
   // ── the OTHER call in a complete round ──────────────────────────────────
   // A round is not one API call. generateDirectorsReview fires after voting on every completed
@@ -152,7 +193,15 @@ async function main() {
   writeFileSync(
     join(__dirname, '../.real-generation.json'),
     JSON.stringify(
-      { model: CONFIG.generation.model, players: PLAYERS, results, review, reviewUsage },
+      {
+        model: CONFIG.generation.model,
+        players: PLAYERS,
+        customization: PRODUCTION_CUSTOMIZATION,
+        results,
+        review,
+        reviewUsage,
+        solo: { lines: soloScript.lines.length, usage: soloUsage },
+      },
       null,
       2,
     ),

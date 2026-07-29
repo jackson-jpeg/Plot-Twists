@@ -13,9 +13,10 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Canonical repo** | `/root/Plot-Twists` — Next.js 16 + Socket.IO game server. **This is the product.** The game ships on the web at `plotslop.com`, marketing and game on one domain, players join in a phone browser with a room code and never install anything (`DECISIONS.md` #12). |
 | **Branch** | `audit/2026-07-28-snapshot` (tracks `origin/`). **Not** `master`, **not** `v2`. |
 | **iOS repo** | `/root/PlotTwists-Native` — SwiftUI/tvOS. **Shelved, and re-scoped 2026-07-29:** when it returns it is a HOST/TV surface only, never required for players. See §6 and `DECISIONS.md` #12. |
-| **Harness** | **49/49** — `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts` (~2 min) |
-| **Unit suite** | **448/448** — `[VPS] npx jest`. Denominator moved 436 → 448: the source-audit suite grew 4 → 16 tests. Coverage, not behaviour. See §3 before you relax. |
+| **Harness** | **49/49** — `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts` (~2 min). Its script-generation counter was recalibrated 2026-07-29; see §9. |
+| **Unit suite** | **450/450** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450: the source-audit suite grew 4 → 16 → 18 tests. Coverage, not behaviour. See §3 before you relax. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
+| **plotslop.com** | **DNS live and TLS issued 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Let's Encrypt cert for both names expires **2026-10-27**, renewal dry-run passes. nginx serves the port-80 bootstrap only. **The service is still stopped and the site is NOT live** — see §10. |
 | **Current chunk** | **Chunks 2 and 3 complete.** **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** code-complete, cutover STAGED and unexecuted, blocked on Jackson. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
@@ -420,10 +421,11 @@ be named.
 
 ## 9. Corrections to the record found on 2026-07-29
 
-**Seven now, across two passes**, and they are listed because the pattern matters more than any
+**Nine now, across three passes**, and they are listed because the pattern matters more than any
 one of them: **the written record has been wrong about a completed item four sessions running.**
-Go looking. The afternoon pass found three more (5–7) *inside the fix for number 1*, which is the
-strongest available argument for not trusting a completion claim — including one made hours ago.
+Go looking. The afternoon pass found three more (5–7) *inside the fix for number 1*, and the
+evening pass found two more (8–9) *inside the fix for those* — which is the strongest available
+argument for not trusting a completion claim, including one made hours ago.
 
 1. **Chunk 4 layer 1** — above. Called complete; was paraphrase. Redone 2026-07-29.
 2. **The "2-minute PERFORMING sweep"** at `room.service.ts:463`, which CHUNKS.md item 3 and the
@@ -457,3 +459,66 @@ One correction on the record: when the `publicId` approach was chosen, it was ju
 "`player.id` is `playerSessionId ?? userId ?? legacy_uuid`". **That was wrong** — that expression
 is `sessionId`; `id` has always been `uuidv4()`. The Clerk `sub` leaked via `uid`, not via `id`.
 The split still stands as defence in depth, but it was not removing a Clerk-sub leak.
+
+---
+
+**8. A FIFTH franchise leak, in the live SOLO prompt, past a gate built to catch exactly this.**
+`getModeInstructions` shipped this to the model on every SOLO round:
+
+```
+- If the setting is from a known show/universe, USE THOSE CHARACTERS
+```
+
+Every layer passed. The source audit looks for franchise NAMES and there is no name in that
+sentence. Layer 3 screens output, and the output it produces — a correctly-named character from
+a show the setting evokes — is exactly what the instruction requested. It also contradicted its
+own block, which four bullets earlier says to invent originals and never name an existing
+character. **The generalisation: a leak does not need a proper noun, it needs PERMISSION.** Fixed,
+and `contentSource.test.ts` grew a second describe block that reads prompt text for
+permission-shaped instructions. Verified by reintroducing both this line and the old `Yoda talks
+like Yoda` and watching the new gate go red on each.
+
+**9. The harness's own script counter was calibrated to a number, not to a boundary.**
+`scriptGenerations()` identified script calls by `max_tokens >= 5000`, chosen because ENSEMBLE
+asked for 10,000. When the script ceiling dropped to 2,600, three checks reported **"0 generation
+requests reached the model"** — a working product failed by its instrument, the direction a gate
+must never fail in. The same bug was already latent: `lightning` asks for 2,048, so any run
+against a lightning-length game had been counting zero scripts all along. The floor now sits
+between the two populations (1,000; non-script calls are 400/500, the smallest script call is
+2,048) and `assertFloorSeparates()` throws at startup if a future value crosses it.
+
+*Both were caught the same way, and it is the only way that works: the product change and the
+instrument were verified against each other rather than each against itself.*
+
+---
+
+## 10. plotslop.com — DNS and TLS are done, the site is NOT live
+
+Jackson pointed DNS himself on 2026-07-29 and authorised the certificate step; everything past it
+is still his.
+
+**Done and verified:**
+- `plotslop.com` → `187.77.218.14`, TTL 60, confirmed from the system resolver plus 1.1.1.1,
+  8.8.8.8 and 9.9.9.9. `www` CNAMEs to the apex. **No AAAA, deliberately — do not add one.**
+- Port-80 reachability proven from off-box (the MacBook) before certbot ran, not just locally.
+- Bootstrap nginx site installed (`/etc/nginx/sites-available/plotslop.com`), `nginx -t` clean,
+  reloaded. **sang3r.com re-checked immediately after the reload and still returns 200** — it
+  shares this nginx and a bad config here takes it down, not just PlotSlop.
+- Certificate issued for both names, staging dry-run first. Expires **2026-10-27**. Verified by
+  reading the cert directly (`openssl x509`), not by trusting certbot's exit code; the private key
+  was confirmed to match the certificate. `certbot renew --dry-run` for this cert passes.
+  (Use `--no-random-sleep-on-renew` when testing — certbot's 0–600s pre-renewal sleep looks
+  exactly like a hang.)
+- The real config preserves `/.well-known/acme-challenge/` on both `:80` (ahead of the 301) and
+  `:443`, so the swap in step 4 does not break renewal in 60 days.
+
+**Not done, and deliberately left to Jackson:** steps 4–7 of `scripts/cutover.sh` — the TLS config
+swap, installing the unit, and starting the service. Two Clerk secrets are still empty, so
+`--check` still exits 1.
+
+**One consequence worth knowing before someone visits the domain.** `https://plotslop.com` now
+presents **chirpchirps.com's certificate** and throws a browser name-mismatch warning, because
+DNS points here but no `:443` server block claims the name yet, so TLS falls through to another
+site on the same IP. That state started the moment DNS flipped, not when the certificate was
+issued — but it ends only at cutover step 4. Over plain HTTP the domain correctly returns
+`plotslop: awaiting certificate`.

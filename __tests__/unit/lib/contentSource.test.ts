@@ -233,3 +233,59 @@ describe('catalog ordering carries no grouping', () => {
     expect(observed).toBeLessThanOrEqual(expected + MARGIN)
   })
 })
+
+/**
+ * The blind spot the gate above has, stated as its own gate.
+ *
+ * On 2026-07-29 the SOLO branch of `getModeInstructions` shipped this line to the model:
+ *
+ *     - If the setting is from a known show/universe, USE THOSE CHARACTERS
+ *
+ * Every check in this repo passed. The audit above looks for franchise NAMES and there is no
+ * franchise name in that sentence. The layer-3 screen inspects output, and the output it would
+ * have produced — a correctly-named character from a show the setting evokes — is precisely what
+ * the instruction asked for. The catalog tests never look at prompts at all. So the one line in
+ * the codebase that explicitly instructed the model to use other people's characters was invisible
+ * to a three-layer IP defence built to stop exactly that, for as long as it existed.
+ *
+ * It also directly contradicted its own surrounding block, which four bullets earlier says to
+ * invent originals and never name a character from an existing work. When a prompt contradicts
+ * itself the model picks one, and there is no way to know which without reading output.
+ *
+ * The generalisation: a leak does not need a proper noun. It needs PERMISSION. This gate reads the
+ * prompt files for permission-shaped instructions and is deliberately narrow — it matches
+ * imperative phrasing near a franchise-ish noun, not every mention of "character", because a gate
+ * that fires on the honest instructions ("never name a character from an existing film") is a gate
+ * that gets deleted.
+ */
+describe('prompt text does not AUTHORISE franchise use', () => {
+  const PROMPT_FILES = [
+    'server/services/prompts/comedyPrompts.ts',
+    'server/services/scriptGeneration.service.ts',
+  ]
+
+  /**
+   * Permission patterns. Each must be an INSTRUCTION to use existing IP, not a prohibition on it.
+   * Written against real phrasings rather than invented ones: the first is the line that shipped.
+   */
+  const PERMISSIONS: Array<{ label: string; re: RegExp }> = [
+    { label: 'use those/these characters', re: /\buse\s+(those|these|the\s+real|its|their)\s+characters\b/i },
+    { label: 'use the actual cast of a known work', re: /\buse\s+(the\s+)?(actual|real|canon(ical)?|original)\s+(cast|characters|names)\b/i },
+    { label: 'cast from a known show/universe/franchise', re: /\b(from|of)\s+(a|the)\s+(known|existing|real|famous)\s+(show|universe|franchise|film|movie|series|game|book)\b[^.\n]*\b(use|cast|include|feature|borrow)\b/i },
+    { label: 'imitate a named person or character', re: /\b(talks?|sounds?|speaks?)\s+like\s+[A-Z][a-z]+\b/ },
+  ]
+
+  it.each(PROMPT_FILES)('%s contains no instruction authorising franchise characters', file => {
+    const src = readFileSync(join(ROOT, file), 'utf8')
+    const found: string[] = []
+    for (const line of src.split('\n')) {
+      // A prohibition is the opposite of a leak and must not trip the gate. These prompts are
+      // full of "never name a character from an existing film" and that sentence is the fix.
+      if (/\b(never|not|no|avoid|don't|do not|must not|instead of)\b/i.test(line)) continue
+      for (const { label, re } of PERMISSIONS) {
+        if (re.test(line)) found.push(`${label}: ${line.trim()}`)
+      }
+    }
+    expect(found).toEqual([])
+  })
+})

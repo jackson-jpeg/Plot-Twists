@@ -44,15 +44,20 @@ export async function generateScript(
     ? buildCustomizationPrompt(customization, gameMode)
     : ''
 
-  // Get script length requirements
+  // Script length requirements.
+  //
+  // BOTH BRANCHES MATTER AND THAT IS EASY TO GET WRONG. The host UI defaults
+  // scriptLength:'standard' and sends it, so a real game almost always takes the CUSTOMIZATION
+  // branch — while scripts/real-generation.ts passes no customization and takes the DEFAULT
+  // branch. Capping only the default would have measured clean here and changed nothing in
+  // production, which is the failure mode this comment exists to prevent repeating.
   const lineRange = customization
     ? getLineCountRange(customization.scriptLength)
-    : { min: 30, max: 40 }
+    : { min: 30, max: 38 }
 
-  // Get max tokens based on customization
   const maxTokens = customization
-    ? getMaxTokens(customization.scriptLength, gameMode)
-    : (gameMode === 'ENSEMBLE' ? 10000 : 8192)
+    ? getMaxTokens(customization.scriptLength)
+    : 2600
 
   const systemPrompt = getSystemPrompt(isMature, previousScript)
   const modeInstructions = getModeInstructions(gameMode, characters, setting, circumstance)
@@ -72,7 +77,7 @@ ${modeInstructions}
 ═══════════════════════════════════════
 SCRIPT REQUIREMENTS
 ═══════════════════════════════════════
-SCRIPT LENGTH: ${lineRange.min}-${lineRange.max} lines
+SCRIPT LENGTH: ${lineRange.min}-${lineRange.max} lines — A HARD CEILING, NOT A SUGGESTION
 PERFORMERS: ${numPlayers} player${numPlayers > 1 ? 's' : ''}
 ${customizationPrompt}
 
@@ -96,6 +101,14 @@ FINAL REMINDER — THIS WILL BE READ ALOUD:
 - If a line is longer than one breath, SPLIT IT
 - One-word reactions ("No." "...What?" "Obviously.") are ENCOURAGED
 - Every line must sound natural spoken out loud by a non-actor at a party
+
+LENGTH, LAST AND LOUDEST: the "lines" array contains AT MOST ${lineRange.max} objects. Not
+about ${lineRange.max}. At most. Count them before you close the array, and if you are over,
+cut from the middle — the escalation is where the repetition hides, never the button.
+${numPlayers} people are reading this aloud, so ${lineRange.max} lines is already several
+minutes of performance; going long does not give them more of a good time, it gives them a
+scene that outlives the joke. Coming in UNDER at ${lineRange.min} is a success. Going over
+is a failure of the brief even if every line is funny.
 
 Write the scene now. Make it genuinely funny - the kind of funny where people will want to perform it again.`
 
@@ -136,7 +149,10 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
     let titleEmitted = false
     let linesStarted = false
     let lineCount = 0
-    const expectedLines = gameMode === 'ENSEMBLE' ? 45 : 35
+    // Drives the progress bar only. It was a hardcoded 45 for ENSEMBLE — above the 40 the prompt
+    // asked for, so the bar was calibrated to the overrun rather than to the brief, and a script
+    // that obeyed the brief would jump to 90% and sit there. Track the actual target instead.
+    const expectedLines = lineRange.max
 
     onProgress?.({ phase: 'Writing script...', percent: 10 })
 
@@ -204,6 +220,29 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
         `(mode=${gameMode}, players=${numPlayers}, model=${CONFIG.generation.model})`,
     )
     onUsage?.(usage)
+
+    // TRUNCATION IS NOW A DIAGNOSABLE FAILURE RATHER THAN A MYSTERY.
+    //
+    // `standard` dropped from an 8-10k ceiling to 2,600 on 2026-07-29. That is deliberate and
+    // measured, but it makes a previously-unreachable failure reachable: if the model ignores
+    // the line cap badly enough to hit the ceiling, the stream ends mid-JSON. Without this
+    // check, `extractJSON` hands JSON.parse an unterminated object and the operator sees
+    // "Unexpected end of JSON input" — which points at the parser, not at the ceiling that
+    // caused it, and would send the next person debugging extractJSON for an afternoon.
+    //
+    // There is no salvage path worth having. A truncated script is missing its button, which is
+    // the one line the whole scene is built to land on.
+    if (finalMessage.stop_reason === 'max_tokens') {
+      logger.error(
+        `Script generation hit the ${maxTokens}-token ceiling and was truncated mid-output ` +
+          `(mode=${gameMode}, players=${numPlayers}, target=${lineRange.min}-${lineRange.max} lines). ` +
+          `The model overran the line cap. Raise the ceiling for this length in ` +
+          `scriptCustomization.service.ts, or tighten the cap in the prompt — do not silently retry.`,
+      )
+      throw new Error(
+        `Script generation truncated at the ${maxTokens}-token ceiling (mode=${gameMode})`,
+      )
+    }
 
     const content = finalMessage.content[0]
     if (content.type !== 'text') {

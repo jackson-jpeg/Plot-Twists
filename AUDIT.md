@@ -27,7 +27,7 @@ Ranked by expected impact, ignoring track boundaries.
 
 ## Defect → harness case map
 
-**Harness: 35/45** (was 16/28 on 2026-07-28). Added on Jackson's instruction — the denominator was
+**Harness: 38/46** (35/45 earlier on 2026-07-29; 16/28 on 2026-07-28). The +3 are real behaviour changes from IP layer 2, not wider coverage — see IP layer 2 below. Added on Jackson's instruction — the denominator was
 interrogated before Chunk 2 lands any fixes, on the principle that *a fix with no red test is a fix
 you cannot verify*.
 
@@ -573,6 +573,68 @@ one: `Restart=always` never fires because the process never exits, so it serves 
 not recover. `MemoryHigh` was raised to **700M**, narrowing the throttle band to ~68M before the
 hard kill at 768M — enough back-pressure for the GC, not enough for a long stall. Recorded because
 the first number was wrong and the test is what found it.
+
+### The ceiling was sized against an attacker. Now it is sized against a party.
+
+Jackson's objection, and it was correct: `MemoryMax=768M` / `MemoryHigh=700M` were tuned by
+watching a deliberate runaway allocator get OOM-killed. **Nothing had measured legitimate peak.** A
+ceiling below real peak does not fail visibly — it OOM-kills real games mid-round and presents as
+an unreproducible crash, which is the worst thing to receive in a bug report.
+
+`scripts/harness/load.ts` measures it. It exists separately from `run.ts` because `run.ts` boots
+the server **in-process** alongside every socket client and the mock Anthropic server, so its RSS
+is a blend of all three and cannot answer this question. `load.ts` runs the server as its own
+process and samples only that subtree, via `/proc/<pid>/statm`.
+
+| Run | Rooms × players | Concurrent sockets | Baseline RSS | **Peak RSS** | Growth | Per room |
+|---|---|---|---|---|---|---|
+| A | 6 × 10, 2 rounds | 66 | 268.8 MB | **312.6 MB** | 43.8 MB | 7.3 MB |
+| B | 20 × 10, 2 rounds | 220 | 270.3 MB | **334.7 MB** | 64.4 MB | 3.2 MB |
+
+Both runs completed every room (6/6, 20/20).
+
+**Verdict: 768M stands. Do not raise it.** Measured peak is **334.7 MB — 44% of `MemoryMax`**, and
+Jackson's own trigger ("if real peak is within ~30% of 768M the limit is wrong") would need
+~538 MB. `MemoryHigh=700M` sits at 2.1× measured peak, so the throttle band cannot engage during
+normal play. The box has 969 MB free with 1.7 GB of 2 GB swap already consumed and Sanger reserving
+1500M — raising PlotSlop's ceiling would take headroom from a host that does not have it.
+
+**Two things this measurement says that the headline number does not:**
+
+1. **The game is not what uses the memory.** Baseline is 268 MB and peak is 335 MB — *80% of RSS is
+   the idle Node process, `tsx`, and the loaded module graph.* Twenty simultaneous rooms add 64 MB.
+   Sizing this ceiling is mostly sizing a Node runtime, and per-room growth is **sub-linear**
+   (7.3 MB/room at 6 rooms, 3.2 MB/room at 20).
+2. **This is a floor, not the true peak.** The mock Anthropic returns **instantly**. Real generation
+   holds a request in flight for 10–30s, so N concurrent rooms means N in-flight HTTP requests and
+   response buffers this measurement never allocates, and real scripts are far larger than the
+   mock's. **Real peak is higher than 334.7 MB by an amount I have not measured.** The 2.3×
+   headroom is why that is tolerable rather than alarming — but do not quote 334.7 MB as "what
+   PlotSlop uses in production".
+
+Extrapolating growth to the ceiling gives roughly 60–150 concurrent rooms before `MemoryHigh`,
+which sits in the same range as the CONSTRAINT-1 adapter trigger (~50 sustained rooms). Two
+independent estimates landing in the same place is mild corroboration that the trigger is sane.
+
+### Three instrument bugs in this one measurement
+
+Every one produced a plausible number that would have been reported as fact:
+
+1. **Sampled the wrong process.** `pgrep -P` finds direct children only; `npx tsx` is four levels
+   deep. The sampler measured the `npx` wrapper and reported **peak == baseline == 87.4 MB, growth
+   0.0 MB** — which reads as "comfortable headroom". A peak identical to baseline to one decimal
+   place is not a measurement. Fixed by walking the whole subtree.
+2. **Swallowed the server's stderr.** When a run failed with `submit_cards ack timeout` ×6 there
+   was nothing to look at, and the load driver was reporting a *product* failure that it had
+   caused. Fixed by capturing both streams and printing them on failure.
+3. **Left a stale listener.** `server.kill()` reaps the `npx` wrapper and leaves the real node
+   holding the port. The next run connected to the **previous run's server**, reported a 76.5 MB
+   baseline and 0/20 rooms — and the run before it (a "321 MB peak") was measured against a stale
+   process too, so that number was discarded and both runs above were re-taken from a
+   verified-free port. `load.ts` now refuses to start if the port is occupied, and kills the whole
+   subtree on exit.
+
+The standing two-mechanism rule (HANDOFF.md) is why all three were caught rather than published.
 
 ### Deploy shape
 

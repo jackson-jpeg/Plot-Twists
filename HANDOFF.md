@@ -13,8 +13,8 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Canonical repo** | `/root/Plot-Twists` — Next.js 16 + Socket.IO game server. The game logic, AI layer, IP content library live here. |
 | **Branch** | `audit/2026-07-28-snapshot` (tracks `origin/`). **Not** `master`, **not** `v2`. |
 | **iOS repo** | `/root/PlotTwists-Native` — SwiftUI/tvOS. **Shelved.** See §6. |
-| **Harness** | **35/45** — `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts` (~2 min; `voteTimerRace` waits out a real 60s timeout) |
-| **Unit suite** | **390/398, 8 failing BY DESIGN** — `[VPS] npx jest`. See §3. |
+| **Harness** | **38/46** — `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts` (~2 min; `voteTimerRace` waits out a real 60s timeout) |
+| **Unit suite** | **425/430, 5 failing BY DESIGN** — `[VPS] npx jest`. See §3. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
 | **Current chunk** | **Chunk 1**, code-complete, blocked on Jackson. Chunk 2 not started. |
 
@@ -42,11 +42,15 @@ not features and are fine.**
 
 Ordered by how expensive the mistake is.
 
-### 🔴 The 8 failing tests are the deliverable. Do not "fix" them.
+### 🔴 The 5 failing tests are the deliverable. Do not "fix" them.
 
 An assertion audit (2026-07-29) swept all 398 tests and found **8 across 5 suites that encoded
 known defects as expected behaviour**. They were green, and they read as coverage. All 8 were
 inverted and are now **gates** — each goes green only when its chunk item lands.
+
+**Three of the eight have since gone green, correctly**: the `validation.test.ts` D1 gates, when IP
+layer 2 landed. That is what a gate is for. Five remain red — D2b ×2, D3b, middleware, and the
+`subscriptions` missing-`game_error` handler.
 
 The trigger was `hostAbandon`, found asserting `!states.includes('VOTING')` — a documented S2
 written down as the spec — **by accident**. The worst one found deliberately:
@@ -94,11 +98,17 @@ All three would have shipped as "newly discovered defects". There is a fourth of
 already recorded: `audience.service.ts:562` logs `parsed.map is not a function` in every scenario
 — that specific error is a mock artifact, though the unguarded cast behind it is a real S3.
 
-### 🟠 35/45 is mostly wider coverage, not a better product.
+### 🟠 The harness ratio moved for two different reasons. Say which.
 
-Baseline was 16/28. Of the 19 new passes, **only 3 are behaviour changes** (two
-`identityBroadcast` cases + the new leak guard). The other 16 are paths that were never driven and
-turned out to already work. Do not report the delta as progress on quality.
+16/28 → 35/45 was **mostly wider coverage**: of those 19 new passes only 3 were behaviour changes
+(two `identityBroadcast` cases + the leak guard); the other 16 were paths never previously driven
+that turned out to already work.
+
+35/45 → **38/46** is different, and is real: `abuse → server REJECTS off-catalog card text` and
+`→ injected text does NOT reach the model prompt` both flipped red→green when IP layer 2 landed,
+and the +1 denominator is a genuinely new check (a well-formed ID that is not in the catalog).
+
+Always say which kind of movement a number represents. "The harness went up" is not information.
 
 ### 🟠 28 was never a completeness claim, and 45 isn't either.
 
@@ -114,9 +124,18 @@ Jackson's correction, and the most important non-obvious fact in the project:
    never interpolated into a system prompt
 3. Output screening for named real people and owned franchises
 
-Layer 1 alone is cosmetic — `validateCardSelection` accepts any 200-char string and interpolates it
-verbatim, so a player typing "Shrek" defeats the rewrite entirely. **Do not mark IP resolved until
-all three land.**
+**All three landed 2026-07-29** (commits `8c1ca476` 4a, `5b383321` layers 2+3, `b0277826` layer 1).
+Do not treat this as "IP done and dusted" — read `AUDIT.md` → *IP layer 1/2/3* first. In
+particular:
+
+- The layer 3 screen is a **deterministic term list**. It catches named entities and nothing else.
+  "A wheezing tyrant in black armour who is secretly your father" passes it clean. A semantic pass
+  is the follow-up and has not been built.
+- Layer 2 removed the **"✎ Write your own" free-text card**. That is a user-visible feature
+  removal, and it partly contradicts AUDIT.md Option B.
+- The Chunk 4 done-criterion grep is a **fixed term list** and passed while the system prompt still
+  named a living person four times. Do not treat a clean grep as a clean repo — screen with the
+  layer 3 matcher as a second mechanism.
 
 ### 🟠 Settled. Do not re-raise.
 
@@ -177,6 +196,13 @@ adapter, the process-local `txnLock` its own comment labels dev-only, five in-me
 The consequence that matters: **every `systemctl restart` ends every live game mid-round**, because
 host-disconnect recovery is still broken (D3, red). Full section in `AUDIT.md`, including a
 falsifiable trigger for when the adapter must be replaced.
+
+**Memory ceiling is measured, not guessed — but the measurement has a stated floor.**
+`MemoryMax=768M` stands. `scripts/harness/load.ts` drives real rooms against a separately-spawned
+server and samples only that subtree: **peak 334.7 MB at 20 rooms x 10 players (220 sockets)**,
+44% of the ceiling. Two caveats that matter more than the number: 80% of that RSS is the idle Node
+runtime (baseline 268 MB), and the mock Anthropic returns *instantly*, so real in-flight generation
+pushes true peak higher by an unmeasured amount. Re-run with `npx tsx scripts/harness/load.ts 20 10 2`.
 
 **Deploy is two trees.** Source `/root/Plot-Twists` (root-owned, editable, autosync'd to the Mac),
 runtime `/srv/plotslop` (owned by the `plotslop` system user), via `scripts/deploy.sh`. They are

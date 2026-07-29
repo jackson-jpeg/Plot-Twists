@@ -19,7 +19,7 @@
  *   npx tsx scripts/harness/load.ts 6 10 2
  */
 
-import { spawn } from 'child_process'
+import { execSync, spawn } from 'child_process'
 import { io as ioClient, type Socket } from 'socket.io-client'
 import { readFileSync } from 'fs'
 import { startMockAnthropic } from './mock-anthropic'
@@ -129,6 +129,20 @@ async function playRoom(index: number): Promise<string> {
 }
 
 async function main() {
+  // Refuse to run against a stale listener. An earlier version killed only the
+  // `npx` wrapper on exit, leaving the real node alive on this port; the next
+  // run then silently measured THAT process and reported its numbers as fresh.
+  // A load measurement taken against the wrong server is worse than no
+  // measurement, because it looks like one.
+  const portInUse = execSync(`ss -ltn 2>/dev/null | grep -c ':${GAME_PORT} ' || true`, {
+    encoding: 'utf8',
+  }).trim()
+  if (portInUse !== '0') {
+    console.error(`port ${GAME_PORT} is already in use — a previous harness server is still alive.`)
+    console.error(`kill it:  ps -eo pid,args | grep -E "harness/serve[r]\\.ts" | awk '{print $1}' | xargs -r kill -9`)
+    process.exit(1)
+  }
+
   const mock = await startMockAnthropic(MOCK_PORT)
 
   const server = spawn('npx', ['tsx', 'scripts/harness/server.ts'], {
@@ -142,21 +156,40 @@ async function main() {
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   })
-  server.stdout.on('data', () => {})
-  server.stderr.on('data', () => {})
+  // Surface the server's own output. The first version swallowed both streams,
+  // so when every room failed with `submit_cards ack timeout` there was nothing
+  // to look at — the load driver reported a product failure it had caused.
+  const serverLog: string[] = []
+  server.stdout.on('data', (chunk: Buffer) => serverLog.push(chunk.toString()))
+  server.stderr.on('data', (chunk: Buffer) => serverLog.push(chunk.toString()))
 
-  // The `npx` wrapper forks the real node; sample the whole subtree.
+  /**
+   * `npx tsx` is FOUR processes deep before the real node appears:
+   *   npx -> sh -c tsx -> node bin/tsx -> node --require preflight  <- the server
+   *
+   * The first version of this sampled only `pgrep -P <npx pid>` — direct
+   * children — and so measured the npx wrapper, which does not grow. It
+   * reported peak == baseline == 87.4 MB exactly, and "growth under load:
+   * 0.0 MB", which would have shipped as "the ceiling is comfortable".
+   * A peak identical to baseline to one decimal place is not a measurement,
+   * it is a broken instrument. Walk the whole subtree.
+   */
   const pids = new Set<number>([server.pid!])
   const refreshPids = () => {
-    try {
-      const out = require('child_process')
-        .execSync(`pgrep -P ${server.pid} || true`, { encoding: 'utf8' })
-        .trim()
-      for (const line of out.split('\n')) {
-        const pid = Number(line)
-        if (pid) pids.add(pid)
-      }
-    } catch { /* subtree gone */ }
+    const frontier = [server.pid!]
+    while (frontier.length) {
+      const parent = frontier.pop()!
+      try {
+        const out = execSync(`pgrep -P ${parent} || true`, { encoding: 'utf8' }).trim()
+        for (const line of out.split('\n')) {
+          const pid = Number(line)
+          if (pid && !pids.has(pid)) {
+            pids.add(pid)
+            frontier.push(pid)
+          }
+        }
+      } catch { /* process gone mid-walk */ }
+    }
   }
 
   let peakKb = 0
@@ -168,7 +201,29 @@ async function main() {
     if (total > peakKb) peakKb = total
   }, 100)
 
-  await sleep(6000) // server boot + tsx compile
+  // Wait for the port to actually accept a connection rather than guessing at
+  // a boot time. `tsx` compiles on first run and can take well over 6s.
+  const bootDeadline = Date.now() + 60_000
+  for (;;) {
+    try {
+      const probe = ioClient(URL, { transports: ['websocket'], reconnection: false })
+      await new Promise<void>((resolve, reject) => {
+        probe.on('connect', () => { probe.close(); resolve() })
+        probe.on('connect_error', reject)
+        setTimeout(() => reject(new Error('probe timeout')), 2000)
+      })
+      break
+    } catch {
+      if (Date.now() > bootDeadline) {
+        console.error('server never came up. Its output:')
+        console.error(serverLog.join('') || '(nothing)')
+        server.kill('SIGKILL')
+        process.exit(1)
+      }
+      await sleep(1000)
+    }
+  }
+  await sleep(500)
   refreshPids()
   baselineKb = [...pids].reduce((sum, pid) => sum + rssKb(pid), 0)
   console.log(`baseline (idle server): ${(baselineKb / 1024).toFixed(1)} MB`)
@@ -196,8 +251,18 @@ async function main() {
   console.log(`baseline RSS:       ${(baselineKb / 1024).toFixed(1)} MB`)
   console.log(`PEAK SERVER RSS:    ${(peakKb / 1024).toFixed(1)} MB`)
   console.log(`growth under load:  ${((peakKb - baselineKb) / 1024).toFixed(1)} MB`)
+  if (failed.length) {
+    console.log('')
+    console.log('--- server output ---')
+    console.log(serverLog.join('').slice(-4000) || '(nothing)')
+  }
 
-  server.kill('SIGKILL')
+  // Kill the WHOLE subtree. `server.kill()` reaps only the npx wrapper and
+  // leaves the real node listening — which is what poisoned an earlier run.
+  refreshPids()
+  for (const pid of pids) {
+    try { process.kill(pid, 'SIGKILL') } catch { /* already gone */ }
+  }
   await mock.close()
   process.exit(failed.length ? 1 : 0)
 }

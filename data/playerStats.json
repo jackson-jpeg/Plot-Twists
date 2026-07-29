@@ -10943,7 +10943,295 @@
       "totalXP": 275,
       "level": 2,
       "title": "Rookie"
+    },
+    {
+      "playerId": "3af20317-d550-48d6-ad88-265d4b32b04a",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A mystery novelist whose small town has a startling murder rate": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337281472
+        }
+      ],
+      "recentGames": [
+        "72d54fb6-6603-4bf7-8b51-6df6c2dc30d2"
+      ],
+      "joinedAt": 1785337281471,
+      "lastPlayedAt": 1785337281472,
+      "favoriteCharacter": "A mystery novelist whose small town has a startling murder rate",
+      "id": "3af20317-d550-48d6-ad88-265d4b32b04a",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "ff59e274-d89c-4248-b48e-b694ac1c4789",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 2,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A mystery novelist whose small town has a startling murder rate": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337281486
+        }
+      ],
+      "recentGames": [
+        "72d54fb6-6603-4bf7-8b51-6df6c2dc30d2"
+      ],
+      "joinedAt": 1785337281484,
+      "lastPlayedAt": 1785337281486,
+      "favoriteCharacter": "A mystery novelist whose small town has a startling murder rate",
+      "id": "ff59e274-d89c-4248-b48e-b694ac1c4789",
+      "totalXP": 415,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "b28d547a-d8d8-4074-97f2-2d19aee82202",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A mystery novelist whose small town has a startling murder rate": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337281503
+        }
+      ],
+      "recentGames": [
+        "72d54fb6-6603-4bf7-8b51-6df6c2dc30d2"
+      ],
+      "joinedAt": 1785337281497,
+      "lastPlayedAt": 1785337281503,
+      "favoriteCharacter": "A mystery novelist whose small town has a startling murder rate",
+      "id": "b28d547a-d8d8-4074-97f2-2d19aee82202",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "c5a62547-91ee-471c-8540-ec11c400c00f",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A defrosted super-soldier with pre-war manners": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337283996
+        }
+      ],
+      "recentGames": [
+        "4e98559c-2f9f-4486-9042-ad209df08525"
+      ],
+      "joinedAt": 1785337283995,
+      "lastPlayedAt": 1785337283996,
+      "favoriteCharacter": "A defrosted super-soldier with pre-war manners",
+      "id": "c5a62547-91ee-471c-8540-ec11c400c00f",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "f3915a5b-21d8-4ce1-a607-54fc8f5db3dc",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 2,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A defrosted super-soldier with pre-war manners": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337284031
+        }
+      ],
+      "recentGames": [
+        "4e98559c-2f9f-4486-9042-ad209df08525"
+      ],
+      "joinedAt": 1785337284029,
+      "lastPlayedAt": 1785337284031,
+      "favoriteCharacter": "A defrosted super-soldier with pre-war manners",
+      "id": "f3915a5b-21d8-4ce1-a607-54fc8f5db3dc",
+      "totalXP": 415,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "88ac851a-a2e6-49ab-bfb5-768c4493e0d7",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A defrosted super-soldier with pre-war manners": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337284047
+        }
+      ],
+      "recentGames": [
+        "4e98559c-2f9f-4486-9042-ad209df08525"
+      ],
+      "joinedAt": 1785337284045,
+      "lastPlayedAt": 1785337284047,
+      "favoriteCharacter": "A defrosted super-soldier with pre-war manners",
+      "id": "88ac851a-a2e6-49ab-bfb5-768c4493e0d7",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
     }
   ],
-  "savedAt": 1785337220073
+  "savedAt": 1785337284058
 }

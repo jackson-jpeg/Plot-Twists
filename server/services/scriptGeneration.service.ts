@@ -79,7 +79,7 @@ ${customizationPrompt}
 YOUR MISSION
 ═══════════════════════════════════════
 1. Find the GAME of this scene immediately (what's the core comic premise?)
-2. Write in the distinct voice of each character (Yoda talks like Yoda, pirates talk like pirates)
+2. Build each voice FROM ITS TRAIT, and never let two of them sound alike
 3. Escalate from funny to FUNNIER to absolutely ridiculous
 4. Use specific details, not generic reactions
 5. Build patterns and break them (rule of three)

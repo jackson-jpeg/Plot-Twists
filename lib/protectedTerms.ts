@@ -72,6 +72,9 @@ export const PROTECTED_TERMS: string[] = [
   'DC Comics',
   'Darth Vader',
   'Debra Morgan',
+  // Added 2026-07-29. Was absent while the live user prompt read "Yoda talks like Yoda" — so the
+  // model was being handed the name AND the screen could not have caught it coming back.
+  'Yoda',
   'Dee Reynolds',
   'Dennis Reynolds',
   'Dexter Morgan',

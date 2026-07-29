@@ -322,12 +322,29 @@ Make the audience laugh because they remember what happened in Episode 1.`
 }
 
 /** Get mode-specific scene dynamics instructions */
+/**
+ * Turn a trait card into a performable subject.
+ *
+ * The character deck is TRAITS, not people — "Insists nothing is wrong at increasing volume".
+ * Every prompt template below interpolates a character where a noun phrase belongs, so the raw
+ * card produces "The human player will perform as Insists nothing is wrong at increasing volume."
+ * One wrapper at the entry point fixes all thirteen interpolation sites; editing the templates
+ * individually would leave the next one added to rot.
+ *
+ * Safe to lowercase the first letter unconditionally: every entry is authored as a third-person
+ * verb phrase, and layer 2 guarantees the string came from the catalog rather than from a player.
+ */
+function asPerformer(trait: string): string {
+  return `someone who ${trait.charAt(0).toLowerCase()}${trait.slice(1)}`
+}
+
 export function getModeInstructions(
   gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE',
-  characters: string[],
+  rawCharacters: string[],
   setting: string,
   circumstance: string
 ): string {
+  const characters = rawCharacters.map(asPerformer)
   if (gameMode === 'HEAD_TO_HEAD') {
     return `
 ═══════════════════════════════════════
@@ -364,7 +381,9 @@ AVOID:
 ═══════════════════════════════════════
 SCENE DYNAMICS (ENSEMBLE MODE)
 ═══════════════════════════════════════
-This is a CHAOTIC GROUP scene. Structure it like "The Office" or "Community."
+This is a CHAOTIC GROUP scene. Structure it like a workplace mockumentary: one exasperated
+straight man, a ring of people each pursuing an unrelated private agenda, and a plan that
+survives roughly forty seconds.
 
 ROLE ASSIGNMENTS:
 - ${characters[0]} is the STRAIGHT MAN (the reasonable one trying to manage the situation)

@@ -68,7 +68,24 @@ Two rules, both from Jackson, both non-negotiable in every chunk report from her
 
 Once I have (2), I can do nginx + systemd + TLS from here without you.
 
-**Done when:** `next build` exits 0, `npm test` exits 0, `curl -sI https://plotslop.com` returns 200 from the app rather than Hostinger, two browsers on different networks join the same room code and see each other, and the Firebase question is closed either way (rules committed, or project deleted).
+### 🚧 Isolation is NOT proven until re-verified on the live unit
+
+**Blocking checklist, added 2026-07-29 on Jackson's instruction.** Every isolation measurement so
+far was taken on a **transient** `systemd-run` unit carrying the same directives. That proves the
+directives work; it does **not** prove the installed `plotslop.service` gets them. A typo, an
+override drop-in, or a delegated cgroup would not show up any other way. The moment the service
+starts with the real key, re-run all four against the **running long-lived service**, reading
+**effective** values from the actual cgroup rather than from the unit file:
+
+- [ ] **Effective limits** — `systemctl show plotslop -p MemoryMax,MemoryHigh,MemorySwapMax,CPUQuotaPerSecUSec,TasksMax,User`, cross-read against `/sys/fs/cgroup/system.slice/plotslop.service/{memory.max,memory.high,memory.swap.max,cpu.max}`. The unit file is the claim; the cgroup is the fact.
+- [ ] **OOM kill fires, and the process dies rather than stalling** — `journalctl -u plotslop` shows `result 'oom-kill'` and `Restart=always` brings it back. A reclaim-throttled stall is worse than a crash because `Restart=` never fires; that is why `MemoryHigh` is 700M and not 640M.
+- [ ] **CPU quota bites under a MULTI-THREADED load.** A single-threaded spinner proves nothing — it uses one core whatever the quota says. Compare total CPU-seconds over a fixed wall window (uncapped 14.515s vs capped 8.092s over 8s was the transient-unit result).
+- [ ] **`ProtectHome` denies `/root` from inside the service's own namespace** — `systemctl show plotslop -p MainPID`, then `nsenter -t <pid> -m -- ls /root` must fail.
+- [ ] **Data dir is inside the tree and nowhere else** — `ls -l /proc/<pid>/cwd` resolves to `/srv/plotslop`, `lsof -p <pid> | grep '\.json'` shows no handle outside it, and a write outside `ReadWritePaths` returns `EROFS`.
+
+Record the numbers, not "verified". **The Sanger isolation is not proven until this passes.**
+
+**Done when:** `next build` exits 0, `npm test` exits 0, `curl -sI https://plotslop.com` returns 200 from the app rather than Hostinger, two browsers on different networks join the same room code and see each other, the Firebase question is closed either way (rules committed, or project deleted), **and the five isolation boxes above are ticked against the live unit**.
 
 ---
 

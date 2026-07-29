@@ -2,6 +2,7 @@
 import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
 import { SocketRateLimiter } from '../middleware/rateLimiter'
+import { rateLimitKey } from '../utils/clientIdentity'
 import type { Player, Room, RoomSettings } from '@/lib/types'
 import { v4 as uuidv4 } from 'uuid'
 import { isValidRoomCode, isValidNickname, isValidGameMode, sanitizeInput as sanitizeUserInput } from '../utils/validation'
@@ -13,6 +14,7 @@ import { startScriptGeneration } from './game.helpers'
 import { calculateResults, allBallotsIn } from '../services/voting.service'
 import { mintReconnectToken } from '../utils/reconnectToken'
 import { MAX_PLAYERS } from '../utils/constants'
+import { CONFIG } from '../utils/config'
 import { requireHost } from '../socket/helpers'
 import { toPublicPlayer, toPublicPlayers } from '../socket/serialize'
 import * as roomService from '../services/room.service'
@@ -21,8 +23,18 @@ import { logger } from '@/lib/logger'
 import { isBetaFeatureEnabled } from '@/lib/betaFeatures'
 
 // Rate limiters (moved from server.ts)
-const roomCreationLimiter = new SocketRateLimiter(10, 5 * 60 * 1000) // 10 rooms per 5 minutes
+const roomCreationLimiter = new SocketRateLimiter(CONFIG.abuse.roomCreateMax, CONFIG.abuse.roomCreateWindowMs)
 const joinRoomLimiter = new SocketRateLimiter(30, 60 * 1000) // 30 joins per minute
+
+/**
+ * Clear the abuse counters. HARNESS ONLY — see SocketRateLimiter.clearAll.
+ * Not exported to any socket event and not reachable from a client.
+ */
+export function __resetAbuseCountersForTests(): void {
+  roomCreationLimiter.clearAll()
+  joinRoomLimiter.clearAll()
+  roomService.__resetCreatorCountsForTests()
+}
 
 // Sanitize user input
 function sanitizeInput(input: string): string {
@@ -33,9 +45,18 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
   // Create room
   socket.on('create_room', withErrorHandler(socket, 'create_room', (settings, callback) => {
     // Rate limiting
-    if (!roomCreationLimiter.check(socket.id)) {
+    if (!roomCreationLimiter.check(rateLimitKey(socket))) {
       logger.warn(`Rate limit exceeded for room creation: ${socket.id}`)
       callback({ success: false, error: 'Too many room creation attempts. Please try again later.' })
+      return
+    }
+
+    // Chunk 3 item 2 — cap STANDING rooms, not just the creation rate. Checked before any
+    // work is done, so a refused create costs one Map lookup.
+    const creatorKey = rateLimitKey(socket)
+    if (roomService.countLiveRoomsForCreator(creatorKey) >= CONFIG.abuse.maxLiveRoomsPerCreator) {
+      logger.warn(`Live-room cap reached for ${creatorKey}`)
+      callback({ success: false, error: 'You already have several rooms open. Close one and try again.' })
       return
     }
 
@@ -94,7 +115,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
         room.autoStart = true
       }
 
-      roomService.createRoom(room)
+      roomService.createRoom(room, creatorKey)
       socket.join(code)
 
       // Broadcast to public room watchers
@@ -114,7 +135,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
   // Join room
   socket.on('join_room', withErrorHandler(socket, 'join_room', (roomCode, nickname, callback) => {
     // Rate limiting
-    if (!joinRoomLimiter.check(socket.id)) {
+    if (!joinRoomLimiter.check(rateLimitKey(socket))) {
       logger.warn(`Rate limit exceeded for join room: ${socket.id}`)
       callback({ success: false, error: 'Too many join attempts. Please slow down.' })
       return
@@ -512,7 +533,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
         publicTitle: `Quick Play ${gameMode}`,
       }
 
-      roomService.createRoom(newRoom)
+      roomService.createRoom(newRoom, rateLimitKey(socket))
       socket.join(code)
 
       // Broadcast update to public room watchers

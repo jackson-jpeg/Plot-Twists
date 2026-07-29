@@ -52,9 +52,13 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
   room.gameState = 'LOADING'
   io.to(room.code).emit('game_state_change', 'LOADING')
 
-  // Rate limiting for script generation (use host socket ID)
-  const hostSocketId = room.host.socketId
-  if (!scriptGenerationLimiter.check(hostSocketId)) {
+  // Chunk 3 item 1. Keyed on the host's stable identity, not `room.host.socketId` — the host
+  // reconnecting once was enough to reset the limit that exists to cap Claude spend, which made
+  // it the cost control most worth bypassing and the easiest to bypass. `hostUid` when they are
+  // signed in (generation is credit-gated to authenticated hosts in production anyway), room
+  // code otherwise, so a guest room is still capped as a room.
+  const generationKey = room.hostUid ? `user:${room.hostUid}` : `room:${room.code}`
+  if (!scriptGenerationLimiter.check(generationKey)) {
     logger.warn(`Script generation rate limit exceeded for room ${room.code}`)
     io.to(room.code).emit('game_error_message', 'Too many script generation requests. Please wait a moment.')
     room.gameState = 'SELECTION'

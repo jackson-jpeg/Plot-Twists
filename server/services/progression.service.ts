@@ -13,6 +13,7 @@ import type {
   Achievement,
 } from '../../lib/types'
 import { getDatabase, Collections } from '../db'
+import { sampleOf } from '../utils/shuffle'
 
 // ── Level Configuration ──────────────────────────────────
 
@@ -341,9 +342,9 @@ function refreshWeeklyChallenges(progression: Progression): boolean {
 
   if (!needsRefresh) return false
 
-  // Generate 3 random challenges
-  const shuffled = [...CHALLENGE_POOL].sort(() => Math.random() - 0.5)
-  const selected = shuffled.slice(0, 3)
+  // Generate 3 random challenges. Chunk 3 item 4 — was a random-comparator sort, which biased
+  // selection toward whichever challenges were declared first in CHALLENGE_POOL.
+  const selected = sampleOf(CHALLENGE_POOL, 3)
 
   // Challenges expire next Monday at midnight UTC
   const nextMonday = getNextMondayUTC()

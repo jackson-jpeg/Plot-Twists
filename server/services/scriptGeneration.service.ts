@@ -14,6 +14,7 @@ import {
   getLineCountRange
 } from './scriptCustomization.service'
 import { logger } from '../../lib/logger'
+import { CONFIG } from '../utils/config'
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
@@ -118,7 +119,7 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
 
     // Use streaming for real-time progress
     const stream = anthropic.messages.stream({
-      model: 'claude-sonnet-4-5-20250929',
+      model: CONFIG.generation.model,
       max_tokens: maxTokens,
       temperature: 1, // Max creativity for comedy writing
       system: systemPrompt,
@@ -167,13 +168,15 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
       }
     })
 
-    // Add timeout to prevent indefinite hangs if the API stalls
-    const STREAM_TIMEOUT_MS = 120_000 // 2 minutes
+    // Add timeout to prevent indefinite hangs if the API stalls.
+    // Chunk 3 item 3: now read from CONFIG so GENERATION_TIMEOUT_MS is a real knob. It was not
+    // before — this constant was hardcoded at 120s while the config advertised 45s to nobody.
+    const STREAM_TIMEOUT_MS = CONFIG.generation.timeoutMs
     let timeoutTimer: NodeJS.Timeout | undefined
     const timeoutPromise = new Promise<never>((_, reject) => {
       timeoutTimer = setTimeout(() => {
         stream.abort()
-        reject(new Error('Script generation timed out after 2 minutes'))
+        reject(new Error(`Script generation timed out after ${Math.round(STREAM_TIMEOUT_MS / 1000)}s`))
       }, STREAM_TIMEOUT_MS)
       timeoutTimer.unref()
     })

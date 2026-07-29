@@ -104,4 +104,17 @@ export class SocketRateLimiter {
   reset(identifier: string): void {
     this.attempts.delete(identifier)
   }
+
+  /**
+   * Wipe every bucket.
+   *
+   * Exists for the harness, which drives ~17 scenarios from a single loopback address inside one
+   * rate-limit window and is therefore indistinguishable from the abuse these limiters exist to
+   * stop. Reachable only by direct function call, never over a socket, so nothing a client can
+   * reach can clear its own bucket — which is precisely the property the `rateLimit` scenario
+   * gates. That scenario runs without any reset inside it.
+   */
+  clearAll(): void {
+    this.attempts.clear()
+  }
 }

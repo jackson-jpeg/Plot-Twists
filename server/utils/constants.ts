@@ -17,6 +17,9 @@ export const MAX_PLAYERS = {
 export const ROOM_CLEANUP_INTERVAL = 5 * 60 * 1000 // 5 minutes
 export const ROOM_INACTIVITY_TIMEOUT = 60 * 60 * 1000 // 1 hour
 
+// Chunk 3 item 2 lives in utils/config.ts (CONFIG.abuse), not here — it needs to be tunable
+// from the environment without a deploy. See the CGNAT note there.
+
 export const DISCONNECT_GRACE_PERIOD = 3000 // 3 seconds
 // Chunk 2 item 4: was 60_000. Sixty seconds is a long time to stare at "waiting for all players
 // to cast their votes" when the missing vote belongs to someone who has left the room. The tally

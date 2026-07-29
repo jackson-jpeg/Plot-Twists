@@ -2,6 +2,7 @@
 import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
 import { SocketRateLimiter } from '../middleware/rateLimiter'
+import { rateLimitKey } from '../utils/clientIdentity'
 import { sanitizeInput as sanitizeUserInput } from '../utils/validation'
 import {
   listCardPacks,
@@ -76,7 +77,7 @@ export function registerCardpackHandlers(io: AppServer, socket: AppSocket, ctx: 
   // Create a new card pack
   socket.on('create_card_pack', withErrorHandler(socket, 'create_card_pack', async (packData, callback) => {
     // Rate limiting
-    if (!cardPackLimiter.check(socket.id)) {
+    if (!cardPackLimiter.check(rateLimitKey(socket))) {
       callback({ success: false, error: 'Too many requests. Please wait a moment.' })
       return
     }
@@ -95,7 +96,7 @@ export function registerCardpackHandlers(io: AppServer, socket: AppSocket, ctx: 
   // Rate a card pack
   socket.on('rate_card_pack', withErrorHandler(socket, 'rate_card_pack', async (packId, rating, callback) => {
     // Rate limiting
-    if (!cardPackLimiter.check(socket.id)) {
+    if (!cardPackLimiter.check(rateLimitKey(socket))) {
       callback({ success: false, error: 'Too many requests. Please wait a moment.' })
       return
     }
@@ -112,7 +113,7 @@ export function registerCardpackHandlers(io: AppServer, socket: AppSocket, ctx: 
   // Update a card pack
   socket.on('update_card_pack', withErrorHandler(socket, 'update_card_pack', async (packId, updates, callback) => {
     // Rate limiting
-    if (!cardPackLimiter.check(socket.id)) {
+    if (!cardPackLimiter.check(rateLimitKey(socket))) {
       callback({ success: false, error: 'Too many requests. Please wait a moment.' })
       return
     }
@@ -129,7 +130,7 @@ export function registerCardpackHandlers(io: AppServer, socket: AppSocket, ctx: 
   // Delete a card pack
   socket.on('delete_card_pack', withErrorHandler(socket, 'delete_card_pack', async (packId, callback) => {
     // Rate limiting
-    if (!cardPackLimiter.check(socket.id)) {
+    if (!cardPackLimiter.check(rateLimitKey(socket))) {
       callback({ success: false, error: 'Too many requests. Please wait a moment.' })
       return
     }
@@ -145,7 +146,7 @@ export function registerCardpackHandlers(io: AppServer, socket: AppSocket, ctx: 
 
   // Search card packs
   socket.on('search_card_packs', withErrorHandler(socket, 'search_card_packs', async (query, callback) => {
-    if (!cardPackReadLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests. Please slow down.' }); return }
+    if (!cardPackReadLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests. Please slow down.' }); return }
     const sanitizedQuery = sanitizeUserInput(query, 100)
     if (!sanitizedQuery) { callback({ success: false, error: 'Invalid search query' }); return }
     try {
@@ -159,7 +160,7 @@ export function registerCardpackHandlers(io: AppServer, socket: AppSocket, ctx: 
 
   // Get featured packs
   socket.on('get_featured_packs', withErrorHandler(socket, 'get_featured_packs', async (limit, callback) => {
-    if (!cardPackReadLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests. Please slow down.' }); return }
+    if (!cardPackReadLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests. Please slow down.' }); return }
     try {
       const packs = await getFeaturedPacks(limit)
       callback({ success: true, packs })
@@ -171,7 +172,7 @@ export function registerCardpackHandlers(io: AppServer, socket: AppSocket, ctx: 
 
   // Get a specific card pack
   socket.on('get_card_pack', withErrorHandler(socket, 'get_card_pack', async (packId, callback) => {
-    if (!cardPackReadLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests. Please slow down.' }); return }
+    if (!cardPackReadLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests. Please slow down.' }); return }
     try {
       const pack = await getCardPack(packId)
       if (pack) {

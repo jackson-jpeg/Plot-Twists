@@ -775,16 +775,12 @@ export function getFilteredContentRich(options: {
 /**
  * Get random content for card selection (backwards compatible)
  */
-export function getRandomContent(
-  type: 'characters' | 'settings' | 'circumstances',
-  isMature: boolean,
-  count: number = 3
-): string[] {
-  const content = getFilteredContent(isMature)
-  const pool = content[type]
-  const shuffled = [...pool].sort(() => Math.random() - 0.5)
-  return shuffled.slice(0, count)
-}
+// Chunk 3 item 4: `getRandomContent` was DELETED here rather than repaired.
+//
+// It carried the biased `sort(() => Math.random() - 0.5)` idiom and had zero callers — dealing
+// goes through cardCatalog.service `dealCards`, which returns catalog OPTIONS with ids, not the
+// bare name strings this returned. Repairing it would have left a plausible-looking helper that
+// hands back exactly the un-ided free text IP layer 2 exists to keep off the wire.
 
 // ============================================================================
 // GREEN ROOM TRIVIA QUESTIONS

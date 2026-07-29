@@ -15,6 +15,7 @@ import { getDatabase, Collections } from '../db'
 import { logger } from '../../lib/logger'
 import { cleanupRoomTwists } from './audience.service'
 import { reconnectTokenMatches } from '../utils/reconnectToken'
+import { CONFIG } from '../utils/config'
 
 // ── Hot cache ──────────────────────────────────────────────
 
@@ -29,7 +30,8 @@ const disconnectTimers = new Map<string, NodeJS.Timeout>()
 
 // Debounced writes for high-frequency fields
 const debouncedWrites = new Map<string, NodeJS.Timeout>()
-const DEBOUNCE_MS = 5000
+// Chunk 3 item 3 — read from CONFIG rather than a third hardcoded copy of the same number.
+const DEBOUNCE_MS = CONFIG.persistence.debounceMs
 
 // Simple retry queue for failed Firestore writes
 const retryQueue: Array<{ code: string; data: FirestoreRoom; retries?: number }> = []
@@ -85,14 +87,14 @@ function startRetryQueue(): void {
         // Re-queue with retry count, drop after 3 attempts
         const retries = (item.retries ?? 0) + 1
         if (retries < 3) {
-          if (retryQueue.length >= 100) retryQueue.shift()
+          if (retryQueue.length >= CONFIG.persistence.maxRetryQueueSize) retryQueue.shift()
           retryQueue.push({ ...item, retries })
         } else {
           logger.warn(`[RoomService] Dropping room ${item.code} after ${retries} failed retries`)
         }
       }
     }
-  }, 10000)
+  }, CONFIG.persistence.retryIntervalMs)
 }
 
 /** Persist room to Firestore (fire-and-forget with retry) */
@@ -104,7 +106,7 @@ async function persistToFirestore(room: Room): Promise<void> {
     await db.set(Collections.ROOMS, room.code, data)
   } catch (err) {
     logger.error(`[RoomService] Firestore write failed for room ${room.code}:`, err)
-    if (retryQueue.length >= 100) retryQueue.shift()
+    if (retryQueue.length >= CONFIG.persistence.maxRetryQueueSize) retryQueue.shift()
     retryQueue.push({ code: room.code, data: roomToFirestore(room) })
   }
 }
@@ -146,9 +148,53 @@ export function generateRoomCode(): string {
   return code
 }
 
+// ── Live rooms per creator (Chunk 3 item 2) ────────────────
+//
+// Rooms are Map entries evicted only after ROOM_INACTIVITY_TIMEOUT (one hour), so an attacker
+// who can create rooms faster than they expire holds memory for an hour per room. That is why
+// this is a memory-exhaustion vector and not merely a spend problem: the rate limiter caps the
+// RATE of creation, this caps the STANDING total.
+//
+// Deliberately in memory and NOT on the Room: the key is derived from a client IP, and the Room
+// is serialised to disk. Keeping it here means no IP is ever written to `data/rooms.json`. The
+// cost is that the cap resets on restart, which is the right trade — the alternative is
+// persisting PII to survive a restart that also drops every room being counted.
+const roomsByCreator = new Map<string, Set<string>>()
+
+export function countLiveRoomsForCreator(creatorKey: string): number {
+  const codes = roomsByCreator.get(creatorKey)
+  if (!codes) return 0
+  // Lazily drop codes whose rooms have since been cleaned up, so a creator is not permanently
+  // charged for rooms that no longer exist.
+  for (const code of codes) {
+    if (!rooms.has(code)) codes.delete(code)
+  }
+  if (codes.size === 0) {
+    roomsByCreator.delete(creatorKey)
+    return 0
+  }
+  return codes.size
+}
+
+/** HARNESS ONLY — see server/handlers/room.handler.ts __resetAbuseCountersForTests. */
+export function __resetCreatorCountsForTests(): void {
+  roomsByCreator.clear()
+}
+
+function forgetRoomCreator(code: string): void {
+  for (const [key, codes] of roomsByCreator.entries()) {
+    if (codes.delete(code) && codes.size === 0) roomsByCreator.delete(key)
+  }
+}
+
 /** Create a new room and persist */
-export function createRoom(room: Room): Room {
+export function createRoom(room: Room, creatorKey?: string): Room {
   rooms.set(room.code, room)
+  if (creatorKey) {
+    const codes = roomsByCreator.get(creatorKey) ?? new Set<string>()
+    codes.add(room.code)
+    roomsByCreator.set(creatorKey, codes)
+  }
   persistToFirestore(room)
   return room
 }
@@ -197,6 +243,7 @@ export async function persistRoom(room: Room): Promise<void> {
 /** Delete room from both stores */
 export async function deleteRoom(code: string): Promise<void> {
   rooms.delete(code)
+  forgetRoomCreator(code)
   // Clean up debounced writes
   const deb = debouncedWrites.get(code)
   if (deb) {
@@ -508,6 +555,7 @@ export function startRoomCleanup(): void {
         clearAllRoomTimeouts(code)
         cleanupRoomTwists(code)
         rooms.delete(code)
+        forgetRoomCreator(code)
         deleteFromFirestore(code)
         cleanedCount++
       }

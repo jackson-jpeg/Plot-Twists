@@ -2,6 +2,7 @@
 import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
 import { SocketRateLimiter } from '../middleware/rateLimiter'
+import { rateLimitKey } from '../utils/clientIdentity'
 import {
   getPlayerGames,
   getGame,
@@ -22,7 +23,7 @@ const dataFetchLimiter = new SocketRateLimiter(60, 60 * 1000) // 60 data fetches
 export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
   // Get game history for a player
   socket.on('get_game_history', withErrorHandler(socket, 'get_game_history', async (playerId, limit, callback) => {
-    if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
+    if (!dataFetchLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests' }); return }
     try {
       const games = await getPlayerGames(playerId, limit)
       callback({ success: true, games })
@@ -34,7 +35,7 @@ export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Get specific game details (supports both share codes and UUIDs)
   socket.on('get_game_details', withErrorHandler(socket, 'get_game_details', async (gameId, callback) => {
-    if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
+    if (!dataFetchLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests' }); return }
     try {
       // Try share code lookup first (8-char alphanumeric), then fall back to UUID
       let game = await getGameByShareCode(gameId)
@@ -73,7 +74,7 @@ export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Get player stats
   socket.on('get_player_stats', withErrorHandler(socket, 'get_player_stats', async (playerId, callback) => {
-    if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
+    if (!dataFetchLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests' }); return }
     try {
       const stats = await getPlayerStats(playerId)
       callback({ success: true, stats })
@@ -85,7 +86,7 @@ export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Get leaderboard
   socket.on('get_leaderboard', withErrorHandler(socket, 'get_leaderboard', async (category, limit, callback) => {
-    if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
+    if (!dataFetchLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests' }); return }
     try {
       const entries = await getLeaderboard(category, limit)
       callback({ success: true, entries })
@@ -97,7 +98,7 @@ export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Get credit balance
   socket.on('get_credit_balance', withErrorHandler(socket, 'get_credit_balance', async (callback) => {
-    if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
+    if (!dataFetchLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests' }); return }
     try {
       const uid = socket.data.uid
       if (!uid) {
@@ -114,7 +115,7 @@ export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Get referral info
   socket.on('get_referral_info', withErrorHandler(socket, 'get_referral_info', async (callback) => {
-    if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
+    if (!dataFetchLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests' }); return }
     try {
       const uid = socket.data.uid
       if (!uid) {
@@ -147,7 +148,7 @@ export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Get progression
   socket.on('get_progression', withErrorHandler(socket, 'get_progression', async (playerId, callback) => {
-    if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
+    if (!dataFetchLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests' }); return }
     try {
       const progression = await getProgression(playerId)
       const levelInfo = getLevelInfo(progression.totalXP)
@@ -160,7 +161,7 @@ export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Get weekly challenges
   socket.on('get_weekly_challenges', withErrorHandler(socket, 'get_weekly_challenges', async (callback) => {
-    if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
+    if (!dataFetchLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests' }); return }
     try {
       const uid = socket.data.uid
       if (!uid) {
@@ -201,7 +202,7 @@ export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
   // Get public replays (trending or recent)
   socket.on('get_public_replays', withErrorHandler(socket, 'get_public_replays', async (params, callback) => {
-    if (!dataFetchLimiter.check(socket.id)) { callback({ success: false, error: 'Too many requests' }); return }
+    if (!dataFetchLimiter.check(rateLimitKey(socket))) { callback({ success: false, error: 'Too many requests' }); return }
     try {
       const { tab, limit, offset } = params
       const games = tab === 'trending'

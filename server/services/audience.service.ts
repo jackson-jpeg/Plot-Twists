@@ -21,6 +21,7 @@ import type {
 import { logger } from '../../lib/logger'
 import { sanitizeInput } from '../utils/validation'
 import { PLOT_TWIST_VOTING_DURATION } from '../utils/constants'
+import { shuffled } from '../utils/shuffle'
 
 // Initialize Anthropic client for AI-powered twists
 const anthropic = new Anthropic({
@@ -185,8 +186,10 @@ export function generatePlotTwistOptions(
     })
   }
 
-  // Shuffle the options
-  return selectedOptions.sort(() => Math.random() - 0.5)
+  // Shuffle the options. Chunk 3 item 4 — the random-comparator sort left the first-generated
+  // twist near the top of the ballot more often than chance, which for an audience VOTE is a
+  // thumb on the scale rather than a cosmetic ordering bug.
+  return shuffled(selectedOptions)
 }
 
 /**

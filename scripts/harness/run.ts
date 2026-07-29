@@ -511,6 +511,9 @@ scenarios.abuse = async () => {
 
 /** 5. Rate-limit bypass by reconnecting (socket.id is the limiter key). */
 scenarios.rateLimit = async () => {
+  // NOTE: this scenario performs NO counter reset. main() resets between scenarios so that ~17
+  // legitimate scenarios sharing one loopback address are not mistaken for an attack; inside
+  // here the limiter is exactly as strict as it is in production, which is the whole point.
   const c = new Client('Spammer')
   await c.connected()
   let made = 0
@@ -521,19 +524,32 @@ scenarios.rateLimit = async () => {
   record('rateLimit', 'room creation is capped on one connection', made <= 10, `${made} rooms on a single socket`)
   c.close()
 
+  // Chunk 3 items 1 AND 2 both refuse creates now, for different reasons and with different
+  // messages. Counting only successes would let the LIVE-ROOM CAP satisfy a gate that exists to
+  // prove the RATE limiter survives reconnection — a pass for the wrong mechanism. So the
+  // refusals are attributed.
   let total = 0
+  let rateLimited = 0
+  let capped = 0
   for (let round = 0; round < 5; round++) {
     const s = new Client(`Spammer${round}`)
     await s.connected()
     for (let i = 0; i < 12; i++) {
-      const r = await s.emitAck<{ success: boolean }>('create_room', { gameMode: 'ENSEMBLE' })
+      const r = await s.emitAck<{ success: boolean; error?: string }>('create_room', { gameMode: 'ENSEMBLE' })
       if (r.success) total++
+      else if (/too many/i.test(r.error ?? '')) rateLimited++
+      else if (/rooms open/i.test(r.error ?? '')) capped++
     }
     s.close()
     await sleep(50)
   }
   record('rateLimit', 'reconnecting does NOT reset the room-creation limit', total <= 10,
-    `${total} rooms created in ~2s by reconnecting 5 times — limiter is keyed on socket.id, which is new every connection`)
+    `${total} room(s) created across 5 fresh connections; ${rateLimited} refused by the rate limiter, ${capped} by the live-room cap` +
+      (total > 10 ? ' — the limiter is keyed on something that changes every connection' : ''))
+  record('rateLimit', 'the RATE limiter is what refuses, not just the standing-room cap', rateLimited > 0,
+    rateLimited > 0
+      ? `${rateLimited} refusal(s) came from the reconnection-surviving rate limiter itself`
+      : 'every refusal came from the live-room cap — the rate-limit gate would have passed without a working rate limiter')
 }
 
 /** 6. Player-count boundaries. */
@@ -1067,9 +1083,16 @@ async function main() {
   const game = await startHarnessServer(GAME_PORT)
   console.log(`harness up: game=${GAME_PORT} mock-anthropic=${MOCK_PORT}\n`)
 
+  const { __resetAbuseCountersForTests } = await import('../../server/handlers/room.handler')
+
   const names = only ? [only] : Object.keys(scenarios)
   for (const name of names) {
     console.log(`\n── ${name} ─────────────────────────────`)
+    // Chunk 3 items 1+2 key room limits on client IP, and every scenario here shares 127.0.0.1.
+    // Without this, scenario 4 onwards would be refused as abuse and every later case would fail
+    // for a reason that has nothing to do with what it tests. Reset BETWEEN scenarios only —
+    // never inside one — so `rateLimit` still faces the production limits.
+    __resetAbuseCountersForTests()
     try {
       await scenarios[name]()
     } catch (err) {

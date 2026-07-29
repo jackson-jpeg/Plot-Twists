@@ -20,6 +20,7 @@ import {
   requireRoomMember,
 } from '../socket/helpers'
 import * as roomService from '../services/room.service'
+import { seatKey } from '../utils/clientIdentity'
 import { logger } from '@/lib/logger'
 
 // Rate limiters (moved from server.ts)
@@ -29,8 +30,15 @@ const spectatorMessageLimiter = new SocketRateLimiter(20, 60 * 1000) // 20 messa
 export function registerAudienceHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
   // Send audience reaction
   socket.on('send_audience_reaction', withErrorHandler(socket, 'send_audience_reaction', (roomCode, reactionType) => {
-    // Rate limiting
-    if (!reactionLimiter.check(socket.id)) {
+    // Chunk 3 item 1, with a deliberate difference from the other limiters.
+    //
+    // These are keyed on the SEAT (roomCode + publicId), not on `rateLimitKey`. The point of
+    // re-keying was to survive reconnection, and a seat does. But an IP does NOT belong here:
+    // the whole premise of this game is eight people in one room sharing one wifi, so an
+    // IP-keyed reaction limit would put the entire party in one 60/min bucket and silence the
+    // loudest moment of the night. That is a worse outcome than the abuse it would prevent —
+    // reactions are counters and a bounded message buffer, not an allocation vector.
+    if (!reactionLimiter.check(seatKey(socket, roomCode))) {
       return
     }
 
@@ -72,7 +80,7 @@ export function registerAudienceHandlers(io: AppServer, socket: AppSocket, ctx: 
 
   // Send spectator message (chat/heckle)
   socket.on('send_spectator_message', withErrorHandler(socket, 'send_spectator_message', (roomCode, text, isPreset) => {
-    if (!spectatorMessageLimiter.check(socket.id)) return
+    if (!spectatorMessageLimiter.check(seatKey(socket, roomCode))) return
     const room = validateRoom(roomCode, socket)
     if (!room || !room.audienceInteraction) return
     if (!requireRoomMember(room, socket)) return

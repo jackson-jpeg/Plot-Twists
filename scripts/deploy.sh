@@ -58,9 +58,15 @@ chown -R plotslop:plotslop "$DST"
 chmod 750 "$DST/data"
 
 echo "==> restarting"
-# CONSTRAINT-1: this drops EVERY live Socket.IO connection and, because host-disconnect
-# recovery is still broken (D3), ends every game in flight. Weekday daytime only.
-# Never Friday-Sunday evening. See AUDIT.md → CONSTRAINT-1.
+# CONSTRAINT-1: this drops EVERY live Socket.IO connection and ends every game in flight.
+# Weekday daytime only. Never Friday-Sunday evening. See AUDIT.md → CONSTRAINT-1.
+#
+# The reasoning changed on 2026-07-29 even though the constraint did not. This used to say
+# "because host-disconnect recovery is still broken (D3)". D3 is FIXED — host migration
+# landed in Chunk 2 item 3 — but that does not soften this one bit, and it is worth being
+# precise about why: migration promotes a surviving player when the HOST drops, and a
+# restart drops everyone at once. There is no survivor to promote. The real cause is
+# CONSTRAINT-1 itself: all game state is process-local, so it dies with the process.
 read -rp "Restarting ends every live game mid-round. Continue? [y/N] " ok
 [[ ${ok,,} == y ]] || { echo "aborted; new code is staged in $DST but not running"; exit 0; }
 

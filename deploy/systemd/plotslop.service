@@ -1,0 +1,123 @@
+# VERSION-CONTROLLED COPY of /etc/systemd/system/plotslop.service.
+#
+# The installed unit was written 2026-07-29 and existed only on this box until now, which
+# meant the isolation reasoning below was one `rm` away from being lost while the file it
+# describes kept running. scripts/cutover.sh installs FROM here, so this is the source of
+# truth; if the two ever diverge, the installed one is the accident.
+#
+# NOTHING HERE IS PROVEN UNTIL IT IS RE-VERIFIED ON THE RUNNING SERVICE. Every isolation
+# measurement so far was taken on a transient `systemd-run` unit carrying the same
+# directives. That proves the directives work. It does not prove THIS unit gets them — a
+# typo, an override drop-in, or a delegated cgroup would look identical from here. The
+# five-box checklist is in HANDOFF.md §5 and is a blocking Chunk 1 item.
+
+[Unit]
+Description=PlotSlop — game server (Next.js + Socket.IO)
+Documentation=file:///root/Plot-Twists/AUDIT.md
+After=network.target
+Wants=network.target
+StartLimitBurst=5
+StartLimitIntervalSec=300
+
+[Service]
+Type=simple
+User=plotslop
+Group=plotslop
+
+# WorkingDirectory is load-bearing, not cosmetic.
+# server/db/json.ts:11 is `path.join(process.cwd(), 'data')` — cwd-relative, NOT absolute.
+# The JSON adapter's data files live inside PlotSlop's own tree only because of this line.
+# Changing it silently relocates rooms.json / playerStats.json / progression.json /
+# gameHistory.json. ReadWritePaths below makes any escape fail closed rather than silently
+# write somewhere else.
+WorkingDirectory=/srv/plotslop
+ExecStart=/srv/plotslop/node_modules/.bin/tsx server.ts
+
+# Secrets live outside /root and outside the app tree. chmod 640 root:plotslop.
+EnvironmentFile=/etc/plotslop/env
+Environment=NODE_ENV=production
+
+Restart=always
+RestartSec=5
+
+# ── Resource limits ───────────────────────────────────────────────────────────
+# Sized 2026-07-29 against a 2-core / 7940 MB box that was ALREADY under pressure:
+# 969 MB free and swap 1.7 GB of 2 GB consumed before PlotSlop existed.
+# sanger-next.service holds MemoryMax=1500M, so this reserves 2.27 GB of 7.9 GB total.
+#
+# MemorySwapMax=0 is the important one. Swap was 87% full at sizing time, so an
+# unbounded PlotSlop would thrash the box and take sang3r.com down with it WITHOUT ever
+# tripping an OOM kill. At 0, PlotSlop dies alone. This is the line that makes the
+# demonstrated abuse path (50 rooms in ~2s, rooms evicted only after 60 min idle) a
+# PlotSlop outage instead of a host outage.
+MemoryMax=768M
+# MemoryHigh raised 640M -> 700M after measurement, deliberately narrowing the throttle band.
+# At 640M a runaway allocator did NOT get killed — it got reclaim-throttled into a 2-minute
+# stall and had to be timed out by hand. A stalled game server is worse than a dead one:
+# Restart=always never fires because the process never exits, so it serves nobody AND does
+# not recover. At 700M there is still a ~68M back-pressure window for the GC to reclaim
+# before the hard kill at 768M, but the stall cannot last long.
+MemoryHigh=700M
+MemorySwapMax=0
+
+# One full core of two, so a spin loop cannot starve sanger-next.
+# CPUWeight=50 (default 100) makes Sanger win contention below the quota.
+CPUQuota=100%
+CPUWeight=50
+TasksMax=256
+
+# ── Isolation from Sanger ─────────────────────────────────────────────────────
+# ProtectHome=true makes /root INVISIBLE to this process — not merely unreadable.
+# That covers /root/Sanger, /root/.sanger-monitor.env, /root/.sanger-vps-api.env and
+# every other co-tenant secret in one kernel-enforced stroke, rather than relying on
+# file modes that a future chmod could undo.
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/srv/plotslop/data /srv/plotslop/.next/cache
+PrivateTmp=true
+NoNewPrivileges=true
+RestrictSUIDSGID=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+LockPersonality=true
+
+# ── Added 2026-07-29 from `systemd-analyze security` (was 6.7 MEDIUM) ─────────
+# UMask is the one that mattered rather than scoring: without it the service creates
+# data/*.json — rooms, playerStats, progression, gameHistory, i.e. the whole database —
+# world-readable, on a box shared with Sanger. ProtectHome stops PlotSlop reading Sanger's
+# files; this stops anything on the box reading PlotSlop's.
+UMask=0027
+
+# A Node web server on an unprivileged port needs no capabilities whatsoever. Emptying the
+# bounding set closes ~15 findings in one line, including CAP_SETUID/SETGID and the CAP_DAC_*
+# permission overrides. The chown to plotslop happens in deploy.sh, as root, outside this unit.
+CapabilityBoundingSet=
+
+PrivateDevices=true
+ProtectClock=true
+ProtectHostname=true
+ProtectKernelLogs=true
+RemoveIPC=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+
+# TWO RECOMMENDATIONS DELIBERATELY DECLINED, so nobody "completes" the list later and
+# breaks the service:
+#
+#   MemoryDenyWriteExecute=true — would BREAK this service. V8 JITs, which requires writable
+#   executable mappings. This is not a risk trade-off, it is incompatible with running Node.
+#
+#   SystemCallFilter=@system-service — usually fine with Node, but it cannot be tested here:
+#   the service has never started (no runtime deps, no secrets), and sharp/libvips pull in
+#   native code whose syscall surface is not obvious from reading. Shipping an untestable
+#   filter immediately before a cutover trades a small hardening gain for a plausible
+#   fails-to-start. Add it after the service has run, and verify by starting it.
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=plotslop
+
+[Install]
+WantedBy=multi-user.target

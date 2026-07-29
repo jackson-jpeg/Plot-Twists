@@ -366,7 +366,7 @@ export function HostLobby({
         <AnimatePresence mode="popLayout">
           {nonHostPlayers.map((player, index) => (
             <motion.div
-              key={player.id}
+              key={player.publicId}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}

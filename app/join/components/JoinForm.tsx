@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { Player, PlayerRole, GameMode, PublicRoomListing } from '@/lib/types'
+import type { PublicPlayer, PlayerRole, GameMode, PublicRoomListing } from '@/lib/types'
 import { analytics } from '@/lib/analytics'
 import { successHaptic, errorHaptic } from '@/hooks/useHaptics'
 import { withTimeout } from '@/lib/socketTimeout'
@@ -23,7 +23,7 @@ export interface JoinFormProps {
   initialRoomCode: string
   initialNickname?: string
   toast: { success: (m: string) => void; error: (m: string) => void; info: (m: string) => void }
-  onJoinSuccess: (data: { players: Player[]; myPlayerId: string; myRole: PlayerRole; roomCode: string; roomIsMature: boolean }) => void
+  onJoinSuccess: (data: { players: PublicPlayer[]; myPlayerId: string; myRole: PlayerRole; roomCode: string; roomIsMature: boolean }) => void
   onShowOnboarding: () => void
   onNavigateHome: () => void
 }
@@ -243,7 +243,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
     setError(''); setIsJoining(true)
     const upperRoomCode = roomCode.toUpperCase()
 
-    withTimeout<{ success: boolean; error?: string; role?: string; players?: Player[]; playerId?: string }>(
+    withTimeout<{ success: boolean; error?: string; role?: string; players?: PublicPlayer[]; publicId?: string }>(
       (cb) => socket.emit('join_room', upperRoomCode, nickname, cb),
       8000
     ).then((response) => {
@@ -255,10 +255,10 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
         if (role === 'SPECTATOR') toast.info('Room is full! You joined as a Spectator.')
         else toast.success(`Joined room ${upperRoomCode}!`)
 
-        let pid = response.playerId || ''
+        let pid = response.publicId || ''
         if (!pid && response.players) {
           const myPlayer = response.players.find(p => p.nickname === nickname && !p.isHost)
-          if (myPlayer) pid = myPlayer.id
+          if (myPlayer) pid = myPlayer.publicId
         }
         onJoinSuccess({
           players: response.players || [],

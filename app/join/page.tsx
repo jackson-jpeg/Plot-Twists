@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useSocket } from '@/contexts/SocketContext'
-import type { Player, PlayerRole } from '@/lib/types'
+import type { PublicPlayer, PlayerRole } from '@/lib/types'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
@@ -182,7 +182,7 @@ function JoinPageContent() {
   }, [selection])
 
   // --- Actions ---
-  const handleJoinSuccess = (data: { players: Player[]; myPlayerId: string; myRole: PlayerRole; roomCode: string; roomIsMature: boolean }) => {
+  const handleJoinSuccess = (data: { players: PublicPlayer[]; myPlayerId: string; myRole: PlayerRole; roomCode: string; roomIsMature: boolean }) => {
     setHasJoined(true)
     useGameStore.getState().setMyPlayerId(data.myPlayerId)
     useGameStore.getState().setMyRole(data.myRole)

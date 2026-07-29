@@ -4,13 +4,14 @@ import { withErrorHandler } from '../middleware/socketErrorHandler'
 import * as roomService from '../services/room.service'
 import type { Player, Room, RoomRecoverySnapshot } from '@/lib/types'
 import { logger } from '@/lib/logger'
+import { toPublicPlayer, toPublicPlayers, findByPublicId } from '../socket/serialize'
 
 export function buildRoomRecoverySnapshot(room: Room, playerId: string, player: Player): RoomRecoverySnapshot {
   const hostDisconnected = room.gameState === 'PERFORMING' && room.host.connected === false
 
   return {
     gameState: room.gameState,
-    players: Array.from(room.players.values()),
+    players: toPublicPlayers(room),
     script: room.script ?? null,
     currentLineIndex: room.currentLineIndex,
     scriptImageUrl: room.script?.imageUrl ?? null,
@@ -81,8 +82,8 @@ export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, c
     logger.info(`Player ${player.nickname} reconnected to room ${upperCode} (new socket: ${socket.id})`)
 
     // Notify room of reconnection
-    io.to(upperCode).emit('player_reconnected', { name: player.nickname, socketId: socket.id })
-    io.to(upperCode).emit('players_update', Array.from(room.players.values()))
+    io.to(upperCode).emit('player_reconnected', { name: player.nickname })
+    io.to(upperCode).emit('players_update', toPublicPlayers(room))
 
     // If host reconnected during PERFORMING and room was paused due to disconnect, auto-resume
     if (player.isHost && room.gameState === 'PERFORMING' && room.isPaused) {

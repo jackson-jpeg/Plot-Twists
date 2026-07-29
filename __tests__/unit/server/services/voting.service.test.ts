@@ -173,14 +173,19 @@ describe('calculateResults', () => {
     const io = makeMockIO()
     await calculateResults(room, io as never)
 
-    // Should emit game_over with p2 as winner (2 votes)
+    // Should emit game_over with p2 as winner (2 votes).
+    // D2b: asserted on playerName, not playerId — the emitted payload is PublicGameResults
+    // and deliberately carries no player id. `room.results` still holds playerId internally
+    // for gameHistory/playerStats; it is dropped at the serialisation boundary on the way out.
     expect(io._emit).toHaveBeenCalledWith('game_over', expect.objectContaining({
-      winner: expect.objectContaining({ playerId: 'p2', votes: 2 }),
+      winner: expect.objectContaining({ playerName: 'Bob', votes: 2 }),
       allResults: expect.arrayContaining([
-        expect.objectContaining({ playerId: 'p2', votes: 2 }),
-        expect.objectContaining({ playerId: 'p1', votes: 1 }),
+        expect.objectContaining({ playerName: 'Bob', votes: 2 }),
+        expect.objectContaining({ playerName: 'Alice', votes: 1 }),
       ])
     }))
+    // The internal record keeps the id the persistence layer needs.
+    expect(room.results?.winner?.playerId).toBe('p2')
 
     // Should emit game_state_change to RESULTS
     expect(io._emit).toHaveBeenCalledWith('game_state_change', 'RESULTS')

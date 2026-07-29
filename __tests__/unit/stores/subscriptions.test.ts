@@ -6,7 +6,7 @@ import { useAudienceStore } from '@/stores/audienceStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import { useVotingStore } from '@/stores/votingStore'
 import type { SocketManager } from '@/lib/socketManager'
-import type { DirectorsReview, Player, Script, GameResults, SpectatorMessage } from '@/lib/types'
+import type { DirectorsReview, PublicPlayer, Script, PublicGameResults, SpectatorMessage } from '@/lib/types'
 
 // ── Mock SocketManager ─────────────────────────────────────────
 
@@ -147,18 +147,18 @@ describe('initStoreSubscriptions', () => {
   })
 
   it('players_update → gameStore.setPlayers', () => {
-    const players: Player[] = [
-      { id: '1', nickname: 'Alice', role: 'HOST', isHost: true, socketId: 's1' },
+    const players: PublicPlayer[] = [
+      { publicId: '1', nickname: 'Alice', role: 'HOST', isHost: true },
     ]
     manager._simulate('players_update', players)
     expect(useGameStore.getState().players).toEqual(players)
   })
 
   it('player_joined → appends to players', () => {
-    const existing: Player = { id: '1', nickname: 'Alice', role: 'HOST', isHost: true, socketId: 's1' }
+    const existing: PublicPlayer = { publicId: '1', nickname: 'Alice', role: 'HOST', isHost: true }
     useGameStore.getState().setPlayers([existing])
 
-    const newPlayer: Player = { id: '2', nickname: 'Bob', role: 'PLAYER', isHost: false, socketId: 's2' }
+    const newPlayer: PublicPlayer = { publicId: '2', nickname: 'Bob', role: 'PLAYER', isHost: false }
     manager._simulate('player_joined', newPlayer)
 
     const players = useGameStore.getState().players
@@ -167,7 +167,7 @@ describe('initStoreSubscriptions', () => {
   })
 
   it('player_joined → does not duplicate existing player', () => {
-    const existing: Player = { id: '1', nickname: 'Alice', role: 'HOST', isHost: true, socketId: 's1' }
+    const existing: PublicPlayer = { publicId: '1', nickname: 'Alice', role: 'HOST', isHost: true }
     useGameStore.getState().setPlayers([existing])
 
     manager._simulate('player_joined', existing)
@@ -175,15 +175,15 @@ describe('initStoreSubscriptions', () => {
   })
 
   it('player_left → removes player from list', () => {
-    const players: Player[] = [
-      { id: '1', nickname: 'Alice', role: 'HOST', isHost: true, socketId: 's1' },
-      { id: '2', nickname: 'Bob', role: 'PLAYER', isHost: false, socketId: 's2' },
+    const players: PublicPlayer[] = [
+      { publicId: '1', nickname: 'Alice', role: 'HOST', isHost: true },
+      { publicId: '2', nickname: 'Bob', role: 'PLAYER', isHost: false },
     ]
     useGameStore.getState().setPlayers(players)
 
     manager._simulate('player_left', '2')
     expect(useGameStore.getState().players).toHaveLength(1)
-    expect(useGameStore.getState().players[0].id).toBe('1')
+    expect(useGameStore.getState().players[0].publicId).toBe('1')
   })
 
   it('room_created → gameStore.setRoomCode', () => {
@@ -342,7 +342,7 @@ describe('initStoreSubscriptions', () => {
 
   it('player_reconnected → connectionStore.setHostDisconnected(false) + toast', () => {
     useConnectionStore.getState().setHostDisconnected(true)
-    manager._simulate('player_reconnected', { name: 'Alice', socketId: 's1' })
+    manager._simulate('player_reconnected', { name: 'Alice' })
     expect(useConnectionStore.getState().hostDisconnected).toBe(false)
     expect(mockCallbacks.toast.success).toHaveBeenCalledWith('Alice reconnected')
   })
@@ -376,9 +376,9 @@ describe('initStoreSubscriptions', () => {
   // ── Voting Store events ───────────────────────────────────
 
   it('game_over → votingStore.setResults', () => {
-    const results: GameResults = {
-      winner: { playerId: '1', playerName: 'Alice', votes: 3 },
-      allResults: [{ playerId: '1', playerName: 'Alice', votes: 3 }],
+    const results: PublicGameResults = {
+      winner: { playerName: 'Alice', votes: 3 },
+      allResults: [{ playerName: 'Alice', votes: 3 }],
     }
     manager._simulate('game_over', results)
     expect(useVotingStore.getState().gameResults).toEqual(results)
@@ -416,7 +416,7 @@ describe('initStoreSubscriptions', () => {
     useScriptStore.getState().setScript({ title: 'Old', synopsis: '', lines: [] })
     useSelectionStore.getState().setAvailableCards({ characters: ['X'], settings: ['Y'], circumstances: ['Z'] })
     useAudienceStore.getState().addMessage({ id: 'm1', senderId: 'u1', senderName: 'Fan', text: 'Hi', timestamp: 1, isPreset: false })
-    useVotingStore.getState().setResults({ allResults: [{ playerId: '1', playerName: 'A', votes: 1 }] })
+    useVotingStore.getState().setResults({ allResults: [{ playerName: 'A', votes: 1 }] })
     useVotingStore.getState().setDirectorsReview({
       rating: 5,
       headline: 'Encore',

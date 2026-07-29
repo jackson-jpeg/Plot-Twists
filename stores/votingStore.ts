@@ -1,15 +1,15 @@
 import { create } from 'zustand'
-import type { DirectorsReview, GameResults, XPEvent } from '@/lib/types'
+import type { DirectorsReview, PublicGameResults, XPEvent } from '@/lib/types'
 
 export interface VotingStoreState {
-  gameResults: GameResults | null
+  gameResults: PublicGameResults | null
   directorsReview: DirectorsReview | null
   xpEvents: XPEvent[]
   levelUpData: { level: number; title: string } | null
 }
 
 export interface VotingStoreActions {
-  setResults: (results: GameResults | null) => void
+  setResults: (results: PublicGameResults | null) => void
   setDirectorsReview: (review: DirectorsReview | null) => void
   setXpEvents: (events: XPEvent[]) => void
   setLevelUpData: (data: { level: number; title: string } | null) => void

@@ -27,10 +27,10 @@ export function JoinVoting({ myPlayerId, myCharacter }: JoinVotingProps) {
   const roomCode = useGameStore((s) => s.roomCode)
   const script = useScriptStore((s) => s.script)
 
-  const myPlayer = players.find(p => p.id === myPlayerId)
+  const myPlayer = players.find(p => p.publicId === myPlayerId)
   const hasVoted = myPlayer?.hasSubmittedVote
   const isSpectator = myPlayer?.role === 'SPECTATOR'
-  const votablePlayers = players.filter(p => p.role === 'PLAYER' && p.id !== myPlayerId)
+  const votablePlayers = players.filter(p => p.role === 'PLAYER' && p.publicId !== myPlayerId)
 
   const handleVote = useCallback((playerId: string) => {
     socketManager.emit('submit_vote', roomCode, playerId)
@@ -210,11 +210,11 @@ export function JoinVoting({ myPlayerId, myCharacter }: JoinVotingProps) {
           /* Ballot slips — one per votable player */
           <div className={`flex ${isDesktop ? 'flex-row flex-wrap' : 'flex-col'} gap-3`}>
             {votablePlayers.map((player, i) => {
-              const isSelected = selectedPlayerId === player.id
+              const isSelected = selectedPlayerId === player.publicId
               return (
                 <motion.button
-                  key={player.id}
-                  onClick={() => handleSelectAndSubmit(player.id)}
+                  key={player.publicId}
+                  onClick={() => handleSelectAndSubmit(player.publicId)}
                   aria-label={`Vote for ${player.nickname}`}
                   className={`flex items-center gap-3 p-4 text-left ${isDesktop ? 'flex-1 min-w-[280px]' : 'w-full'}`}
                   style={{

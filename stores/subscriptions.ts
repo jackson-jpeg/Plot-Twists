@@ -102,7 +102,7 @@ export function initStoreSubscriptions(
   unsubs.push(manager.on('player_joined', (player) => {
     const current = useGameStore.getState().players
     // Only add if not already present (avoid duplicates)
-    if (!current.some(p => p.id === player.id)) {
+    if (!current.some(p => p.publicId === player.publicId)) {
       useGameStore.getState().setPlayers([...current, player])
     }
     // Toast notification
@@ -112,13 +112,13 @@ export function initStoreSubscriptions(
     }
   }))
 
-  unsubs.push(manager.on('player_left', (playerId) => {
+  unsubs.push(manager.on('player_left', (publicId) => {
     const current = useGameStore.getState().players
-    const player = current.find(p => p.id === playerId)
+    const player = current.find(p => p.publicId === publicId)
     if (player && !player.isHost) {
       callbacks.toast.info(`${player.nickname} left the game`)
     }
-    useGameStore.getState().setPlayers(current.filter(p => p.id !== playerId))
+    useGameStore.getState().setPlayers(current.filter(p => p.publicId !== publicId))
   }))
 
   unsubs.push(manager.on('room_created', (code) => {

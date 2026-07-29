@@ -1,9 +1,9 @@
 import { create } from 'zustand'
-import type { GameState, Player, PlayerRole, RoomSettings } from '@/lib/types'
+import type { GameState, PublicPlayer, PlayerRole, RoomSettings } from '@/lib/types'
 
 export interface GameStoreState {
   gameState: GameState
-  players: Player[]
+  players: PublicPlayer[]
   roomCode: string
   role: 'host' | 'player' | 'spectator' | null
   settings: RoomSettings | null
@@ -21,7 +21,7 @@ export interface GameStoreState {
 
 export interface GameStoreActions {
   setGameState: (state: GameState) => void
-  setPlayers: (players: Player[]) => void
+  setPlayers: (players: PublicPlayer[]) => void
   setRoomCode: (code: string) => void
   setRole: (role: GameStoreState['role']) => void
   setSettings: (settings: RoomSettings | null) => void

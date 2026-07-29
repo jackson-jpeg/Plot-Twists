@@ -9,6 +9,7 @@ import * as roomService from './room.service'
 import { saveGame } from './gameHistory.service'
 import { getPlayerStats, recordGameResult } from './playerStats.service'
 import { generateDirectorsReview, shouldGenerateDirectorsReview } from './directorsReview.service'
+import { toPublicResults } from '../socket/serialize'
 import {
   awardXP,
   computeGameXPEvents,
@@ -197,7 +198,7 @@ export async function calculateResults(room: Room, io: SocketIOServer<ClientToSe
   }
 
   roomService.updateRoom(room)
-  io.to(room.code).emit('game_over', room.results)
+  io.to(room.code).emit('game_over', toPublicResults(room.results))
   io.to(room.code).emit('game_state_change', 'RESULTS')
 
   scheduleDirectorsReview(room, winner?.playerId, reactionCount, io)

@@ -243,14 +243,48 @@ export interface ScriptWithAudio extends Omit<Script, 'lines'> {
 // Core Types (Updated)
 // ============================================================
 
+/**
+ * Server-side player record. NEVER send this to a client — use PublicPlayer.
+ *
+ * `id`, `sessionId`, `uid` and `socketId` are each an identifier the server accepts, or has
+ * accepted, as proof of who you are. Broadcasting any of them distributes credentials rather
+ * than merely risking that they are guessed. That was defect D2b: `players_update` emitted
+ * `Array.from(room.players.values())` — this whole object — to every client in the room, and
+ * the harness took the HOST seat using a `playerId` the server had handed it.
+ *
+ * `id` is additionally the key of `room.players`, `room.votes` and `room.selections`, and the
+ * `playerId` in results / gameHistory / playerStats. Keeping it server-side means no future
+ * endpoint accepting a player identifier can be driven by a value every party guest already has.
+ */
 export interface Player {
   id: string
+  /** Random, per-room, carries no authority. The ONLY player identifier clients ever see. */
+  publicId: string
   nickname: string
   role: PlayerRole
   isHost: boolean
   socketId: string
   sessionId?: string
   uid?: string
+  connected?: boolean
+  hasSubmittedSelection?: boolean
+  hasSubmittedVote?: boolean
+  assignedCharacter?: string
+  score?: number
+  level?: number
+  title?: string
+}
+
+/**
+ * What a client is allowed to see. Produced only by `toPublicPlayer` in
+ * `server/socket/serialize.ts` — do not construct one by hand, and do not widen it without
+ * re-reading D2b. Deliberately omits id, sessionId, uid and socketId.
+ */
+export interface PublicPlayer {
+  publicId: string
+  nickname: string
+  role: PlayerRole
+  isHost: boolean
   connected?: boolean
   hasSubmittedSelection?: boolean
   hasSubmittedVote?: boolean
@@ -341,15 +375,34 @@ export interface VoteResult {
   votes: number
 }
 
+/** Internal. `playerId` is the server-side Player.id — persisted, never emitted. */
 export interface GameResults {
   winner?: VoteResult
   allResults: VoteResult[]
   highlights?: { label: string; value: string; icon: string }[]
 }
 
+/**
+ * D2b: results are emitted in `game_over` and carried in the recovery snapshot, so they
+ * cross the boundary. They DROP `playerId` rather than swapping it for `publicId`, because
+ * no client consumer ever read it — every results view matches the winner by nickname
+ * (`players.find(p => p.nickname === winner.playerName)`, JoinResults.tsx:135 and
+ * HostResults.tsx:141). Emitting an identifier nobody uses is pure attack surface.
+ */
+export interface PublicVoteResult {
+  playerName: string
+  votes: number
+}
+
+export interface PublicGameResults {
+  winner?: PublicVoteResult
+  allResults: PublicVoteResult[]
+  highlights?: { label: string; value: string; icon: string }[]
+}
+
 export interface RoomRecoverySnapshot {
   gameState: GameState
-  players: Player[]
+  players: PublicPlayer[]
   script: Script | null
   currentLineIndex: number
   scriptImageUrl: string | null
@@ -363,7 +416,7 @@ export interface RoomRecoverySnapshot {
   selection?: CardSelection
   spectatorMessages?: SpectatorMessage[]
   votingStatus?: { hasVoted: boolean }
-  results?: GameResults | null
+  results?: PublicGameResults | null
   directorsReview?: DirectorsReview | null
   roomSettings?: RoomSettings
 }
@@ -481,15 +534,19 @@ export type SocketResponse<T = void> =
 // Socket.io Event Interfaces
 export interface ServerToClientEvents {
   room_created: (code: string) => void
-  player_joined: (player: Player) => void
-  player_left: (playerId: string) => void
+  // D2b: these are PublicPlayer, not Player, deliberately. The type is the enforcement —
+  // it makes the compiler reject any emit site still passing a raw server-side Player, so
+  // "patching 13 call sites and missing one" is structurally impossible rather than a matter
+  // of diligence. Do not widen these back to Player.
+  player_joined: (player: PublicPlayer) => void
+  player_left: (publicId: string) => void
   game_state_change: (newState: GameState) => void
-  players_update: (players: Player[]) => void
+  players_update: (players: PublicPlayer[]) => void
   green_room_prompt: (question: string) => void
   script_ready: (script: Script | ScriptWithAudio) => void
   script_image_update: (imageUrl: string) => void
   sync_teleprompter: (data: TeleprompterSyncData | number) => void // Backward compatible
-  game_over: (results: GameResults) => void
+  game_over: (results: PublicGameResults) => void
   error: (message: string) => void
   game_error_message: (message: string) => void
   server_restarting: (message: string) => void
@@ -551,7 +608,9 @@ export interface ServerToClientEvents {
   // Structured Error & Warning Events
   game_error: (error: GameError) => void
   game_warning: (warning: GameWarning) => void
-  player_reconnected: (data: { name: string; socketId: string }) => void
+  // D2b: socketId removed. It was a broadcast credential — `findPlayerBySocketId` resolves a
+  // voter from it (voting.handler.ts:19-26) and nothing else authenticated the caller.
+  player_reconnected: (data: { name: string }) => void
   player_disconnected: (data: { name: string }) => void
   performance_paused: (data: { reason: string }) => void
   performance_resumed: () => void
@@ -559,12 +618,12 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   create_room: (settings: RoomSettings, callback: (response: { success: boolean, code?: string, error?: string }) => void) => void
-  join_room: (roomCode: string, nickname: string, callback: (response: { success: boolean, error?: string, playerId?: string, players?: Player[], settings?: RoomSettings, role?: PlayerRole }) => void) => void
+  join_room: (roomCode: string, nickname: string, callback: (response: { success: boolean, error?: string, publicId?: string, players?: PublicPlayer[], settings?: RoomSettings, role?: PlayerRole }) => void) => void
   leave_room: (roomCode: string, callback: (response: { success: boolean, error?: string }) => void) => void
   submit_cards: (roomCode: string, selections: CardSelection, callback: (response: { success: boolean, error?: string }) => void) => void
   start_game: (roomCode: string) => void
   retry_script_generation: (roomCode: string) => void
-  submit_vote: (roomCode: string, targetPlayerId: string) => void
+  submit_vote: (roomCode: string, targetPublicId: string) => void
   advance_script_line: (roomCode: string) => void
   pause_script: (roomCode: string) => void
   resume_script: (roomCode: string) => void
@@ -629,7 +688,7 @@ export interface ClientToServerEvents {
   redeem_referral: (code: string, callback: (response: { success: boolean, error?: string }) => void) => void
 
   // Resync after reconnection
-  request_resync: (roomCode: string, playerId: string, callback: (response: { success: boolean, gameState?: string, players?: Player[], script?: Script, currentLineIndex?: number, hasSubmittedSelection?: boolean, assignedCharacter?: string, selection?: CardSelection, error?: string }) => void) => void
+  request_resync: (roomCode: string, playerId: string, callback: (response: { success: boolean, gameState?: string, players?: PublicPlayer[], script?: Script, currentLineIndex?: number, hasSubmittedSelection?: boolean, assignedCharacter?: string, selection?: CardSelection, error?: string }) => void) => void
 
   // Rejoin room after full disconnect/reconnect
   rejoin_room: (roomCode: string, playerSessionId: string, callback: (res: {

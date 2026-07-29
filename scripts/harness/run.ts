@@ -34,6 +34,69 @@ function record(scenario: string, name: string, pass: boolean, detail: string) {
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
+// ── D2b credential leak guard ───────────────────────────────
+//
+// Cross-cutting. Runs for the WHOLE harness run rather than inside one scenario, because
+// D2b was never one bad emit — it was 13 `players_update` sites across 8 files, plus three
+// more leaks through ACK payloads that a per-emit review would not have looked at.
+// Any event, any scenario, any future call site is covered by construction.
+//
+// Two independent scans, because either alone is defeatable:
+//
+//  KEY SCAN   — bans `sessionId`, `uid`, `socketId` anywhere, and `id` on a PLAYER-SHAPED
+//               object (one that also carries `nickname` and `role`). Scoped that way on
+//               purpose: `id` is legitimate on cards, packs, clips and vote options, and a
+//               blanket ban would be noise that someone eventually switches off.
+//
+//  VALUE SCAN — the stronger half. The harness knows each client's real sessionId / uid /
+//               internal playerId, so it flags those literal strings under ANY key. This
+//               catches a leak through a field nobody thought to ban — e.g. re-adding the
+//               credential as `reconnectKey` or `senderId`.
+
+const BANNED_KEYS = new Set(['sessionId', 'uid', 'socketId'])
+interface Leak { event: string; path: string; reason: string }
+const leaks: Leak[] = []
+/** Literal credential strings the server should never hand to a client. */
+const secretValues = new Map<string, string>() // value -> human label
+
+function registerSecret(value: unknown, label: string) {
+  if (typeof value === 'string' && value.length >= 8) secretValues.set(value, label)
+}
+
+function isPlayerShaped(o: Record<string, unknown>) {
+  return 'nickname' in o && 'role' in o
+}
+
+function scanPayload(event: string, value: unknown, path = '', seen = new WeakSet<object>()) {
+  if (value === null || value === undefined) return
+  if (typeof value === 'string') {
+    const label = secretValues.get(value)
+    if (label) leaks.push({ event, path, reason: `value is ${label}` })
+    return
+  }
+  if (typeof value !== 'object') return
+  if (seen.has(value as object)) return
+  seen.add(value as object)
+
+  if (Array.isArray(value)) {
+    value.forEach((v, i) => scanPayload(event, v, `${path}[${i}]`, seen))
+    return
+  }
+
+  const obj = value as Record<string, unknown>
+  const playerShaped = isPlayerShaped(obj)
+  for (const [k, v] of Object.entries(obj)) {
+    const p = path ? `${path}.${k}` : k
+    if (BANNED_KEYS.has(k)) {
+      leaks.push({ event, path: p, reason: `banned key '${k}'` })
+    }
+    if (k === 'id' && playerShaped) {
+      leaks.push({ event, path: p, reason: 'internal player id on a player-shaped object' })
+    }
+    scanPayload(event, v, p, seen)
+  }
+}
+
 // ── client wrapper ──────────────────────────────────────────
 
 class Client {
@@ -43,6 +106,9 @@ class Client {
   playerId?: string
 
   constructor(public label: string, sessionId?: string) {
+    // Anything this client legitimately holds is a credential the server must never hand to
+    // ANY client, including this one — a payload goes to the whole room.
+    registerSecret(sessionId, `${label}'s playerSessionId`)
     this.socket = ioClient(URL, {
       transports: ['websocket'],
       forceNew: true,
@@ -50,6 +116,8 @@ class Client {
     })
     this.socket.onAny((name, ...args) => {
       this.events.push({ name, payload: args[0], at: Date.now() })
+      // D2b guard: every inbound event, every scenario.
+      args.forEach((a, i) => scanPayload(name, a, `arg${i}`))
       if (name === 'game_state_change') this.states.push(args[0] as GameState)
     })
   }
@@ -65,7 +133,14 @@ class Client {
   emitAck<T>(event: string, ...args: unknown[]): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const t = setTimeout(() => reject(new Error(`${event} ack timeout`)), 10000)
-      this.socket.emit(event, ...args, (res: T) => { clearTimeout(t); resolve(res) })
+      this.socket.emit(event, ...args, (res: T) => {
+        clearTimeout(t)
+        // D2b guard: ACKs too. onAny does NOT see ack payloads, and three of the leaks found
+        // in this fix (join_room, request_resync, the recovery snapshot) were acks — an
+        // emit-site review would have missed all three.
+        scanPayload(`${event} (ack)`, res, 'ack')
+        resolve(res)
+      })
     })
   }
 
@@ -108,7 +183,7 @@ async function joinAll(code: string, clients: Client[]) {
   }
 }
 
-function playersFrom(c: Client): Array<{ id: string; nickname: string; role: string; isHost: boolean }> {
+function playersFrom(c: Client): Array<{ publicId: string; nickname: string; role: string; isHost: boolean }> {
   return (c.last('players_update') as never) ?? []
 }
 
@@ -155,7 +230,7 @@ scenarios.happy = async () => {
   await p1.waitForState('VOTING')
 
   const players = playersFrom(p1).filter(p => p.role === 'PLAYER')
-  const ids = players.map(p => p.id)
+  const ids = players.map(p => p.publicId)
   // everyone votes for the next player in the ring
   for (let i = 0; i < players.length; i++) {
     const voter = [p1, p2, p3].find(c => c.label === players[i].nickname)
@@ -246,7 +321,7 @@ scenarios.voterDrop = async () => {
   host.socket.emit('end_performance', code)
   await p1.waitForState('VOTING')
 
-  const ids = playersFrom(p1).filter(p => p.role === 'PLAYER').map(p => p.id)
+  const ids = playersFrom(p1).filter(p => p.role === 'PLAYER').map(p => p.publicId)
   p3.kill()
   await sleep(5000)
   p1.socket.emit('submit_vote', code, ids[1])
@@ -311,24 +386,24 @@ scenarios.abuse = async () => {
   const bob = players.find(p => p.nickname === 'Bob')!
 
   // self-vote
-  p1.socket.emit('submit_vote', code, alice.id)
+  p1.socket.emit('submit_vote', code, alice.publicId)
   await sleep(400)
-  let tally = playersFrom(p1).find(p => p.id === alice.id) as unknown as { hasSubmittedVote?: boolean }
+  let tally = playersFrom(p1).find(p => p.publicId === alice.publicId) as unknown as { hasSubmittedVote?: boolean }
   record('abuse', 'self-vote rejected', !tally?.hasSubmittedVote, `alice.hasSubmittedVote=${tally?.hasSubmittedVote}`)
 
   // vote twice for different targets
-  p1.socket.emit('submit_vote', code, bob.id)
+  p1.socket.emit('submit_vote', code, bob.publicId)
   await sleep(200)
-  p1.socket.emit('submit_vote', code, bob.id)
+  p1.socket.emit('submit_vote', code, bob.publicId)
   await sleep(200)
-  p2.socket.emit('submit_vote', code, alice.id)
+  p2.socket.emit('submit_vote', code, alice.publicId)
   await p1.waitForState('RESULTS', 12000).catch(() => {})
   const res = p1.last('game_over') as { allResults?: Array<{ playerName: string; votes: number }> }
   const bobVotes = res?.allResults?.find(r => r.playerName === 'Bob')?.votes ?? 0
   record('abuse', 'repeat votes do not double-count', bobVotes <= 1, `Bob tallied ${bobVotes} vote(s) from 2 emits`)
 
   // vote after the window closed
-  p2.socket.emit('submit_vote', code, bob.id)
+  p2.socket.emit('submit_vote', code, bob.publicId)
   await sleep(400)
   const res2 = p1.last('game_over') as { allResults?: Array<{ playerName: string; votes: number }> }
   record('abuse', 'late vote ignored after RESULTS',
@@ -463,26 +538,41 @@ scenarios.identityBroadcast = async () => {
   record('identityBroadcast', 'players_update does not broadcast other players\' credentials',
     leaked.size === 0,
     leaked.size
-      ? `players_update leaks ${[...leaked].join(', ')} for every player to every client (room.handler.ts:182 emits full Player objects)`
+      ? `players_update leaks ${[...leaked].join(', ')} for every player to every client (players_update emitted full Player objects)`
       : 'roster carries no credential fields')
 
-  // Take the HOST's seat using the id the server already handed us.
-  const hostEntry = roster.find(p => p.isHost === true)
-  const hostPlayerId = String(hostEntry?.id ?? '')
+  // Try to take the HOST's seat using anything the server already handed us.
+  //
+  // Deliberately NOT `hostEntry.id` any more. Once toPublicPlayer strips that field, reading
+  // it would yield '' and the check would pass because the attack was never attempted — a
+  // green test over an unexercised path, which is the exact failure the assertion audit was
+  // called to remove. Instead: harvest EVERY string in the host's broadcast entry and try
+  // each one. The claim being gated is "nothing the server broadcasts can claim a seat",
+  // which stays meaningful no matter which fields the roster carries.
+  const hostEntry = roster.find(p => p.isHost === true) ?? {}
+  const candidates = Object.entries(hostEntry)
+    .filter(([, v]) => typeof v === 'string' && v.length >= 8)
+    .map(([k, v]) => ({ key: k, value: v as string }))
   host.kill()
   await sleep(500)
 
-  const thief = new Client('Thief')
-  await thief.connected()
-  const r = await thief.emitAck<{ success: boolean; error?: string; snapshot?: { isHost?: boolean; nickname?: string } }>(
-    'rejoin_room', code, hostPlayerId)
+  let claimed: { key: string; value: string } | null = null
+  for (const c of candidates) {
+    const thief = new Client(`Thief-${c.key}`)
+    await thief.connected()
+    const res = await thief.emitAck<{ success: boolean; error?: string }>('rejoin_room', code, c.value)
+    thief.close()
+    if (res?.success) { claimed = c; break }
+  }
 
-  record('identityBroadcast', 'a broadcast playerId cannot be used to claim a seat', !r?.success,
-    r?.success
-      ? `rejoin_room accepted playerId ${hostPlayerId.slice(0, 8)}… for the HOST seat — an id the server broadcast to every client in players_update. findPlayerInRoomByUserId matches \`playerId === userId\` (room.service.ts:346), so no guessing is required and host powers transfer with the seat.`
-      : `rejected: ${r?.error}`)
+  record('identityBroadcast', 'no broadcast identifier can be used to claim a seat', !claimed,
+    claimed
+      ? `rejoin_room accepted the broadcast field '${claimed.key}' (${claimed.value.slice(0, 8)}…) for the HOST seat — a value the server sent to every client in players_update. findPlayerInRoomByUserId matches \`playerId === userId\` (room.service.ts:345), so no guessing is required and host powers transfer with the seat.`
+      : candidates.length
+        ? `tried all ${candidates.length} string field(s) the roster exposes (${candidates.map(c => c.key).join(', ')}) — none claimed the seat`
+        : 'roster exposes no string identifier long enough to try')
 
-  ;[p1, p2, p3, thief].forEach(c => c.close())
+  ;[p1, p2, p3].forEach(c => c.close())
 }
 
 /** 8c. Spectators can vote, and their votes count toward the winner. */
@@ -513,7 +603,7 @@ scenarios.spectatorVote = async () => {
   const target = roster.find(p => p.nickname === 'P1')!
 
   // Only the spectator votes. No PLAYER votes at all.
-  spectator.socket.emit('submit_vote', code, target.id)
+  spectator.socket.emit('submit_vote', code, target.publicId)
   await sleep(1500)
 
   const reached = await players[0].waitForState('RESULTS', 70000).then(() => true).catch(() => false)
@@ -591,6 +681,20 @@ async function main() {
       record(name, 'scenario completed without throwing', false, (err as Error).message)
     }
   }
+
+  // ── D2b cross-cutting guard ───────────────────────────────
+  // Reported last because it accumulates over every scenario above, not one of them.
+  console.log(`\n── leakGuard ─────────────────────────────`)
+  const uniqueLeaks = [...new Map(leaks.map(l => [`${l.event}|${l.path}|${l.reason}`, l])).values()]
+  record(
+    'leakGuard',
+    'no outbound payload carries a player credential',
+    uniqueLeaks.length === 0,
+    uniqueLeaks.length === 0
+      ? `scanned every event and ack across all scenarios; ${secretValues.size} known credential values tracked`
+      : uniqueLeaks.slice(0, 8).map(l => `${l.event} → ${l.path} (${l.reason})`).join('; ') +
+        (uniqueLeaks.length > 8 ? ` … +${uniqueLeaks.length - 8} more` : ''),
+  )
 
   const failed = checks.filter(c => !c.pass)
   console.log(`\n═══ ${checks.length - failed.length}/${checks.length} checks passed ═══`)

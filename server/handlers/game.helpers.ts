@@ -17,6 +17,7 @@ import { addBankedCredits, getCredits } from '../services/credit.service'
 import { sendPushToUser } from '../services/push.service'
 import * as roomService from '../services/room.service'
 import { logger } from '@/lib/logger'
+import { toPublicPlayer, toPublicPlayers, findByPublicId } from '../socket/serialize'
 
 // Rate limiter for script generation (moved from server.ts)
 export const scriptGenerationLimiter = new SocketRateLimiter(20, 10 * 60 * 1000) // 20 scripts per 10 minutes
@@ -60,7 +61,7 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
       player.hasSubmittedSelection = false
     }
     io.to(room.code).emit('game_state_change', 'SELECTION')
-    io.to(room.code).emit('players_update', Array.from(room.players.values()))
+    io.to(room.code).emit('players_update', toPublicPlayers(room))
     const content = getFilteredContent(room.isMature)
     io.to(room.code).emit('available_cards', content)
     roomService.updateRoom(room)
@@ -76,7 +77,7 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
       player.hasSubmittedSelection = false
     }
     io.to(room.code).emit('game_state_change', 'SELECTION')
-    io.to(room.code).emit('players_update', Array.from(room.players.values()))
+    io.to(room.code).emit('players_update', toPublicPlayers(room))
     const content = getFilteredContent(room.isMature)
     io.to(room.code).emit('available_cards', content)
     roomService.updateRoom(room)
@@ -228,7 +229,7 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
     }
 
     io.to(room.code).emit('game_state_change', 'SELECTION')
-    io.to(room.code).emit('players_update', Array.from(room.players.values()))
+    io.to(room.code).emit('players_update', toPublicPlayers(room))
 
     // Send cards again
     const content = getFilteredContent(room.isMature)

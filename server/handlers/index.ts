@@ -6,6 +6,7 @@ import * as roomService from '../services/room.service'
 import * as matchmakingService from '../services/matchmaking.service'
 import { CONFIG } from '../utils/config'
 import { logger } from '@/lib/logger'
+import { toPublicPlayer, toPublicPlayers, findByPublicId } from '../socket/serialize'
 
 // Handler module imports
 import { registerRoomHandlers } from './room.handler'
@@ -57,7 +58,7 @@ export function registerAllHandlers(io: AppServer) {
 
           logger.info(`Player ${player.nickname} disconnected from room ${code}, starting grace period`)
           io.to(code).emit('player_disconnected', { name: player.nickname })
-          io.to(code).emit('players_update', Array.from(room.players.values()))
+          io.to(code).emit('players_update', toPublicPlayers(room))
 
           // Auto-pause if host disconnects during PERFORMING
           if (player.isHost && room.gameState === 'PERFORMING' && !room.isPaused) {
@@ -74,8 +75,8 @@ export function registerAllHandlers(io: AppServer) {
             if (!removed) return // Player reconnected or already removed
 
 	            logger.info(`Grace period expired — removing ${removed.player.nickname} from room ${code}`)
-	            io.to(code).emit('player_left', playerId)
-	            io.to(code).emit('players_update', Array.from(removed.room.players.values()))
+	            io.to(code).emit('player_left', removed.player.publicId)
+	            io.to(code).emit('players_update', toPublicPlayers(removed.room))
 
 	            if (removed.room.isPublic) {
 	              matchmakingService.syncAutoStart(removed.room, io)

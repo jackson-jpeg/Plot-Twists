@@ -3,11 +3,16 @@ import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
 import { calculateResults } from '../services/voting.service'
 import * as roomService from '../services/room.service'
+import { toPublicPlayer, toPublicPlayers, findByPublicId } from '../socket/serialize'
 
 export function registerVotingHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
   // Submit vote
-  socket.on('submit_vote', withErrorHandler(socket, 'submit_vote', (roomCode, targetPlayerId) => {
-    if (typeof roomCode !== 'string' || typeof targetPlayerId !== 'string') return
+  // D2b: the target is now a publicId, not the internal Player.id — the internal id is no
+  // longer broadcast, so a client has no way to name it. `findByPublicId` maps it back
+  // server-side. The publicId identifies a SEAT, never the caller: the voter is still
+  // resolved from the socket, so holding someone else's publicId does not let you vote as them.
+  socket.on('submit_vote', withErrorHandler(socket, 'submit_vote', (roomCode, targetPublicId) => {
+    if (typeof roomCode !== 'string' || typeof targetPublicId !== 'string') return
 
     const room = roomService.getRoomFromCache(roomCode)
     if (!room) return
@@ -26,12 +31,14 @@ export function registerVotingHandlers(io: AppServer, socket: AppSocket, ctx: Ha
 
     if (!voterId) return
 
-    // Prevent self-voting
-    if (voterId === targetPlayerId) return
-
     // Validate target is an actual player in the room with PLAYER role
-    const target = room.players.get(targetPlayerId)
-    if (!target || target.role !== 'PLAYER') return
+    const resolved = findByPublicId(room, targetPublicId)
+    if (!resolved) return
+    const { playerId: targetPlayerId, player: target } = resolved
+    if (target.role !== 'PLAYER') return
+
+    // Prevent self-voting — compared on internal ids, after resolution
+    if (voterId === targetPlayerId) return
 
     room.votes.set(voterId, targetPlayerId)
     const voter = room.players.get(voterId)
@@ -41,7 +48,7 @@ export function registerVotingHandlers(io: AppServer, socket: AppSocket, ctx: Ha
     room.lastActivity = Date.now()
     roomService.updateRoom(room)
 
-    io.to(roomCode).emit('players_update', Array.from(room.players.values()))
+    io.to(roomCode).emit('players_update', toPublicPlayers(room))
 
     // Check if all players have voted (spectators can vote but don't block completion)
     const allVoted = Array.from(room.players.values())

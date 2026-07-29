@@ -1,7 +1,7 @@
 // server/handlers/game.handler.ts
 import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
-import type { NewGameOptions, Script, Player, CardSelection } from '@/lib/types'
+import type { NewGameOptions, Script, PublicPlayer, CardSelection } from '@/lib/types'
 import { calculateLineDisplayTime } from '../utils/timing'
 import { VOTING_TIMEOUT } from '../utils/constants'
 import { generateScript } from '../services/scriptGeneration.service'
@@ -12,6 +12,7 @@ import { resetReactionCounts, preGenerateTwistsForRoom } from '../services/audie
 import { generateTitleCard } from '../services/image.service'
 import { addBankedCredits, getCredits } from '../services/credit.service'
 import { notifyVotingOpen } from '../services/notification.service'
+import { toPublicPlayer, toPublicPlayers, findByPublicId } from '../socket/serialize'
 import {
   requireHost,
   requireRoomMember,
@@ -443,13 +444,13 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
     // Notify all clients
     io.to(roomCode).emit('new_game_started', { keepSelections: options?.keepSelections || false })
     io.to(roomCode).emit('game_state_change', 'LOBBY')
-    io.to(roomCode).emit('players_update', Array.from(room.players.values()))
+    io.to(roomCode).emit('players_update', toPublicPlayers(room))
 
     logger.info(`New game started in room ${roomCode}`)
   }))
 
   // Request resync after reconnection
-  socket.on('request_resync', withErrorHandler(socket, 'request_resync', (roomCode: string, playerId: string, callback: (response: { success: boolean; gameState?: string; players?: Player[]; script?: Script; currentLineIndex?: number; hasSubmittedSelection?: boolean; assignedCharacter?: string; selection?: CardSelection; error?: string }) => void) => {
+  socket.on('request_resync', withErrorHandler(socket, 'request_resync', (roomCode: string, playerId: string, callback: (response: { success: boolean; gameState?: string; players?: PublicPlayer[]; script?: Script; currentLineIndex?: number; hasSubmittedSelection?: boolean; assignedCharacter?: string; selection?: CardSelection; error?: string }) => void) => {
     if (typeof roomCode !== 'string' || typeof playerId !== 'string') return
     try {
       const upperCode = roomCode.toUpperCase()
@@ -494,7 +495,7 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       callback({
         success: true,
         gameState: room.gameState,
-        players: Array.from(room.players.values()),
+        players: toPublicPlayers(room),
         script: room.script || undefined,
         currentLineIndex: room.currentLineIndex ?? 0,
         hasSubmittedSelection: player.hasSubmittedSelection ?? false,

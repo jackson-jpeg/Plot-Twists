@@ -9,6 +9,7 @@ import { startScriptGeneration } from './game.helpers'
 import * as roomService from '../services/room.service'
 import { getRequiredPlayersForMode } from '../services/matchmaking.service'
 import { logger } from '@/lib/logger'
+import { toPublicPlayer, toPublicPlayers, findByPublicId } from '../socket/serialize'
 
 export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
   // Submit card selections
@@ -63,7 +64,7 @@ export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx:
       room.lastActivity = Date.now()
       roomService.updateRoom(room)
 
-      io.to(roomCode).emit('players_update', Array.from(room.players.values()))
+      io.to(roomCode).emit('players_update', toPublicPlayers(room))
 
       logger.debug(`Player ${playerId} submitted selections for room ${roomCode}`)
       callback({ success: true })

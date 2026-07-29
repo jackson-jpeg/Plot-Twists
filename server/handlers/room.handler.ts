@@ -13,6 +13,7 @@ import { startScriptGeneration } from './game.helpers'
 import { calculateResults } from '../services/voting.service'
 import { MAX_PLAYERS } from '../utils/constants'
 import { requireHost } from '../socket/helpers'
+import { toPublicPlayer, toPublicPlayers } from '../socket/serialize'
 import * as roomService from '../services/room.service'
 import * as matchmakingService from '../services/matchmaking.service'
 import { logger } from '@/lib/logger'
@@ -42,6 +43,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       const isSoloMode = settings.gameMode === 'SOLO'
       const hostPlayer: Player = {
         id: uuidv4(),
+        publicId: uuidv4(),
         nickname: isSoloMode ? 'You' : 'Host',
         role: isSoloMode ? 'PLAYER' : 'HOST', // In Solo mode, host is the player
         isHost: true,
@@ -165,6 +167,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       // Join as SPECTATOR if room is full, otherwise as PLAYER
       const player: Player = {
         id: uuidv4(),
+        publicId: uuidv4(),
         nickname: sanitizedNickname,
         role: isRoomFull ? 'SPECTATOR' : 'PLAYER',
         isHost: false,
@@ -178,8 +181,10 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       socket.join(upperRoomCode)
 
       const playersList = Array.from(room.players.values())
-      io.to(upperRoomCode).emit('player_joined', player)
-      io.to(upperRoomCode).emit('players_update', playersList)
+      // D2b: `player_joined` shipped the full Player too — the same leak as players_update,
+      // one line below it, and part of why this had to be fixed at the boundary.
+      io.to(upperRoomCode).emit('player_joined', toPublicPlayer(player))
+      io.to(upperRoomCode).emit('players_update', toPublicPlayers(room))
 
       const roomSettings: RoomSettings = {
         isMature: room.isMature,
@@ -191,8 +196,8 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
       callback({
         success: true,
-        playerId: player.id,
-        players: playersList,
+        publicId: player.publicId,
+        players: toPublicPlayers(room),
         settings: roomSettings,
         role: player.role
       })
@@ -253,8 +258,8 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
     }
 
     roomService.removePlayer(room, playerId)
-    io.to(upperRoomCode).emit('player_left', playerId)
-    io.to(upperRoomCode).emit('players_update', Array.from(room.players.values()))
+    io.to(upperRoomCode).emit('player_left', player.publicId)
+    io.to(upperRoomCode).emit('players_update', toPublicPlayers(room))
 
     if (room.isPublic) {
       matchmakingService.syncAutoStart(room, io)
@@ -342,7 +347,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       }
       // Update the host in the players map
       room.players.set(room.host.id, room.host)
-      io.to(roomCode).emit('players_update', Array.from(room.players.values()))
+      io.to(roomCode).emit('players_update', toPublicPlayers(room))
     }
     // Feature 2: Script Customization
     if (settings.scriptCustomization !== undefined) {
@@ -456,6 +461,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       const code = roomService.generateRoomCode()
       const hostPlayer: Player = {
         id: uuidv4(),
+        publicId: uuidv4(),
         nickname: 'Host',
         role: 'HOST',
         isHost: true,
@@ -531,7 +537,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       }
 
       roomService.removePlayer(room, playerId)
-      io.to(roomCode).emit('players_update', Array.from(room.players.values()))
+      io.to(roomCode).emit('players_update', toPublicPlayers(room))
 
       // Update public room listings
       if (room.isPublic) {

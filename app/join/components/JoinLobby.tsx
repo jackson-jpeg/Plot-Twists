@@ -128,11 +128,11 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
 
           <div className="flex flex-wrap gap-2">
             {players.map((player, i) => {
-              const isMe = player.id === myPlayerId
+              const isMe = player.publicId === myPlayerId
               const isHost = player.isHost
               return (
                 <motion.div
-                  key={player.id}
+                  key={player.publicId}
                   className="inline-flex items-center gap-2"
                   style={{
                     padding: '8px 14px',

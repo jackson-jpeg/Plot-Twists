@@ -8,6 +8,7 @@ import { addBankedCredits, getCredits } from '../services/credit.service'
 import * as roomService from '../services/room.service'
 import * as matchmakingService from '../services/matchmaking.service'
 import { logger } from '@/lib/logger'
+import { toPublicPlayer, toPublicPlayers, findByPublicId } from '../socket/serialize'
 
 export function registerAdminHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
   // Check admin status
@@ -160,8 +161,8 @@ export function registerAdminHandlers(io: AppServer, socket: AppSocket, ctx: Han
       playerSocket.disconnect(true)
     }
     roomService.removePlayer(room, playerId)
-    io.to(roomCode).emit('player_left', playerId)
-    io.to(roomCode).emit('players_update', Array.from(room.players.values()))
+    io.to(roomCode).emit('player_left', player.publicId)
+    io.to(roomCode).emit('players_update', toPublicPlayers(room))
     logger.info(`[Admin] Kicked player ${player.nickname} (${playerId}) from room ${roomCode}`)
     callback({ success: true })
   }))

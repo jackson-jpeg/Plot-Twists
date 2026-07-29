@@ -4304,7 +4304,3595 @@
       ],
       "id": "6f175361-71f0-41a9-9255-9b57498cdbf0",
       "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "fff568fc-60c9-43b3-b568-9d3aa10e2c49",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291228428
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291228428
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291228428
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291228428
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "fff568fc-60c9-43b3-b568-9d3aa10e2c49",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "cce55348-91bd-4a62-8a02-2b85a2822599",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291228434
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291228434
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291228434
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291228434
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "cce55348-91bd-4a62-8a02-2b85a2822599",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "c5597ace-59cf-43c0-998d-cc19de1ac2aa",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291228439
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291228439
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291228439
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291228439
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "c5597ace-59cf-43c0-998d-cc19de1ac2aa",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "f5d175a5-6e87-49cc-84ac-6a113ae5283e",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291254598
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291254598
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291254598
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "f5d175a5-6e87-49cc-84ac-6a113ae5283e",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "c4f963d3-80b7-4083-b170-134f9fc30be9",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291254604
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291254604
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291254604
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "c4f963d3-80b7-4083-b170-134f9fc30be9",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "eec7528c-bc99-49d8-801d-0085fbe7e806",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291254615
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291254615
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291254615
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "eec7528c-bc99-49d8-801d-0085fbe7e806",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "c5b09752-cc84-48a5-b324-6b44e5932746",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291314720
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291314720
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291314720
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "c5b09752-cc84-48a5-b324-6b44e5932746",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "c575d92d-a054-417c-a2d0-6e4540cdfc24",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291314727
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291314727
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291314727
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291314727
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        }
+      ],
+      "id": "c575d92d-a054-417c-a2d0-6e4540cdfc24",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "39cec3b4-bdb7-434e-9bf3-0498439381c8",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291314741
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291314741
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291314741
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291314741
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "39cec3b4-bdb7-434e-9bf3-0498439381c8",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "d5814673-a789-4bc6-a529-6c201202728c",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291333009
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291333009
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291333009
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291333009
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        }
+      ],
+      "id": "d5814673-a789-4bc6-a529-6c201202728c",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "f2096ef1-24b7-45ad-9a49-b84f5eb07854",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291333018
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291333018
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291333018
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291333018
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "f2096ef1-24b7-45ad-9a49-b84f5eb07854",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "dc5e83f0-992e-4ba6-be39-cd82398d123e",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291333023
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291333023
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291333023
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "dc5e83f0-992e-4ba6-be39-cd82398d123e",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "75c9401a-4a2f-47fa-b18e-c9d0bed2ab98",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291348584
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291348584
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291348584
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291348584
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        }
+      ],
+      "id": "75c9401a-4a2f-47fa-b18e-c9d0bed2ab98",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "76115f00-bf3a-497a-9f10-0b2ea95f1f89",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291348589
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291348589
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291348589
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "76115f00-bf3a-497a-9f10-0b2ea95f1f89",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "5fd10e79-e324-472d-afc0-d24d2b977dfc",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291348593
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291348593
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291348593
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "5fd10e79-e324-472d-afc0-d24d2b977dfc",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "af7e955a-ce85-403a-bf8e-645fa355f14d",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291348600
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291348600
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291348600
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291348600
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        }
+      ],
+      "id": "af7e955a-ce85-403a-bf8e-645fa355f14d",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "6e0f7525-7ffb-4db5-84fc-80b3b14a27d9",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291348609
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291348609
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291348609
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "6e0f7525-7ffb-4db5-84fc-80b3b14a27d9",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "48c6f8b6-d1bc-48bc-947d-312ce3c824e4",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291348617
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291348617
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291348617
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "48c6f8b6-d1bc-48bc-947d-312ce3c824e4",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "70b3933a-b9fa-4a4d-a302-cbfadb87475b",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291487704
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291487704
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291487704
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291487704
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "70b3933a-b9fa-4a4d-a302-cbfadb87475b",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "2b4f3615-a446-48b5-b4b6-45ea69a1daf0",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291487712
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291487712
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291487712
+        },
+        {
+          "source": "game_won",
+          "amount": 100,
+          "description": "Won the game!",
+          "timestamp": 1785291487712
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291487712
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 1,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "2b4f3615-a446-48b5-b4b6-45ea69a1daf0",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "c09ab917-08c2-4ed4-a6c9-9b140d88be40",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291487719
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291487719
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291487719
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291487719
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "c09ab917-08c2-4ed4-a6c9-9b140d88be40",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "e2c10a9d-17a6-421e-ae7a-d39b4c3cc4ed",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291554469
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291554469
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291554469
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "e2c10a9d-17a6-421e-ae7a-d39b4c3cc4ed",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "dc81b2e6-4f9b-4ddb-90e6-baf3083fce76",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291554477
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291554477
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291554477
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291554477
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "dc81b2e6-4f9b-4ddb-90e6-baf3083fce76",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "be48a72f-7d4d-431d-ada8-7af3c4adb8a4",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291554485
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291554485
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291554485
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "be48a72f-7d4d-431d-ada8-7af3c4adb8a4",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "1b26a24b-f2e5-400b-9a95-4d3a42ece86b",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291614595
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291614595
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291614595
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291614595
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291614595
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "1b26a24b-f2e5-400b-9a95-4d3a42ece86b",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "a5c6eb8d-aed9-4e01-86aa-b6e1ac8b303a",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291614606
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291614606
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291614606
+        },
+        {
+          "source": "game_won",
+          "amount": 100,
+          "description": "Won the game!",
+          "timestamp": 1785291614606
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291614606
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 1,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "a5c6eb8d-aed9-4e01-86aa-b6e1ac8b303a",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "ba97808b-dfe6-488b-a1fa-4d9dc1237cca",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291614615
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291614615
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291614615
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291614615
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "ba97808b-dfe6-488b-a1fa-4d9dc1237cca",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "9616af30-56d8-49b7-9490-a45e63ac9706",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291632904
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291632904
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291632904
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291632904
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291632904
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "9616af30-56d8-49b7-9490-a45e63ac9706",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "1bdc320b-e8cc-4639-894c-798e401f99d6",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291632909
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291632909
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291632909
+        },
+        {
+          "source": "game_won",
+          "amount": 100,
+          "description": "Won the game!",
+          "timestamp": 1785291632909
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291632909
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 1,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "1bdc320b-e8cc-4639-894c-798e401f99d6",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "a522530a-0258-4762-938f-c3cf57505794",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291632914
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291632914
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291632914
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "a522530a-0258-4762-938f-c3cf57505794",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "48718f11-95e2-4aa3-a991-e0e408127ecb",
+      "totalXP": 495,
+      "level": 3,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291648489
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291648489
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291648489
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291648489
+        },
+        {
+          "source": "game_won",
+          "amount": 100,
+          "description": "Won the game!",
+          "timestamp": 1785291648489
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291648489
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 1,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "48718f11-95e2-4aa3-a991-e0e408127ecb",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "5d9b2eaf-10c1-426d-b79e-31cdddc22086",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291648502
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291648502
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291648502
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "5d9b2eaf-10c1-426d-b79e-31cdddc22086",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "b0d8d02a-7271-40da-a6ef-f9ec977dc549",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291648516
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291648516
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291648516
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "b0d8d02a-7271-40da-a6ef-f9ec977dc549",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "7e4a1566-40c4-473c-8eaa-63d63c6d8914",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291648528
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291648528
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291648528
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291648528
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "7e4a1566-40c4-473c-8eaa-63d63c6d8914",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "1cdabc74-0b05-4499-aaef-d6411d5053c6",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291648538
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291648538
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291648538
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291648538
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        }
+      ],
+      "id": "1cdabc74-0b05-4499-aaef-d6411d5053c6",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "9feda54e-667b-420a-ac2e-c4e6e814951e",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291648546
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291648546
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291648546
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "9feda54e-667b-420a-ac2e-c4e6e814951e",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "687178a3-e4e8-4733-b497-0cd8c8566c83",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291688666
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291688666
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291688666
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291688666
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "687178a3-e4e8-4733-b497-0cd8c8566c83",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "80639fd7-8952-4795-882c-ba1a2841c37f",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291688673
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291688673
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291688673
+        },
+        {
+          "source": "game_won",
+          "amount": 100,
+          "description": "Won the game!",
+          "timestamp": 1785291688673
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291688673
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 1,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "80639fd7-8952-4795-882c-ba1a2841c37f",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "fffe1ef7-e534-4579-ba44-d02daa5f07dd",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291688681
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291688681
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291688681
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291688681
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291688681
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        }
+      ],
+      "id": "fffe1ef7-e534-4579-ba44-d02daa5f07dd",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "27ed5e9b-f99f-4d99-a830-3d20dbc22188",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291755406
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291755406
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291755406
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291755406
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "27ed5e9b-f99f-4d99-a830-3d20dbc22188",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "1eccfee3-e23b-4f6c-a1f7-6da0d5149952",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291755412
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291755412
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291755412
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291755412
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "1eccfee3-e23b-4f6c-a1f7-6da0d5149952",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "615819ad-db2b-42d9-882e-3bacb1dd98f5",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291755426
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291755426
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291755426
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_streak_2",
+          "title": "Hot Streak",
+          "description": "Win 2 games in a row",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "615819ad-db2b-42d9-882e-3bacb1dd98f5",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "32d64e6d-73f8-48da-88fb-a7f4d0d7a4c8",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291815545
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291815545
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291815545
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291815545
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291815545
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "32d64e6d-73f8-48da-88fb-a7f4d0d7a4c8",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "60b50f28-d960-4da0-85f9-928f2569ddcd",
+      "totalXP": 495,
+      "level": 3,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291815551
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291815551
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291815551
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291815551
+        },
+        {
+          "source": "game_won",
+          "amount": 100,
+          "description": "Won the game!",
+          "timestamp": 1785291815551
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291815551
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 1,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "60b50f28-d960-4da0-85f9-928f2569ddcd",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "34e68d73-e53b-4c81-8103-c55a5f479edd",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291815561
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291815561
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291815561
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_5",
+          "title": "Marathon",
+          "description": "Play 5 games this week",
+          "target": 5,
+          "progress": 1,
+          "xpReward": 250,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "34e68d73-e53b-4c81-8103-c55a5f479edd",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "a7523cd1-a261-4cb9-8c97-f0169131553a",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291833880
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291833880
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291833880
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291833880
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "a7523cd1-a261-4cb9-8c97-f0169131553a",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "ff47920c-3525-440c-b40d-3a1dfa78de4e",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291833901
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291833901
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291833901
+        },
+        {
+          "source": "game_won",
+          "amount": 100,
+          "description": "Won the game!",
+          "timestamp": 1785291833901
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291833901
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 1,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "ff47920c-3525-440c-b40d-3a1dfa78de4e",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "fc741126-e311-474f-acf1-8df0f4bc960d",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291833908
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291833908
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291833908
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "fc741126-e311-474f-acf1-8df0f4bc960d",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "6b2b1ebb-430b-4762-bba3-ba0fa31fc2b3",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291849517
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291849517
+        },
+        {
+          "source": "votes_received",
+          "amount": 10,
+          "description": "1 vote received",
+          "timestamp": 1785291849517
+        },
+        {
+          "source": "game_won",
+          "amount": 100,
+          "description": "Won the game!",
+          "timestamp": 1785291849517
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291849517
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_public",
+          "title": "Social Butterfly",
+          "description": "Play a public game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "6b2b1ebb-430b-4762-bba3-ba0fa31fc2b3",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "4c9e33a8-c2d3-47ef-885b-cd1e469e0cb4",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291849525
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291849525
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291849525
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291849525
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "4c9e33a8-c2d3-47ef-885b-cd1e469e0cb4",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "c5a7ddde-402d-4f97-afde-b7b9ccb29b82",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291849530
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291849530
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291849530
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291849530
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "c5a7ddde-402d-4f97-afde-b7b9ccb29b82",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "ca47f7d0-6eec-4ec6-b88e-ed1c7ead248b",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291849536
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291849536
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291849536
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291849536
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        }
+      ],
+      "id": "ca47f7d0-6eec-4ec6-b88e-ed1c7ead248b",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "caa8fc2c-ebdd-41ba-a49a-4239d3cb858e",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291849547
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291849547
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291849547
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_h2h",
+          "title": "Showdown",
+          "description": "Play a Head-to-Head game",
+          "target": 1,
+          "progress": 0,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "get_20_reactions",
+          "title": "Crowd Pleaser",
+          "description": "Receive 20 reactions in a week",
+          "target": 20,
+          "progress": 0,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        }
+      ],
+      "id": "caa8fc2c-ebdd-41ba-a49a-4239d3cb858e",
+      "lastDailyBonusDate": "2026-07-29"
+    },
+    {
+      "playerId": "80f3213a-9112-421a-be18-6b4cb5cb0a7b",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie",
+      "xpHistory": [
+        {
+          "source": "weekly_challenge",
+          "amount": 100,
+          "description": "Weekly challenge: Team Player",
+          "timestamp": 1785291849553
+        },
+        {
+          "source": "achievement_unlocked",
+          "amount": 25,
+          "description": "Achievement: Debut Performance",
+          "timestamp": 1785291849553
+        },
+        {
+          "source": "daily_first_game",
+          "amount": 50,
+          "description": "First game of the day",
+          "timestamp": 1785291849553
+        },
+        {
+          "source": "game_completed",
+          "amount": 50,
+          "description": "Game completed",
+          "timestamp": 1785291849553
+        }
+      ],
+      "levelRewardsClaimed": [],
+      "weeklyChallenges": [
+        {
+          "id": "play_3",
+          "title": "Triple Feature",
+          "description": "Play 3 games this week",
+          "target": 3,
+          "progress": 1,
+          "xpReward": 150,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "win_2",
+          "title": "Double Win",
+          "description": "Win 2 games this week",
+          "target": 2,
+          "progress": 0,
+          "xpReward": 200,
+          "expiresAt": 1785715200000,
+          "completed": false
+        },
+        {
+          "id": "play_ensemble",
+          "title": "Team Player",
+          "description": "Play an Ensemble game",
+          "target": 1,
+          "progress": 1,
+          "xpReward": 100,
+          "expiresAt": 1785715200000,
+          "completed": true
+        }
+      ],
+      "id": "80f3213a-9112-421a-be18-6b4cb5cb0a7b",
+      "lastDailyBonusDate": "2026-07-29"
     }
   ],
-  "savedAt": 1785289495506
+  "savedAt": 1785291849553
 }

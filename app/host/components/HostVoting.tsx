@@ -105,7 +105,7 @@ export function HostVoting() {
       <div className={`grid gap-4 ${isDesktop ? 'grid-cols-3' : 'grid-cols-2'}`}>
         {nonHostPlayers.map((player, i) => (
           <motion.div
-            key={player.id}
+            key={player.publicId}
             className="flex items-center justify-between p-4 rounded-sm"
             style={{
               background: 'var(--color-cream)',

@@ -300,7 +300,7 @@ export function HostSelection({
             const status = player.hasSubmittedSelection ? 'done' : 'waiting'
             return (
               <motion.div
-                key={player.id}
+                key={player.publicId}
                 className="flex items-center justify-between p-3 rounded-xl bg-[var(--color-surface-alt)]"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}

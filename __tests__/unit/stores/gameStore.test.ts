@@ -1,5 +1,5 @@
 import { useGameStore } from '@/stores/gameStore'
-import type { Player, RoomSettings } from '@/lib/types'
+import type { PublicPlayer, RoomSettings } from '@/lib/types'
 
 describe('gameStore', () => {
   beforeEach(() => {
@@ -41,9 +41,9 @@ describe('gameStore', () => {
   it('updates players list', () => {
     const { setPlayers } = useGameStore.getState()
 
-    const players: Player[] = [
-      { id: '1', nickname: 'Alice', role: 'HOST', isHost: true, socketId: 's1' },
-      { id: '2', nickname: 'Bob', role: 'PLAYER', isHost: false, socketId: 's2' },
+    const players: PublicPlayer[] = [
+      { publicId: '1', nickname: 'Alice', role: 'HOST', isHost: true },
+      { publicId: '2', nickname: 'Bob', role: 'PLAYER', isHost: false },
     ]
 
     setPlayers(players)
@@ -79,7 +79,7 @@ describe('gameStore', () => {
   it('resets to defaults', () => {
     const state = useGameStore.getState()
     state.setGameState('RESULTS')
-    state.setPlayers([{ id: '1', nickname: 'Alice', role: 'HOST', isHost: true, socketId: 's1' }])
+    state.setPlayers([{ publicId: '1', nickname: 'Alice', role: 'HOST', isHost: true }])
     state.setRoomCode('WXYZ')
     state.setRole('host')
     state.setSettings({ isMature: true, gameMode: 'ENSEMBLE' })

@@ -37,8 +37,8 @@ describe('applyRoomRecoverySnapshot', () => {
       spectatorMessages: [],
       votingStatus: { hasVoted: false },
       results: {
-        winner: { playerId: 'player-1', playerName: 'Alice', votes: 3 },
-        allResults: [{ playerId: 'player-1', playerName: 'Alice', votes: 3 }],
+        winner: { playerName: 'Alice', votes: 3 },
+        allResults: [{ playerName: 'Alice', votes: 3 }],
       },
       directorsReview: {
         rating: 4,
@@ -63,8 +63,8 @@ describe('applyRoomRecoverySnapshot', () => {
 
   it('clears stale results when the recovered room is not in results state', () => {
     useVotingStore.getState().setResults({
-      winner: { playerId: 'old', playerName: 'Old Winner', votes: 2 },
-      allResults: [{ playerId: 'old', playerName: 'Old Winner', votes: 2 }],
+      winner: { playerName: 'Old Winner', votes: 2 },
+      allResults: [{ playerName: 'Old Winner', votes: 2 }],
     })
     useVotingStore.getState().setDirectorsReview({
       rating: 5,

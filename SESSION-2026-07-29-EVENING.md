@@ -14,8 +14,10 @@ Machine labels: `[VPS]` = the Linux box, `[MACBOOK]` = your Mac.
 Cutover steps 1–5 and 7 are applied. **Step 6 is yours and still blocking** — exact commands and
 pass criteria in §7b. sang3r.com was verified up after every nginx reload.
 
-Getting there took four attempts and turned up **two real bugs in `deploy.sh`**, neither of which
-had ever been hit because nothing had ever executed that path.
+Getting there took four attempts and turned up **three real bugs in `deploy.sh`**, none of which
+had ever been hit because nothing had ever executed that path — and then, on the final check, **a
+fourth bug in the harness that fabricated eight plausible regressions.** That last one is §9 and is
+the most important thing in this document.
 
 | Asked for | State |
 |---|---|
@@ -27,6 +29,9 @@ had ever been hit because nothing had ever executed that path.
 | Run the cutover end to end, stop at step 6 | **done**, stopped at 6 |
 | Leave you the exact step-6 command and pass criteria | done, §7b |
 | Hit `https://plotslop.com`, open a room, join from a second client | **done, passed** |
+
+Verification: **suite 450/450 · harness 49/49 · tsc 0 errors.** Committed as `3a525195`, pushed,
+no Vercel build triggered.
 
 ---
 
@@ -494,9 +499,60 @@ updated to "link check clean, delete blocked on credential", a new section for t
 
 ### 7f. Verification state
 
-Typecheck and the full jest suite were running when this file was written; results are in the chat
-report rather than here. The `deploy.sh` changes are shell-only and touch no application code, so
-they cannot move the suite — but "cannot" is a prediction, and the suite is the check.
+**Suite 450/450 (32 suites) · harness 49/49 · `tsc --noEmit` 0 errors.** Committed and pushed as
+`3a525195`; the push triggered **no** Vercel deployment (0 commit statuses), so the suppression is
+still holding.
+
+---
+
+## 9. The thing I nearly got wrong, and it is the most important item here
+
+After the cutover I ran the harness as a final check and it came back **38/46, with eight
+failures.** The eight were:
+
+```
+hostAbandon · emptyResults · voterDrop · rateLimit · identity · spectatorVote · aiFailure ×2
+```
+
+Every one of those is an original audit finding. Every one is fixed and was verified fixed. Eight
+regressions appearing at once, immediately after a deploy, naming exactly the bugs this whole audit
+has been about — that is a coherent, alarming, *reportable* story, and I was one step from telling
+it to you.
+
+It was false. All eight.
+
+**What was actually happening.** `server/db/json.ts` resolved its data directory as
+`<cwd>/data`, so the harness wrote to `/root/Plot-Twists/data` — shared with every previous harness
+run and with any dev server. `loadRoomsFromFirestore()` runs at server startup, so each run began
+by loading every room any earlier run had ever created. There were **961** of them. Three of the 49
+checks never ran at all, because rooms wedged by earlier scenarios aborted them — which is why the
+denominator was 46 rather than 49, the detail that made me look twice.
+
+**Confirmed three ways, same commit, minutes apart:**
+
+| Condition | Result |
+|---|---|
+| 961-room accumulated DB | **38/46** — eight "failures" naming the known bug list |
+| empty DB | **49/49** |
+| 961-room DB + the isolation fix | **49/49**, and the dev DB byte-identical afterwards |
+
+**Fixed.** `json.ts` honours `PLOTSLOP_DATA_DIR` (default unchanged; production must never set it),
+and the harness forces a fresh `mkdtemp` per run and removes it on exit — the same
+forced-not-defaulted treatment already given to the fake API key and the mock base URL, for the
+same reason.
+
+**Why this is worth a section of its own.** This is the third instrument bug today and by far the
+worst. The `max_tokens` floor failed a working product with an obviously silly message ("0
+generation requests reached the model"). The systemd start-limiter showed me a stale error. This
+one **fabricated a plausible narrative** — a gate that fails a working product is bad, but a gate
+that fails it *by naming the bugs you already believe in* is worse, because it survives scrutiny.
+Your standing rule is that a red needs a second mechanism before it becomes a finding, and this is
+the clearest illustration of it I have hit: the only reason I checked was that a number moved for a
+reason I could not explain, and I went looking rather than re-running until it looked right.
+
+There is a live consequence for you: **anyone who ran that harness on this box in recent weeks was
+reading a partly fabricated result.** If a past session reported harness failures in that list,
+treat the number as unreliable and re-run against the fixed harness before acting on it.
 
 ---
 

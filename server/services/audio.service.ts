@@ -50,10 +50,14 @@ const MOOD_VOICE_STYLES: Record<string, { rate: number, pitch: number }> = {
 }
 
 // Character voice presets (speaker name patterns to voice styles)
+//
+// IP layer 1: these used to match franchise character names (/yoda/,
+// /darth|vader/, /batman/). Dead weight once the catalog became archetypes —
+// and a pointer at the IP even while dead. Matched on archetype vocabulary now.
 const CHARACTER_VOICE_PRESETS: Array<{ pattern: RegExp, voiceHint: string }> = [
-  { pattern: /yoda/i, voiceHint: 'elder-wise' },
-  { pattern: /darth|vader/i, voiceHint: 'deep-menacing' },
-  { pattern: /batman/i, voiceHint: 'gravelly-whisper' },
+  { pattern: /mystic|sage|oracle|hermit|wizard/i, voiceHint: 'elder-wise' },
+  { pattern: /tyrant|warlord|overlord|assassin/i, voiceHint: 'deep-menacing' },
+  { pattern: /vigilante|detective|noir/i, voiceHint: 'gravelly-whisper' },
   { pattern: /pirate|captain/i, voiceHint: 'gruff-accent' },
   { pattern: /robot|android|ai/i, voiceHint: 'monotone-digital' },
   { pattern: /child|kid|young/i, voiceHint: 'high-pitched' },

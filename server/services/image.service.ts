@@ -88,9 +88,10 @@ Setting: ${setting}
 Synopsis: ${synopsis}
 
 IMPORTANT STYLE RULES:
-- Match each character's visual style to their source material. For example: if SpongeBob or Squidward appears, they should be 2D animated in their original cartoon style. If Tony Soprano or Walter White appears, they should look photorealistic/live-action.
-- Mix styles naturally when characters come from different media — an animated character can appear alongside photorealistic ones (like Roger Rabbit or Space Jam).
-- The setting should match the tone of the show/movie it comes from. A Sopranos setting should look gritty and realistic. A SpongeBob setting should look bright and cartoonish.
+- Every character here is an ORIGINAL ARCHETYPE described in words. Design them from that description alone. Do NOT draw, reference, or approximate a character from any existing film, show, game or book, and do NOT depict a real person — even if a description reminds you of one.
+- Pick each character's visual register from what the description implies: a cartoon fry cook can be 2D and bright while a crime-family patriarch in the same frame is photorealistic. Mixing registers deliberately is the joke.
+- The setting's tone should come from the setting text itself — a rain-slick city street is gritty and realistic; an undersea kitchen is bright and cartoonish.
+- No logos, studio marks, franchise insignia, or costume markings belonging to anyone.
 - Use dramatic cinematic composition with strong lighting.
 - Include the title "${title}" as text at the bottom of the poster.
 - Movie poster aspect ratio (2:3 portrait).`

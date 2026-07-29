@@ -44,7 +44,7 @@ Focus on sharp, intelligent humor:
 - References and callbacks that reward attention
 - Dry humor and understated delivery
 - Characters should sound SMART, even when being absurd
-Think: Oscar Wilde meets The Good Place`,
+Think: drawing-room wit meets high-concept afterlife comedy`,
 
     slapstick: `
 ═══════════════════════════════════════
@@ -96,7 +96,7 @@ Embrace sitcom conventions:
 - Running gags that pay off
 - "Will they won't they" tension
 - Heartwarming moments undermined by comedy
-Think: The Office meets Brooklyn Nine-Nine`,
+Think: deadpan workplace mockumentary meets ensemble precinct comedy`,
 
     improv: `
 ═══════════════════════════════════════

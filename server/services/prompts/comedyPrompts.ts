@@ -9,13 +9,13 @@ import type { Script, ScriptLine } from '../../../lib/types'
 export function getMatureGuidelines(): string {
   return `
 ═══════════════════════════════════════════════════════
-18+ MODE: WRITE LIKE SNL AT 1AM (NO CENSORS)
+18+ MODE: WRITE LIKE LATE-NIGHT SKETCH AT 1AM (NO CENSORS)
 ═══════════════════════════════════════════════════════
 
 THE GAME OF THE SCENE:
 Every scene needs a GAME - the central comic idea you're exploring. Examples:
 - "What if a kindergarten teacher had to explain Bitcoin to actual wolves?"
-- "Gordon Ramsay critiques a funeral he's catering"
+- "A furious celebrity chef critiques a funeral he's catering"
 - "A couple's therapist realizes both clients are serial killers"
 Find the game IMMEDIATELY (line 1-3) and PLAY IT HARD.
 
@@ -68,14 +68,14 @@ AVOID LIKE POISON:
 export function getFamilyFriendlyGuidelines(): string {
   return `
 ═══════════════════════════════════════════════════════
-FAMILY FRIENDLY: WRITE LIKE PEAK NICKELODEON
+FAMILY FRIENDLY: WRITE LIKE A PEAK-ERA KIDS' CARTOON
 ═══════════════════════════════════════════════════════
 
 THE GAME OF THE SCENE:
 Find the absurd premise and COMMIT. Examples:
 - "A pirate is terrified of water but won't admit it"
 - "A ghost is trying to haunt a house that's already condemned"
-- "SpongeBob logic: The worse things get, the more cheerful they are"
+- "Cheerful-idiot logic: the worse things get, the more delighted they are"
 Find the game in lines 1-3. Never let go.
 
 ABSURDISM IS YOUR WEAPON:
@@ -88,7 +88,7 @@ Kids' comedy isn't dumb - it's WEIRD. Embrace:
 
 ENERGY & MOMENTUM:
 Fast pace. No dead air. If a line isn't moving the scene forward, cut it.
-Think: rapid-fire Looney Tunes energy, not slow explanatory dialogue.
+Think: rapid-fire golden-age cartoon energy, not slow explanatory dialogue.
 SHORT LINES for maximum impact:
 - "Why?"
 - "Because."
@@ -108,7 +108,7 @@ You can't write stage directions, so DESCRIBE physical comedy in what characters
 - "Did you just backflip over a couch for no reason?"
 
 ESCALATION TO ABSURDITY:
-Start weird. Get WEIRDER. Peak Nickelodeon shows never pumped the brakes:
+Start weird. Get WEIRDER. The best kids' cartoons never pumped the brakes:
 - Line 5: "There's a penguin in the kitchen"
 - Line 15: "There are seventeen penguins and they've formed a union"
 - Line 30: "The penguin union has elected a pope"
@@ -157,18 +157,23 @@ Never have characters say "That doesn't make sense" - EVERYTHING makes sense in 
 ═══════════════════════════════════════════════════════
 CHARACTER VOICE IS NON-NEGOTIABLE
 ═══════════════════════════════════════════════════════
-If Gordon Ramsay is in the scene, EVERY line should sound exactly like Gordon Ramsay.
-If Shakespeare is there, he speaks in iambic pentameter with flowery language.
-If Yoda is present, backwards his sentences must be.
-If a pirate appears, "yarr" and nautical metaphors, matey.
+Whatever a character IS, every line they speak should sound like it:
+- A furious celebrity chef insults the food, not the person, and does it at volume.
+- A brooding Elizabethan poet speaks in iambic pentameter with flowery language.
+- An ancient tiny mystic inverts every sentence he utters.
+- A pirate deals in "yarr" and nautical metaphors, matey.
 
-Mixing a pirate and Shakespeare? The pirate doesn't suddenly talk like Shakespeare - the CONTRAST is the comedy.
+Mixing a pirate and a poet? The pirate does NOT start speaking in verse — the CONTRAST is the comedy.
+
+Build these voices from the character DESCRIPTION you are given. Never write a
+character as a named person from real life, or as a named character from an
+existing film, show, game or book.
 
 ═══════════════════════════════════════════════════════
 SPECIFICITY BEATS GENERIC EVERY TIME
 ═══════════════════════════════════════════════════════
 "I dropped something in the fryer" ← Boring
-"I dropped my 1987 Casio calculator watch in the fryer and it's beeping the Jeopardy theme underwater" ← Funny
+"I dropped my 1987 calculator watch in the fryer and it's beeping a game-show fanfare underwater" ← Funny
 
 Specific details = real. Generic = forgettable.
 
@@ -186,8 +191,8 @@ EMOTIONAL STAKES IN ABSURDITY
 ═══════════════════════════════════════════════════════
 Even in the most ridiculous scenarios, characters must CARE about something:
 - A vampire at a beach might desperately want to fit in with surfers
-- Gordon Ramsay at a funeral might be personally offended by bad catering
-- Shakespeare in space might be homesick for Earth
+- A furious celebrity chef at a funeral might be personally offended by the catering
+- A brooding Elizabethan poet in space might be homesick for Earth
 
 If nobody wants anything, there's no scene. Stakes = investment = comedy.
 
@@ -274,7 +279,7 @@ Title examples:
 
 Synopsis examples:
 - GOOD: "A pirate captain must navigate IKEA while his crew mutinies over the meatballs"
-- GOOD: "Gordon Ramsay reviews a funeral he's catering and offends the widow"
+- GOOD: "A furious celebrity chef reviews a funeral he's catering and offends the widow"
 - BAD: "Some characters are in a place and things happen"
 
 Now write comedy that makes people ACTUALLY LAUGH.${previousScript ? getSequelPrompt(previousScript) : ''}`
@@ -311,7 +316,7 @@ SEQUEL WRITING RULES:
 - Escalate the stakes: if they argued before, they should argue HARDER now
 - Episode 2 should feel like "oh no, things got WORSE" or "wait, it's happening AGAIN?"
 
-Think: If Episode 1 was "The Empire Strikes Back," this is "Return of the Jedi."
+Think: if Episode 1 was the part where it all goes wrong, this is the part where they go back in anyway.
 If Episode 1 was chaos, Episode 2 is controlled chaos with callbacks.
 Make the audience laugh because they remember what happened in Episode 1.`
 }
@@ -402,24 +407,24 @@ This is a SOLO performance. The human player will perform as ${characters[0]}.
 YOUR MISSION: ${characters[0]} has wandered into the world of "${setting}".
 You must populate the scene with 2-3 characters who NATIVELY BELONG to that setting.
 
-STEP 1: IDENTIFY THE SETTING'S UNIVERSE
-Look at "${setting}" and determine:
-- What fictional universe, show, location, or world does this represent?
-- Who are the iconic/recognizable characters from that universe?
-- What's the "local culture" or vibe of this place?
+STEP 1: READ THE SETTING'S SOCIAL RULES
+Look at "${setting}" and work out, from the words themselves:
+- What KIND of place is this, and what is it for?
+- Who would be here on an ordinary day, doing their ordinary job?
+- What is the unspoken etiquette here — what would mark someone as an outsider?
 
 Examples:
-- "The Simpsons Living Room" → This is Springfield. Natives: Homer Simpson, Marge Simpson, Bart Simpson
-- "Central Perk (Friends)" → This is the Friends universe. Natives: Ross, Rachel, Chandler, Monica, Joey, Phoebe
-- "The Office Conference Room" → This is Dunder Mifflin. Natives: Michael Scott, Dwight Schrute, Jim Halpert, Pam Beesly
-- "The Death Star" → This is Star Wars. Natives: Darth Vader, Stormtroopers, Imperial Officers
-- "A Haunted House" → Generic spooky setting. Natives: A Creepy Ghost, A Skeptical Homeowner, A Paranormal Investigator
-- "A Pirate Ship" → Generic pirate setting. Natives: The Ship's Captain, A Drunken First Mate, A Parrot (who talks)
+- "A Conference Room Booked For A Pointless Meeting" → Natives: A Manager Who Called This Meeting, A Colleague Taking Aggressive Notes, Someone Who Should Not Be Here
+- "An Undersea Fast-Food Kitchen At Lunch Rush" → Natives: A Manager Guarding The Recipe, A Fry Cook On Their Ninth Hour, A Regular Who Always Complains
+- "A Moon-Sized Battle Station With Poor Safety Rails" → Natives: A Middle-Ranking Officer With A Clipboard, A Bored Sentry, A Health And Safety Inspector Nobody Invited
+- "A Haunted House" → Natives: A Creepy Ghost, A Skeptical Homeowner, A Paranormal Investigator
+- "A Pirate Ship" → Natives: The Ship's Captain, A Drunken First Mate, A Parrot (who talks)
 
 STEP 2: GENERATE 2-3 SETTING-NATIVE CHARACTERS
 Create an AI ensemble cast that fits the setting:
-- Use RECOGNIZABLE characters if the setting is from a known show/universe
-- Create ARCHETYPAL characters if the setting is generic (e.g., "A Hospital" → Dr. House-type, Nervous Nurse, Grumpy Receptionist)
+- Invent ORIGINAL characters. Describe them by role and habit — "A Manager Guarding The Recipe" — never by the name of a character from an existing film, show, game or book.
+- Do NOT name real people, and do NOT name or allude to a specific franchise, studio, or title, even if the setting reminds you of one.
+- The joke is the ROLE and the register, not the reference. "A Middle-Ranking Officer With A Clipboard" is funnier than a borrowed name, because the audience meets them for the first time here.
 - Give each AI character a distinct personality, voice, and comedic function
 - These characters should feel like they "own" the space - ${characters[0]} is the OUTSIDER
 
@@ -443,22 +448,23 @@ LINE DISTRIBUTION:
 
 CRITICAL REQUIREMENTS:
 - You MUST generate 2-3 AI characters (not 1, not 4+)
-- The AI characters MUST fit the setting logically (don't put Batman in "The Simpsons Living Room")
+- The AI characters MUST fit the setting logically (don't put a caped vigilante in "A Suburban Living Room With A Permanently Dented Sofa")
 - If the setting is from a known show/universe, USE THOSE CHARACTERS
 - If the setting is generic, CREATE archetypal characters that fit the vibe
 - ${characters[0]} should feel like an outsider trying to navigate this strange world
 - Build to a comedic climax where the culture clash reaches peak absurdity
 
 EXAMPLES OF GOOD CASTING:
-✅ Setting: "The Simpsons Living Room" → AI Cast: Homer Simpson, Marge Simpson, Bart Simpson
-✅ Setting: "A Therapist's Office" → AI Cast: Dr. Melfi (therapist), An Overly Honest Patient
+✅ Setting: "A Suburban Living Room With A Permanently Dented Sofa" → AI Cast: A Dad Defending His Spot On The Sofa, A Mother Who Has Asked Twice Already, A Child Who Has Broken Something
+✅ Setting: "A Therapist's Office" → AI Cast: A Therapist Writing Something Down, An Overly Honest Patient
 ✅ Setting: "A Medieval Tavern" → AI Cast: A Gruff Bartender, A Mysterious Hooded Stranger, A Singing Bard
-✅ Setting: "Hogwarts Classroom" → AI Cast: Professor Snape, Hermione Granger, A Nervous First-Year
+✅ Setting: "The Dining Hall Of A School For Magic" → AI Cast: A Teacher Who Loathes This Class, A Student Who Has Already Read Ahead, A Nervous First-Year
 
 EXAMPLES OF BAD CASTING:
-❌ Setting: "The Simpsons Living Room" → AI Cast: Darth Vader (doesn't fit)
+❌ Setting: "A Suburban Living Room" → AI Cast: A Wheezing Space Tyrant (doesn't fit the room)
 ❌ Setting: "A Hospital" → AI Cast: Just one doctor (need 2-3 characters)
-❌ Setting: "The Death Star" → AI Cast: SpongeBob, Batman, Yoda (random characters, not Death Star natives)
+❌ Setting: "A Moon-Sized Battle Station" → AI Cast: A Fry Cook, A Vigilante, A Tiny Mystic (random, not natives of this place)
+❌ ANY cast member named after a character from an existing film, show, game or book, or after a real person. Invent them.
 
 Write the scene where ${characters[0]} has stumbled into "${setting}" and must deal with the locals while trying to "${circumstance}".
 Make the culture clash HILARIOUS.

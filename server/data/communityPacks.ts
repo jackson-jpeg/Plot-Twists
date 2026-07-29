@@ -334,7 +334,7 @@ export const COMMUNITY_PACKS: Omit<CardPack, 'createdAt' | 'updatedAt'>[] = [
       { id: 'ft-set-6', name: 'Prince Charming\'s Dating Coach Office', description: 'Seven failed fairy tales and counting — it\'s a pattern, your highness' },
     ],
     circumstances: [
-      { id: 'ft-circ-1', name: 'The magic mirror is glitching', description: 'Keeps showing Shrek instead of "the fairest of them all"' },
+      { id: 'ft-circ-1', name: 'The magic mirror is glitching', description: 'Keeps showing a swamp ogre instead of "the fairest of them all"' },
       { id: 'ft-circ-2', name: 'Sleeping Beauty\'s alarm finally went off', description: 'She\'s 100 years behind on everything including rent' },
       { id: 'ft-circ-3', name: 'The glass slipper doesn\'t fit anyone', description: 'Because the prince wrote down the wrong shoe size' },
       { id: 'ft-circ-4', name: 'All the fairy godmothers went on strike', description: 'Bibbidi-bobbidi-UNION — no wishes until demands are met' },

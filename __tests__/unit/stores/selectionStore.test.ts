@@ -9,7 +9,7 @@ describe('selectionStore', () => {
   it('initializes with defaults', () => {
     const state = useSelectionStore.getState()
     expect(state.availableCards).toBeNull()
-    expect(state.selection).toEqual({ character: '', setting: '', circumstance: '' })
+    expect(state.selection).toEqual({ character: null, setting: null, circumstance: null })
     expect(state.hasSubmitted).toBe(false)
     expect(state.isSubmitting).toBe(false)
     expect(state.selectedPackId).toBe('')
@@ -111,7 +111,7 @@ describe('selectionStore', () => {
 
     const after = useSelectionStore.getState()
     expect(after.availableCards).toBeNull()
-    expect(after.selection).toEqual({ character: '', setting: '', circumstance: '' })
+    expect(after.selection).toEqual({ character: null, setting: null, circumstance: null })
     expect(after.hasSubmitted).toBe(false)
     expect(after.isSubmitting).toBe(false)
     expect(after.selectedPackId).toBe('')

@@ -104,6 +104,11 @@ describe('false positives — the property that keeps this switched on', () => {
     'My friends said the alien soul of this casserole was frozen solid.',
     'Cheers to that. Monk mode. Fred said the same.',
     'We watched the boys inside out, home alone, for eleven hours.',
+    // Both of these were real false positives caught by screening the repo's
+    // own source with the term list. 'Die Hard' and 'Rapunzel' were removed
+    // from PROTECTED_TERMS as a result; these pin that decision.
+    'Some old habits die hard, and that one dies hardest.',
+    'She let her hair down like Rapunzel and it hit the floor.',
   ]
 
   it.each(innocent)('leaves ordinary dialogue alone: %s', (text) => {

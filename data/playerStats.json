@@ -10079,7 +10079,871 @@
       "totalXP": 175,
       "level": 2,
       "title": "Rookie"
+    },
+    {
+      "playerId": "c1368dcf-1d54-458d-9199-65f6c9bae0be",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "An aspiring actress waiting tables across the hall": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337058654
+        }
+      ],
+      "recentGames": [
+        "1765381f-5358-4cc1-a6b2-89da160bd0e4"
+      ],
+      "joinedAt": 1785337058649,
+      "lastPlayedAt": 1785337058654,
+      "favoriteCharacter": "An aspiring actress waiting tables across the hall",
+      "id": "c1368dcf-1d54-458d-9199-65f6c9bae0be",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "9d7f95ce-3e24-4b4d-9455-b67de3884d5a",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "An aspiring actress waiting tables across the hall": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337058668
+        }
+      ],
+      "recentGames": [
+        "1765381f-5358-4cc1-a6b2-89da160bd0e4"
+      ],
+      "joinedAt": 1785337058667,
+      "lastPlayedAt": 1785337058668,
+      "favoriteCharacter": "An aspiring actress waiting tables across the hall",
+      "id": "9d7f95ce-3e24-4b4d-9455-b67de3884d5a",
+      "totalXP": 495,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "c18bfa7a-0389-4189-a692-2d6db97b6da0",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "An aspiring actress waiting tables across the hall": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337058678
+        }
+      ],
+      "recentGames": [
+        "1765381f-5358-4cc1-a6b2-89da160bd0e4"
+      ],
+      "joinedAt": 1785337058676,
+      "lastPlayedAt": 1785337058678,
+      "favoriteCharacter": "An aspiring actress waiting tables across the hall",
+      "id": "c18bfa7a-0389-4189-a692-2d6db97b6da0",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "1056ced3-3a7c-4242-b873-da72d5cf11e9",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A skateboarding troublemaker with a slingshot": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337125364
+        }
+      ],
+      "recentGames": [
+        "7221decb-3242-4579-8df2-f24640153cf2"
+      ],
+      "joinedAt": 1785337125358,
+      "lastPlayedAt": 1785337125364,
+      "favoriteCharacter": "A skateboarding troublemaker with a slingshot",
+      "id": "1056ced3-3a7c-4242-b873-da72d5cf11e9",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "87393337-ea10-41fe-bce8-b04818b66f38",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A skateboarding troublemaker with a slingshot": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337125377
+        }
+      ],
+      "recentGames": [
+        "7221decb-3242-4579-8df2-f24640153cf2"
+      ],
+      "joinedAt": 1785337125376,
+      "lastPlayedAt": 1785337125377,
+      "favoriteCharacter": "A skateboarding troublemaker with a slingshot",
+      "id": "87393337-ea10-41fe-bce8-b04818b66f38",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "bfdb460b-a60d-4e4c-86da-76ef94ba4dcb",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A skateboarding troublemaker with a slingshot": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337125386
+        }
+      ],
+      "recentGames": [
+        "7221decb-3242-4579-8df2-f24640153cf2"
+      ],
+      "joinedAt": 1785337125385,
+      "lastPlayedAt": 1785337125386,
+      "favoriteCharacter": "A skateboarding troublemaker with a slingshot",
+      "id": "bfdb460b-a60d-4e4c-86da-76ef94ba4dcb",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "9f1f4276-1218-4b4c-8dd4-2b9aae53c88e",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A sleek probe robot with an itchy trigger finger": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337185507
+        }
+      ],
+      "recentGames": [
+        "cb5d91cb-2d38-4894-807c-fa34feb006c6"
+      ],
+      "joinedAt": 1785337185505,
+      "lastPlayedAt": 1785337185507,
+      "favoriteCharacter": "A sleek probe robot with an itchy trigger finger",
+      "id": "9f1f4276-1218-4b4c-8dd4-2b9aae53c88e",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "3701457e-fa65-4e5e-bd4c-8e4e5bf8c97c",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A sleek probe robot with an itchy trigger finger": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337185539
+        }
+      ],
+      "recentGames": [
+        "cb5d91cb-2d38-4894-807c-fa34feb006c6"
+      ],
+      "joinedAt": 1785337185537,
+      "lastPlayedAt": 1785337185539,
+      "favoriteCharacter": "A sleek probe robot with an itchy trigger finger",
+      "id": "3701457e-fa65-4e5e-bd4c-8e4e5bf8c97c",
+      "totalXP": 495,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "24258cf4-e5dc-43fa-b8e5-ae82c82ad35c",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A sleek probe robot with an itchy trigger finger": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337185549
+        }
+      ],
+      "recentGames": [
+        "cb5d91cb-2d38-4894-807c-fa34feb006c6"
+      ],
+      "joinedAt": 1785337185547,
+      "lastPlayedAt": 1785337185549,
+      "favoriteCharacter": "A sleek probe robot with an itchy trigger finger",
+      "id": "24258cf4-e5dc-43fa-b8e5-ae82c82ad35c",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "9bb7aada-60ad-4a5a-8c6b-de7b9ccd7f55",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A federal agent having the worst day of his life, again": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337204035
+        }
+      ],
+      "recentGames": [
+        "f52e85fa-83bd-4a8e-975f-b9a6b6daab07"
+      ],
+      "joinedAt": 1785337204019,
+      "lastPlayedAt": 1785337204035,
+      "favoriteCharacter": "A federal agent having the worst day of his life, again",
+      "id": "9bb7aada-60ad-4a5a-8c6b-de7b9ccd7f55",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "16e1051c-195e-42e4-989e-328d83b98f01",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A federal agent having the worst day of his life, again": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337204415
+        }
+      ],
+      "recentGames": [
+        "f52e85fa-83bd-4a8e-975f-b9a6b6daab07"
+      ],
+      "joinedAt": 1785337204389,
+      "lastPlayedAt": 1785337204403,
+      "favoriteCharacter": "A federal agent having the worst day of his life, again",
+      "id": "16e1051c-195e-42e4-989e-328d83b98f01",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "2e519a86-9e8e-445d-9315-2a9eada5d2f5",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A federal agent having the worst day of his life, again": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337204527
+        }
+      ],
+      "recentGames": [
+        "f52e85fa-83bd-4a8e-975f-b9a6b6daab07"
+      ],
+      "joinedAt": 1785337204524,
+      "lastPlayedAt": 1785337204527,
+      "favoriteCharacter": "A federal agent having the worst day of his life, again",
+      "id": "2e519a86-9e8e-445d-9315-2a9eada5d2f5",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "2e84ecbc-c7eb-447e-96ea-a1bc32497608",
+      "nickname": "P1",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A deadpan intern who is contractually unimpressed": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337219997
+        }
+      ],
+      "recentGames": [
+        "8a0bfd59-e2ce-42ab-a03d-94090117808a"
+      ],
+      "joinedAt": 1785337219995,
+      "lastPlayedAt": 1785337219997,
+      "favoriteCharacter": "A deadpan intern who is contractually unimpressed",
+      "id": "2e84ecbc-c7eb-447e-96ea-a1bc32497608",
+      "totalXP": 495,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "b3cbfd3f-e9c6-4c08-8c60-0cc5c8a37b61",
+      "nickname": "P2",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A deadpan intern who is contractually unimpressed": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337220010
+        }
+      ],
+      "recentGames": [
+        "8a0bfd59-e2ce-42ab-a03d-94090117808a"
+      ],
+      "joinedAt": 1785337220008,
+      "lastPlayedAt": 1785337220010,
+      "favoriteCharacter": "A deadpan intern who is contractually unimpressed",
+      "id": "b3cbfd3f-e9c6-4c08-8c60-0cc5c8a37b61",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "314ddead-d55e-483b-b520-c53584ef452f",
+      "nickname": "P3",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A deadpan intern who is contractually unimpressed": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337220022
+        }
+      ],
+      "recentGames": [
+        "8a0bfd59-e2ce-42ab-a03d-94090117808a"
+      ],
+      "joinedAt": 1785337220021,
+      "lastPlayedAt": 1785337220022,
+      "favoriteCharacter": "A deadpan intern who is contractually unimpressed",
+      "id": "314ddead-d55e-483b-b520-c53584ef452f",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "95635155-923a-4f6e-b625-1cf09964e4d9",
+      "nickname": "P4",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A deadpan intern who is contractually unimpressed": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337220031
+        }
+      ],
+      "recentGames": [
+        "8a0bfd59-e2ce-42ab-a03d-94090117808a"
+      ],
+      "joinedAt": 1785337220029,
+      "lastPlayedAt": 1785337220031,
+      "favoriteCharacter": "A deadpan intern who is contractually unimpressed",
+      "id": "95635155-923a-4f6e-b625-1cf09964e4d9",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "6986c9f2-4a44-4fd8-a859-15ddffe9b627",
+      "nickname": "P5",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A deadpan intern who is contractually unimpressed": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337220042
+        }
+      ],
+      "recentGames": [
+        "8a0bfd59-e2ce-42ab-a03d-94090117808a"
+      ],
+      "joinedAt": 1785337220041,
+      "lastPlayedAt": 1785337220042,
+      "favoriteCharacter": "A deadpan intern who is contractually unimpressed",
+      "id": "6986c9f2-4a44-4fd8-a859-15ddffe9b627",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "0018f6bf-c4c1-42c7-8de0-e3a9ed0fe256",
+      "nickname": "P6",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "A deadpan intern who is contractually unimpressed": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785337220053
+        }
+      ],
+      "recentGames": [
+        "8a0bfd59-e2ce-42ab-a03d-94090117808a"
+      ],
+      "joinedAt": 1785337220051,
+      "lastPlayedAt": 1785337220053,
+      "favoriteCharacter": "A deadpan intern who is contractually unimpressed",
+      "id": "0018f6bf-c4c1-42c7-8de0-e3a9ed0fe256",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie"
     }
   ],
-  "savedAt": 1785296380162
+  "savedAt": 1785337220073
 }

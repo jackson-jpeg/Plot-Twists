@@ -751,6 +751,70 @@ Because of the Track 3 injection hole, this is also unbounded: any player can ty
 
 ---
 
+### IP layer 1 — LANDED 2026-07-29. 375 entries rewritten to archetypes.
+
+`lib/content.ts`: **252 characters and 123 settings** rewritten, **375 `source:` fields deleted**,
+every `id` regenerated. 126 circumstances were screened and needed no change — they never named
+anything. The `source` field is gone entirely rather than blanked: the field itself was the pointer.
+
+IDs had to change too, and this is easy to miss — after layer 2 the card `id` is **dealt to
+clients**, so `char-darth-vader` would have shipped over the wire whatever the `name` said.
+
+| Was | Now |
+|---|---|
+| `char-shrek` / `Shrek` | `char-grumpy-swamp-ogre-just-wants` / *A grumpy swamp ogre who just wants to be left alone* |
+| `char-darth-vader` / `Darth Vader` | `char-wheezing-space-tyrant-unresolved-family` / *A wheezing space tyrant with unresolved family issues* |
+| `set-death-star` / `The Death Star (Star Wars)` | *A Moon-Sized Battle Station With Poor Safety Rails* |
+| `char-jerry-seinfeld` / `Jerry Seinfeld` | *A stand-up comedian who narrates his own life* |
+
+#### The done-criterion grep found six more sites, which is the point of having one
+
+`grep -iE "shrek|seinfeld|darth|barbie|hogwarts|marvel|sopranos"` across `lib/` and `server/` after
+the catalog rewrite was **not** clean. What it caught:
+
+1. **`GREEN_ROOM_QUESTIONS` — 22 blocks of franchise trivia**, keyed by the old setting names and
+   quizzing players on those franchises. Worse than the catalog: the catalog named things, this
+   tested you on them. **It was also already dead** — lookup is by setting name, every setting name
+   had just changed, so every room silently fell through to `default`. A functional regression my
+   own rewrite caused, found only because the IP grep walked past it. Replaced with one pool.
+2. **`server/services/image.service.ts`** — the poster prompt instructed the model to render each
+   character *in their source material's style*, naming SpongeBob, Squidward, Tony Soprano, Walter
+   White. This is the same species as the `homepagePosterBriefs.ts` that Chunk 4a deleted, and it
+   survived 4a because nobody looked past the file named "poster".
+3. **`comedyPrompts.ts`** — beyond the known `:415`, the whole STEP 1/STEP 2 block told the model to
+   "IDENTIFY THE SETTING'S UNIVERSE" and "Use RECOGNIZABLE characters". Rewritten to read the
+   setting's *social rules* and invent originals, with an explicit prohibition.
+4. **`server/services/audio.service.ts:54-56`** — voice presets matching `/yoda/`, `/darth|vader/`,
+   `/batman/`. Dead after the rewrite, and a pointer at the IP even while dead.
+5. **Tags** — `'marvel'`, `'wakanda'`, `'jedi'`, `'sith'`, `'tardis'`, `'pixar'`, `'dreamworks'`,
+   `'disney'`, `'springfield'`, `'oz'` survived inside otherwise-clean entries.
+6. **Section comments** — `// Action Heroes - Marvel`, `// Crime/Drama - The Sopranos`, and ~15 more.
+
+#### A fixed-term grep only finds terms you already thought of
+
+The done-criterion grep passed while the **system prompt still named Gordon Ramsay four times** —
+*"EVERY line should sound exactly like Gordon Ramsay"* — plus Yoda, and show names used as style
+references. A living person, in the system prompt, as an instruction to imitate him.
+
+Found by a **second mechanism**: running layer 3's own matcher over the prompt and service source.
+That is the standing rule (HANDOFF.md) applied to a verification step rather than to a defect.
+
+That sweep also found **two false positives in my own layer 3 term list**:
+
+- `'Die Hard'` fires on *"old habits die hard"*.
+- `'Rapunzel'` is a Brothers Grimm character — public domain. The animated film's *design* is
+  protected; the name is not.
+
+Both removed, both pinned as innocent-dialogue cases in `contentScreen.service.test.ts` so they are
+not helpfully re-added. Gordon Ramsay added to `REAL_PEOPLE`.
+
+**Final state:** the done-criterion grep returns zero, and screening every prompt/service/data file
+with the layer 3 matcher returns zero.
+
+**Still open:** the term list is finite and the screen is deterministic. It cannot catch an
+unnamed-but-recognisable description. See "what this does not catch" in
+`server/services/contentScreen.service.ts`.
+
 ### IP layer 2 — LANDED 2026-07-29. It had not landed before, contrary to the record.
 
 **The re-verification Jackson asked for is itself the finding.** He asked me to confirm the

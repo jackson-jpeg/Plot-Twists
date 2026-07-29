@@ -90,7 +90,7 @@ The premise is already absurd. Your job is to EXPLOIT that absurdity through sha
 
 FINAL REMINDER — THIS WILL BE READ ALOUD:
 - Keep lines SHORT (5-15 words average, 25 max)
-- Write like Arrested Development, The Office, or It's Always Sunny — not like a novel
+- Write like a fast, dry, single-camera comedy — not like a novel
 - If a line is longer than one breath, SPLIT IT
 - One-word reactions ("No." "...What?" "Obviously.") are ENCOURAGED
 - Every line must sound natural spoken out loud by a non-actor at a party

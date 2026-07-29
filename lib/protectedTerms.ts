@@ -25,7 +25,16 @@
  * — see AUDIT.md → IP layer 3, "what this does not catch".
  */
 
-/** Franchise characters and titles. Redacted from prose, logged in speakers. */
+/**
+ * Franchise characters and titles. Redacted from prose, logged in speakers.
+ *
+ * REMOVED after testing, do not re-add:
+ *   'Die Hard'  — fires on "old habits die hard", which is just English.
+ *   'Rapunzel'  — a Brothers Grimm character, public domain. The specific
+ *                 animated-film DESIGN is protected; the name is not.
+ * Both were caught by screening the repo's own source with this list. See the
+ * false-positive cases in contentScreen.service.test.ts.
+ */
 export const PROTECTED_TERMS: string[] = [
   'Alex the Lion',
   'Alice in Wonderland',
@@ -66,7 +75,6 @@ export const PROTECTED_TERMS: string[] = [
   'Dee Reynolds',
   'Dennis Reynolds',
   'Dexter Morgan',
-  'Die Hard',
   'Doc Brown',
   'Doctor Strange',
   'Doctor Who',
@@ -190,7 +198,6 @@ export const PROTECTED_TERMS: string[] = [
   'Princess Peach',
   'Puss in Boots',
   'Rachel Green',
-  'Rapunzel',
   'Ratatouille',
   'Rebecca Welton',
   'Rick Sanchez',
@@ -275,6 +282,12 @@ export const PROTECTED_TERMS: string[] = [
  */
 export const REAL_PEOPLE: string[] = [
   'Jerry Seinfeld',
+  // Was named FOUR TIMES in the system prompt as a voice exemplar ("EVERY line
+  // should sound exactly like Gordon Ramsay"). Found by screening the prompt
+  // files with this module's own matcher, not by the Chunk 4 done-criterion
+  // grep — whose fixed term list never contained him. A fixed grep only finds
+  // the terms you already thought of.
+  'Gordon Ramsay',
   'Taylor Swift',
   'Elon Musk',
   'Tom Cruise',

@@ -86,10 +86,18 @@ describe('initStoreSubscriptions', () => {
 
   // ── Registration ──────────────────────────────────────────
 
+  // ASSERTION AUDIT 2026-07-29 — this list asserted a listener set as complete while omitting
+  // `game_error`, the STRUCTURED error the server emits at middleware.ts:42 and
+  // game.helpers.ts:200 carrying { code, message, recoverable, action: RETRY }. Only
+  // `game_error_message` (a plain string) had a listener, so every structured failure — including
+  // SCRIPT_GENERATION_FAILED, the one with a retry affordance — arrived at a client that was not
+  // listening. That is D6, and the test read as proof the wiring was complete.
+  // Gates Chunk 2 item 2. Red until stores/subscriptions.ts registers 'game_error'.
   it('registers handlers for all core events', () => {
     const registeredEvents = [...manager._handlers.keys()]
 
     const expectedEvents = [
+      'game_error',
       'game_state_change',
       'players_update',
       'player_joined',

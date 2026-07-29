@@ -214,14 +214,20 @@ describe('calculateResults', () => {
     expect(io._emit).not.toHaveBeenCalled()
   })
 
-  it('should handle no votes gracefully', async () => {
+  // ASSERTION AUDIT 2026-07-29 — was `should handle no votes gracefully`, asserting that a
+  // zero-vote round emits a normal game_over with winner=undefined and allResults=[]. That is
+  // defect D3b (voting.service.ts:162-176) restated as a virtue: players get a results screen
+  // with no winner and no scores, presented as the outcome. This test was GREEN while the
+  // harness case `emptyResults` was RED on the same behaviour — the suite and the harness
+  // directly contradicted each other. Gates Chunk 2 item 7.
+  it('does NOT emit a normal game_over for a zero-vote round', async () => {
     const room = makeRoom()
     // No votes cast
 
     const io = makeMockIO()
     await calculateResults(room, io as never)
 
-    expect(io._emit).toHaveBeenCalledWith('game_over', expect.objectContaining({
+    expect(io._emit).not.toHaveBeenCalledWith('game_over', expect.objectContaining({
       winner: undefined,
       allResults: []
     }))

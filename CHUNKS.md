@@ -15,6 +15,22 @@ Updated 2026-07-28 with Jackson's rulings.
 
 Parked ideas go to `BACKLOG.md`. It is not opened until the playtest has happened.
 
+---
+
+## 📏 STANDING RULE — how results are reported
+
+Two rules, both from Jackson, both non-negotiable in every chunk report from here.
+
+1. **Report the harness as `N/M` at the top of every chunk report.** No defect is closed without
+   its case failing before the fix and passing after, **both shown in the same session**. When the
+   denominator changes, say so and re-baseline — a denominator change is never used to make a ratio
+   look better.
+2. **A green suite is not evidence on its own.** The assertion audit
+   (`AUDIT.md` → *Assertion audit*) found **8 tests across 5 suites encoding defects as spec**,
+   including one that directly contradicted a red harness case. All 8 are now red and are gates.
+   The suite currently sits at **390/398, 8 failing, by design.** Do not "fix" the suite by
+   reverting an inversion. Each inverted test goes green only when its chunk item lands.
+
 **Must ship before any feature work:** Chunks 1, 2, 3, 4.
 **Parallel-safe:** Chunk 6 (CI), Chunk 7 (design tokens) — any time after Chunk 1.
 **Blocked on a decision:** Chunk 5 (rename) — `DECISIONS.md` #10 only; #3 is resolved.

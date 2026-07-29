@@ -80,6 +80,109 @@ These are gaps, not defects — I have no evidence any of them is broken. They a
 
 ---
 
+## Assertion audit — the whole suite, 2026-07-29
+
+**Trigger.** `hostAbandon` was found asserting `!states.includes('VOTING')` — a known S2 documented
+as expected behaviour, green, reading as coverage. It was found by accident. Jackson's ruling: audit
+all of them, and **until this sweep was done, green was not evidence and could not be cited in any
+chunk report.** This section is that sweep.
+
+**Result: 8 tests across 5 suites were encoding defects as spec. All 8 are now red.**
+
+Suite went `30/30 suites, 397/397 tests` → **`25/30 suites, 390/398 tests, 8 failing`**. The red is
+the deliverable. Reverting any of it to restore green re-creates exactly the problem being fixed.
+
+### Method
+
+267 negative-assertion sites (`.not.`, `toThrow`, `toBeNull`, `toBeUndefined`, `toBe(false)`,
+`toBe(0)`, `toHaveLength(0)`, `toEqual([])`) were extracted across all 30 suites and paired with
+their enclosing test title, then classified into exactly one of:
+
+- **GUARD** — correctly asserts intended behaviour. Left alone.
+- **ENCODED** — asserts current-but-wrong behaviour. Inverted; goes red; becomes a gate.
+- **VACUOUS** — passes regardless of the code under test.
+
+Classification used the mutation question: *if the implementation were correct instead of current,
+would this test fail?* Yes → ENCODED. Each candidate was then cross-referenced against the D1–D7
+defect table above.
+
+**The method's own limitation, stated because it matters for anyone repeating this:** *three of the
+eight were not syntactically negative and a grep sweep alone would have missed all three.*
+`voting.service.test.ts` encoded D3b through `toHaveBeenCalledWith(...)`; `validation.test.ts`
+encoded D1 through a plain `toEqual(...)` on an accepted value. A defect can be frozen just as
+firmly by a positive assertion. The syntax scan found the candidates; the defect cross-reference
+found the rest.
+
+### The eight
+
+| # | File:line | Was | Encoded | Defect | Gates |
+|---|---|---|---|---|---|
+| 1 | `validation.test.ts:152` | `should accept valid selections` | Arbitrary free text is a valid card selection | **D1** | Chunk 2 item 1 |
+| 2 | `validation.test.ts:169` | `should sanitize XSS in card fields` | Strip the `<`, then **accept** the leftover — `expect(result).not.toBeNull()` | **D1** | Chunk 2 item 1 |
+| 3 | `validation.test.ts:183` | `should truncate overly long fields` | A 500-char attacker string is accepted and truncated to 200 | **D1** | Chunk 2 item 1 |
+| 4 | `reconnection.test.ts:195` | `finds player by playerId fallback` | `findPlayerByUserId` resolving a **playerId** as a userId (`room.service.ts:321`) | **D2b** | Chunk 2 item 5c |
+| 5 | `reconnection.test.ts:211` | *(no case existed)* | Same conflation in `findPlayerInRoomByUserId` (`room.service.ts:345`) — the lookup `rejoin_room` actually uses | **D2b** | Chunk 2 item 5c |
+| 6 | `voting.service.test.ts:217` | `should handle no votes gracefully` | `game_over` with `winner: undefined, allResults: []` as a normal outcome | **D3b** | Chunk 2 item 7 |
+| 7 | `middleware.test.ts:190` | `rejects silently when no callback and no auth` | Silence as the spec — no handler, no error, no feedback | **D6-class** | Chunk 2 item 2 |
+| 8 | `subscriptions.test.ts:89` | `registers handlers for all core events` | A listener set asserted **complete** while omitting `game_error` | **D6** | Chunk 2 item 2 |
+
+### The three that matter most
+
+**`validation.test.ts` is the densest file in the suite — 56 negative assertions — and the one
+thing it never checked is whether the card exists.** Three of its tests together assert that
+arbitrary player free text is a valid card selection: accepted, sanitised, truncated to 200 chars,
+handed to the model. That is D1 written down as the specification. A reader scanning for coverage
+sees "validation" with 56 assertions and concludes the input surface is defended.
+
+**`voting.service.test.ts:217` and the harness directly contradicted each other.** The unit test
+asserted a zero-vote `game_over` was correct ("gracefully"); the harness case `emptyResults`
+asserted it was a defect. Both were in the repo, both were being run, and nothing reconciled them.
+The unit test was green, so the suite reported health on the exact behaviour the harness reported
+as broken. This is the clearest demonstration available that the two instruments were not measuring
+the same product.
+
+**`subscriptions.test.ts:89` is the subtlest.** It enumerates the expected listener set and asserts
+completeness — which is a good pattern, and it is why it is dangerous when the list is wrong. It
+omitted `game_error`, the *structured* error (`{code, message, recoverable, action: RETRY}`) emitted
+at `middleware.ts:42` and `game.helpers.ts:200`. Only `game_error_message`, a plain string, had a
+listener. So every structured failure — including `SCRIPT_GENERATION_FAILED`, the one carrying the
+retry affordance — arrived at a client not listening for it, while a test named "registers handlers
+for all core events" passed.
+
+### VACUOUS — 2 tests, retained and annotated
+
+`rateLimiter.test.ts` `describe('reset')`. **`SocketRateLimiter.reset()` has zero production
+callers** — verified, no `limiter.reset(` anywhere outside that file. Not deleted, because the D5
+fix (re-key onto IP / user ID) may legitimately need it; annotated in place so the fact is
+discoverable.
+
+The sharper finding is about the whole file: every test keys the limiter on abstract strings
+(`'user1'`, `'user2'`), so **the file never touches the thing that is broken.** In production every
+call site is `limiter.check(socket.id)` — `room.handler.ts:34,106`, `audience.handler.ts:33,75`,
+`cardpack.handler.ts` ×7, `user.handler.ts:25,37` — and `socket.id` is new on every connection.
+The limit is not reset by `reset()`; it is reset by reconnecting. The file is green and D5 lives
+entirely in the keying it never exercises. Gate is the harness case (RED: 50 rooms in ~2s).
+
+### One reclassification
+
+`directorsReview.service.test.ts:26` (`disables director reviews during tests unless explicitly
+enabled`) was initially flagged as vacuous for asserting the test environment. It is not — it is a
+real cost guard asserting the service does not call Anthropic unless explicitly enabled, and it is
+paired with an enabled-case test. **GUARD.** Recorded because a sweep that only ever escalates is
+not a sweep.
+
+### Incidental finding — not fixed, not a defect-encoding issue
+
+`audience.service.ts:562-564` does `JSON.parse(jsonText) as { text: string }[]` and calls `.map` on
+the result with no runtime array check. Every harness scenario logs `TypeError: parsed.map is not a
+function` and falls back to templates. **In the harness this is a mock artifact** — `mock-anthropic.ts`
+has no plot-twist-shaped response, so it returns the script object. But the unguarded cast is real:
+against a live model that wraps the array (`{options: [...]}`) rather than returning it bare, plot
+twists would silently degrade to templates forever, logged at ERROR and visible to nobody. S3.
+Belongs in Chunk 3 or `BACKLOG.md`; recorded here so it is not rediscovered as new.
+
+---
+
 ## TRACK 1 — The game loop
 
 ### [S2] AI generation failure is silent on web — the server's error event has no listener

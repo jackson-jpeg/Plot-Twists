@@ -46,6 +46,20 @@ describe('SocketRateLimiter', () => {
     }, 10000)
   })
 
+  // ── ASSERTION AUDIT 2026-07-29 — VACUOUS, retained deliberately ──────────────────────
+  // `SocketRateLimiter.reset()` has ZERO production callers (verified: no `limiter.reset(`
+  // anywhere outside this file). These two tests exercise dead API and contribute coverage
+  // for code that never runs in the product.
+  //
+  // Sharper point: every test in this file keys the limiter on abstract strings ('user1',
+  // 'user2'), so the file never touches the thing that is actually broken. In production
+  // every call site is `limiter.check(socket.id)` (room.handler.ts:34,106;
+  // audience.handler.ts:33,75; cardpack.handler.ts ×7; user.handler.ts:25,37), and socket.id
+  // is new on every connection — which is D5. The limit is not reset by reset(); it is reset
+  // by reconnecting. This file is green, and the defect lives entirely in the keying it never
+  // exercises. The gate is the harness case `rateLimit → reconnecting does NOT reset the
+  // room-creation limit` (RED: 50 rooms in ~2s). Not deleted, because the D5 fix (re-key onto
+  // IP / user ID) may legitimately need reset().
   describe('reset', () => {
     it('should reset attempts for a specific user', () => {
       const limiter = new SocketRateLimiter(2, 1000)

@@ -192,15 +192,18 @@ describe('findPlayerByUserId', () => {
     expect(result!.player.nickname).toBe('Alice')
   })
 
-  it('finds player by playerId fallback', () => {
+  // ASSERTION AUDIT 2026-07-29 — was `finds player by playerId fallback`, asserting
+  // room.service.ts:321 `player.uid === userId || playerId === userId` as intended behaviour.
+  // That conflation IS defect D2b: a playerId the server broadcasts in players_update is
+  // accepted as a reconnect credential, which is how the harness took the HOST seat.
+  // Gates Chunk 2 item 5c. Red until the `playerId === userId` arm is deleted.
+  it('does NOT resolve a playerId as a userId', () => {
     const player = makePlayer({ id: 'pid-xyz', uid: undefined })
     const room = makeRoom()
     room.players.set(player.id, player)
     roomService.createRoom(room)
 
-    const result = roomService.findPlayerByUserId('pid-xyz')
-    expect(result).not.toBeNull()
-    expect(result!.playerId).toBe('pid-xyz')
+    expect(roomService.findPlayerByUserId('pid-xyz')).toBeNull()
   })
 
   it('returns null when not found', () => {
@@ -222,6 +225,18 @@ describe('findPlayerInRoomByUserId', () => {
 
   it('returns null for wrong room', () => {
     expect(roomService.findPlayerInRoomByUserId('NOPE', 'uid-room')).toBeNull()
+  })
+
+  // ASSERTION AUDIT 2026-07-29 — same conflation as findPlayerByUserId, at room.service.ts:345.
+  // This is the lookup rejoin_room uses (reconnection.handler.ts:57-58), so it is the live
+  // credential path. Gates Chunk 2 item 5c.
+  it('does NOT resolve a playerId as a userId', () => {
+    const player = makePlayer({ id: 'pid-inroom', uid: undefined })
+    const room = makeRoom()
+    room.players.set(player.id, player)
+    roomService.createRoom(room)
+
+    expect(roomService.findPlayerInRoomByUserId('TEST', 'pid-inroom')).toBeNull()
   })
 })
 

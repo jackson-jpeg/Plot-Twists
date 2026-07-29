@@ -149,7 +149,7 @@ describe('withErrorBoundary', () => {
 
 describe('withAuth', () => {
   function makeSocket(data: Record<string, unknown>): AppSocket {
-    return { data } as unknown as AppSocket
+    return { data, emit: jest.fn() } as unknown as AppSocket
   }
 
   it('allows handler execution when userId is present', async () => {
@@ -187,7 +187,12 @@ describe('withAuth', () => {
     })
   })
 
-  it('rejects silently when no callback and no auth', async () => {
+  // ASSERTION AUDIT 2026-07-29 — was `rejects silently when no callback and no auth`, which
+  // asserted silence as the spec. withAuth (middleware.ts:51-55) answers only through a
+  // callback, so an unauthenticated event emitted without one produces nothing at all: no
+  // handler call, no error, no feedback. Same failure class as D6 — the player sits on a
+  // spinner forever. The handler must still not run; the client must still be told.
+  it('rejects AND tells the client when no callback and no auth', async () => {
     const socket = makeSocket({})
     const handler = jest.fn()
     const wrapped = withAuth(socket, handler)
@@ -195,6 +200,7 @@ describe('withAuth', () => {
     await wrapped('arg1')
 
     expect(handler).not.toHaveBeenCalled()
+    expect(socket.emit).toHaveBeenCalledWith('game_error_message', expect.any(String))
   })
 })
 

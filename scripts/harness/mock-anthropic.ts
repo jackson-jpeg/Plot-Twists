@@ -20,6 +20,10 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'http'
 
 export interface MockStats {
   requests: number
+  /** Per-request log. Lets a scenario count ONE KIND of call — a round makes several
+   * Anthropic requests (script, plot-twist pre-generation, director's review), so a bare
+   * `requests` delta cannot answer "how many SCRIPTS were generated". */
+  log: Array<{ maxTokens: number; systemPrompt: string; userMessage: string }>
   lastSystemPrompt: string
   lastUserMessage: string
   lastModel: string
@@ -29,6 +33,7 @@ export interface MockStats {
 
 export const stats: MockStats = {
   requests: 0,
+  log: [],
   lastSystemPrompt: '',
   lastUserMessage: '',
   lastModel: '',
@@ -87,6 +92,7 @@ export function startMockAnthropic(port: number): Promise<{ close: () => Promise
     const msgs = (parsed.messages as Array<{ content: string }>) ?? []
     stats.lastUserMessage = msgs.map(m => m.content).join('\n')
     stats.promptChars = stats.lastSystemPrompt.length + stats.lastUserMessage.length
+    stats.log.push({ maxTokens: stats.lastMaxTokens, systemPrompt: stats.lastSystemPrompt, userMessage: stats.lastUserMessage })
 
     const mode = process.env.MOCK_MODE || 'ok'
     const delayMs = Number(process.env.MOCK_DELAY_MS || 0)

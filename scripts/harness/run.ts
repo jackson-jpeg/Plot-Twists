@@ -34,6 +34,24 @@ function record(scenario: string, name: string, pass: boolean, detail: string) {
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
+/** Mirrors VOTING_TIMEOUT in server/utils/constants.ts:21 — kept in sync by hand. */
+const VOTE_TIMEOUT_MS = 60_000
+
+/**
+ * Count SCRIPT generations only.
+ *
+ * One round fires several Anthropic calls — the script, plot-twist pre-generation, the
+ * director's review. An early version of `concurrentSubmit` counted `stats.requests` and
+ * reported "2 generations for one round" as a duplicate-generation defect. It was not: the
+ * second call was plot-twist pre-generation. Script generation asks for max_tokens 10000;
+ * plot twists ask for 500. Discriminating on that is what makes the count mean what the
+ * check claims it means.
+ */
+const SCRIPT_MAX_TOKENS_FLOOR = 5000
+function scriptGenerations() {
+  return mockStats.log.filter(r => r.maxTokens >= SCRIPT_MAX_TOKENS_FLOOR).length
+}
+
 // ── D2b credential leak guard ───────────────────────────────
 //
 // Cross-cutting. Runs for the WHOLE harness run rather than inside one scenario, because
@@ -616,6 +634,271 @@ scenarios.spectatorVote = async () => {
       : `not counted${reached ? '' : ' (results never reached)'}`)
 
   ;[host, ...players, spectator].forEach(c => c.close())
+}
+
+// ── The six previously unexercised paths ────────────────────
+//
+// AUDIT.md listed these as paths the harness did not drive AT ALL. They were gaps, not known
+// defects — there was no evidence any of them was broken. So each case below DRIVES the path
+// and reports what it finds. Where the path is broken the case is red and becomes a gate;
+// where it is correct the case is green and is recorded as green-on-first-run, never counted
+// as a fix. Deliberately not forced red: a test whose colour is chosen rather than earned is
+// the `hostAbandon` failure in mirror image, which is what the assertion audit just removed.
+
+/** 10. Host disconnects and returns INSIDE the grace period. */
+scenarios.hostReconnect = async () => {
+  const host = new Client('Host', 'sess-host-rc')
+  const p1 = new Client('Alice'), p2 = new Client('Bob'), p3 = new Client('Carol')
+  await Promise.all([host, p1, p2, p3].map(c => c.connected()))
+  const code = await makeRoom(host, 'ENSEMBLE')
+  await joinAll(code, [p1, p2, p3])
+
+  host.socket.emit('start_game', code)
+  await p1.waitForState('SELECTION')
+  await submitAll(code, [p1, p2, p3])
+  await p1.waitForState('PERFORMING', 30000)
+
+  host.kill()
+  await sleep(800) // well inside CONFIG.reconnection.gracePeriodMs (60s)
+  const paused = p1.saw('performance_paused')
+
+  const back = new Client('Host', 'sess-host-rc')
+  await back.connected()
+  const res = await back.emitAck<{ success: boolean; error?: string; snapshot?: { isPaused?: boolean; gameState?: string } }>(
+    'rejoin_room', code, 'sess-host-rc')
+
+  record('hostReconnect', 'host reclaims its seat inside the grace period', Boolean(res?.success),
+    res?.success ? `snapshot gameState=${res.snapshot?.gameState}` : `rejected: ${res?.error}`)
+
+  await sleep(600)
+  const roster = playersFrom(p1)
+  const hostSeat = roster.find(p => p.isHost === true)
+  record('hostReconnect', 'the room still has exactly one connected host', roster.filter(p => p.isHost).length === 1,
+    `${roster.filter(p => p.isHost).length} host seat(s); roster=${roster.map(p => p.nickname).join(',')}`)
+
+  record('hostReconnect', 'a paused performance resumes when the host returns',
+    !paused || p1.saw('performance_resumed'),
+    paused
+      ? (p1.saw('performance_resumed') ? 'performance_paused → performance_resumed' : 'room paused on host loss and never resumed after rejoin')
+      : 'room was never paused, so there was nothing to resume')
+  void hostSeat
+
+  ;[p1, p2, p3, back].forEach(c => c.close())
+}
+
+/** 11. Two players submit the final card at the same instant. */
+scenarios.concurrentSubmit = async () => {
+  const host = new Client('Host')
+  const p1 = new Client('Alice'), p2 = new Client('Bob'), p3 = new Client('Carol')
+  await Promise.all([host, p1, p2, p3].map(c => c.connected()))
+  const code = await makeRoom(host, 'ENSEMBLE')
+  await joinAll(code, [p1, p2, p3])
+
+  host.socket.emit('start_game', code)
+  await p1.waitForState('SELECTION')
+
+  const sel = { character: 'A swamp ogre', setting: 'A Manhattan diner', circumstance: 'The rent is due' }
+  await p1.emitAck('submit_cards', code, sel)
+
+  // The two remaining submissions land together — this is the race the guard at
+  // game.helpers.ts:43-47 exists for. It sets LOADING before any await, so a second caller
+  // should bounce off it rather than starting a second generation.
+  const before = scriptGenerations()
+  await Promise.all([
+    p2.emitAck('submit_cards', code, sel),
+    p3.emitAck('submit_cards', code, sel),
+  ])
+  await p1.waitForState('PERFORMING', 30000)
+  await sleep(500)
+  const generations = scriptGenerations() - before
+
+  record('concurrentSubmit', 'simultaneous final submits generate exactly one script', generations === 1,
+    `${generations} generation request(s) reached the model for one round` +
+      (generations > 1 ? ' — duplicate spend, and two scripts race to overwrite room.script' : ''))
+
+  record('concurrentSubmit', 'the room reaches PERFORMING exactly once',
+    p1.states.filter(s => s === 'PERFORMING').length === 1,
+    `states: ${p1.states.join('→')}`)
+
+  ;[host, p1, p2, p3].forEach(c => c.close())
+}
+
+/** 12. The last vote lands as VOTING_TIMEOUT fires. */
+scenarios.voteTimerRace = async () => {
+  const host = new Client('Host')
+  const p1 = new Client('Alice'), p2 = new Client('Bob'), p3 = new Client('Carol')
+  await Promise.all([host, p1, p2, p3].map(c => c.connected()))
+  const code = await makeRoom(host, 'ENSEMBLE')
+  await joinAll(code, [p1, p2, p3])
+
+  host.socket.emit('start_game', code)
+  await p1.waitForState('SELECTION')
+  await submitAll(code, [p1, p2, p3])
+  await p1.waitForState('PERFORMING', 30000)
+  host.socket.emit('end_performance', code)
+  await p1.waitForState('VOTING')
+
+  const roster = playersFrom(p1).filter(p => p.role === 'PLAYER')
+  const alice = roster.find(p => p.nickname === 'Alice')!
+  const bob = roster.find(p => p.nickname === 'Bob')!
+
+  p1.socket.emit('submit_vote', code, bob.publicId)
+  p2.socket.emit('submit_vote', code, alice.publicId)
+  await sleep(300)
+
+  // VOTING_TIMEOUT is a hardcoded 60s (constants.ts:21), so this genuinely waits it out
+  // rather than shortening it — the point is the real timer racing a real client action.
+  await sleep(VOTE_TIMEOUT_MS - 1200)
+  p3.socket.emit('submit_vote', code, bob.publicId) // lands ~1.2s before the sweep
+
+  const reached = await p1.waitForState('RESULTS', 20000).then(() => true).catch(() => false)
+  await sleep(1500)
+
+  const gameOvers = p1.events.filter(e => e.name === 'game_over')
+  record('voteTimerRace', 'a vote racing the timeout produces exactly one game_over',
+    reached && gameOvers.length === 1,
+    `${gameOvers.length} game_over event(s), reachedRESULTS=${reached}` +
+      (gameOvers.length > 1 ? ' — the room announced results twice and the second overwrites the first' : ''))
+
+  const tallies = (gameOvers[0]?.payload as { allResults?: Array<{ playerName: string; votes: number }> })?.allResults ?? []
+  const total = tallies.reduce((n, r) => n + r.votes, 0)
+  record('voteTimerRace', 'no vote is lost or double-counted in the race', total === 3,
+    `${total} vote(s) tallied from 3 submitted — ${tallies.map(t => `${t.playerName}:${t.votes}`).join(' ') || 'none'}`)
+
+  ;[host, p1, p2, p3].forEach(c => c.close())
+}
+
+/** 13. Forced room-code collision. */
+scenarios.codeCollision = async () => {
+  const hostA = new Client('HostA'), hostB = new Client('HostB')
+  await Promise.all([hostA, hostB].map(c => c.connected()))
+
+  // generateRoomCode() loops `while (rooms.has(code))` and throws after 100 attempts.
+  // Pinning Math.random makes every attempt produce the SAME code, which is the collision —
+  // forced deterministically rather than waited for across ~1.05M codes.
+  const realRandom = Math.random
+  Math.random = () => 0.5
+  let codeA = '', codeB = '', errB = ''
+  try {
+    codeA = await makeRoom(hostA, 'ENSEMBLE')
+    const res = await hostB.emitAck<{ success: boolean; code?: string; error?: string }>('create_room', {
+      gameMode: 'ENSEMBLE', isMature: false, audienceInteractionEnabled: false,
+    })
+    codeB = res.code ?? ''
+    errB = res.error ?? ''
+  } finally {
+    Math.random = realRandom
+  }
+
+  record('codeCollision', 'a collision never hands out a code already in use', codeB !== codeA,
+    codeB === codeA
+      ? `both rooms got ${codeA} — the second create silently took over the first room's code, so its players would join the wrong game`
+      : codeB
+        ? `second room got a distinct code ${codeB}`
+        : `second create failed cleanly: "${errB}"`)
+
+  // Whatever happened, the first room must still be intact and joinable.
+  const joiner = new Client('Dave')
+  await joiner.connected()
+  const j = await joiner.emitAck<{ success: boolean; error?: string }>('join_room', codeA, 'Dave')
+  record('codeCollision', 'the pre-existing room survives a collision attempt', Boolean(j?.success),
+    j?.success ? `room ${codeA} still accepts joins` : `room ${codeA} broke: ${j?.error}`)
+
+  ;[hostA, hostB, joiner].forEach(c => c.close())
+}
+
+/** 14. Reconnect during SELECTION and during LOADING. */
+scenarios.midPhaseReconnect = async () => {
+  const host = new Client('Host')
+  const p1 = new Client('Alice', 'sess-mid-a'), p2 = new Client('Bob'), p3 = new Client('Carol')
+  await Promise.all([host, p1, p2, p3].map(c => c.connected()))
+  const code = await makeRoom(host, 'ENSEMBLE')
+  await joinAll(code, [p1, p2, p3])
+
+  host.socket.emit('start_game', code)
+  await p1.waitForState('SELECTION')
+  const dealtBefore = p1.last('available_cards') as { characters?: string[] } | undefined
+
+  // ── drop during SELECTION ──
+  p1.kill()
+  await sleep(700)
+  const back = new Client('Alice', 'sess-mid-a')
+  await back.connected()
+  const r1 = await back.emitAck<{ success: boolean; error?: string; snapshot?: { gameState?: string } }>(
+    'rejoin_room', code, 'sess-mid-a')
+
+  record('midPhaseReconnect', 'a player dropped in SELECTION can rejoin', Boolean(r1?.success),
+    r1?.success ? `snapshot gameState=${r1.snapshot?.gameState}` : `rejected: ${r1?.error}`)
+
+  record('midPhaseReconnect', 'rejoining in SELECTION restores the phase, not a fresh one',
+    r1?.snapshot?.gameState === 'SELECTION',
+    `snapshot said ${r1?.snapshot?.gameState ?? 'nothing'}; room was in SELECTION`)
+
+  const roster = playersFrom(p2)
+  record('midPhaseReconnect', 'reconnecting does not duplicate the seat', roster.filter(p => p.nickname === 'Alice').length === 1,
+    `${roster.filter(p => p.nickname === 'Alice').length} Alice seat(s): ${roster.map(p => p.nickname).join(',')}`)
+
+  const dealtAfter = back.last('available_cards') as { characters?: string[] } | undefined
+  record('midPhaseReconnect', 'the hand is not re-dealt on reconnect',
+    !dealtAfter || !dealtBefore || JSON.stringify(dealtAfter.characters) === JSON.stringify(dealtBefore.characters),
+    dealtAfter ? 'hand after rejoin matches the hand dealt before the drop' : 'no re-deal observed')
+
+  ;[host, p2, p3, back].forEach(c => c.close())
+}
+
+/** 15. request_sequel — the replay path covered today only via request_new_game. */
+scenarios.sequel = async () => {
+  const host = new Client('Host')
+  const p1 = new Client('Alice'), p2 = new Client('Bob'), p3 = new Client('Carol')
+  await Promise.all([host, p1, p2, p3].map(c => c.connected()))
+  const code = await makeRoom(host, 'ENSEMBLE')
+  await joinAll(code, [p1, p2, p3])
+
+  host.socket.emit('start_game', code)
+  await p1.waitForState('SELECTION')
+  await submitAll(code, [p1, p2, p3])
+  await p1.waitForState('PERFORMING', 30000)
+  const firstScript = p1.last('script_ready') as { title?: string } | undefined
+
+  host.socket.emit('end_performance', code)
+  await p1.waitForState('VOTING')
+  const roster = playersFrom(p1).filter(p => p.role === 'PLAYER')
+  p1.socket.emit('submit_vote', code, roster.find(p => p.nickname === 'Bob')!.publicId)
+  p2.socket.emit('submit_vote', code, roster.find(p => p.nickname === 'Alice')!.publicId)
+  p3.socket.emit('submit_vote', code, roster.find(p => p.nickname === 'Bob')!.publicId)
+  await p1.waitForState('RESULTS', 20000).catch(() => {})
+
+  const before = scriptGenerations()
+  host.socket.emit('request_sequel', code)
+  const gotSecond = await p1.waitFor('script_ready', 30000).then(() => true).catch(() => false)
+  await sleep(500)
+
+  const sequelGens = scriptGenerations() - before
+  record('sequel', 'request_sequel produces a second script', gotSecond && sequelGens === 1,
+    `${sequelGens} script generation(s); script_ready seen=${gotSecond}`)
+
+  // NOT asserted on the script title. The mock returns a fixed title ('The Harness Test',
+  // mock-anthropic.ts:47), so a title comparison tests the mock, not the product — it would
+  // be red for a reason that has nothing to do with the code under test. What IS product
+  // behaviour: a sequel prompt must carry the previous script forward, otherwise it is just
+  // another first episode.
+  const sequelPrompt = mockStats.log.filter(r => r.maxTokens >= SCRIPT_MAX_TOKENS_FLOOR).slice(-1)[0]
+  // Checks system AND user message: getSequelPrompt (comedyPrompts.ts:284-296) appends the
+  // previous title/synopsis/lines to the SYSTEM prompt, not the user turn.
+  const carriesPrevious = Boolean(
+    sequelPrompt && firstScript?.title &&
+    `${sequelPrompt.systemPrompt}\n${sequelPrompt.userMessage}`.includes(firstScript.title),
+  )
+  record('sequel', 'the sequel prompt carries the previous script forward', carriesPrevious,
+    carriesPrevious
+      ? `sequel prompt references the previous script ("${firstScript?.title}")`
+      : `sequel prompt does not mention the previous script ("${firstScript?.title ?? 'none'}") — the "sequel" is an unrelated first episode`)
+
+  record('sequel', 'players are returned to a playable state after a sequel',
+    p1.states.filter(s => s === 'PERFORMING').length >= 2,
+    `states: ${p1.states.join('→')}`)
+
+  ;[host, p1, p2, p3].forEach(c => c.close())
 }
 
 /** 9. AI failure modes — what the room sees when generation breaks. */

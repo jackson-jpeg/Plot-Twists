@@ -27,9 +27,17 @@ Ranked by expected impact, ignoring track boundaries.
 
 ## Defect → harness case map
 
-**Harness: 16/28.** Added 2026-07-28 on Jackson's instruction — the denominator was interrogated before Chunk 2 lands any fixes, on the principle that *a fix with no red test is a fix you cannot verify*.
+**Harness: 35/45** (was 16/28 on 2026-07-28). Added on Jackson's instruction — the denominator was
+interrogated before Chunk 2 lands any fixes, on the principle that *a fix with no red test is a fix
+you cannot verify*.
 
-Run: `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts`
+**Re-baselined 2026-07-29.** Denominator 28 → 45: **+1** for the D2b leak guard, **+16** for the six
+previously unexercised paths. Passes 16 → 35. Of that, only **3** are behaviour changes (the two
+`identityBroadcast` cases going red → green, plus the new guard); the other 16 are paths that were
+never driven before and turned out to be working. **The ratio improved mostly because coverage
+grew, not because the product got better.** Said plainly so the number is not misread.
+
+Run: `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts` (~2 min — `voteTimerRace` waits out the real 60s VOTING_TIMEOUT)
 
 ### Defects with a red case (gate-ready)
 
@@ -37,7 +45,7 @@ Run: `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx ts
 |---|---|---|---|---|
 | D1 | Card text unvalidated → prompt injection | S1 | `abuse` → *server REJECTS off-catalog card text*; *injected text does NOT reach the model prompt* | 2 🔴 |
 | D2 | Reconnect identity: unverified client string | S1 | `identity` → *a guessed/stolen playerSessionId cannot claim a seat* | 1 🔴 |
-| **D2b** | **Reconnect identity: server-broadcast credentials** | **S1** | `identityBroadcast` → *players_update does not broadcast credentials*; *a broadcast playerId cannot claim a seat* | **2 🔴 NEW** |
+| **D2b** | **Reconnect identity: server-broadcast credentials** | **S1** | `identityBroadcast` → *players_update does not broadcast credentials*; *no broadcast identifier can claim a seat* | **2 🟢 FIXED 2026-07-29** |
 | D3 | Host abandonment strands the round | S2 | `hostAbandon` → *the round survives an abandoned host and reaches VOTING* | 1 🔴 **reframed** |
 | **D3b** | **Zero-vote round emitted as a normal `game_over`** | **S3** | `emptyResults` → *a zero-vote round is not emitted as a normal game_over* | **1 🔴 NEW** |
 | D4 | Dropped voter stalls the room ≤60s | S2 | `voterDrop` → *results resolve promptly when a voter drops* | 1 🔴 |
@@ -65,18 +73,54 @@ Stated explicitly so they are not mistaken for covered.
 | ENSEMBLE needs 4 devices; overflow demoted silently | S2 | Server behaviour is correct — the defect is that the **UI** doesn't surface `role` from the join ack | Needs a client-side test, not a socket test |
 | Firestore rules | unknown | Different subsystem entirely | `@firebase/rules-unit-testing` against the emulator — see `DECISIONS.md` #7 |
 
-### Is 28 the right denominator? No — here is what is still unexercised
+### The six unexercised paths — now driven. RESOLVED 2026-07-29
 
-The harness does not currently drive these paths at all:
+These six were listed as paths the harness did not drive **at all**. They were gaps, not known
+defects. All six now have cases.
 
-1. **Host reconnect within the grace period.** `hostAbandon` kills the host and never returns. The `rejoin_room` → `markPlayerReconnected` → auto-resume path (`reconnection.handler.ts:88`) is untested.
-2. **Simultaneous final-card submission.** Guarded at `game.helpers.ts:43-47`, never exercised — the double-invocation race it guards against is exactly the kind of thing that only appears under real concurrency.
-3. **Timer expiry racing a client action.** `VOTING_TIMEOUT` firing at the same moment as the last vote.
-4. **Room-code collision.** `Math.random()` over ~1.05M codes; no forced-collision case.
-5. **Reconnect during SELECTION or LOADING.** Only VOTING and PERFORMING disconnects are covered.
-6. **`request_sequel`.** The replay path is covered via `request_new_game` only.
+**Every one came back green on its first correct run.** Recorded as green-on-first-run, not as
+fixes — nothing was repaired here, the paths were simply never checked before and turned out to
+work. Jackson asked for "failing cases"; forcing a red assertion on a path that is actually
+correct would have recreated the `hostAbandon` failure in mirror image — a test whose colour was
+chosen rather than earned — which is exactly what the assertion audit above was called to remove.
 
-These are gaps, not defects — I have no evidence any of them is broken. They are listed so the 28 is not read as completeness.
+| # | Path | Case(s) | First-run result |
+|---|---|---|---|
+| 1 | Host reconnect within grace | `hostReconnect` × 3 | 🟢 seat reclaimed, exactly one host seat, `performance_paused` → `performance_resumed` |
+| 2 | Simultaneous final submit | `concurrentSubmit` × 2 | 🟢 exactly one script generated; PERFORMING entered once. The guard at `game.helpers.ts:43-47` holds. |
+| 3 | Timer vs. vote race | `voteTimerRace` × 2 | 🟢 one `game_over`; 3 of 3 votes tallied, none lost or doubled |
+| 4 | Room-code collision | `codeCollision` × 2 | 🟢 second create fails cleanly rather than reusing the code; the first room stays joinable |
+| 5 | Reconnect during SELECTION/LOADING | `midPhaseReconnect` × 4 | 🟢 rejoin works, phase restored, no duplicate seat, no re-deal |
+| 6 | `request_sequel` | `sequel` × 3 | 🟢 one generation, previous script carried into the sequel prompt, room returns to a playable state |
+
+#### Three instrument bugs, found and fixed before any of it was reported
+
+Worth recording, because in each case the harness produced a **plausible red that was not a
+product defect** — and a report written from the first run would have been wrong.
+
+1. **`concurrentSubmit` first read "2 generations for one round"** — a duplicate-spend defect, and
+   a convincing one. It was not. `mockStats.requests` counts *every* Anthropic call, and a round
+   fires several (script, plot-twist pre-generation, director's review). The second call was plot
+   twists. Fixed by logging each request's `max_tokens` and counting only script generations
+   (10000 vs 500).
+2. **`sequel` first read "the sequel is a replay of the same script"** — comparing titles. The mock
+   returns a fixed title (`'The Harness Test'`, `mock-anthropic.ts:47`), so that assertion tested
+   the mock, not the product. Replaced with the actual product claim: the sequel prompt must carry
+   the previous script forward.
+3. **That replacement was *also* wrong on its first run** — it searched the user message, but
+   `getSequelPrompt` (`comedyPrompts.ts:284-296`) appends the previous title/synopsis/lines to the
+   **system** prompt. Fixed to search both. Green.
+
+The pattern: a red harness case is a hypothesis, not a finding. All three would have shipped as
+"newly discovered defects" if the first run had been believed.
+
+#### Still not covered
+
+- **Multi-instance behaviour** — not observable in one process. See CONSTRAINT-1.
+- **Reconnect during LOADING specifically.** `midPhaseReconnect` drives SELECTION; LOADING is a
+  sub-second window with a mocked zero-latency model, so it cannot be hit reliably without
+  injecting delay. Stated rather than quietly counted.
+- **Firestore rules** — different subsystem, see `DECISIONS.md` #7.
 
 ---
 

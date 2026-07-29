@@ -28,7 +28,7 @@ Two rules, both from Jackson, both non-negotiable in every chunk report from her
 2. **A green suite is not evidence on its own.** The assertion audit
    (`AUDIT.md` → *Assertion audit*) found **8 tests across 5 suites encoding defects as spec**,
    including one that directly contradicted a red harness case. All 8 are now red and are gates.
-   The suite currently sits at **390/398, 8 failing, by design.** Do not "fix" the suite by
+   The suite currently sits at **390/398, 8 failing, by design**, and the harness at **35/45**. Do not "fix" the suite by
    reverting an inversion. Each inverted test goes green only when its chunk item lands.
 
 **Must ship before any feature work:** Chunks 1, 2, 3, 4.
@@ -92,7 +92,7 @@ Once I have (2), I can do nginx + systemd + TLS from here without you.
 6. **Spectator votes must not count** — `voting.handler.ts:19-26` resolves the voter across all `room.players` with no role filter; only the target is role-checked. Combined with the silent spectator demotion, an overflow joiner decides the winner. (~1h)
 7. **Guard zero-vote results** — `calculateResults` emits `game_over` with `winner: undefined` and `allResults: []` as a normal outcome (`voting.service.ts:162-176`). (~1h)
 
-**Done when** the harness goes from **16/28** to at least **26/28** — every check below flipping from red to green, both results shown in the same session:
+**Done when** the harness goes from **35/45** to at least **43/45** — every check below flipping from red to green, both results shown in the same session:
 | Scenario → case | Fixed by |
 |---|---|
 | `abuse` → server REJECTS off-catalog card text | item 1 |
@@ -106,7 +106,7 @@ Once I have (2), I can do nginx + systemd + TLS from here without you.
 | `spectatorVote` → a spectator vote does not count | item 6 |
 | `emptyResults` → a zero-vote round is not a normal game_over | item 7 |
 
-**Report harness as `N/28` at the top of every chunk from here.** No defect is closed without its case failing before the fix and passing after, both shown in the same session.
+**Report harness as `N/45` at the top of every chunk from here.** No defect is closed without its case failing before the fix and passing after, both shown in the same session.
 
 ---
 

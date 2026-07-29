@@ -32,7 +32,8 @@ export async function generateScript(
   gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE',
   previousScript?: Script,
   customization?: ScriptCustomization,
-  onProgress?: (data: { phase: string; percent: number; title?: string }) => void
+  onProgress?: (data: { phase: string; percent: number; title?: string }) => void,
+  onUsage?: (usage: { inputTokens: number; outputTokens: number }) => void
 ): Promise<Script> {
   const isSoloMode = gameMode === 'SOLO'
   const numPlayers = characters.length
@@ -189,6 +190,20 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
     }
 
     logger.info(`Script generated successfully!`)
+
+    // Cost observability. This is the single most expensive call the product makes, it scales
+    // linearly with rounds played, and until 2026-07-29 nothing anywhere recorded what one costs
+    // — the question "is this budget 5 playtests or 500" could not be answered from the logs.
+    // Emitted at info so it survives production log levels.
+    const usage = {
+      inputTokens: finalMessage.usage?.input_tokens ?? 0,
+      outputTokens: finalMessage.usage?.output_tokens ?? 0,
+    }
+    logger.info(
+      `Token usage: ${usage.inputTokens} in / ${usage.outputTokens} out ` +
+        `(mode=${gameMode}, players=${numPlayers}, model=${CONFIG.generation.model})`,
+    )
+    onUsage?.(usage)
 
     const content = finalMessage.content[0]
     if (content.type !== 'text') {

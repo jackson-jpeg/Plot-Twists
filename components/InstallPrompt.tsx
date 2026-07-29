@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStandaloneMode } from '@/hooks/useStandaloneMode'
 import { SPRING } from '@/lib/motion'
@@ -24,7 +25,24 @@ function isSafari(): boolean {
   return /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
 }
 
+/**
+ * Routes where an install banner must never appear.
+ *
+ * The game ships on the web (`DECISIONS.md` #12): a player is handed a room code at a party and
+ * joins in a phone browser, never installing anything. This component renders from the root
+ * layout, so before this guard it appeared over `/join` — and on iOS Safari it fires on a TIMER,
+ * so it would interrupt somebody mid-code-entry to suggest the one thing the product promises
+ * they will never have to do.
+ *
+ * Kept everywhere else, including home, because offering PWA install to a HOST — who runs this
+ * repeatedly on the same device — is genuinely useful. The distinction is player path versus host
+ * path, not install-good versus install-bad.
+ */
+const SUPPRESSED_PREFIXES = ['/join']
+
 export function InstallPrompt() {
+  const pathname = usePathname()
+  const suppressed = SUPPRESSED_PREFIXES.some(p => pathname === p || pathname.startsWith(`${p}/`))
   const isStandalone = useStandaloneMode()
   const [showBanner, setShowBanner] = useState(false)
   const [isIOSDevice, setIsIOSDevice] = useState(false)
@@ -41,6 +59,10 @@ export function InstallPrompt() {
 
   useEffect(() => {
     if (isStandalone) return
+    // Guarded in the effect, not only at render: the iOS branch below arms a 30s TIMER, and a
+    // timer armed on an allowed route would otherwise still fire after the player navigated
+    // into /join.
+    if (suppressed) return
 
     // Check if permanently dismissed
     try {
@@ -72,7 +94,10 @@ export function InstallPrompt() {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall)
       if (iosTimer) clearTimeout(iosTimer)
     }
-  }, [isStandalone])
+    // `suppressed` MUST be a dependency. Without it, navigating home → /join does not re-run this
+    // effect, so the cleanup below never fires and the 30s iOS timer armed on the home page
+    // survives into the join flow — which is the exact banner this guard exists to prevent.
+  }, [isStandalone, suppressed])
 
   const handleInstall = async () => {
     const prompt = deferredPromptRef.current
@@ -86,7 +111,11 @@ export function InstallPrompt() {
     deferredPromptRef.current = null
   }
 
-  if (isStandalone || isCapacitorNative()) return null
+  // `suppressed` is checked here as well as in the effect. The effect stops the banner being
+  // ARMED on a suppressed route; this stops one that was already showing from surviving a
+  // client-side navigation onto one, since `showBanner` is state and does not reset on route
+  // change. Both are needed — neither alone closes the join path.
+  if (suppressed || isStandalone || isCapacitorNative()) return null
 
   return (
     <AnimatePresence>

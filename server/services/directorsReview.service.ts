@@ -72,6 +72,14 @@ Respond with JSON only:
       }]
     })
 
+    // Cost observability, same as scriptGeneration. This is the second AI call in a round and it
+    // fires on every completed round, so it is a real per-round line item rather than a rounding
+    // error — worth seeing in the logs instead of inferring.
+    logger.info(
+      `[DirectorsReview] Token usage: ${response.usage?.input_tokens ?? 0} in / ` +
+        `${response.usage?.output_tokens ?? 0} out`,
+    )
+
     const text = response.content[0].type === 'text' ? response.content[0].text : ''
     const jsonText = extractJSON(text)
     const parsed = JSON.parse(jsonText.trim())

@@ -18,7 +18,12 @@ import { VOTING_TIMEOUT } from '../../server/utils/constants'
 const MOCK_PORT = Number(process.env.MOCK_PORT || 8788)
 const GAME_PORT = Number(process.env.HARNESS_PORT || 4599)
 
-process.env.ANTHROPIC_API_KEY ||= 'sk-ant-harness-fake'
+// Both FORCED, not defaulted. The base URL was already unconditional, so a real key in the
+// environment could never have reached Anthropic — but with `||=` it would still have been sent
+// as the auth header to the local mock. Since a real ANTHROPIC_API_KEY started existing on this
+// box on 2026-07-29, "it only leaks to a process we control" is a worse answer than not leaking.
+// There is no legitimate reason for the harness to carry a real credential.
+process.env.ANTHROPIC_API_KEY = 'sk-ant-harness-fake'
 process.env.ANTHROPIC_BASE_URL = `http://127.0.0.1:${MOCK_PORT}`
 process.env.LOG_LEVEL ||= 'error'
 

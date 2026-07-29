@@ -448,10 +448,19 @@ const SETTINGS_AUTHORED: Authored[] = [
     'A Lake With A Hand Coming Out Of It, Holding Something',
   ]),
 
+  // CUT 2026-07-29, on Jackson's ruling: 'A Laboratory In A Thunderstorm With A Sheet Over
+  // Something'. Frankenstein is public domain (1818) but the lightning-powered laboratory is not
+  // in the novel — Shelley never describes the animation at all. It is the 1931 Universal film,
+  // which is not public domain. The test this establishes, and which every other public-domain
+  // setting in this file was re-checked against: does the SPECIFIC IMAGERY come from the
+  // public-domain source, or from a later adaptation of it? Frankenstein was the only failure.
+  //
+  // 'An Opera House Box That Is Always Kept Empty' passes the same test and is KEPT: Box Five
+  // being permanently reserved is in Leroux's 1910 novel, which is the public-domain source. That
+  // public association runs through the musical does not make the novel's own detail unusable.
   ...c('horror', 'safe', [
     'A Castle At The Top Of A Very Long Staircase In The Carpathians',
     'A Ship’s Log Being Written By Somebody Running Out Of Crew',
-    'A Laboratory In A Thunderstorm With A Sheet Over Something',
     'A Séance In A House With Very Good Acoustics',
     'A Greenhouse In Full Sun With The Door Jammed',
     'A Zoo Enclosure Between Occupants',

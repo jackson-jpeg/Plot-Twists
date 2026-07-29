@@ -8,28 +8,43 @@ said so.
 
 **Closed since this morning:** Q1, the catalog rewrite (`HANDOFF.md` §8). **Closed this evening:**
 DNS and the certificate (item 2), the script-length cap (`DECISIONS.md` #9, now closed on measured
-margins), the straight-man casting change, and the install-prompt suppression.
+margins), the straight-man casting change, the install-prompt suppression, the three secrets
+(item 1), and **the cutover itself (item 5) — PlotSlop is serving on `https://plotslop.com` and a
+second client has joined a room.**
+
+**Newly opened:** item 11, the dozen surviving `plot-twists.com` references you predicted.
 
 ---
 
-## 1. 🔴 Three secrets → `/etc/plotslop/env`
+## 1. ✅ Three secrets → `/etc/plotslop/env` — DONE 2026-07-29
 
-`ANTHROPIC_API_KEY`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`. All three are
-empty right now. The publishable key is needed at **build** time and is not a secret.
+All three installed. **`600 root:root`**, root-owned, outside the repo and outside `/root`.
 
-`[VPS] bash scripts/cutover.sh --check` refuses on exactly these and will keep refusing.
-Verified again today: exit 1, preconditions failed, nothing touched.
+Containment verified the same way as the Anthropic key: `grep -rlF` each value across **both**
+repos returns nothing, `git status` clean in both, nothing written to `.env.local` or a fixture.
+The harness still forces `sk-ant-harness-fake`.
 
-**This is now the top of the queue, and it blocks more than the deploy:**
-- **It is why your Vercel emails say "failed".** `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is required at
-  *build* time by the prerendered `/admin` page, so `next build` exits 1 without it. See item 3 —
-  though the Vercel project has a bigger problem than a missing key.
-- **The three generated scripts are still missing from the playtest packet.** No key, no scripts —
-  the harness mock returns filler that says nothing about comedy. This matters more than it did
-  this morning, because the catalog grammar changed underneath it: the packet shows you 40 hands
-  and the exact prompts, but nobody has seen what the model *does* with a trait deck. That is the
-  one remaining unknown about the rewrite you just approved.
-- The live-unit cgroup checklist, which cannot start until the service can.
+`bash scripts/cutover.sh --check` now passes all 11 preconditions.
+
+**One check worth recording, because it speaks to the `pk_live` you nearly sent.** A Clerk
+publishable key is base64 and carries its own instance hostname, so it can be *read* rather than
+inferred from the `pk_test_` prefix:
+
+```
+$ ... | base64 -d
+alive-jawfish-19.clerk.accounts.dev
+```
+
+A genuine dev instance, no DNS dependency, **not** bound to `clerk.plot-twists.com`.
+
+`next build` goes **green** — confirmed by the route that was failing, not the exit code: `/admin`
+now appears as `○ (Static) prerendered`, the page that threw `Missing publishableKey`.
+
+**Two things this leaves open**, both moved down the queue:
+- PlotSlop needs its own Clerk **production** instance before launch — item 11. The live site is
+  currently running on a dev instance.
+- The playtest packet's generated scripts, which are now unblocked and were regenerated earlier
+  today against the real API.
 
 ---
 
@@ -90,8 +105,20 @@ reversible, stops the emails, touches nothing else. Your account was not touched
 - **Keep it and set the Clerk env vars in Vercel** — sensible only if you want previews as a
   build-check. It would still not run a playable game.
 
-One caveat on "just delete it": I did not check whether anything currently links to a
-`*.vercel.app` URL for this project. Worth thirty seconds before you pull it.
+**Link check now done — clean.** Nothing in either repo links to a `*.vercel.app` URL for this
+project; the only hit anywhere was my own note saying the check hadn't been run. Second mechanism:
+no nginx config on this box references a Vercel host for it either. So there is nothing to break by
+pulling it.
+
+**I could not do the delete.** `~/.local/share/com.vercel.cli/auth.json` is `{}` — no token on this
+box — the CLI isn't installed, the repo has no `.vercel/project.json`, and the `gh` token carries
+only `gist, read:org, repo`, so I can't even remove the webhook. It needs your Vercel login:
+Vercel → the project → Settings → Delete Project.
+
+**One thing the link check turned up that argues *for* deleting.** `server.ts:52` CORS-allows
+`^https://(plotslop|plot-twists)(-[a-z0-9-]+)*\.vercel\.app$`. While that project exists, any
+preview deploy under those names is an origin the production game server trusts — and **that server
+went live this evening**, so this stopped being theoretical.
 
 ---
 
@@ -116,22 +143,52 @@ the live database off the JSON adapter and onto a project whose rules nobody has
 
 ---
 
-## 5. 🟠 Fire the cutover
+## 5. ✅ The cutover — APPLIED 2026-07-29. Step 6 is still yours.
 
-Everything is staged, validated and unexecuted. When 1, 2 and 3 are answered:
+**PlotSlop is live on `https://plotslop.com`, and a second client can join a room.**
+
+Steps 1–5 and 7 applied. `nginx -t` before every reload, and **sang3r.com re-checked after each
+and returned 200.** The certificate was reused (`not yet due for renewal`), so no rate-limit spend.
+
+The chirpchirps.com name-mismatch from item 2 is **resolved** — the domain now presents its own
+certificate:
 
 ```
-[VPS] bash scripts/cutover.sh --check     # must pass clean
-[VPS] bash scripts/cutover.sh             # dry run, read the plan
-[VPS] bash scripts/cutover.sh --apply
+subject=CN = plotslop.com     notAfter=Oct 27 17:45:24 2026 GMT
 ```
 
-Validated offline: `nginx -t` passes on both configs, `systemd-analyze verify` is clean,
-`systemd-analyze security` went 6.7 MEDIUM → 3.1 OK.
+| Check | Result |
+|---|---|
+| `https://plotslop.com` | 200 |
+| `https://www.plotslop.com` | 200 |
+| `http://plotslop.com` | 301 → https |
+| `https://sang3r.com` | 200, unaffected |
 
-**Step 6 of that script is yours and is blocking** — the five-box cgroup re-verification on the
-*running* unit. Every isolation measurement so far was on a transient `systemd-run` unit. That
-proves the directives work; it does not prove this unit gets them.
+**And the check a curl 200 cannot make.** Two independent Socket.IO clients over the public TLS
+endpoint: host created room `3722`, second client joined, and **the host observed the joiner
+arrive**. That cross-socket broadcast is the one thing a single-client test cannot fake. Both
+connections asserted `transport=websocket`, so a silent fall back to long-polling — which passes a
+naive smoke test and behaves badly in a real game — would have failed instead.
+Script: `/root/.claude/jobs/6520be62/tmp/two-client-smoke.mjs`.
+
+### Step 6 remains yours and remains blocking
+
+The five-box cgroup re-verification on the *running* unit. Every isolation measurement so far was
+on a transient `systemd-run` unit; that proves the directives work, not that **this** unit gets
+them. Full commands and pass/fail criteria for each box are in `SESSION-2026-07-29-EVENING.md`
+§7b, and the checklist prints from `cutover.sh` itself.
+
+⚠️ One addition learned this evening: a deliberate OOM test spends `StartLimitBurst`. Finish with
+`systemctl reset-failed plotslop`, or the next start refuses and shows you a **stale** error.
+
+### Now that it is live
+
+- **Running on a dev Clerk instance** — see item 11.
+- **Stripe and Twilio unset**, so payments and phone verification are off. Logged at startup.
+  Deliberate; neither is needed to play.
+- **CONSTRAINT-1 is live from here.** All game state is process-local, so every deploy ends every
+  game in flight. `deploy.sh` prompts before restarting — from now that prompt is a real decision
+  for a human, not something to pipe `y` into.
 
 ---
 
@@ -227,6 +284,68 @@ A second one joins it today: **the card browser no longer shows a source line un
 field is deleted, so the badge is gone. Nobody would have seen it recently — layer 1 emptied the
 data a session ago — but the code was still there and would have rendered attribution to players
 the moment anything repopulated it.
+
+---
+
+## 11. 🔴 NEW — the rename inventory missed about a dozen live references
+
+You asked me to grep both repos for `clerk.plot-twists.com` and other survivors, and predicted the
+inventory had missed "at least one live auth config." It had. It also missed eleven other things.
+
+### The auth one you suspected
+
+`PlotTwists/iOS/PlotTwists.entitlements:15` — `webcredentials:clerk.plot-twists.com`.
+
+It **is** recorded as a security item (`CHUNKS.md` #15, `DECISIONS.md` #1). The gap is elsewhere:
+**`INVENTORY.md`'s domain table has no row for web-credentials domains at all.** Its "Universal
+links" row cites `entitlements:13-14` and stops. So the inventory undercounts by exactly the auth
+entry, which is why a rename driven off that table would have left it behind.
+
+### 🔴 The one that is live *right now*, on the site that just went up
+
+`app/layout.tsx:55`
+
+```ts
+const metadataBaseUrl = process.env.NEXT_PUBLIC_BASE_URL
+  || process.env.NEXT_PUBLIC_APP_URL
+  || 'https://plot-twists.com'
+```
+
+Neither variable is set in `/etc/plotslop/env`, so `metadataBase` resolves to the dead domain and
+**every `og:image` and `twitter:image` absolute URL on plotslop.com points at nothing.** Broken link
+previews in iMessage, Discord and Twitter — for a game whose entire join path is "share a link."
+
+**I did not fix it.** You scoped the domain work as blocking pre-launch rather than tonight, and
+this is config on a service that is now serving. It is one line plus a restart:
+`NEXT_PUBLIC_BASE_URL=https://plotslop.com`. Say the word.
+
+### The rest
+
+| # | Location | Consequence |
+|---|---|---|
+| 2 | `server/routes/stripe.ts:292` | Dead `icon.svg` **in the Stripe checkout** — broken image at the moment of payment |
+| 3 | `app/api/clip-card/[gameId]/route.tsx:144` | "plot-twists.com" rendered **into every shareable clip card image** |
+| 4 | `lib/scriptUtils.ts:36` | Appended to every exported script |
+| 5 | `app/privacy/PrivacyContent.tsx:48,145` | Privacy policy names the wrong website, plus a dead `privacy@` |
+| 6 | `app/terms/TermsContent.tsx:158` | Dead `support@` on a legal page |
+| 7 | `ios/App/App/App.entitlements:11-12` | Capacitor shell's `applinks:` + `webcredentials:` |
+| 8 | `android/app/src/main/AndroidManifest.xml:29` | Android deep-link host |
+| 9 | `PlotTwists/Shared/Config.swift:36` | `webDomain` — **the source of the QR code and invite URL** |
+| 10 | `ResultsView.swift:1447,1573,1934` | Share text ×2 and a displayed domain, user-visible |
+| 11 | `ScriptViewer.swift:572` | Export footer |
+| 12 | `TVLobbyView.swift:147` | "or visit plot-twists.com" on the TV lobby |
+| 13 | `PlotTwistsTests/PlotTwistsTests.swift:7` | Asserts the old value — will fail when #9 is fixed. Expected, not breakage |
+
+`server.ts:38-39` (CORS) is already tracked as Chunk 5 step 7. Docs-only mentions are excluded —
+they are historical records and correctly describe the old name.
+
+Nothing in this list was changed. Sequencing is yours.
+
+### Also still blocking pre-launch, from your own message
+
+PlotSlop needs its own Clerk **production** instance on plotslop.com. The `pk_live` you nearly sent
+was bound to `clerk.plot-twists.com`, the dead domain. The site is live on a **dev** instance until
+that exists — fine for playtesting, not for launch.
 
 ---
 

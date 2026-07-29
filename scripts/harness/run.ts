@@ -11,6 +11,9 @@
  */
 
 import { io as ioClient, type Socket } from 'socket.io-client'
+import { mkdtempSync, rmSync } from 'fs'
+import { tmpdir } from 'os'
+import * as path from 'path'
 import { startMockAnthropic, stats as mockStats } from './mock-anthropic'
 import type { GameState } from '../../lib/types'
 import { VOTING_TIMEOUT } from '../../server/utils/constants'
@@ -26,6 +29,24 @@ const GAME_PORT = Number(process.env.HARNESS_PORT || 4599)
 process.env.ANTHROPIC_API_KEY = 'sk-ant-harness-fake'
 process.env.ANTHROPIC_BASE_URL = `http://127.0.0.1:${MOCK_PORT}`
 process.env.LOG_LEVEL ||= 'error'
+
+// A PRIVATE DATABASE PER RUN, and FORCED for the same reason the two lines above are.
+//
+// Until 2026-07-29 the harness wrote to <repo>/data, shared with every previous run and with any
+// dev server. `loadRoomsFromFirestore()` runs at server startup, so every run began by loading
+// every room any earlier run had ever created — 961 by the time this was found.
+//
+// What that did to the gate is the point. It did not fail noisily or randomly. It reported
+// **38/46 with 8 failures that were exactly the original audit findings** (hostAbandon,
+// emptyResults, voterDrop, rateLimit, identity, spectatorVote, aiFailure x2) on a commit where
+// all eight were fixed — and 3 checks never ran, because wedged rooms from earlier scenarios
+// aborted them. The same commit scored 49/49 minutes later against an empty directory.
+//
+// A gate that fails a working product is bad. A gate that fails it by naming the bugs you already
+// know about is worse, because the output is more plausible than the truth. Isolate it.
+const RUN_DATA_DIR = mkdtempSync(path.join(tmpdir(), 'plotslop-harness-'))
+process.env.PLOTSLOP_DATA_DIR = RUN_DATA_DIR
+process.on('exit', () => { try { rmSync(RUN_DATA_DIR, { recursive: true, force: true }) } catch {} })
 
 const URL = `http://127.0.0.1:${GAME_PORT}`
 

@@ -32,15 +32,51 @@ set -a; source "$ENV_FILE"; set +a
 
 echo "==> building in $SRC"
 cd "$SRC"
-npm ci
+
+# --include=dev is LOAD-BEARING and this is the bug that kept the service from ever starting.
+#
+# The `source $ENV_FILE` above runs under `set -a`, so it exports everything in that file —
+# including NODE_ENV=production, which is correct for the RUNTIME and wrong for the BUILD.
+# npm reads NODE_ENV and silently sets `omit=dev`, so a plain `npm ci` here installs 454
+# production packages and skips typescript, which is a devDependency.
+#
+# `next build` then finds tsconfig.json with no typescript, helpfully installs typescript@latest
+# (6.0.3) and REWRITES package.json and package-lock.json, clobbering the deliberate exact pin
+# at 5.9.3. ts-jest@29.4.6 declares peer typescript ">=4.3 <6", so the `npm prune --omit=dev`
+# below then dies on ERESOLVE and takes the whole deploy with it — after the build has already
+# succeeded, which is why the log looks fine right up to the failure.
+#
+# Verified rather than reasoned: `NODE_ENV=production npm config get omit` prints "dev";
+# unset, it prints empty.
+npm ci --include=dev
 npm run build
+
+# The build must not have edited its own inputs. Next's auto-install is silent, writes to
+# package.json, and is the sort of thing that gets committed by accident three days later.
+# A pinned dependency changing during a deploy is a stop condition, not a warning.
+if ! git -C "$SRC" diff --quiet -- package.json package-lock.json; then
+  echo "ABORT: the build modified package.json/package-lock.json:"
+  git -C "$SRC" --no-pager diff --stat -- package.json package-lock.json
+  echo "Almost certainly a dependency auto-install. Investigate before deploying."
+  exit 1
+fi
 
 echo "==> syncing to $DST"
 # --delete keeps the runtime tree exact. data/ is EXCLUDED and never deleted: it is the
 # live database under the JSON adapter (rooms, playerStats, progression, gameHistory).
+#
+# THE LEADING SLASH ON '/data' IS THE WHOLE FIX. An rsync pattern with no slash matches a
+# name at EVERY depth, so a bare 'data' excluded server/data/ as well — the directory holding
+# communityPacks.ts, which cardpack.service.ts imports at startup. The runtime tree therefore
+# came out missing a source file the app requires, and the service died on
+# MODULE_NOT_FOUND '../data/communityPacks' the first time it was ever started.
+#
+# The failure was invisible from the source tree, where the file plainly exists, and invisible
+# from the build, which compiles the Next app rather than the Socket.IO server. '/data' anchors
+# the pattern to the transfer root, so only the top-level database is spared.
 rsync -a --delete \
   --exclude '.git' \
-  --exclude 'data' \
+  --exclude '/data' \
   --exclude '__tests__' \
   --exclude 'coverage' \
   --exclude 'scripts/harness' \
@@ -70,6 +106,23 @@ echo "==> restarting"
 read -rp "Restarting ends every live game mid-round. Continue? [y/N] " ok
 [[ ${ok,,} == y ]] || { echo "aborted; new code is staged in $DST but not running"; exit 0; }
 
+# reset-failed FIRST, and this is not defensive tidying — it cost this session about an hour.
+#
+# The unit carries StartLimitBurst=5 / StartLimitIntervalSec=300. If a previous deploy left the
+# service crashlooping, those five starts are already spent, and systemd LATCHES that state: the
+# next `systemctl restart` refuses to spawn a process at all and logs only
+#
+#     plotslop.service: Start request repeated too quickly.
+#
+# The dangerous part is what that looks like to whoever is deploying. `journalctl` still shows the
+# OLD crash — the stack trace from the previous, already-fixed bug — sitting directly above the
+# limiter message. So a deploy that fixed the problem reads exactly like a deploy that did not,
+# and the natural response is to go and "re-fix" something that was never broken.
+#
+# That is precisely what happened on 2026-07-29: the rsync fix for server/data/ was correct and
+# already applied, but the restart never ran, so the MODULE_NOT_FOUND from the previous attempt
+# was the newest thing in the log. Clearing the counter is what revealed the service was fine.
+systemctl reset-failed plotslop 2>/dev/null || true
 systemctl restart plotslop
 sleep 3
 systemctl --no-pager --lines=20 status plotslop

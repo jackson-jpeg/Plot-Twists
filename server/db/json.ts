@@ -9,7 +9,29 @@ import * as path from 'path'
 import { DatabaseAdapter, WhereClause, QueryOptions, TransactionContext } from './adapter'
 import { logger } from '../../lib/logger'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
+/**
+ * The default is unchanged: `<cwd>/data`, which is what the systemd unit's WorkingDirectory
+ * pins to /srv/plotslop. The env override exists ONLY so the harness can get a private
+ * database, and production must never set it.
+ *
+ * WHY IT EXISTS. Before this, the harness shared /root/Plot-Twists/data with every previous
+ * harness run and with any dev server. `loadRoomsFromFirestore()` runs at startup, so each run
+ * inherited every room ever created by every earlier run — 961 of them by 2026-07-29.
+ *
+ * The failure mode is the reason this is a one-line change rather than a note in a doc. A
+ * polluted database does not make the harness fail randomly. It made it report **8 failures
+ * that were precisely the original audit findings** — hostAbandon, emptyResults, voterDrop,
+ * rateLimit, identity, spectatorVote, aiFailure x2 — on code where all eight were fixed and
+ * verified. 38/46 with the accumulated DB, 49/49 with an empty one, same commit, minutes apart.
+ * Three of the 49 checks never ran at all, because earlier scenarios left rooms wedged.
+ *
+ * So the instrument's output was indistinguishable from a genuine regression, and pointed at
+ * exactly the bugs a reader would find most plausible. That is the worst shape a false negative
+ * can take: it survives scrutiny.
+ */
+const DATA_DIR = process.env.PLOTSLOP_DATA_DIR
+  ? path.resolve(process.env.PLOTSLOP_DATA_DIR)
+  : path.join(process.cwd(), 'data')
 
 // In-memory cache for each collection
 const cache: Map<string, Map<string, unknown>> = new Map()

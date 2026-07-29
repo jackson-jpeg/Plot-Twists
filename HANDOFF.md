@@ -13,11 +13,11 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Canonical repo** | `/root/Plot-Twists` — Next.js 16 + Socket.IO game server. **This is the product.** The game ships on the web at `plotslop.com`, marketing and game on one domain, players join in a phone browser with a room code and never install anything (`DECISIONS.md` #12). |
 | **Branch** | `audit/2026-07-28-snapshot` (tracks `origin/`). **Not** `master`, **not** `v2`. |
 | **iOS repo** | `/root/PlotTwists-Native` — SwiftUI/tvOS. **Shelved, and re-scoped 2026-07-29:** when it returns it is a HOST/TV surface only, never required for players. See §6 and `DECISIONS.md` #12. |
-| **Harness** | **49/49** — `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts` (~2 min). Its script-generation counter was recalibrated 2026-07-29; see §9. |
+| **Harness** | **49/49** — `[VPS] cd /root/Plot-Twists && npx tsx scripts/harness/run.ts` (~2 min; it forces its own fake key and its own temp database, so pass neither). Two instrument bugs fixed 2026-07-29: the script-generation counter (§9 #9) and a **shared database that made it report 38/46 with eight fabricated failures** (§9 #12). If you see a number other than 49/49, read #12 before believing it. |
 | **Unit suite** | **450/450** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450: the source-audit suite grew 4 → 16 → 18 tests. Coverage, not behaviour. See §3 before you relax. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
-| **plotslop.com** | **DNS live and TLS issued 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Let's Encrypt cert for both names expires **2026-10-27**, renewal dry-run passes. nginx serves the port-80 bootstrap only. **The service is still stopped and the site is NOT live** — see §10. |
-| **Current chunk** | **Chunks 2 and 3 complete.** **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** code-complete, cutover STAGED and unexecuted, blocked on Jackson. |
+| **plotslop.com** | 🟢 **LIVE 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Cert for both names expires **2026-10-27**. `plotslop.service` active and enabled on :3100 behind nginx TLS; apex and `www` return 200, HTTP 301s to HTTPS, sang3r.com verified unaffected. **Two clients have joined a room over the public endpoint.** Cutover step 6 (cgroup re-verification) is still Jackson's and still blocking — see §11. |
+| **Current chunk** | **Chunks 2 and 3 complete.** **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 blocked on Jackson. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
 `/root/PlotTwists-Native/AUDIT-iOS.md`.
@@ -421,7 +421,7 @@ be named.
 
 ## 9. Corrections to the record found on 2026-07-29
 
-**Nine now, across three passes**, and they are listed because the pattern matters more than any
+**Twelve now, across four passes**, and they are listed because the pattern matters more than any
 one of them: **the written record has been wrong about a completed item four sessions running.**
 Go looking. The afternoon pass found three more (5–7) *inside the fix for number 1*, and the
 evening pass found two more (8–9) *inside the fix for those* — which is the strongest available
@@ -487,12 +487,71 @@ against a lightning-length game had been counting zero scripts all along. The fl
 between the two populations (1,000; non-script calls are 400/500, the smallest script call is
 2,048) and `assertFloorSeparates()` throws at startup if a future value crosses it.
 
-*Both were caught the same way, and it is the only way that works: the product change and the
-instrument were verified against each other rather than each against itself.*
+**10. `deploy.sh` had never been run, and it did not work.** Two bugs, both fatal, both invisible
+until a real machine executed them. The unit file, the nginx configs and the isolation directives
+were all validated offline; the deploy script was the one part that had to survive contact with
+reality, and it was the one part nobody had exercised.
+
+- **`npm ci` was silently skipping typescript.** `deploy.sh` sources `/etc/plotslop/env` under
+  `set -a`, exporting `NODE_ENV=production` — right for the runtime, wrong for the build. npm reads
+  it and sets `omit=dev`, so typescript (a devDependency) was never installed. `next build` then
+  auto-installed `typescript@latest` (6.0.3) and **rewrote `package.json`, clobbering a deliberate
+  exact pin at 5.9.3**; `ts-jest`'s peer range is `>=4.3 <6`, so the following `npm prune` died on
+  ERESOLVE — after the build had succeeded, so the log read clean right up to the failure. Fixed
+  with `npm ci --include=dev`, plus a guard that aborts the deploy if the build edited
+  `package.json`/`package-lock.json`. Verified directly: `NODE_ENV=production npm config get omit`
+  prints `dev`; unset, it prints empty.
+- **The rsync filter deleted a source file the app needs.** `--exclude 'data'` has no leading
+  slash, and an unanchored rsync pattern matches at *every* depth — so the exclusion protecting the
+  top-level JSON database also excluded `server/data/`, holding `communityPacks.ts`, which
+  `cardpack.service.ts` imports at startup. Fixed to `/data`. Found by diffing the trees rather
+  than chasing one `MODULE_NOT_FOUND` at a time: exactly one file was missing.
+
+**11. A fixed deploy that reads exactly like a broken one.** After the rsync fix the service still
+would not start, and `journalctl` showed the *same* `MODULE_NOT_FOUND` stack trace. The fix had
+worked. `StartLimitBurst=5` had been spent by the previous crashloop, and systemd **latches** it:
+the restart never spawned a process, so the newest line in the journal was still the previous,
+already-fixed crash.
+
+The lesson is about evidence, not systemd. The natural response to that journal is to go re-fix
+something that was never broken, and it cost about an hour. `deploy.sh` now runs
+`systemctl reset-failed` before `restart`. **Note for step 6:** a deliberate OOM test spends the
+same budget — finish with `reset-failed`, or the next start refuses and hands you a stale error.
+
+**12. The harness shared a database with every previous run, and lied convincingly about it.**
+The worst instrument bug of the three, because its output was *more plausible than the truth*.
+
+`server/db/json.ts` resolved `<cwd>/data`, so the harness wrote to `/root/Plot-Twists/data` —
+shared with every earlier run and any dev server. `loadRoomsFromFirestore()` runs at startup, so
+each run loaded every room ever created: **961** of them by 2026-07-29.
+
+It did not fail noisily or randomly. On commit `493e560e` it reported **38/46 with 8 failures that
+were precisely the original audit findings** — `hostAbandon`, `emptyResults`, `voterDrop`,
+`rateLimit`, `identity`, `spectatorVote`, `aiFailure` ×2 — every one of which was fixed and
+verified. Three checks never ran at all, because rooms wedged by earlier scenarios aborted them.
+
+Same commit, minutes apart, three mechanisms:
+
+| Condition | Result |
+|---|---|
+| 961-room accumulated DB | **38/46**, 8 "failures" naming the known bug list |
+| empty DB | **49/49** |
+| 961-room DB + isolation fix | **49/49**, dev DB byte-identical afterwards |
+
+A gate that fails a working product is bad. A gate that fails it *by naming the bugs you already
+believe in* is worse, because it survives scrutiny — I nearly reported eight regressions. Fixed:
+`json.ts` honours `PLOTSLOP_DATA_DIR` (default unchanged; production must never set it) and the
+harness forces a fresh `mkdtemp` per run and removes it on exit, alongside the same
+forced-not-defaulted treatment already given to the API key and base URL.
+
+*All four instrument findings — 9, 12, and the two in 10 — were caught the same way, and it is the
+only way that works: the change and the instrument were verified against each other rather than
+each against itself. Note that 12 surfaced only because a number moved for a reason I could not
+explain, and I went looking instead of re-running until it looked right.*
 
 ---
 
-## 10. plotslop.com — DNS and TLS are done, the site is NOT live
+## 11. plotslop.com — LIVE as of 2026-07-29
 
 Jackson pointed DNS himself on 2026-07-29 and authorised the certificate step; everything past it
 is still his.

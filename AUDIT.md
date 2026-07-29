@@ -382,6 +382,76 @@ const debouncedWrites = new Map<string, NodeJS.Timeout>()
 
 **Confidence:** High on the mechanism; medium on the multi-instance claim only because I could not observe the Railway replica count.
 
+**This is now recorded as a named constraint — see CONSTRAINT-1 immediately below.** The "short
+term, document it" above *is* that section. Railway is out; the target is this VPS.
+
+---
+
+## CONSTRAINT-1 — Single replica is architectural, not a deployment preference
+
+**Status: accepted, not fixed. Recorded 2026-07-29 so a future session does not discover it during
+a playtest.** Do not treat this as a TODO. Treat it as a property of the system that bounds how it
+may be deployed and operated until the trigger below fires.
+
+### The constraint
+
+Three independent mechanisms each break at two replicas. Fixing any one does not help.
+
+| Mechanism | Evidence | What breaks at N>1 |
+|---|---|---|
+| No Socket.IO adapter | `io.to(room.code).emit(...)` reaches only sockets on the local process | Two players who join the same code land on different processes and **never see each other**. The room appears empty to both. |
+| Process-local transaction lock | `server/db/json.ts:17-18` — `// Simple promise-based lock for transaction serialization (dev-only adapter)` over a module-scoped `let txnLock: Promise<void>` | `runTransaction` stops serialising. **Credit deduction double-spends.** |
+| Five in-memory timer maps | `server/services/room.service.ts:20-30` — `rooms`, `roomTimeouts`, `plotTwistTimeouts`, `disconnectTimers`, `debouncedWrites` | Timers diverge per process; grace periods and sweeps fire against state another process owns. |
+
+The JSON adapter's lock is labelled dev-only **in its own source comment**. It is sufficient here
+only because the deploy is pinned to one replica anyway.
+
+### The consequence that is bigger than the credit double-spend
+
+Every `systemctl restart plotslop` drops **every** Socket.IO connection. Room documents survive
+(`loadRoomsFromFirestore()` at boot, `server.ts:55`), but Socket.IO room membership and all five
+timer maps do not.
+
+Host-disconnect recovery is **still broken** — D3, red in the harness: *"the round survives an
+abandoned host and reaches VOTING"* fails, stranded in `SELECTION→LOADING→PERFORMING`, because
+`end_performance` is host-only and there is no host migration.
+
+Compose those two and the operational fact is: **every deploy kills every live game mid-round.**
+Not degrades — ends. There is no drain, no announce, and no window. On a Saturday night that is
+the entire party, and from the players' side it is indistinguishable from the app crashing.
+
+### (a) Trigger that forces replacing the adapter
+
+Named and falsifiable so a future session is not left making a judgement call. **Any one** of:
+
+- Sustained concurrent live rooms exceed **~50**
+- p95 socket event latency exceeds **250 ms**
+- Steady-state RSS sits above `MemoryHigh` (640M — see the unit file) rather than spiking to it
+- A second replica is wanted for **availability**, not load — e.g. zero-downtime deploys become a
+  requirement because of the consequence above
+
+First one to trip means the full job, not a patch: `@socket.io/redis-adapter`, move the five timer
+maps to a scheduler keyed on room state so they rebuild at boot, and move transactions to Postgres
+(already running on this box at `127.0.0.1:5432`). **3–5 days.** Partial adoption is worse than
+none — a Redis adapter without a real transaction store still double-spends credits.
+
+### (b) Deploy practice, until the trigger fires
+
+1. **Window.** Deploys go weekday daytime. Never Friday–Sunday evening, which is when the product
+   is actually used.
+2. **Check before restart.** Query live room count and refuse to restart if it is non-zero unless
+   explicitly forced.
+3. **Announce before a forced restart.** Tell rooms in-flight before dropping them.
+
+**Honest gap: 2 and 3 do not exist yet.** There is no live-room count on the health endpoint and no
+in-room broadcast path for an operator message. Both are Chunk 6 work (`/health` endpoint +
+structured logging with `roomCode`). Until they exist, the practice is rule 1 plus a manual check
+of `journalctl -u plotslop` for recent activity — which is weak, and is stated as weak rather than
+written up as a procedure that sounds stronger than it is.
+
+**Confidence:** High. All three mechanisms are read directly from source; the deploy consequence
+follows from them plus a harness case that is currently red.
+
 ---
 
 ## TRACK 3 — The AI layer

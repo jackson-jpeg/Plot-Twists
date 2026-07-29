@@ -16,7 +16,7 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Harness** | **38/46** — `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts` (~2 min; `voteTimerRace` waits out a real 60s timeout) |
 | **Unit suite** | **425/430, 5 failing BY DESIGN** — `[VPS] npx jest`. See §3. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
-| **Current chunk** | **Chunk 1**, code-complete, blocked on Jackson. Chunk 2 not started. |
+| **Current chunk** | **Chunk 4 code-complete** (2026-07-29) — see §7. **Chunk 1** code-complete but blocked on Jackson: Firestore, three secrets, DNS. Chunk 2 item 1 landed *via* Chunk 4 layer 2; items 2–7 not started. Chunk 3 not started. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
 `/root/PlotTwists-Native/AUDIT-iOS.md`.
@@ -258,7 +258,7 @@ the domain go was safe *because nothing shipped*. It stops being safe the moment
 
 ## 7. What was done on 2026-07-29
 
-Six commits on `audit/2026-07-28-snapshot`:
+Twelve commits on `audit/2026-07-28-snapshot`, plus one in the iOS repo.
 
 | Commit | What |
 |---|---|
@@ -267,9 +267,27 @@ Six commits on `audit/2026-07-28-snapshot`:
 | `1ceaff0d` | VPS isolation from Sanger — user, cgroup limits, `ProtectHome`, all verified by demonstration |
 | `ed65c23f` | D2b serialisation boundary + generic leak guard (harness 16/28 → 19/29) |
 | `9258b985` | Six unexercised paths driven (harness → 35/45) |
-| *(this)* | This file |
+| `57414000` | This file |
+| `8c1ca476` | **Chunk 4a** — delete the crossover poster briefs *and every rendered copy* (the 6 showcase PNGs were live on the homepage) |
+| `e24f8dee` | *(iOS repo)* Chunk 4a — the six bundled crossover poster assets |
+| `5b383321` | **Chunk 4 layers 2+3** — card IDs on the way in, output screening on the way out (harness 35/45 → 38/46; all 3 new passes are behaviour, not coverage) |
+| `b0277826` | **Chunk 4 layer 1** — 375 catalog entries rewritten to archetypes, every `source` deleted, all IDs regenerated |
+| `7e397f41` | Real peak RSS measured — the 768M ceiling had been sized against an attack test, never against a party |
+| `689b2f35` | Live-unit cgroup re-verification made a blocking Chunk 1 checklist |
+| `823eb40c` | Chunk 4 marked code-complete, with what is **not** closed |
 
-**Not started:** Chunk 2 items 1–7 proper, Chunk 3, nginx/TLS/cutover.
+**Layer 2 had never landed**, contrary to the record. `validateCardSelection` still took free text,
+stripped `<>'"` and accepted it — layer 1 was about to be written on top of it. Found by the
+re-verification Jackson asked for; confirmed independently by three `validation.test.ts` gates already
+sitting red pending "Chunk 2 item 1".
+
+**Memory:** peak **334.7 MB** at 20 rooms × 10 players (220 sockets), baseline 270.3 MB. 44% of the
+768M ceiling, so it stands. Caveat: ~80% of that is idle Node runtime, and the mock returns instantly,
+so real peak with in-flight generation is higher by an unmeasured amount.
+
+**Not started:** Chunk 2 items 2–7 (item 1 landed as Chunk 4 layer 2), Chunk 3, nginx/TLS/cutover.
+**Not closed in Chunk 4:** nobody has played a full game against the rewritten catalog — the one
+done-criterion automation cannot close.
 
 One correction on the record: when the `publicId` approach was chosen, it was justified partly by
 "`player.id` is `playerSessionId ?? userId ?? legacy_uuid`". **That was wrong** — that expression

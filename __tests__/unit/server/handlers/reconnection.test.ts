@@ -40,6 +40,7 @@ jest.mock('../../../../server/utils/roomSerializer', () => ({
 
 import * as roomService from '../../../../server/services/room.service'
 import { buildRoomRecoverySnapshot } from '../../../../server/handlers/reconnection.handler'
+import { mintReconnectToken } from '../../../../server/utils/reconnectToken'
 
 function makeRoom(overrides: Partial<Room> = {}): Room {
   return {
@@ -180,83 +181,122 @@ describe('removePlayerAfterGrace', () => {
   })
 })
 
-describe('findPlayerByUserId', () => {
-  it('finds player by uid', () => {
-    const player = makePlayer({ uid: 'uid-abc' })
-    const room = makeRoom()
-    room.players.set(player.id, player)
-    roomService.createRoom(room)
+// ASSERTION AUDIT 2026-07-29 → CLOSED BY CHUNK 2 ITEM 5c, 2026-07-29.
+//
+// Two gates lived here. Both asserted `does NOT resolve a playerId as a userId` against
+// `findPlayerByUserId` / `findPlayerInRoomByUserId`, whose bodies read
+// `player.uid === userId || playerId === userId` — making the room's internal player key, a
+// value `players_update` used to broadcast to everyone, a valid reconnect credential.
+//
+// Both functions are now DELETED, along with `findPlayerBySessionId` and
+// `findPlayerInRoomBySessionId`. Testing that a deleted function rejects a playerId is not
+// possible and would not be worth much; the gates are re-pointed at the two lookups that
+// replaced them, and each still asserts the thing that mattered — that nothing except a proven
+// credential resolves a seat. See server/services/room.service.ts → "Seat lookup".
 
-    const result = roomService.findPlayerByUserId('uid-abc')
-    expect(result).not.toBeNull()
-    expect(result!.player.nickname).toBe('Alice')
-  })
-
-  // ASSERTION AUDIT 2026-07-29 — was `finds player by playerId fallback`, asserting
-  // room.service.ts:321 `player.uid === userId || playerId === userId` as intended behaviour.
-  // That conflation IS defect D2b: a playerId the server broadcasts in players_update is
-  // accepted as a reconnect credential, which is how the harness took the HOST seat.
-  // Gates Chunk 2 item 5c. Red until the `playerId === userId` arm is deleted.
-  it('does NOT resolve a playerId as a userId', () => {
-    const player = makePlayer({ id: 'pid-xyz', uid: undefined })
-    const room = makeRoom()
-    room.players.set(player.id, player)
-    roomService.createRoom(room)
-
-    expect(roomService.findPlayerByUserId('pid-xyz')).toBeNull()
-  })
-
-  it('returns null when not found', () => {
-    expect(roomService.findPlayerByUserId('nope')).toBeNull()
-  })
-})
-
-describe('findPlayerInRoomByUserId', () => {
-  it('finds player in specific room', () => {
+describe('findPlayerInRoomByUid', () => {
+  it('finds a player by verified Clerk subject', () => {
     const player = makePlayer({ uid: 'uid-room' })
     const room = makeRoom()
     room.players.set(player.id, player)
     roomService.createRoom(room)
 
-    const result = roomService.findPlayerInRoomByUserId('TEST', 'uid-room')
+    const result = roomService.findPlayerInRoomByUid('TEST', 'uid-room')
     expect(result).not.toBeNull()
     expect(result!.player.nickname).toBe('Alice')
   })
 
   it('returns null for wrong room', () => {
-    expect(roomService.findPlayerInRoomByUserId('NOPE', 'uid-room')).toBeNull()
+    expect(roomService.findPlayerInRoomByUid('NOPE', 'uid-room')).toBeNull()
   })
 
-  // ASSERTION AUDIT 2026-07-29 — same conflation as findPlayerByUserId, at room.service.ts:345.
-  // This is the lookup rejoin_room uses (reconnection.handler.ts:57-58), so it is the live
-  // credential path. Gates Chunk 2 item 5c.
-  it('does NOT resolve a playerId as a userId', () => {
+  // The surviving half of the original gate: the internal playerId is not an identity.
+  it('does NOT resolve a playerId as a uid', () => {
     const player = makePlayer({ id: 'pid-inroom', uid: undefined })
     const room = makeRoom()
     room.players.set(player.id, player)
     roomService.createRoom(room)
 
-    expect(roomService.findPlayerInRoomByUserId('TEST', 'pid-inroom')).toBeNull()
+    expect(roomService.findPlayerInRoomByUid('TEST', 'pid-inroom')).toBeNull()
   })
-})
 
-describe('findPlayerInRoomBySessionId', () => {
-  it('finds player in specific room by stable session ID', () => {
-    const player = makePlayer({ sessionId: 'session-room' })
+  // A guest seat has no uid at all. An empty/undefined uid must not match it by falsy accident.
+  it('does NOT match a guest seat on an empty uid', () => {
+    const player = makePlayer({ id: 'guest-1', uid: undefined })
     const room = makeRoom()
     room.players.set(player.id, player)
     roomService.createRoom(room)
 
-    const result = roomService.findPlayerInRoomBySessionId('TEST', 'session-room')
+    expect(roomService.findPlayerInRoomByUid('TEST', '')).toBeNull()
+  })
+})
+
+describe('findPlayerInRoomByReconnectToken', () => {
+  it('finds a player by the server-issued token', () => {
+    const { token, hash } = mintReconnectToken()
+    const player = makePlayer({ reconnectHash: hash })
+    const room = makeRoom()
+    room.players.set(player.id, player)
+    roomService.createRoom(room)
+
+    const result = roomService.findPlayerInRoomByReconnectToken('TEST', token)
     expect(result).not.toBeNull()
     expect(result!.player.nickname).toBe('Alice')
   })
 
-  it('returns null for unknown session ID', () => {
+  // The `identity` harness scenario in one assertion: a client-chosen session string is not a
+  // credential any more, no matter that the seat still stores it.
+  it('does NOT accept the client-supplied sessionId', () => {
+    const { hash } = mintReconnectToken()
+    const player = makePlayer({ sessionId: 'session-alice', reconnectHash: hash })
+    const room = makeRoom()
+    room.players.set(player.id, player)
+    roomService.createRoom(room)
+
+    expect(roomService.findPlayerInRoomByReconnectToken('TEST', 'session-alice')).toBeNull()
+  })
+
+  it('does NOT accept the internal playerId', () => {
+    const { hash } = mintReconnectToken()
+    const player = makePlayer({ id: 'pid-inroom', reconnectHash: hash })
+    const room = makeRoom()
+    room.players.set(player.id, player)
+    roomService.createRoom(room)
+
+    expect(roomService.findPlayerInRoomByReconnectToken('TEST', 'pid-inroom')).toBeNull()
+  })
+
+  // One seat's token must not open another's, or the per-seat hash is decoration.
+  it('does NOT let one seat\'s token claim another seat', () => {
+    const alice = mintReconnectToken()
+    const bob = mintReconnectToken()
+    const room = makeRoom()
+    const a = makePlayer({ id: 'p-alice', publicId: 'pub-alice', reconnectHash: alice.hash })
+    const b = makePlayer({ id: 'p-bob', publicId: 'pub-bob', nickname: 'Bob', reconnectHash: bob.hash })
+    room.players.set(a.id, a)
+    room.players.set(b.id, b)
+    roomService.createRoom(room)
+
+    expect(roomService.findPlayerInRoomByReconnectToken('TEST', alice.token)!.playerId).toBe('p-alice')
+    expect(roomService.findPlayerInRoomByReconnectToken('TEST', bob.token)!.playerId).toBe('p-bob')
+  })
+
+  it('returns null for an empty or unknown token', () => {
     const room = makeRoom()
     roomService.createRoom(room)
 
-    expect(roomService.findPlayerInRoomBySessionId('TEST', 'missing-session')).toBeNull()
+    expect(roomService.findPlayerInRoomByReconnectToken('TEST', '')).toBeNull()
+    expect(roomService.findPlayerInRoomByReconnectToken('TEST', 'a'.repeat(64))).toBeNull()
+  })
+
+  // A seat with no hash yet must not be claimable by anything, including an empty string.
+  it('does NOT match a seat that has no reconnectHash', () => {
+    const player = makePlayer({ reconnectHash: undefined })
+    const room = makeRoom()
+    room.players.set(player.id, player)
+    roomService.createRoom(room)
+
+    expect(roomService.findPlayerInRoomByReconnectToken('TEST', 'anything')).toBeNull()
   })
 })
 

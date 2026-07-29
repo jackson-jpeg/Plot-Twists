@@ -362,18 +362,10 @@ export async function deleteUser(uid: string): Promise<{ success: boolean; error
   return { success: true }
 }
 
-/**
- * Verify a Clerk session token server-side.
- * Used by HTTP middleware for authenticated API routes.
- */
-export async function verifyIdToken(token: string): Promise<{ uid: string } | null> {
-  try {
-    const { verifyToken } = await import('@clerk/backend')
-    const secretKey = process.env.CLERK_SECRET_KEY
-    if (!secretKey) return null
-    const decoded = await verifyToken(token, { secretKey })
-    return { uid: (decoded as unknown as { sub: string }).sub }
-  } catch {
-    return null
-  }
-}
+// Chunk 2 item 5c cleanup. `verifyIdToken` was deleted here, not renamed.
+//
+// `verifyIdToken` is Firebase's name; the body called Clerk. Its docstring claimed it was
+// "used by HTTP middleware for authenticated API routes" and it had ZERO callers — it was a
+// second, divergent copy of the verification in server/middleware/socketAuth.ts. Renaming it
+// would have preserved a duplicate token verifier for someone to reach for later; two places
+// that decide who a user is, is one too many.

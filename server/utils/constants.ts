@@ -18,7 +18,13 @@ export const ROOM_CLEANUP_INTERVAL = 5 * 60 * 1000 // 5 minutes
 export const ROOM_INACTIVITY_TIMEOUT = 60 * 60 * 1000 // 1 hour
 
 export const DISCONNECT_GRACE_PERIOD = 3000 // 3 seconds
-export const VOTING_TIMEOUT = 60_000 // 60 seconds — auto-resolve if not all players vote
+// Chunk 2 item 4: was 60_000. Sixty seconds is a long time to stare at "waiting for all players
+// to cast their votes" when the missing vote belongs to someone who has left the room. The tally
+// now also resolves the instant every CONNECTED player has voted (voting.service → allBallotsIn),
+// so this timer only runs when someone actually present is simply not voting — and 25s is long
+// enough to read a ballot, short enough that the party does not stall on one distracted person.
+// Paired with `voting_deadline`, which puts the number on screen instead of leaving it silent.
+export const VOTING_TIMEOUT = 25_000
 export const PLOT_TWIST_VOTING_DURATION = 15_000 // 15 seconds for audience to vote on plot twists
 
 export const AI_MAX_TOKENS = {

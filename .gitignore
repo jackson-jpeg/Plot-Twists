@@ -62,3 +62,8 @@ screenshots/
 
 # local MCP config — contains live tokens, never commit
 .mcp.json
+
+# Runtime JSON database (server/db/json.ts writes here at cwd).
+# Untracked 2026-07-29: every harness run rewrote 4.1MB of these and they were being
+# committed. The adapter mkdirs the directory on boot, so nothing needs to be in git.
+data/*.json

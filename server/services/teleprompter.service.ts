@@ -35,7 +35,9 @@ export function startTeleprompterSync(room: Room, io: SocketIOServer): void {
       // Move to voting or results
       if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
         room.gameState = 'VOTING'
+        room.votingDeadline = Date.now() + VOTING_TIMEOUT
         io.to(room.code).emit('game_state_change', 'VOTING')
+        io.to(room.code).emit('voting_deadline', { deadline: room.votingDeadline })
 
         // Set voting timeout — auto-calculate results if not all players vote in time
         // This prevents the game from getting stuck if a player disconnects mid-vote

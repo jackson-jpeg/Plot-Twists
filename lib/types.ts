@@ -264,8 +264,20 @@ export interface Player {
   role: PlayerRole
   isHost: boolean
   socketId: string
+  /**
+   * Client-chosen, client-asserted. Chunk 2 item 5b demoted this from a credential to a hint:
+   * it is still stored so an existing client can be recognised, but it can no longer claim a
+   * seat on its own. Never treat it as proof of identity.
+   */
   sessionId?: string
+  /** Verified Clerk subject, set only by the auth middleware. Outranks everything else. */
   uid?: string
+  /**
+   * SHA-256 of the server-issued reconnect token. The plaintext is handed to the owning client
+   * exactly once, in the join ack, and never stored server-side or broadcast.
+   * `toPublicPlayer` is an allow-list, so this stays server-only by construction.
+   */
+  reconnectHash?: string
   connected?: boolean
   hasSubmittedSelection?: boolean
   hasSubmittedVote?: boolean
@@ -368,6 +380,8 @@ export interface Room {
   currentLineIndex: number
   isPaused: boolean
   votes: Map<string, string> // playerId -> targetPlayerId
+  /** Absolute ms at which VOTING auto-resolves. Set when the room enters VOTING. */
+  votingDeadline?: number
   setting?: string
   createdAt: number
   lastActivity: number
@@ -452,7 +466,9 @@ export interface RoomRecoverySnapshot {
   hasSubmittedSelection?: boolean
   selection?: SelectedCards
   spectatorMessages?: SpectatorMessage[]
-  votingStatus?: { hasVoted: boolean }
+  // `deadline` so a player who reconnects mid-vote gets the same countdown as the room, rather
+  // than a blank timer or a fresh 25 seconds nobody else is on.
+  votingStatus?: { hasVoted: boolean; deadline?: number }
   results?: PublicGameResults | null
   directorsReview?: DirectorsReview | null
   roomSettings?: RoomSettings
@@ -588,6 +604,19 @@ export interface ServerToClientEvents {
   game_error_message: (message: string) => void
   server_restarting: (message: string) => void
   host_disconnected: (data: { message: string }) => void
+  /**
+   * A player was promoted to host because the original abandoned the room mid-game.
+   * Chunk 2 item 3. Distinct from `host_disconnected`, which now means the opposite: the host
+   * left and there was NOBODY to take over. A client that treats the two the same will leave a
+   * "host disconnected" banner up over a room that has already recovered.
+   */
+  host_changed: (data: { nickname: string }) => void
+  /**
+   * Absolute server timestamp at which voting closes itself. Absolute, not a duration, so a
+   * client that reconnects mid-vote lands on the same deadline as everyone else instead of
+   * restarting the clock. Chunk 2 item 4.
+   */
+  voting_deadline: (data: { deadline: number }) => void
   room_settings_update: (settings: RoomSettings) => void
   available_cards: (cards: AvailableCards) => void
 
@@ -654,8 +683,11 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-  create_room: (settings: RoomSettings, callback: (response: { success: boolean, code?: string, error?: string }) => void) => void
-  join_room: (roomCode: string, nickname: string, callback: (response: { success: boolean, error?: string, publicId?: string, players?: PublicPlayer[], settings?: RoomSettings, role?: PlayerRole }) => void) => void
+  // `reconnectToken` is issued once, here, and is the ONLY thing that reclaims this seat later.
+  // It is returned in the ack rather than broadcast because an ack goes to one socket and an
+  // event goes to the whole room. Chunk 2 item 5b.
+  create_room: (settings: RoomSettings, callback: (response: { success: boolean, code?: string, error?: string, reconnectToken?: string }) => void) => void
+  join_room: (roomCode: string, nickname: string, callback: (response: { success: boolean, error?: string, publicId?: string, players?: PublicPlayer[], settings?: RoomSettings, role?: PlayerRole, reconnectToken?: string }) => void) => void
   leave_room: (roomCode: string, callback: (response: { success: boolean, error?: string }) => void) => void
   submit_cards: (roomCode: string, selections: CardSelectionInput, callback: (response: { success: boolean, error?: string }) => void) => void
   start_game: (roomCode: string) => void
@@ -728,7 +760,15 @@ export interface ClientToServerEvents {
   request_resync: (roomCode: string, playerId: string, callback: (response: { success: boolean, gameState?: string, players?: PublicPlayer[], script?: Script, currentLineIndex?: number, hasSubmittedSelection?: boolean, assignedCharacter?: string, selection?: CardSelection, error?: string }) => void) => void
 
   // Rejoin room after full disconnect/reconnect
-  rejoin_room: (roomCode: string, playerSessionId: string, callback: (res: {
+  /**
+   * Reclaim a seat after a full disconnect.
+   *
+   * The second argument is the SERVER-ISSUED reconnect token from the join ack — not the
+   * client's `playerSessionId`, which used to be accepted here and was the whole of defect
+   * D1-identity. Authenticated players may pass an empty string: a verified Clerk subject on
+   * the socket outranks any bearer token. Chunk 2 item 5.
+   */
+  rejoin_room: (roomCode: string, reconnectToken: string, callback: (res: {
     success: boolean
     error?: string
     snapshot?: RoomRecoverySnapshot
@@ -743,7 +783,10 @@ export interface ClientToServerEvents {
   list_public_rooms: (filters: { gameMode?: GameMode, isMature?: boolean } | undefined, callback: (response: { success: boolean, rooms?: PublicRoomListing[], error?: string }) => void) => void
   subscribe_public_rooms: () => void
   unsubscribe_public_rooms: () => void
-  quick_play: (request: { gameMode: GameMode, isMature?: boolean }, callback: (response: { success: boolean, code?: string, error?: string }) => void) => void
+  // `reconnectToken` is present only when quick_play CREATES a room (the caller becomes its
+  // host). When it matches into an existing room the caller still has to `join_room`, and the
+  // token comes from that ack instead.
+  quick_play: (request: { gameMode: GameMode, isMature?: boolean }, callback: (response: { success: boolean, code?: string, error?: string, reconnectToken?: string }) => void) => void
   cancel_quick_play: () => void
   host_kick_player: (roomCode: string, playerId: string, callback: (response: { success: boolean, error?: string }) => void) => void
 }

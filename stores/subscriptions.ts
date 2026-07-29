@@ -234,6 +234,14 @@ export function initStoreSubscriptions(
     callbacks.toast.success(`${data.name} reconnected`)
   }))
 
+  // Chunk 2 item 3. Clearing hostDisconnected matters as much as the toast: the banner was set
+  // by `performance_paused`/`host_disconnected` when the original host dropped, and the room has
+  // now recovered under someone else. Leaving it up tells the room it is still broken.
+  unsubs.push(manager.on('host_changed', (data) => {
+    useConnectionStore.getState().setHostDisconnected(false)
+    callbacks.toast.info(`${data.nickname} is now the host`)
+  }))
+
   unsubs.push(manager.on('player_disconnected', (data) => {
     callbacks.toast.info(`${data.name} disconnected`)
   }))
@@ -241,6 +249,31 @@ export function initStoreSubscriptions(
   unsubs.push(manager.on('game_error_message', (message) => {
     useConnectionStore.getState().setError(message)
     callbacks.toast.error(message)
+  }))
+
+  // Chunk 2 item 2 — the STRUCTURED error had no web listener at all.
+  //
+  // The server has always emitted this (game.helpers.ts:205, middleware.ts:42) carrying
+  // { code, message, recoverable, action }. Only the plain-string `game_error_message` was
+  // wired up, so every structured failure — including SCRIPT_GENERATION_FAILED, the one
+  // failure that ships a retry affordance — arrived at a client that was not listening.
+  // iOS handled it; web dropped it on the floor. The player saw a spinner resolve into a
+  // card screen with no explanation and their credit already refunded.
+  //
+  // Nothing on the wire changed to fix this. That is why the harness cannot gate it — see
+  // the INSTRUMENT CORRECTION note in scripts/harness/run.ts → aiFailure.
+  unsubs.push(manager.on('game_error', (error) => {
+    useConnectionStore.getState().setError(error.message)
+    callbacks.toast.error(error.message)
+
+    // A RETRY action is only actionable while the room is still waiting on the thing that
+    // failed. On SCRIPT_GENERATION_FAILED the server resets the room to SELECTION and re-deals,
+    // so the retry affordance belongs to the LOADING screen and nowhere else — surfacing it
+    // after the reset would emit `retry_script_generation` against a room that has no
+    // selections and be rejected server-side.
+    if (error.action?.type === 'RETRY' && useGameStore.getState().gameState === 'LOADING') {
+      useScriptStore.getState().setGenerationTimedOut(true)
+    }
   }))
 
   unsubs.push(manager.on('kicked', (data) => {
@@ -264,8 +297,13 @@ export function initStoreSubscriptions(
 
   // ── Voting Store ────────────────────────────────────────────
 
+  unsubs.push(manager.on('voting_deadline', (data) => {
+    useVotingStore.getState().setVotingDeadline(data.deadline)
+  }))
+
   unsubs.push(manager.on('game_over', (results) => {
     useVotingStore.getState().setResults(results)
+    useVotingStore.getState().setVotingDeadline(null)
   }))
 
   unsubs.push(manager.on('directors_review', (review) => {

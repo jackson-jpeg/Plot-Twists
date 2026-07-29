@@ -9,6 +9,7 @@ import { Avatar, Badge } from '@/components/ui'
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
 import { socketManager } from '@/lib/socketManager'
+import { VotingCountdown } from '@/components/VotingCountdown'
 
 export interface JoinVotingProps {
   myPlayerId: string
@@ -84,8 +85,17 @@ export function JoinVoting({ myPlayerId, myCharacter }: JoinVotingProps) {
               letterSpacing: '0.04em',
             }}
           >
-            {isSpectator ? 'Cast your vote' : (myCharacter ? `You played as ${myCharacter}` : 'Cast your vote')}
+            {/* Chunk 2 item 6, client half. This read "Cast your vote" for spectators too, and
+                the server used to honour those votes. Now that it rejects them, inviting a
+                spectator to vote would produce a tap that silently does nothing — a worse
+                outcome than the bug. Spectators are told what they actually are instead.
+                Most of them never chose to be one: `join_room` demotes the 7th ENSEMBLE joiner
+                to SPECTATOR and still returns success:true. */}
+            {isSpectator
+              ? 'You are watching this one — the cast votes'
+              : (myCharacter ? `You played as ${myCharacter}` : 'Cast your vote')}
           </p>
+          <VotingCountdown />
           {script?.title && (
             <p
               style={{
@@ -101,7 +111,31 @@ export function JoinVoting({ myPlayerId, myCharacter }: JoinVotingProps) {
           )}
         </motion.div>
 
-        {votablePlayers.length === 0 && !hasVoted ? (
+        {/* Chunk 2 item 6, client half. Spectators previously got the full tappable ballot and
+            the server counted what they submitted. With the server-side role check in place,
+            leaving the ballot here would give them a button that does nothing at all. */}
+        {isSpectator ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            style={{
+              background: 'var(--color-cream)',
+              borderRadius: '4px',
+              padding: '32px 24px',
+              textAlign: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            }}
+          >
+            <p style={{ fontSize: '16px', fontWeight: 600, color: '#1a1812' }}>
+              The cast is voting
+            </p>
+            <p style={{ fontSize: '14px', color: '#6b6455', marginTop: '6px' }}>
+              You joined after the seats filled up, so you are in the audience for this round.
+              You will see the results with everyone else.
+            </p>
+          </motion.div>
+
+        ) : votablePlayers.length === 0 && !hasVoted ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}

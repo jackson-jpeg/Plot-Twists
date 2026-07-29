@@ -33,6 +33,7 @@ import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { Button } from '@/components/ui/Button'
 import { GameShell } from '@/app/game/GameShell'
+import { getReconnectToken } from '@/lib/playerSession'
 
 const JoinForm = dynamic(() => import('./components/JoinForm').then(m => ({ default: m.JoinForm })), { ssr: false, loading: () => <div style={{ minHeight: '100dvh' }} /> })
 
@@ -138,7 +139,10 @@ function JoinPageContent() {
     if (recoveryAttemptRef.current === `${socket.id}:${activeRoom}`) return
     recoveryAttemptRef.current = `${socket.id}:${activeRoom}`
 
-    socket.emit('rejoin_room', activeRoom, playerSessionId, (response) => {
+    // Chunk 2 item 5b: present the SERVER-ISSUED token for this room, not the client's own
+    // session id. An authenticated player can still rejoin with an empty token — the server
+    // prefers the verified Clerk subject on the socket and never reaches the token branch.
+    socket.emit('rejoin_room', activeRoom, getReconnectToken(activeRoom), (response) => {
       if (response.success && response.snapshot) {
         applyRoomRecoverySnapshot(response.snapshot)
         useGameStore.getState().setRole(response.snapshot.myRole === 'SPECTATOR' ? 'spectator' : 'player')

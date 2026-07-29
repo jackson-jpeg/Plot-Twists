@@ -50,7 +50,14 @@ export function withAuth(socket: AppSocket, handler: HandlerFn): HandlerFn {
   return async (...args: unknown[]) => {
     if (!socket.data.userId && !socket.data.uid) {
       const callback = args.find(a => typeof a === 'function') as SocketCallback | undefined
-      callback?.({ success: false, error: 'Authentication required' })
+      if (callback) {
+        callback({ success: false, error: 'Authentication required' })
+      } else {
+        // `callback?.()` swallowed the rejection entirely for any event emitted WITHOUT an ack:
+        // the handler did not run, nothing was sent back, and the client waited forever. Same
+        // shape as D6 one layer up — a rejection the user cannot observe is a hang.
+        socket.emit('game_error_message', 'Please sign in to do that.')
+      }
       return
     }
     return handler(...args)

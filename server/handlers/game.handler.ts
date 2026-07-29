@@ -64,7 +64,9 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
     if (room.gameMode === 'HEAD_TO_HEAD' || room.gameMode === 'ENSEMBLE') {
       room.gameState = 'VOTING'
+      room.votingDeadline = Date.now() + VOTING_TIMEOUT
       io.to(room.code).emit('game_state_change', 'VOTING')
+      io.to(room.code).emit('voting_deadline', { deadline: room.votingDeadline })
 
       // Notify players that voting is open
       notifyVotingOpen(room).catch(() => {})

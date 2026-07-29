@@ -8,6 +8,7 @@ import { SpinnerIcon } from '@/components/GameIcons'
 import { Avatar } from '@/components/ui'
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
+import { VotingCountdown } from '@/components/VotingCountdown'
 
 export function HostVoting() {
   const prefersReducedMotion = useReducedMotion()
@@ -77,6 +78,8 @@ export function HostVoting() {
         >
           {votedCount}/{nonHostPlayers.length} voted
         </motion.span>
+
+        <div><VotingCountdown /></div>
       </motion.div>
 
       {/* Scene Recap */}

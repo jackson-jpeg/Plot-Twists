@@ -30,6 +30,7 @@ import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { ReconnectionBanner } from '@/components/ReconnectionBanner'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
 import { GameShell } from '@/app/game/GameShell'
+import { getReconnectToken, setReconnectToken } from '@/lib/playerSession'
 
 function HostPageContent() {
   const ACTIVE_ROOM_KEY = 'plottwists_active_room'
@@ -165,7 +166,10 @@ function HostPageContent() {
     if (recoveryAttemptRef.current === `${socket.id}:${activeRoom}`) return
     recoveryAttemptRef.current = `${socket.id}:${activeRoom}`
 
-    socket.emit('rejoin_room', activeRoom, playerSessionId, (response) => {
+    // Chunk 2 item 5b: present the SERVER-ISSUED token for this room, not the client's own
+    // session id. An authenticated player can still rejoin with an empty token — the server
+    // prefers the verified Clerk subject on the socket and never reaches the token branch.
+    socket.emit('rejoin_room', activeRoom, getReconnectToken(activeRoom), (response) => {
       if (response.success && response.snapshot) {
         applyRoomRecoverySnapshot(response.snapshot)
         useGameStore.getState().setRole('host')
@@ -188,10 +192,13 @@ function HostPageContent() {
     if (!recoveryResolved) return
     if (!socket || !isConnected || roomCreatedRef.current) return
     roomCreatedRef.current = true
-    withTimeout<{ success: boolean; code?: string }>(
+    withTimeout<{ success: boolean; code?: string; reconnectToken?: string }>(
       (cb) => socket.emit('create_room', settings, cb)
     ).then((response) => {
       if (response.success && response.code) {
+        // Chunk 2 item 5b — the host's seat needs a reconnect token like any other, and the
+        // host seat is the one worth stealing. Stored before anything else can throw.
+        if (response.reconnectToken) setReconnectToken(response.code, response.reconnectToken)
         useGameStore.getState().setRoomCode(response.code)
         setActiveRoom(response.code)
         analytics.gameCreated(settings.gameMode)

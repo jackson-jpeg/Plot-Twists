@@ -13,6 +13,7 @@
 import { io as ioClient, type Socket } from 'socket.io-client'
 import { startMockAnthropic, stats as mockStats } from './mock-anthropic'
 import type { GameState } from '../../lib/types'
+import { VOTING_TIMEOUT } from '../../server/utils/constants'
 
 const MOCK_PORT = Number(process.env.MOCK_PORT || 8788)
 const GAME_PORT = Number(process.env.HARNESS_PORT || 4599)
@@ -35,7 +36,9 @@ function record(scenario: string, name: string, pass: boolean, detail: string) {
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
 /** Mirrors VOTING_TIMEOUT in server/utils/constants.ts:21 — kept in sync by hand. */
-const VOTE_TIMEOUT_MS = 60_000
+// Imported rather than duplicated: this was hardcoded to 60_000 while the product constant was
+// free to move, so the "vote racing the timeout" case could silently stop racing anything.
+const VOTE_TIMEOUT_MS = VOTING_TIMEOUT
 
 /**
  * Count SCRIPT generations only.
@@ -122,6 +125,13 @@ class Client {
   states: GameState[] = []
   events: Array<{ name: string; payload: unknown; at: number }> = []
   playerId?: string
+  /**
+   * The SERVER-ISSUED reconnect token for this client's seat (Chunk 2 item 5b).
+   * Captured from the create_room / join_room ack, because that ack is the only time the
+   * server ever sends it. A real client stores this in localStorage; the harness keeps it
+   * here and presents it on rejoin_room exactly as the browser does.
+   */
+  reconnectToken = ''
 
   constructor(public label: string, sessionId?: string) {
     // Anything this client legitimately holds is a credential the server must never hand to
@@ -187,17 +197,23 @@ class Client {
 }
 
 async function makeRoom(host: Client, gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE') {
-  const res = await host.emitAck<{ success: boolean; code?: string; error?: string }>('create_room', {
+  const res = await host.emitAck<{ success: boolean; code?: string; error?: string; reconnectToken?: string }>('create_room', {
     gameMode, isMature: false, audienceInteractionEnabled: false,
   })
   if (!res.success || !res.code) throw new Error(`create_room failed: ${res.error}`)
+  host.reconnectToken = res.reconnectToken ?? ''
+  // The token is a credential the server hands to ONE socket. Registering it means the leak
+  // guard will fail every scenario if it ever turns up in a broadcast payload.
+  registerSecret(host.reconnectToken, `${host.label}'s reconnect token`)
   return res.code
 }
 
 async function joinAll(code: string, clients: Client[]) {
   for (const c of clients) {
-    const res = await c.emitAck<{ success: boolean; error?: string }>('join_room', code, c.label)
+    const res = await c.emitAck<{ success: boolean; error?: string; reconnectToken?: string }>('join_room', code, c.label)
     if (!res.success) throw new Error(`${c.label} join failed: ${res.error}`)
+    c.reconnectToken = res.reconnectToken ?? ''
+    registerSecret(c.reconnectToken, `${c.label}'s reconnect token`)
   }
 }
 
@@ -300,18 +316,40 @@ scenarios.hostAbandon = async () => {
   await p1.waitForState('PERFORMING', 30000)
 
   host.kill()
-  await sleep(6000)
+  // HOST_MIGRATION_DELAY_MS is 5s; 7s leaves room for the promotion to land and broadcast.
+  await sleep(7000)
 
   record('hostAbandon', 'players told the host vanished', p1.saw('player_disconnected') || p1.saw('host_disconnected'),
     `events: ${[...new Set(p1.events.map(e => e.name))].join(', ')}`)
-  // RED until host migration lands (CHUNKS.md chunk 2 item 3).
-  // This previously asserted `!states.includes('VOTING')` and PASSED — it
-  // documented the defect as expected behaviour instead of gating on a fix.
-  record('hostAbandon', 'the round survives an abandoned host and reaches VOTING',
-    p1.states.includes('VOTING'),
-    p1.states.includes('VOTING')
-      ? `recovered: ${p1.states.join('→')}`
-      : `stranded in ${p1.states.join('→')} — end_performance is host-only and there is no host migration. The 2-min sweep then jumps PERFORMING→RESULTS with zero votes.`)
+
+  // ── Chunk 2 item 3 ──────────────────────────────────────────────────────────────────
+  // This case previously asserted `!states.includes('VOTING')` and PASSED — it documented the
+  // defect as expected behaviour. The assertion audit inverted it to `states.includes('VOTING')`,
+  // which was right about the OUTCOME but unreachable as written: nothing in the product could
+  // ever have moved the room to VOTING by itself, because the only two paths are `end_performance`
+  // (host-only) and the teleprompter running to the end of a 35-line script — minutes away.
+  //
+  // What the room actually loses when the host walks out is not "an ending", it is the ABILITY
+  // to end. So the case now drives the recovery the fix provides: a player is promoted, and that
+  // player does what a human with host controls would do. If migration does not happen, there is
+  // no new host, `end_performance` is rejected as it always was, and both checks stay red.
+  const rosterAfter = playersFrom(p1)
+  const hostSeats = rosterAfter.filter(p => p.isHost)
+  const promoted = hostSeats.find(p => p.nickname !== 'Host')
+  record('hostAbandon', 'a player is promoted to host when the host abandons the room',
+    hostSeats.length === 1 && Boolean(promoted),
+    promoted
+      ? `${promoted.nickname} took over (${hostSeats.length} host seat)`
+      : `${hostSeats.length} host seat(s): ${rosterAfter.map(p => `${p.nickname}${p.isHost ? '*' : ''}`).join(',')} — nobody was promoted, so the room is frozen in PERFORMING with no way out`)
+
+  const successor = [p1, p2, p3].find(c => c.label === promoted?.nickname)
+  successor?.socket.emit('end_performance', code)
+  const recovered = await p1.waitForState('VOTING', 8000).then(() => true).catch(() => false)
+
+  record('hostAbandon', 'the round survives an abandoned host and reaches VOTING', recovered,
+    recovered
+      ? `recovered under ${promoted?.nickname}: ${p1.states.join('→')}`
+      : `stranded in ${p1.states.join('→')} — ${successor ? 'the promoted host could not end the performance' : 'there was no promoted host to end the performance'}`)
 
   ;[host, p1, p2, p3].forEach(c => c.close())
 }
@@ -331,8 +369,10 @@ scenarios.emptyResults = async () => {
   host.socket.emit('end_performance', code)
   await p1.waitForState('VOTING')
 
-  // Nobody votes. Let VOTING_TIMEOUT (60s) force the tally.
-  const reached = await p1.waitForState('RESULTS', 70000).then(() => true).catch(() => false)
+  // Nobody votes. Let VOTING_TIMEOUT force the sweep. The wait is derived from the product
+  // constant rather than hardcoded, so shortening the timeout (item 4) does not leave this case
+  // silently waiting long past the thing it is watching for.
+  const reached = await p1.waitForState('RESULTS', VOTE_TIMEOUT_MS + 15000).then(() => true).catch(() => false)
   const res = p1.last('game_over') as { winner?: unknown; allResults?: unknown[] } | undefined
 
   record('emptyResults', 'a zero-vote round is not emitted as a normal game_over',
@@ -365,9 +405,13 @@ scenarios.voterDrop = async () => {
   p2.socket.emit('submit_vote', code, ids[0])
 
   const reached = await p1.waitForState('RESULTS', 12000).then(() => true).catch(() => false)
+  // The old success message credited "grace-period removal", which cannot be what happens here:
+  // CONFIG.reconnection.gracePeriodMs is 60s and this case gives up after ~17s. If this passes,
+  // it is because the disconnect handler re-ran allBallotsIn immediately (Chunk 2 item 4), and
+  // that timing gap is the independent check that it is the fix doing the work.
   record('voterDrop', 'results resolve promptly when a voter drops', reached,
-    reached ? 'grace-period removal unblocked the tally'
-            : 'room sat in VOTING — only the 60s VOTING_TIMEOUT can rescue it, i.e. up to a minute of dead air')
+    reached ? 'tally ran on disconnect, ~17s inside the 60s grace period — so it was the immediate re-check, not removal'
+            : 'room sat in VOTING — only the VOTING_TIMEOUT sweep can rescue it, i.e. up to a full timeout of dead air')
 
   ;[host, p1, p2, p3].forEach(c => c.close())
 }
@@ -659,14 +703,34 @@ scenarios.spectatorVote = async () => {
   spectator.socket.emit('submit_vote', code, target.publicId)
   await sleep(1500)
 
-  const reached = await players[0].waitForState('RESULTS', 70000).then(() => true).catch(() => false)
+  // FALSE-GREEN GUARD, added with the item 6 fix.
+  //
+  // The original assertion was `p1Votes === 0` read off game_over. Once item 7 landed, a round
+  // where only a spectator voted stops reaching RESULTS at all — so `p1Votes` would be 0 because
+  // there was no game_over to read, and the case would have gone green while proving nothing
+  // about spectators. Its own failure message even said "(results never reached)".
+  //
+  // The claim is now checked at the point of the fix: the server must not RECORD the ballot.
+  // `hasSubmittedVote` is set in the same block that writes room.votes (voting.handler.ts), and
+  // it is broadcast in players_update, so it is directly observable from a client.
+  const rosterAfterVote = playersFrom(players[0]) as Array<{ nickname: string; hasSubmittedVote?: boolean }>
+  const spectatorSeat = rosterAfterVote.find(p => p.nickname === 'Lurker')
+  record('spectatorVote', 'a spectator ballot is not recorded at all',
+    spectatorSeat ? spectatorSeat.hasSubmittedVote !== true : false,
+    spectatorSeat
+      ? (spectatorSeat.hasSubmittedVote === true
+          ? 'the spectator seat is marked hasSubmittedVote — the ballot was accepted into room.votes'
+          : 'the spectator seat was never marked as having voted')
+      : 'spectator seat missing from the roster — setup problem, not a result')
+
+  const reached = await players[0].waitForState('RESULTS', 40000).then(() => true).catch(() => false)
   const res = players[0].last('game_over') as { allResults?: Array<{ playerName: string; votes: number }> } | undefined
   const p1Votes = res?.allResults?.find(r => r.playerName === 'P1')?.votes ?? 0
 
   record('spectatorVote', 'a spectator vote does not count toward the winner', p1Votes === 0,
     p1Votes > 0
-      ? `spectator vote tallied (P1 = ${p1Votes}). voting.handler.ts:19-26 resolves the voter by socketId across ALL room.players with no role filter — only the vote TARGET is role-checked — and calculateResults counts every entry in room.votes. Combined with the silent spectator demotion, an overflow joiner who thinks they are playing silently decides the winner.`
-      : `not counted${reached ? '' : ' (results never reached)'}`)
+      ? `spectator vote tallied (P1 = ${p1Votes}). voting.handler.ts resolved the voter by socketId across ALL room.players with no role filter — only the vote TARGET was role-checked — and calculateResults counted every entry in room.votes. Combined with the silent spectator demotion, an overflow joiner who thinks they are playing silently decides the winner.`
+      : `not counted${reached ? '' : ' — and the round correctly did not reach RESULTS at all, since zero PLAYER ballots were cast (item 7)'}`)
 
   ;[host, ...players, spectator].forEach(c => c.close())
 }
@@ -700,7 +764,7 @@ scenarios.hostReconnect = async () => {
   const back = new Client('Host', 'sess-host-rc')
   await back.connected()
   const res = await back.emitAck<{ success: boolean; error?: string; snapshot?: { isPaused?: boolean; gameState?: string } }>(
-    'rejoin_room', code, 'sess-host-rc')
+    'rejoin_room', code, host.reconnectToken)
 
   record('hostReconnect', 'host reclaims its seat inside the grace period', Boolean(res?.success),
     res?.success ? `snapshot gameState=${res.snapshot?.gameState}` : `rejected: ${res?.error}`)
@@ -858,8 +922,11 @@ scenarios.midPhaseReconnect = async () => {
   await sleep(700)
   const back = new Client('Alice', 'sess-mid-a')
   await back.connected()
+  // Chunk 2 item 5b: rejoin now presents the SERVER-ISSUED token, not the client's session
+  // string. A browser reads this out of localStorage, keyed by room code; the harness carries
+  // it on the Client that joined. Passing 'sess-mid-a' here would (correctly) be rejected.
   const r1 = await back.emitAck<{ success: boolean; error?: string; snapshot?: { gameState?: string } }>(
-    'rejoin_room', code, 'sess-mid-a')
+    'rejoin_room', code, p1.reconnectToken)
 
   record('midPhaseReconnect', 'a player dropped in SELECTION can rejoin', Boolean(r1?.success),
     r1?.success ? `snapshot gameState=${r1.snapshot?.gameState}` : `rejected: ${r1?.error}`)
@@ -950,10 +1017,21 @@ scenarios.aiFailure = async (): Promise<void> => {
     await submitAll(code, [p1, p2, p3])
 
     await sleep(12000)
-    const errored = p1.saw('game_error_message') || p1.saw('script_generation_failed')
-    record('aiFailure', `mode=${mode}: players are told generation failed`, errored,
-      errored ? `got: ${JSON.stringify(p1.last('game_error_message') ?? p1.last('script_generation_failed'))}`
-              : `silent — states: ${p1.states.join('→')}; room stuck in LOADING with a spinner`)
+    // INSTRUMENT CORRECTION 2026-07-29. This asserted on `game_error_message` /
+    // `script_generation_failed` — two event names the server never emits on this path.
+    // game.helpers.ts:205 emits the STRUCTURED `game_error`, and always has. So the red was
+    // an artefact of the assertion, not evidence the room is left silent, and the detail it
+    // printed ("room stuck in LOADING with a spinner") was contradicted by the state path it
+    // printed alongside it: SELECTION→LOADING→SELECTION. The room recovers.
+    //
+    // The REAL defect this case was pointing at is client-side and invisible from here: no web
+    // listener was registered for `game_error`, so the structured error arrived nowhere. A
+    // socket harness cannot observe a missing browser listener. That half is gated by
+    // `subscriptions.test.ts` → 'registers handlers for all core events' instead.
+    const errored = p1.saw('game_error') || p1.saw('game_error_message') || p1.saw('script_generation_failed')
+    record('aiFailure', `mode=${mode}: the room is told generation failed`, errored,
+      errored ? `got ${JSON.stringify(p1.last('game_error') ?? p1.last('game_error_message') ?? p1.last('script_generation_failed'))}; states: ${p1.states.join('→')}`
+              : `silent — states: ${p1.states.join('→')}; events seen: ${[...new Set(p1.events.map(e => e.name))].join(', ')}`)
     ;[host, p1, p2, p3].forEach(c => c.close())
     } finally {
       process.env.MOCK_MODE = 'ok'

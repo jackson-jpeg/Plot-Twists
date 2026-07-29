@@ -1,7 +1,8 @@
 import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
 import { startScriptGeneration } from './game.helpers'
-import { calculateResults } from '../services/voting.service'
+import { calculateResults, allBallotsIn } from '../services/voting.service'
+import { scheduleHostMigration } from '../services/hostMigration.service'
 import * as roomService from '../services/room.service'
 import * as matchmakingService from '../services/matchmaking.service'
 import { CONFIG } from '../utils/config'
@@ -68,6 +69,22 @@ export function registerAllHandlers(io: AppServer) {
             logger.info(`Auto-paused performance in room ${code} — host disconnected`)
           }
 
+          // Chunk 2 item 4 — re-check the tally the moment someone drops, not 60s later.
+          //
+          // This check only existed after the grace period expired, and the grace period is
+          // 60s (CONFIG.reconnection.gracePeriodMs) — the same order as VOTING_TIMEOUT, so it
+          // rescued nothing that the timeout was not about to rescue anyway. The room sat on a
+          // "waiting for votes" screen for a player who had already left the party.
+          if (room.gameState === 'VOTING' && allBallotsIn(room)) {
+            logger.info(`All remaining ballots are in after ${player.nickname} dropped from room ${code}, calculating results`)
+            void calculateResults(room, io)
+          }
+
+          // Chunk 2 item 3 — the host leaving mid-game freezes the show. Start migration.
+          if (player.isHost && room.gameState !== 'LOBBY') {
+            scheduleHostMigration(room, io)
+          }
+
           // Start grace period timer
           const gracePeriodMs = CONFIG.reconnection.gracePeriodMs
           const timer = setTimeout(() => {
@@ -94,9 +111,7 @@ export function registerAllHandlers(io: AppServer) {
             }
 
             if (removed.room.gameState === 'VOTING' && !removed.player.isHost) {
-              const remainingPlayers = Array.from(removed.room.players.values()).filter(p => p.role === 'PLAYER')
-              const allVoted = remainingPlayers.length > 0 && remainingPlayers.every(p => p.hasSubmittedVote)
-              if (allVoted) {
+              if (allBallotsIn(removed.room)) {
                 logger.info(`All remaining players voted after grace expiry in room ${code}, calculating results`)
                 void calculateResults(removed.room, io)
               }

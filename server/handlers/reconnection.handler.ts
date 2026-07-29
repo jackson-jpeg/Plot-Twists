@@ -6,6 +6,7 @@ import type { Player, Room, RoomRecoverySnapshot } from '@/lib/types'
 import { logger } from '@/lib/logger'
 import { toPublicPlayer, toPublicPlayers, findByPublicId } from '../socket/serialize'
 import { toSelectedCards } from '../services/cardCatalog.service'
+import { cancelHostMigration } from '../services/hostMigration.service'
 
 export async function buildRoomRecoverySnapshot(room: Room, playerId: string, player: Player): Promise<RoomRecoverySnapshot> {
   const hostDisconnected = room.gameState === 'PERFORMING' && room.host.connected === false
@@ -30,7 +31,10 @@ export async function buildRoomRecoverySnapshot(room: Room, playerId: string, pl
     hasSubmittedSelection: player.hasSubmittedSelection,
     selection,
     spectatorMessages: room.audienceInteraction?.spectatorMessages ?? [],
-    votingStatus: { hasVoted: !!room.votes.get(playerId) },
+    votingStatus: {
+      hasVoted: !!room.votes.get(playerId),
+      deadline: room.gameState === 'VOTING' ? room.votingDeadline : undefined,
+    },
     results: room.results ?? null,
     directorsReview: room.directorsReview ?? null,
     roomSettings: {
@@ -47,9 +51,9 @@ export async function buildRoomRecoverySnapshot(room: Room, playerId: string, pl
 }
 
 export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
-  socket.on('rejoin_room', withErrorHandler(socket, 'rejoin_room', async (roomCode: string, playerSessionId: string, callback) => {
-    if (!roomCode || !playerSessionId) {
-      callback({ success: false, error: 'Missing roomCode or playerSessionId' })
+  socket.on('rejoin_room', withErrorHandler(socket, 'rejoin_room', async (roomCode: string, reconnectToken: string, callback) => {
+    if (!roomCode) {
+      callback({ success: false, error: 'Missing roomCode' })
       return
     }
 
@@ -60,11 +64,32 @@ export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, c
       return
     }
 
-    // Find player by stable client session first, then legacy userId fallback.
-    const found = roomService.findPlayerInRoomBySessionId(upperCode, playerSessionId)
-      ?? roomService.findPlayerInRoomByUserId(upperCode, playerSessionId)
+    // Chunk 2 item 5. Exactly two things can reclaim a seat now, in this order.
+    //
+    // What this replaced accepted a client-chosen string — `playerSessionId` — as identity, so
+    // `rejoin_room(code, 'session-alice')` took Alice's seat from any socket at all, and the
+    // second lookup in the chain would also accept the internal playerId that `players_update`
+    // used to broadcast to the whole room. Two accepted credentials, neither issued by us.
+    //
+    // 1. A VERIFIED Clerk subject on this socket, matched against the seat's `uid`. This is
+    //    5a's precedence fix: something the auth middleware proved outranks anything the client
+    //    merely asserts, so an authenticated player needs no token at all.
+    const verifiedUid = (socket.data.userId ?? socket.data.uid) as string | undefined
+    let found = verifiedUid ? roomService.findPlayerInRoomByUid(upperCode, verifiedUid) : null
+
+    // 2. Otherwise the server-issued reconnect token, which is how a GUEST proves a seat — and
+    //    most players are guests, since tokenless connections are allowed by design
+    //    (socketAuth.ts:48). Compared against a per-seat hash; see utils/reconnectToken.ts.
+    if (!found && typeof reconnectToken === 'string' && reconnectToken) {
+      found = roomService.findPlayerInRoomByReconnectToken(upperCode, reconnectToken)
+    }
+
     if (!found) {
-      callback({ success: false, error: 'Player not found in room' })
+      // Deliberately does not distinguish "no such seat" from "wrong token". The old message
+      // ("Player not found in room") told an attacker which room codes had live seats worth
+      // attacking.
+      logger.warn(`[Reconnect] Rejected rejoin for room ${upperCode} from socket ${socket.id}`)
+      callback({ success: false, error: 'Could not verify your seat in this room' })
       return
     }
 
@@ -76,7 +101,10 @@ export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, c
       callback({ success: false, error: 'Reconnection failed' })
       return
     }
-    result.player.sessionId = socket.data.playerSessionId ?? result.player.sessionId
+    // NOT re-pinning `sessionId` from the handshake any more. That line let a reconnecting
+    // client rewrite the seat's stored identity to whatever string it sent, which is the same
+    // trust-the-client mistake one level down. `sessionId` is a hint; the seat is already
+    // proven by the time we get here.
 
     // Join socket to the room channel
     socket.join(upperCode)
@@ -90,6 +118,14 @@ export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, c
     // Notify room of reconnection
     io.to(upperCode).emit('player_reconnected', { name: player.nickname })
     io.to(upperCode).emit('players_update', toPublicPlayers(room))
+
+    // The host got back inside the migration window — stand the promotion down.
+    // migrateHost also re-checks `room.host.connected` before firing, so this is belt and
+    // braces rather than the only guard, but clearing the timer keeps a stale callback from
+    // sitting on the room for the rest of the window.
+    if (player.isHost) {
+      cancelHostMigration(upperCode)
+    }
 
     // If host reconnected during PERFORMING and room was paused due to disconnect, auto-resume
     if (player.isHost && room.gameState === 'PERFORMING' && room.isPaused) {

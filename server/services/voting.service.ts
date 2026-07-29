@@ -152,12 +152,84 @@ async function processPlayerResults(
 }
 
 /**
+ * Every player who can still cast a ballot has cast one.
+ *
+ * Chunk 2 item 4. This predicate used to be written out by hand in four places
+ * (`submit_vote`, the leave_room path, and twice in the disconnect handler) and every copy
+ * counted DISCONNECTED players as still owing a vote. A player whose phone died therefore
+ * blocked the tally until the voting timeout swept it — up to a full minute of a room staring
+ * at a "waiting for votes" screen for someone who has physically left the party.
+ *
+ * `connected !== false` rather than `connected === true`: `connected` is undefined on a freshly
+ * built Player and only ever set to false by markPlayerDisconnected, so undefined means present.
+ *
+ * Returns false when nobody is eligible. That is deliberate — an empty room must fall through
+ * to the timeout and be handled as a zero-vote round (item 7), not tallied as unanimous.
+ */
+export function allBallotsIn(room: Room): boolean {
+  const eligible = Array.from(room.players.values())
+    .filter(player => player.role === 'PLAYER' && player.connected !== false)
+  return eligible.length > 0 && eligible.every(player => player.hasSubmittedVote)
+}
+
+/**
+ * A round nobody voted in has no result, so do not stage one.
+ *
+ * Chunk 2 item 7 / defect D3b. `calculateResults` treated an empty tally as an ordinary
+ * outcome: `winner` undefined, `allResults` [], emitted as `game_over` and followed by a
+ * RESULTS transition. Players got the full results ceremony — winner card, scoreboard,
+ * director's review — with nothing in it. Worse than the blank screen, it also wrote that
+ * round to gameHistory and ran every player through recordGameResult and awardXP, so a round
+ * that never happened polluted lifetime stats.
+ *
+ * Returning to LOBBY discards the script, which is a real cost. It is the lesser one: the
+ * alternative being removed here is presenting an empty scoreboard as the outcome of the
+ * evening. The client resets its stores on `new_game_started` regardless, so the server
+ * clearing the script keeps both sides consistent rather than leaving a ghost script server-side.
+ */
+function endRoundWithNoVotes(room: Room, io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>): void {
+  // Claim the state first: this is the same re-entrancy guard the RESULTS path relies on, and
+  // it also makes the `gameState !== 'VOTING'` checks in the pending timeout callbacks bail.
+  room.gameState = 'LOBBY'
+  room.script = undefined
+  room.currentLineIndex = 0
+  room.isPaused = false
+  room.results = undefined
+  room.directorsReview = undefined
+  room.votes.clear()
+  room.selections.clear()
+  room.lastActivity = Date.now()
+
+  for (const player of room.players.values()) {
+    player.hasSubmittedVote = false
+    player.hasSubmittedSelection = false
+    player.assignedCharacter = undefined
+  }
+
+  roomService.clearAllRoomTimeouts(room.code)
+  roomService.updateRoom(room)
+
+  logger.info(`[VotingService] Room ${room.code} ended a round with zero votes — returned to lobby, nothing recorded`)
+
+  io.to(room.code).emit('game_error_message', 'Nobody voted, so there is no winner this round. Back to the lobby.')
+  io.to(room.code).emit('new_game_started', { keepSelections: false })
+  io.to(room.code).emit('game_state_change', 'LOBBY')
+}
+
+/**
  * Calculate voting results, emit game_over, and save game history + player stats.
  */
 export async function calculateResults(room: Room, io: SocketIOServer<ClientToServerEvents, ServerToClientEvents>): Promise<void> {
   // Guard against double-execution from race conditions
   // Set state immediately to prevent concurrent calls from passing the guard
   if (room.gameState === 'RESULTS') return
+
+  // Item 7 — checked BEFORE claiming RESULTS, so a zero-vote round never enters that state.
+  if (room.votes.size === 0) {
+    endRoundWithNoVotes(room, io)
+    return
+  }
+
   room.gameState = 'RESULTS'
 
   const voteCounts = new Map<string, number>()

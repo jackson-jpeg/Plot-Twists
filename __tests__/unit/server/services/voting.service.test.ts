@@ -59,6 +59,9 @@ jest.mock('../../../../server/db', () => ({
 // Mock room service
 jest.mock('../../../../server/services/room.service', () => ({
   updateRoom: jest.fn(),
+  // Added with Chunk 2 item 7. The zero-vote path clears the room's pending timers before
+  // returning to the lobby; without this the mock throws and the gate fails for the wrong reason.
+  clearAllRoomTimeouts: jest.fn(),
 }))
 
 // Mock game history service

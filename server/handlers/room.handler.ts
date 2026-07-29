@@ -10,7 +10,8 @@ import { validateCustomization } from '../services/scriptCustomization.service'
 import { validateAudioSettings, createDefaultAudioSettings } from '../services/audio.service'
 import { STANDARD_PACK_ID } from '../services/cardpack.service'
 import { startScriptGeneration } from './game.helpers'
-import { calculateResults } from '../services/voting.service'
+import { calculateResults, allBallotsIn } from '../services/voting.service'
+import { mintReconnectToken } from '../utils/reconnectToken'
 import { MAX_PLAYERS } from '../utils/constants'
 import { requireHost } from '../socket/helpers'
 import { toPublicPlayer, toPublicPlayers } from '../socket/serialize'
@@ -41,6 +42,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
     try {
       const code = roomService.generateRoomCode()
       const isSoloMode = settings.gameMode === 'SOLO'
+      const { token: reconnectToken, hash: reconnectHash } = mintReconnectToken()
       const hostPlayer: Player = {
         id: uuidv4(),
         publicId: uuidv4(),
@@ -48,8 +50,15 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
         role: isSoloMode ? 'PLAYER' : 'HOST', // In Solo mode, host is the player
         isHost: true,
         socketId: socket.id,
-        sessionId: socket.data.playerSessionId ?? socket.data.userId ?? `legacy_${uuidv4()}`,
+        // Chunk 2 item 5a — VERIFIED identity first. This read
+        // `playerSessionId ?? userId ?? legacy_uuid`, i.e. the client-asserted string outranked
+        // the Clerk subject the auth middleware had just verified. Any client could therefore
+        // pin its own seat identity and, with 5b's old lookup, hand that identity to anyone.
+        // `sessionId` is now only a hint for recognising a returning client; the reconnect
+        // token below is what actually reclaims the seat.
+        sessionId: socket.data.userId ?? socket.data.playerSessionId ?? `legacy_${uuidv4()}`,
         uid: socket.data.userId ?? undefined,
+        reconnectHash,
       }
 
       const room: Room = {
@@ -94,7 +103,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       }
 
       logger.info(`Room created: ${code} (host: ${room.hostUid || 'unknown'})${room.isPublic ? ' [PUBLIC]' : ''}`)
-      callback({ success: true, code })
+      callback({ success: true, code, reconnectToken })
       socket.emit('room_created', code)
     } catch (error) {
       logger.error('Error creating room:', error)
@@ -165,6 +174,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       }
 
       // Join as SPECTATOR if room is full, otherwise as PLAYER
+      const { token: reconnectToken, hash: reconnectHash } = mintReconnectToken()
       const player: Player = {
         id: uuidv4(),
         publicId: uuidv4(),
@@ -172,8 +182,15 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
         role: isRoomFull ? 'SPECTATOR' : 'PLAYER',
         isHost: false,
         socketId: socket.id,
-        sessionId: socket.data.playerSessionId ?? socket.data.userId ?? `legacy_${uuidv4()}`,
+        // Chunk 2 item 5a — VERIFIED identity first. This read
+        // `playerSessionId ?? userId ?? legacy_uuid`, i.e. the client-asserted string outranked
+        // the Clerk subject the auth middleware had just verified. Any client could therefore
+        // pin its own seat identity and, with 5b's old lookup, hand that identity to anyone.
+        // `sessionId` is now only a hint for recognising a returning client; the reconnect
+        // token below is what actually reclaims the seat.
+        sessionId: socket.data.userId ?? socket.data.playerSessionId ?? `legacy_${uuidv4()}`,
         uid: socket.data.userId ?? undefined,
+        reconnectHash,
         score: 0
       }
 
@@ -199,7 +216,9 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
         publicId: player.publicId,
         players: toPublicPlayers(room),
         settings: roomSettings,
-        role: player.role
+        role: player.role,
+        // Handed over exactly once, in an ack (one socket), never in an event (whole room).
+        reconnectToken,
       })
 
       // Check auto-start for public rooms
@@ -275,13 +294,9 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       }
     }
 
-    if (room.gameState === 'VOTING') {
-      const remainingPlayers = Array.from(room.players.values()).filter(p => p.role === 'PLAYER')
-      const allVoted = remainingPlayers.length > 0 && remainingPlayers.every(p => p.hasSubmittedVote)
-      if (allVoted) {
-        logger.info(`All remaining players voted after ${player.nickname} left room ${upperRoomCode}, calculating results`)
-        void calculateResults(room, io)
-      }
+    if (room.gameState === 'VOTING' && allBallotsIn(room)) {
+      logger.info(`All remaining players voted after ${player.nickname} left room ${upperRoomCode}, calculating results`)
+      void calculateResults(room, io)
     }
 
     callback({ success: true })
@@ -459,6 +474,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
 
       // Create a new public room
       const code = roomService.generateRoomCode()
+      const { token: reconnectToken, hash: reconnectHash } = mintReconnectToken()
       const hostPlayer: Player = {
         id: uuidv4(),
         publicId: uuidv4(),
@@ -466,8 +482,15 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
         role: 'HOST',
         isHost: true,
         socketId: socket.id,
-        sessionId: socket.data.playerSessionId ?? socket.data.userId ?? `legacy_${uuidv4()}`,
+        // Chunk 2 item 5a — VERIFIED identity first. This read
+        // `playerSessionId ?? userId ?? legacy_uuid`, i.e. the client-asserted string outranked
+        // the Clerk subject the auth middleware had just verified. Any client could therefore
+        // pin its own seat identity and, with 5b's old lookup, hand that identity to anyone.
+        // `sessionId` is now only a hint for recognising a returning client; the reconnect
+        // token below is what actually reclaims the seat.
+        sessionId: socket.data.userId ?? socket.data.playerSessionId ?? `legacy_${uuidv4()}`,
         uid: socket.data.userId ?? undefined,
+        reconnectHash,
       }
 
       const newRoom: Room = {
@@ -495,7 +518,7 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
       // Broadcast update to public room watchers
       matchmakingService.broadcastPublicRooms(io)
 
-      callback({ success: true, code })
+      callback({ success: true, code, reconnectToken })
     } catch (error) {
       logger.error('Error in quick_play:', error)
       callback({ success: false, error: 'Failed to start quick play' })

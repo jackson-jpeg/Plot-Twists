@@ -14,6 +14,7 @@ import { roomToFirestore, firestoreToRoom, type FirestoreRoom } from '../utils/r
 import { getDatabase, Collections } from '../db'
 import { logger } from '../../lib/logger'
 import { cleanupRoomTwists } from './audience.service'
+import { reconnectTokenMatches } from '../utils/reconnectToken'
 
 // ── Hot cache ──────────────────────────────────────────────
 
@@ -314,48 +315,49 @@ export function markPlayerReconnected(roomCode: string, playerId: string, newSoc
   return { player, room }
 }
 
-/** Find a player across all rooms by userId (uid) */
-export function findPlayerByUserId(userId: string): { room: Room; playerId: string; player: Player } | null {
-  for (const [, room] of rooms.entries()) {
-    for (const [playerId, player] of room.players.entries()) {
-      if (player.uid === userId || playerId === userId) {
-        return { room, playerId, player }
-      }
-    }
-  }
-  return null
-}
+// ── Seat lookup ────────────────────────────────────────────
+//
+// Chunk 2 item 5c DELETED four functions that used to live here:
+// `findPlayerByUserId`, `findPlayerBySessionId`, `findPlayerInRoomByUserId` and
+// `findPlayerInRoomBySessionId`. Between them they accepted FOUR different strings as proof of
+// who you were — `player.uid`, `player.sessionId`, and (in both userId variants) the internal
+// `playerId` itself, via `player.uid === userId || playerId === userId`.
+//
+// That last clause is the one that mattered: it made the room's internal player key a valid
+// login. Every additional accepted credential is another thing that must never leak, and D2b
+// had already shown those values being broadcast to the whole room in `players_update`.
+//
+// They are deleted rather than left unused. Only the reconnect path called them, and a dead
+// helper named `findPlayerBySessionId` is an invitation for the next reconnect bug to be fixed
+// by calling it again. What replaces them are the two below: one verified identity, one
+// server-issued secret. Nothing else resolves a seat.
 
-/** Find a player across all rooms by stable player session ID */
-export function findPlayerBySessionId(sessionId: string): { room: Room; playerId: string; player: Player } | null {
-  for (const [, room] of rooms.entries()) {
-    for (const [playerId, player] of room.players.entries()) {
-      if (player.sessionId === sessionId) {
-        return { room, playerId, player }
-      }
-    }
-  }
-  return null
-}
-
-/** Find a player in a specific room by userId */
-export function findPlayerInRoomByUserId(roomCode: string, userId: string): { playerId: string; player: Player } | null {
+/** Find a player in a room by VERIFIED Clerk subject. The middleware is the only writer of `uid`. */
+export function findPlayerInRoomByUid(roomCode: string, uid: string): { playerId: string; player: Player } | null {
+  if (!uid) return null
   const room = rooms.get(roomCode.toUpperCase())
   if (!room) return null
   for (const [playerId, player] of room.players.entries()) {
-    if (player.uid === userId || playerId === userId) {
+    if (player.uid && player.uid === uid) {
       return { playerId, player }
     }
   }
   return null
 }
 
-/** Find a player in a specific room by stable player session ID */
-export function findPlayerInRoomBySessionId(roomCode: string, sessionId: string): { playerId: string; player: Player } | null {
+/**
+ * Find a player in a room by the server-issued reconnect token (Chunk 2 item 5b).
+ *
+ * Compares against the stored SHA-256, in constant time, per seat. Note this walks every player
+ * rather than short-circuiting on the first hash mismatch — the loop is over at most seven
+ * seats, and matching per-seat is what makes one player's token useless against another's.
+ */
+export function findPlayerInRoomByReconnectToken(roomCode: string, token: string): { playerId: string; player: Player } | null {
+  if (!token) return null
   const room = rooms.get(roomCode.toUpperCase())
   if (!room) return null
   for (const [playerId, player] of room.players.entries()) {
-    if (player.sessionId === sessionId) {
+    if (reconnectTokenMatches(token, player.reconnectHash)) {
       return { playerId, player }
     }
   }

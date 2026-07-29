@@ -14,6 +14,7 @@ import { PublicRoomCard } from './PublicRoomCard'
 import { isBetaFeatureEnabled } from '@/lib/betaFeatures'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
+import { setReconnectToken } from '@/lib/playerSession'
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -243,12 +244,15 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
     setError(''); setIsJoining(true)
     const upperRoomCode = roomCode.toUpperCase()
 
-    withTimeout<{ success: boolean; error?: string; role?: string; players?: PublicPlayer[]; publicId?: string }>(
+    withTimeout<{ success: boolean; error?: string; role?: string; players?: PublicPlayer[]; publicId?: string; reconnectToken?: string }>(
       (cb) => socket.emit('join_room', upperRoomCode, nickname, cb),
       8000
     ).then((response) => {
       setIsJoining(false)
       if (response.success) {
+        // Chunk 2 item 5b. This ack is the ONLY time the server sends this value; if it is not
+        // stored here, this seat can never be reclaimed after a disconnect.
+        if (response.reconnectToken) setReconnectToken(upperRoomCode, response.reconnectToken)
         const role = response.role || 'PLAYER'
         analytics.gameJoined(role === 'SPECTATOR' ? 'spectator' : 'player')
         successHaptic()

@@ -141,10 +141,35 @@ Record the numbers, not "verified". **The Sanger isolation is not proven until t
 
 ---
 
-## Chunk 4 — IP de-risk (THREE LAYERS — ship together)
+## Chunk 4 — IP de-risk (THREE LAYERS — ship together) ✅ CODE-COMPLETE 2026-07-29
 
 **Goal:** remove the S1 legal exposure. **Machine:** `[VPS]`
-**Blocked on:** Chunk 2 item 1 (which *is* layer 2).
+**Was blocked on:** Chunk 2 item 1 (which *is* layer 2) — **layer 2 was built here**, because the
+re-verification found it had never landed despite the record saying it shipped with Chunk 2.
+
+| Part | Commit | State |
+|---|---|---|
+| 4a — poster briefs + assets | `8c1ca476` (web), `e24f8dee` (iOS) | ✅ |
+| Layer 2 — server-side ID resolution | `5b383321` | ✅ |
+| Layer 3 — output screening | `5b383321` | ✅ |
+| Layer 1 — catalog rewrite | `b0277826` | ✅ |
+
+**Done-criterion met:** `grep -iE "shrek\|seinfeld\|darth\|barbie\|hogwarts\|marvel\|sopranos"`
+across `lib/` and `server/` returns **zero**; screening every prompt/service/data file with the
+layer 3 matcher returns **zero**; a player submitting the literal string `Shrek` is rejected at the
+server (`cardCatalog.service.test.ts`, and harness `abuse` — both now green).
+
+**What is NOT closed, and must not be reported as closed:**
+- The layer 3 screen is a **deterministic term list**. It catches named entities only —
+  *"a wheezing tyrant in black armour who is secretly your father"* passes clean. A semantic pass
+  is the follow-up and is not built.
+- Layer 2 **removed the "✎ Write your own" free-text card**, a user-visible feature, and that
+  partly contradicts `AUDIT.md` Option B. Option B can return, but only via cards with IDs.
+- Two adjacent S3s were found and deliberately **not** fixed: custom card packs are selected but
+  never dealt, and a player can submit a card they were not dealt. Both in `AUDIT.md`.
+- **A full game has not been played end-to-end against the rewritten catalog by a human.** The
+  harness plays it; nobody has read the output for whether it is still funny. That is the one
+  done-criterion below that automation cannot close.
 
 > The IP fix is not the catalog rewrite. It is three layers, and shipping any one alone is theater.
 > — Jackson, 2026-07-28

@@ -19,7 +19,7 @@ import { applyRoomRecoverySnapshot } from '@/lib/roomRecovery'
 
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
-import { useSelectionStore } from '@/stores/selectionStore'
+import { useSelectionStore, toSelectionInput } from '@/stores/selectionStore'
 import { useConnectionStore } from '@/stores/connectionStore'
 import { useVotingStore } from '@/stores/votingStore'
 import { initStoreSubscriptions } from '@/stores/subscriptions'
@@ -154,7 +154,7 @@ function JoinPageContent() {
   // Reset orchestrator state when returning to LOBBY
   useEffect(() => {
     if (gameState === 'LOBBY') {
-      useSelectionStore.getState().setSelection({ character: '', setting: '', circumstance: '' })
+      useSelectionStore.getState().setSelection({ character: null, setting: null, circumstance: null })
       useSelectionStore.getState().setHasSubmitted(false)
       useSelectionStore.getState().setIsSubmitting(false)
       setHasTriggeredSelectionConfetti(false)
@@ -194,8 +194,9 @@ function JoinPageContent() {
   }
 
   const handleSubmitCards = () => {
-    const sel = useSelectionStore.getState().selection
-    if (!socket || !roomCode || !sel.character || !sel.setting || !sel.circumstance) {
+    // IP layer 2: the wire carries catalog IDs, never card text.
+    const sel = toSelectionInput(useSelectionStore.getState().selection)
+    if (!socket || !roomCode || !sel) {
       toast.error('Please select all cards'); return
     }
     useSelectionStore.getState().setIsSubmitting(true)

@@ -21,7 +21,7 @@ import { applyRoomRecoverySnapshot } from '@/lib/roomRecovery'
 
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
-import { useSelectionStore } from '@/stores/selectionStore'
+import { useSelectionStore, toSelectionInput } from '@/stores/selectionStore'
 import { initStoreSubscriptions } from '@/stores/subscriptions'
 import { socketManager } from '@/lib/socketManager'
 import { Button, PageContainer } from '@/components/ui'
@@ -244,8 +244,9 @@ function HostPageContent() {
   }
 
   const handleSubmitSoloCards = () => {
-    const sel = useSelectionStore.getState().selection
-    if (!socket || !roomCode || !sel.character || !sel.setting || !sel.circumstance) {
+    // IP layer 2: the wire carries catalog IDs, never card text.
+    const sel = toSelectionInput(useSelectionStore.getState().selection)
+    if (!socket || !roomCode || !sel) {
       toast.error('Please select all cards'); return
     }
     useSelectionStore.getState().setIsSubmitting(true)

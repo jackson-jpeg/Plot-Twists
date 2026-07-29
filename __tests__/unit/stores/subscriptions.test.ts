@@ -414,7 +414,7 @@ describe('initStoreSubscriptions', () => {
     // Set up dirty state across stores
     useGameStore.getState().setGameState('RESULTS')
     useScriptStore.getState().setScript({ title: 'Old', synopsis: '', lines: [] })
-    useSelectionStore.getState().setAvailableCards({ characters: ['X'], settings: ['Y'], circumstances: ['Z'] })
+    useSelectionStore.getState().setAvailableCards({ characters: [{ id: 'x', name: 'X' }], settings: [{ id: 'y', name: 'Y' }], circumstances: [{ id: 'z', name: 'Z' }] })
     useAudienceStore.getState().addMessage({ id: 'm1', senderId: 'u1', senderName: 'Fan', text: 'Hi', timestamp: 1, isPreset: false })
     useVotingStore.getState().setResults({ allResults: [{ playerName: 'A', votes: 1 }] })
     useVotingStore.getState().setDirectorsReview({

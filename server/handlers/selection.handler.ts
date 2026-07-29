@@ -1,8 +1,8 @@
 // server/handlers/selection.handler.ts
 import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
-import { validateCardSelection } from '../utils/validation'
-import { getFilteredContent } from '@/lib/content'
+import { validateCardSelectionInput } from '../utils/validation'
+import { dealCards, resolveCardSelection } from '../services/cardCatalog.service'
 import { requireHost } from '../socket/helpers'
 import { notifyGameStarting } from '../services/notification.service'
 import { startScriptGeneration } from './game.helpers'
@@ -13,7 +13,7 @@ import { toPublicPlayer, toPublicPlayers, findByPublicId } from '../socket/seria
 
 export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
   // Submit card selections
-  socket.on('submit_cards', withErrorHandler(socket, 'submit_cards', (roomCode, selections, callback) => {
+  socket.on('submit_cards', withErrorHandler(socket, 'submit_cards', async (roomCode, selections, callback) => {
     try {
       const room = roomService.getRoomFromCache(roomCode)
       if (!room) {
@@ -27,10 +27,27 @@ export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx:
         return
       }
 
-      // Validate and sanitize card selections
-      const validatedSelections = validateCardSelection(selections)
-      if (!validatedSelections) {
+      // IP layer 2, in two steps.
+      //
+      // 1. Shape: is this three catalog IDs? Free text fails here.
+      const input = validateCardSelectionInput(selections)
+      if (!input) {
         callback({ success: false, error: 'Invalid card selections' })
+        return
+      }
+
+      // 2. Existence: do those IDs name real cards in THIS room's catalog?
+      //    `validatedSelections` is built from catalog values, so nothing the
+      //    client sent survives into room.selections.
+      //
+      //    This await must stay AHEAD of every mutation below. Two players
+      //    submitting simultaneously each resume into a fully synchronous
+      //    mutate-then-check block, so exactly one of them sees "all
+      //    submitted" and starts generation. Moving the await later reopens
+      //    that race — harness case `concurrentSubmit`.
+      const validatedSelections = await resolveCardSelection(room, input)
+      if (!validatedSelections) {
+        callback({ success: false, error: 'Those cards are not in play' })
         return
       }
 
@@ -93,7 +110,7 @@ export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx:
   }))
 
   // Start game
-  socket.on('start_game', withErrorHandler(socket, 'start_game', (roomCode) => {
+  socket.on('start_game', withErrorHandler(socket, 'start_game', async (roomCode) => {
     const room = roomService.getRoomFromCache(roomCode)
     if (!room) return
     if (!requireHost(room, socket)) return
@@ -120,21 +137,9 @@ export function registerSelectionHandlers(io: AppServer, socket: AppSocket, ctx:
     // Notify players that the game has started
     notifyGameStarting(room).catch(() => {})
 
-    // Send available cards to all players
-    // Solo: full catalog (players can search/browse everything)
-    // Multiplayer: random hand of 8 per category (keeps pace fast, forces strategy)
-    if (room.gameMode === 'SOLO') {
-      const content = getFilteredContent(room.isMature)
-      io.to(roomCode).emit('available_cards', content)
-    } else {
-      const handSize = 8
-      const content = getFilteredContent(room.isMature)
-      const shuffled = {
-        characters: [...content.characters].sort(() => Math.random() - 0.5).slice(0, handSize),
-        settings: [...content.settings].sort(() => Math.random() - 0.5).slice(0, handSize),
-        circumstances: [...content.circumstances].sort(() => Math.random() - 0.5).slice(0, handSize),
-      }
-      io.to(roomCode).emit('available_cards', shuffled)
-    }
+    // Send available cards to all players.
+    // Solo: full catalog (players can search/browse everything).
+    // Multiplayer: random hand of 8 per category (pacing, not a boundary).
+    io.to(roomCode).emit('available_cards', await dealCards(room))
   }))
 }

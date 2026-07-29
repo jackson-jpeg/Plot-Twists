@@ -294,16 +294,53 @@ export interface PublicPlayer {
   title?: string
 }
 
+/**
+ * A RESOLVED selection. Every string in here came out of the server's own card
+ * catalog — never off the wire. This is what reaches the model prompt, the
+ * results screen and gameHistory.
+ *
+ * IP layer 2: clients cannot construct one of these. They send a
+ * `CardSelectionInput` of catalog IDs and the server builds this from them.
+ */
 export interface CardSelection {
   character: string
   setting: string
   circumstance: string
 }
 
+/**
+ * What a client is allowed to send for `submit_cards`. Catalog IDs only.
+ *
+ * If you are tempted to add a `customCharacter?: string` here, read
+ * AUDIT.md → "IP layer 2" first. Free text in this shape is defect D1.
+ */
+export interface CardSelectionInput {
+  characterId: string
+  settingId: string
+  circumstanceId: string
+}
+
+/** One dealt card. `id` is what comes back on submit; `name` is display only. */
+export interface CardOption {
+  id: string
+  name: string
+}
+
 export interface AvailableCards {
-  characters: string[]
-  settings: string[]
-  circumstances: string[]
+  characters: CardOption[]
+  settings: CardOption[]
+  circumstances: CardOption[]
+}
+
+/**
+ * Client-side working state for the card picker. Holds the whole option so the
+ * UI has a name to render and an id to submit, from one source of truth — an
+ * earlier shape kept names and ids in parallel fields and they drifted.
+ */
+export interface SelectedCards {
+  character: CardOption | null
+  setting: CardOption | null
+  circumstance: CardOption | null
 }
 
 export interface ScriptLine {
@@ -413,7 +450,7 @@ export interface RoomRecoverySnapshot {
   myPlayerId: string
   roomCode: string
   hasSubmittedSelection?: boolean
-  selection?: CardSelection
+  selection?: SelectedCards
   spectatorMessages?: SpectatorMessage[]
   votingStatus?: { hasVoted: boolean }
   results?: PublicGameResults | null
@@ -552,7 +589,7 @@ export interface ServerToClientEvents {
   server_restarting: (message: string) => void
   host_disconnected: (data: { message: string }) => void
   room_settings_update: (settings: RoomSettings) => void
-  available_cards: (cards: { characters: string[], settings: string[], circumstances: string[] }) => void
+  available_cards: (cards: AvailableCards) => void
 
   // Feature 1: Audience Interaction Events
   audience_reaction_received: (reaction: AudienceReaction) => void
@@ -620,7 +657,7 @@ export interface ClientToServerEvents {
   create_room: (settings: RoomSettings, callback: (response: { success: boolean, code?: string, error?: string }) => void) => void
   join_room: (roomCode: string, nickname: string, callback: (response: { success: boolean, error?: string, publicId?: string, players?: PublicPlayer[], settings?: RoomSettings, role?: PlayerRole }) => void) => void
   leave_room: (roomCode: string, callback: (response: { success: boolean, error?: string }) => void) => void
-  submit_cards: (roomCode: string, selections: CardSelection, callback: (response: { success: boolean, error?: string }) => void) => void
+  submit_cards: (roomCode: string, selections: CardSelectionInput, callback: (response: { success: boolean, error?: string }) => void) => void
   start_game: (roomCode: string) => void
   retry_script_generation: (roomCode: string) => void
   submit_vote: (roomCode: string, targetPublicId: string) => void

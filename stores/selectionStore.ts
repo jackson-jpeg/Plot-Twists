@@ -1,9 +1,14 @@
 import { create } from 'zustand'
-import type { AvailableCards, CardSelection } from '@/lib/types'
+import type { AvailableCards, CardSelectionInput, SelectedCards } from '@/lib/types'
 
 export interface SelectionStoreState {
   availableCards: AvailableCards | null
-  selection: CardSelection
+  /**
+   * Holds whole `CardOption`s, not names. The id is what `submit_cards` sends
+   * (IP layer 2); the name is display only. One source of truth on purpose —
+   * parallel name/id fields drift.
+   */
+  selection: SelectedCards
   hasSubmitted: boolean
   isSubmitting: boolean
   selectedPackId: string
@@ -13,7 +18,7 @@ export interface SelectionStoreState {
 
 export interface SelectionStoreActions {
   setAvailableCards: (cards: AvailableCards | null) => void
-  setSelection: (selection: CardSelection) => void
+  setSelection: (selection: SelectedCards) => void
   setHasSubmitted: (hasSubmitted: boolean) => void
   setIsSubmitting: (isSubmitting: boolean) => void
   setSelectedPackId: (packId: string) => void
@@ -24,7 +29,7 @@ export interface SelectionStoreActions {
 
 const initialState: SelectionStoreState = {
   availableCards: null,
-  selection: { character: '', setting: '', circumstance: '' },
+  selection: { character: null, setting: null, circumstance: null },
   hasSubmitted: false,
   isSubmitting: false,
   selectedPackId: '',
@@ -44,3 +49,17 @@ export const useSelectionStore = create<SelectionStoreState & SelectionStoreActi
   setGameSetupMode: (gameSetupMode) => set({ gameSetupMode }),
   reset: () => set(initialState),
 }))
+
+/**
+ * The wire payload for `submit_cards`. Returns null unless all three slots are
+ * filled, so callers cannot half-submit. IDs only — see `CardSelectionInput`.
+ */
+export function toSelectionInput(selection: SelectedCards): CardSelectionInput | null {
+  const { character, setting, circumstance } = selection
+  if (!character || !setting || !circumstance) return null
+  return {
+    characterId: character.id,
+    settingId: setting.id,
+    circumstanceId: circumstance.id,
+  }
+}

@@ -1,5 +1,5 @@
 import { useSelectionStore } from '@/stores/selectionStore'
-import type { AvailableCards, CardSelection } from '@/lib/types'
+import type { AvailableCards, SelectedCards } from '@/lib/types'
 
 describe('selectionStore', () => {
   beforeEach(() => {
@@ -21,9 +21,19 @@ describe('selectionStore', () => {
     const { setAvailableCards } = useSelectionStore.getState()
 
     const cards: AvailableCards = {
-      characters: ['Detective', 'Chef', 'Astronaut'],
-      settings: ['Space Station', 'Kitchen'],
-      circumstances: ['Power outage', 'Food fight'],
+      characters: [
+        { id: 'char-detective', name: 'Detective' },
+        { id: 'char-chef', name: 'Chef' },
+        { id: 'char-astronaut', name: 'Astronaut' },
+      ],
+      settings: [
+        { id: 'set-space-station', name: 'Space Station' },
+        { id: 'set-kitchen', name: 'Kitchen' },
+      ],
+      circumstances: [
+        { id: 'circ-power-outage', name: 'Power outage' },
+        { id: 'circ-food-fight', name: 'Food fight' },
+      ],
     }
 
     setAvailableCards(cards)
@@ -36,10 +46,10 @@ describe('selectionStore', () => {
   it('updates selection', () => {
     const { setSelection } = useSelectionStore.getState()
 
-    const selection: CardSelection = {
-      character: 'Detective',
-      setting: 'Space Station',
-      circumstance: 'Power outage',
+    const selection: SelectedCards = {
+      character: { id: 'char-detective', name: 'Detective' },
+      setting: { id: 'set-space-station', name: 'Space Station' },
+      circumstance: { id: 'circ-power-outage', name: 'Power outage' },
     }
 
     setSelection(selection)
@@ -82,11 +92,15 @@ describe('selectionStore', () => {
   it('resets to defaults', () => {
     const state = useSelectionStore.getState()
     state.setAvailableCards({
-      characters: ['Detective'],
-      settings: ['Space Station'],
-      circumstances: ['Power outage'],
+      characters: [{ id: 'char-detective', name: 'Detective' }],
+      settings: [{ id: 'set-space-station', name: 'Space Station' }],
+      circumstances: [{ id: 'circ-power-outage', name: 'Power outage' }],
     })
-    state.setSelection({ character: 'Detective', setting: 'Space Station', circumstance: 'Power outage' })
+    state.setSelection({
+      character: { id: 'char-detective', name: 'Detective' },
+      setting: { id: 'set-space-station', name: 'Space Station' },
+      circumstance: { id: 'circ-power-outage', name: 'Power outage' },
+    })
     state.setHasSubmitted(true)
     state.setIsSubmitting(true)
     state.setSelectedPackId('pack-123')

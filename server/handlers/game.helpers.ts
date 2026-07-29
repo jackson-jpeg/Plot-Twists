@@ -6,7 +6,9 @@
 import type { Server as SocketIOServer } from 'socket.io'
 import type { ClientToServerEvents, ServerToClientEvents, Room, Script } from '@/lib/types'
 import { SocketRateLimiter } from '../middleware/rateLimiter'
-import { getFilteredContent, getGreenRoomQuestion } from '@/lib/content'
+import { getGreenRoomQuestion } from '@/lib/content'
+import { dealCards } from '../services/cardCatalog.service'
+import { screenScript } from '../services/contentScreen.service'
 import { generateScript } from '../services/scriptGeneration.service'
 import { enhanceScriptWithAudio, getAmbienceTrack } from '../services/audio.service'
 import { resetReactionCounts, preGenerateTwistsForRoom } from '../services/audience.service'
@@ -62,8 +64,7 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
     }
     io.to(room.code).emit('game_state_change', 'SELECTION')
     io.to(room.code).emit('players_update', toPublicPlayers(room))
-    const content = getFilteredContent(room.isMature)
-    io.to(room.code).emit('available_cards', content)
+    io.to(room.code).emit('available_cards', await dealCards(room))
     roomService.updateRoom(room)
     return
   }
@@ -78,8 +79,7 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
     }
     io.to(room.code).emit('game_state_change', 'SELECTION')
     io.to(room.code).emit('players_update', toPublicPlayers(room))
-    const content = getFilteredContent(room.isMature)
-    io.to(room.code).emit('available_cards', content)
+    io.to(room.code).emit('available_cards', await dealCards(room))
     roomService.updateRoom(room)
     return
   }
@@ -142,10 +142,14 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
       (progress) => io.to(room.code).emit('script_generation_progress', progress)
     )
 
+    // IP layer 3 — screen what the model volunteered before anyone sees it.
+    // Runs before the audio pass so redactions land in the text that is spoken.
+    const screened = screenScript(script, room.code).script
+
     // Enhance with audio metadata if audio is enabled
     const finalScript = room.audioSettings
-      ? enhanceScriptWithAudio(script, room.audioSettings, chosenSetting)
-      : script
+      ? enhanceScriptWithAudio(screened, room.audioSettings, chosenSetting)
+      : screened
 
     room.script = finalScript
     room.gameState = 'PERFORMING'
@@ -232,7 +236,6 @@ export async function startScriptGeneration(room: Room, io: SocketIOServer<Clien
     io.to(room.code).emit('players_update', toPublicPlayers(room))
 
     // Send cards again
-    const content = getFilteredContent(room.isMature)
-    io.to(room.code).emit('available_cards', content)
+    io.to(room.code).emit('available_cards', await dealCards(room))
   }
 }

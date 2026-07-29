@@ -5,9 +5,15 @@ import * as roomService from '../services/room.service'
 import type { Player, Room, RoomRecoverySnapshot } from '@/lib/types'
 import { logger } from '@/lib/logger'
 import { toPublicPlayer, toPublicPlayers, findByPublicId } from '../socket/serialize'
+import { toSelectedCards } from '../services/cardCatalog.service'
 
-export function buildRoomRecoverySnapshot(room: Room, playerId: string, player: Player): RoomRecoverySnapshot {
+export async function buildRoomRecoverySnapshot(room: Room, playerId: string, player: Player): Promise<RoomRecoverySnapshot> {
   const hostDisconnected = room.gameState === 'PERFORMING' && room.host.connected === false
+
+  // Names -> pickable options, so the "Your Scene" recap survives a reconnect.
+  // Reverse lookup on trusted server-side names, never on wire input.
+  const stored = room.selections.get(playerId)
+  const selection = stored ? await toSelectedCards(room, stored) : undefined
 
   return {
     gameState: room.gameState,
@@ -22,7 +28,7 @@ export function buildRoomRecoverySnapshot(room: Room, playerId: string, player: 
     assignedCharacter: player.assignedCharacter,
     myRole: player.role,
     hasSubmittedSelection: player.hasSubmittedSelection,
-    selection: room.selections.get(playerId) ?? undefined,
+    selection,
     spectatorMessages: room.audienceInteraction?.spectatorMessages ?? [],
     votingStatus: { hasVoted: !!room.votes.get(playerId) },
     results: room.results ?? null,
@@ -93,7 +99,7 @@ export function registerReconnectionHandlers(io: AppServer, socket: AppSocket, c
       logger.info(`Auto-resumed performance in room ${upperCode} after host reconnect`)
     }
 
-    const snapshot = buildRoomRecoverySnapshot(room, playerId, player)
+    const snapshot = await buildRoomRecoverySnapshot(room, playerId, player)
 
     callback({ success: true, snapshot })
   }))

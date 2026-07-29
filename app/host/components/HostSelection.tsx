@@ -130,15 +130,15 @@ export function HostSelection({
             <div className="flex flex-col gap-2">
               <div className="flex items-start gap-2">
                 <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-tertiary)] min-w-[70px]">Character</span>
-                <span className="text-sm text-[var(--color-text-primary)]">{selection.character}</span>
+                <span className="text-sm text-[var(--color-text-primary)]">{selection.character?.name}</span>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-tertiary)] min-w-[70px]">Setting</span>
-                <span className="text-sm text-[var(--color-text-primary)]">{selection.setting}</span>
+                <span className="text-sm text-[var(--color-text-primary)]">{selection.setting?.name}</span>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--color-text-tertiary)] min-w-[70px]">Wild Card</span>
-                <span className="text-sm text-[var(--color-text-primary)]">{selection.circumstance}</span>
+                <span className="text-sm text-[var(--color-text-primary)]">{selection.circumstance?.name}</span>
               </div>
             </div>
           </motion.div>

@@ -156,7 +156,7 @@ export function initStoreSubscriptions(
     if (gameStore.role !== 'host' && gameStore.myRole !== 'SPECTATOR') {
       const sel = useSelectionStore.getState().selection
       if (sel.character) {
-        gameStore.setMyCharacter(sel.character)
+        gameStore.setMyCharacter(sel.character.name)
       }
     }
   }))

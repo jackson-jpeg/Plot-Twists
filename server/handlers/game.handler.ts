@@ -22,6 +22,7 @@ import {
 import { startScriptGeneration, pushOnStateChange } from './game.helpers'
 import * as roomService from '../services/room.service'
 import { logger } from '@/lib/logger'
+import { screenScript } from '../services/contentScreen.service'
 
 export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: HandlerContext) {
   // Retry script generation — re-generates with existing selections without going back to card selection
@@ -297,10 +298,15 @@ export function registerGameHandlers(io: AppServer, socket: AppSocket, ctx: Hand
         (progress) => io.to(roomCode).emit('script_generation_progress', progress)
       )
 
+      // IP layer 3 — sequels get screened too. The sequel prompt carries the
+      // previous script forward, so an unscreened franchise name would not only
+      // ship, it would be fed back in as context for the next one.
+      const screenedSequel = screenScript(sequelScript, roomCode).script
+
       // Enhance with audio metadata if audio is enabled
       const finalScript = room.audioSettings
-        ? enhanceScriptWithAudio(sequelScript, room.audioSettings, chosenSetting)
-        : sequelScript
+        ? enhanceScriptWithAudio(screenedSequel, room.audioSettings, chosenSetting)
+        : screenedSequel
 
       // Update room with new script
       room.script = finalScript

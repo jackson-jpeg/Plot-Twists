@@ -9071,7 +9071,1015 @@
       "totalXP": 175,
       "level": 2,
       "title": "Rookie"
+    },
+    {
+      "playerId": "d667c964-3bc1-4299-9b4a-fec164147cd3",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "April Ludgate": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296138721
+        }
+      ],
+      "recentGames": [
+        "e9504d3d-b1ed-4f29-92c2-629ac1086c92"
+      ],
+      "joinedAt": 1785296138719,
+      "lastPlayedAt": 1785296138721,
+      "favoriteCharacter": "April Ludgate",
+      "id": "d667c964-3bc1-4299-9b4a-fec164147cd3",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "cb46216a-3c37-4bf1-8101-f0c1de74e0dd",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "April Ludgate": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296138739
+        }
+      ],
+      "recentGames": [
+        "e9504d3d-b1ed-4f29-92c2-629ac1086c92"
+      ],
+      "joinedAt": 1785296138738,
+      "lastPlayedAt": 1785296138739,
+      "favoriteCharacter": "April Ludgate",
+      "id": "cb46216a-3c37-4bf1-8101-f0c1de74e0dd",
+      "totalXP": 495,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "f6c4ed6a-8f58-427c-af7f-5dcaba8e019e",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "April Ludgate": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296138752
+        }
+      ],
+      "recentGames": [
+        "e9504d3d-b1ed-4f29-92c2-629ac1086c92"
+      ],
+      "joinedAt": 1785296138750,
+      "lastPlayedAt": 1785296138752,
+      "favoriteCharacter": "April Ludgate",
+      "id": "f6c4ed6a-8f58-427c-af7f-5dcaba8e019e",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "af873a46-c3c9-4a63-a99b-a29180a8c9b4",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Fiona": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296205547
+        }
+      ],
+      "recentGames": [
+        "01ce8f72-32a7-41d6-a08f-6ccee771999d"
+      ],
+      "joinedAt": 1785296205545,
+      "lastPlayedAt": 1785296205547,
+      "favoriteCharacter": "Fiona",
+      "id": "af873a46-c3c9-4a63-a99b-a29180a8c9b4",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "c5014ed6-5a1b-4cd6-ac5e-7afee1bf6022",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Fiona": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296205564
+        }
+      ],
+      "recentGames": [
+        "01ce8f72-32a7-41d6-a08f-6ccee771999d"
+      ],
+      "joinedAt": 1785296205562,
+      "lastPlayedAt": 1785296205564,
+      "favoriteCharacter": "Fiona",
+      "id": "c5014ed6-5a1b-4cd6-ac5e-7afee1bf6022",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "db487987-4330-4dfe-a353-9bfff38fcf0c",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Fiona": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296205576
+        }
+      ],
+      "recentGames": [
+        "01ce8f72-32a7-41d6-a08f-6ccee771999d"
+      ],
+      "joinedAt": 1785296205574,
+      "lastPlayedAt": 1785296205576,
+      "favoriteCharacter": "Fiona",
+      "id": "db487987-4330-4dfe-a353-9bfff38fcf0c",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "3493f39b-0484-4c31-b3a6-aa6a9469f8d8",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Rey": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296265719
+        }
+      ],
+      "recentGames": [
+        "23a75716-72fa-4081-bdbf-fe11f27d0087"
+      ],
+      "joinedAt": 1785296265717,
+      "lastPlayedAt": 1785296265719,
+      "favoriteCharacter": "Rey",
+      "id": "3493f39b-0484-4c31-b3a6-aa6a9469f8d8",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "3d2287bf-57de-41e7-8b86-5c716033b0f2",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Rey": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296265731
+        }
+      ],
+      "recentGames": [
+        "23a75716-72fa-4081-bdbf-fe11f27d0087"
+      ],
+      "joinedAt": 1785296265730,
+      "lastPlayedAt": 1785296265731,
+      "favoriteCharacter": "Rey",
+      "id": "3d2287bf-57de-41e7-8b86-5c716033b0f2",
+      "totalXP": 395,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "8287dc05-b636-407c-9459-1f8b935e4dbe",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Rey": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296265738
+        }
+      ],
+      "recentGames": [
+        "23a75716-72fa-4081-bdbf-fe11f27d0087"
+      ],
+      "joinedAt": 1785296265737,
+      "lastPlayedAt": 1785296265738,
+      "favoriteCharacter": "Rey",
+      "id": "8287dc05-b636-407c-9459-1f8b935e4dbe",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "30e18d24-ee4c-4b4b-8abb-8e9387070aee",
+      "nickname": "P1",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Scarlet Witch": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296316022
+        }
+      ],
+      "recentGames": [
+        "dff88eff-9f36-4025-881b-98f6383c42f3"
+      ],
+      "joinedAt": 1785296316021,
+      "lastPlayedAt": 1785296316022,
+      "favoriteCharacter": "Scarlet Witch",
+      "id": "30e18d24-ee4c-4b4b-8abb-8e9387070aee",
+      "totalXP": 495,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "d2fbe77c-3dc0-499b-8624-75ee596345bd",
+      "nickname": "P2",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Scarlet Witch": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296316033
+        }
+      ],
+      "recentGames": [
+        "dff88eff-9f36-4025-881b-98f6383c42f3"
+      ],
+      "joinedAt": 1785296316032,
+      "lastPlayedAt": 1785296316033,
+      "favoriteCharacter": "Scarlet Witch",
+      "id": "d2fbe77c-3dc0-499b-8624-75ee596345bd",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "79d02909-b517-42d5-8bc9-281d150ad44a",
+      "nickname": "P3",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Scarlet Witch": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296316047
+        }
+      ],
+      "recentGames": [
+        "dff88eff-9f36-4025-881b-98f6383c42f3"
+      ],
+      "joinedAt": 1785296316043,
+      "lastPlayedAt": 1785296316047,
+      "favoriteCharacter": "Scarlet Witch",
+      "id": "79d02909-b517-42d5-8bc9-281d150ad44a",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "5d7a99c1-378b-43ca-b748-8ad87badec43",
+      "nickname": "P4",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Scarlet Witch": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296316063
+        }
+      ],
+      "recentGames": [
+        "dff88eff-9f36-4025-881b-98f6383c42f3"
+      ],
+      "joinedAt": 1785296316057,
+      "lastPlayedAt": 1785296316063,
+      "favoriteCharacter": "Scarlet Witch",
+      "id": "5d7a99c1-378b-43ca-b748-8ad87badec43",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "c5acc658-15fa-43dc-a182-09edebf2979a",
+      "nickname": "P5",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Scarlet Witch": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296316096
+        }
+      ],
+      "recentGames": [
+        "dff88eff-9f36-4025-881b-98f6383c42f3"
+      ],
+      "joinedAt": 1785296316091,
+      "lastPlayedAt": 1785296316096,
+      "favoriteCharacter": "Scarlet Witch",
+      "id": "c5acc658-15fa-43dc-a182-09edebf2979a",
+      "totalXP": 275,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "4c40281c-8ca6-4f34-82e7-39a878369a38",
+      "nickname": "P6",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Scarlet Witch": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296316127
+        }
+      ],
+      "recentGames": [
+        "dff88eff-9f36-4025-881b-98f6383c42f3"
+      ],
+      "joinedAt": 1785296316126,
+      "lastPlayedAt": 1785296316127,
+      "favoriteCharacter": "Scarlet Witch",
+      "id": "4c40281c-8ca6-4f34-82e7-39a878369a38",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "235f5fd8-7622-413e-90a4-22a1b5ca888f",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Chandler Bing": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296377504
+        }
+      ],
+      "recentGames": [
+        "5883cb1b-498c-44b3-962a-d851f8d802ec"
+      ],
+      "joinedAt": 1785296377502,
+      "lastPlayedAt": 1785296377504,
+      "favoriteCharacter": "Chandler Bing",
+      "id": "235f5fd8-7622-413e-90a4-22a1b5ca888f",
+      "totalXP": 195,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "366b62d8-95e3-4c47-b426-7a14aeb8943f",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 2,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Chandler Bing": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296377517
+        }
+      ],
+      "recentGames": [
+        "5883cb1b-498c-44b3-962a-d851f8d802ec"
+      ],
+      "joinedAt": 1785296377516,
+      "lastPlayedAt": 1785296377517,
+      "favoriteCharacter": "Chandler Bing",
+      "id": "366b62d8-95e3-4c47-b426-7a14aeb8943f",
+      "totalXP": 415,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "8b050c8f-0ad3-4ce4-95bd-dbf6718f2a70",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Chandler Bing": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296377527
+        }
+      ],
+      "recentGames": [
+        "5883cb1b-498c-44b3-962a-d851f8d802ec"
+      ],
+      "joinedAt": 1785296377527,
+      "lastPlayedAt": 1785296377527,
+      "favoriteCharacter": "Chandler Bing",
+      "id": "8b050c8f-0ad3-4ce4-95bd-dbf6718f2a70",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "c649b5bd-80d6-4b55-9b79-b46acb9498a7",
+      "nickname": "Alice",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 1,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Dwight Schrute": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296380111
+        }
+      ],
+      "recentGames": [
+        "f4ebc9a6-c76f-48e2-8637-101751d64152"
+      ],
+      "joinedAt": 1785296380109,
+      "lastPlayedAt": 1785296380111,
+      "favoriteCharacter": "Dwight Schrute",
+      "id": "c649b5bd-80d6-4b55-9b79-b46acb9498a7",
+      "totalXP": 295,
+      "level": 2,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "9ddc8b25-985c-4839-9a09-3a7afd68ea71",
+      "nickname": "Bob",
+      "gamesPlayed": 1,
+      "gamesWon": 1,
+      "winRate": 100,
+      "totalVotesReceived": 2,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Dwight Schrute": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 1
+        }
+      },
+      "currentWinStreak": 1,
+      "bestWinStreak": 1,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296380142
+        }
+      ],
+      "recentGames": [
+        "f4ebc9a6-c76f-48e2-8637-101751d64152"
+      ],
+      "joinedAt": 1785296380137,
+      "lastPlayedAt": 1785296380142,
+      "favoriteCharacter": "Dwight Schrute",
+      "id": "9ddc8b25-985c-4839-9a09-3a7afd68ea71",
+      "totalXP": 515,
+      "level": 3,
+      "title": "Rookie"
+    },
+    {
+      "playerId": "50a6b9f7-466a-4b23-aaad-cd2ae6d52b6a",
+      "nickname": "Carol",
+      "gamesPlayed": 1,
+      "gamesWon": 0,
+      "winRate": 0,
+      "totalVotesReceived": 0,
+      "totalReactionsReceived": 0,
+      "characterCounts": {
+        "Dwight Schrute": 1
+      },
+      "gameModeStats": {
+        "solo": {
+          "played": 0,
+          "won": 0
+        },
+        "headToHead": {
+          "played": 0,
+          "won": 0
+        },
+        "ensemble": {
+          "played": 1,
+          "won": 0
+        }
+      },
+      "currentWinStreak": 0,
+      "bestWinStreak": 0,
+      "achievements": [
+        {
+          "id": "first_game",
+          "name": "Debut Performance",
+          "description": "Complete your first game",
+          "icon": "🎬",
+          "rarity": "common",
+          "unlockedAt": 1785296380152
+        }
+      ],
+      "recentGames": [
+        "f4ebc9a6-c76f-48e2-8637-101751d64152"
+      ],
+      "joinedAt": 1785296380151,
+      "lastPlayedAt": 1785296380152,
+      "favoriteCharacter": "Dwight Schrute",
+      "id": "50a6b9f7-466a-4b23-aaad-cd2ae6d52b6a",
+      "totalXP": 175,
+      "level": 2,
+      "title": "Rookie"
     }
   ],
-  "savedAt": 1785293059657
+  "savedAt": 1785296380162
 }

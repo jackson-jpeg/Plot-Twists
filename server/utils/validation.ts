@@ -1,5 +1,5 @@
 import { MAX_NICKNAME_LENGTH } from './constants'
-import type { CardSelection } from '../../lib/types'
+import type { CardSelectionInput } from '../../lib/types'
 
 /**
  * Sanitize user input to prevent XSS and injection attacks
@@ -57,28 +57,43 @@ export function isValidUUID(id: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
 }
 
-const MAX_CARD_FIELD_LENGTH = 200
 const VALID_GAME_MODES = ['SOLO', 'HEAD_TO_HEAD', 'ENSEMBLE'] as const
 
+/** Catalog IDs look like `char-michael-scott` / a uuid. Nothing else is an ID. */
+const CARD_ID_PATTERN = /^[a-z0-9][a-z0-9-]{0,127}$/i
+
 /**
- * Validate and sanitize a CardSelection object from the client.
- * Returns sanitized selection or null if invalid.
+ * Shape-check a `submit_cards` payload. IP layer 2 — see
+ * `server/services/cardCatalog.service.ts` for the invariant this serves.
+ *
+ * This deliberately does NOT sanitise-and-accept. There is nothing to sanitise:
+ * an ID either matches the ID grammar or the payload is not a selection. The
+ * previous version took `{character, setting, circumstance}` free text, stripped
+ * `<>'"` from it, truncated to 200 chars and passed it through to the Claude
+ * prompt. That was defect D1, and stripping a bracket was never validation.
+ *
+ * Returning non-null here means "this is shaped like a selection", NOT "these
+ * cards exist". Existence is `resolveCardSelection`, which needs the room.
  */
-export function validateCardSelection(selections: unknown): CardSelection | null {
-  if (!selections || typeof selections !== 'object') return null
+export function validateCardSelectionInput(selections: unknown): CardSelectionInput | null {
+  if (!selections || typeof selections !== 'object' || Array.isArray(selections)) return null
 
   const sel = selections as Record<string, unknown>
-  if (typeof sel.character !== 'string' || typeof sel.setting !== 'string' || typeof sel.circumstance !== 'string') {
+  const { characterId, settingId, circumstanceId } = sel
+
+  if (typeof characterId !== 'string' || typeof settingId !== 'string' || typeof circumstanceId !== 'string') {
     return null
   }
 
-  const character = sanitizeInput(sel.character, MAX_CARD_FIELD_LENGTH)
-  const setting = sanitizeInput(sel.setting, MAX_CARD_FIELD_LENGTH)
-  const circumstance = sanitizeInput(sel.circumstance, MAX_CARD_FIELD_LENGTH)
+  if (
+    !CARD_ID_PATTERN.test(characterId) ||
+    !CARD_ID_PATTERN.test(settingId) ||
+    !CARD_ID_PATTERN.test(circumstanceId)
+  ) {
+    return null
+  }
 
-  if (!character || !setting || !circumstance) return null
-
-  return { character, setting, circumstance }
+  return { characterId, settingId, circumstanceId }
 }
 
 /**

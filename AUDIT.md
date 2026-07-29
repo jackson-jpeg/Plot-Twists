@@ -751,6 +751,73 @@ Because of the Track 3 injection hole, this is also unbounded: any player can ty
 
 ---
 
+### IP layer 2 — LANDED 2026-07-29. It had not landed before, contrary to the record.
+
+**The re-verification Jackson asked for is itself the finding.** He asked me to confirm the
+done-criterion ("literal `Shrek` rejected at the server") still held after the `PublicPlayer`
+retype, on the understanding that layer 2 shipped with Chunk 2. It had not.
+`server/utils/validation.ts:67` `validateCardSelection` still took `{character, setting,
+circumstance}` free text, stripped `<>'"`, truncated to 200 chars and accepted it — D1, untouched.
+Nothing regressed; the work was never done. The assertion audit had already implied this (three
+`validation.test.ts` gates were red pending "Chunk 2 item 1"), which is the second mechanism
+confirming it.
+
+Layer 1 was about to be written on top of a layer 2 that did not exist — the exact failure mode
+Jackson named: *"shipping any one alone is theater."*
+
+**What now enforces it.** `submit_cards` takes `CardSelectionInput` — three catalog IDs — and the
+server resolves them through `server/services/cardCatalog.service.ts`:
+
+```
+client → CardSelectionInput {characterId, settingId, circumstanceId}   IDs, never text
+       → validateCardSelectionInput()       shape: is this three identifiers?
+       → resolveCardSelection(room, input)  existence: do they name cards in THIS room's catalog?
+       → CardSelection {character, setting, circumstance}              names, from the CATALOG
+```
+
+The invariant: **every string that reaches a model prompt, `gameHistory`, or the results screen is
+a value the server read out of its own catalog.** `resolveCardSelection` builds a fresh object from
+catalog entries rather than spreading anything from the input, so there is no path for a caller's
+bytes to survive. As with D2b, the type is the enforcement — `ClientToServerEvents['submit_cards']`
+is typed to `CardSelectionInput`, so a site trying to send text does not compile.
+
+**Two layers, and neither alone is sufficient — worth stating because I got it wrong once.** My
+first draft of the gate test asserted that shape validation rejects the literal `"Shrek"`. It does
+not, and should not: `Shrek` is a syntactically valid identifier. Tightening the grammar to exclude
+it would mean banning capitals — which breaks custom packs (authors choose their own card IDs in
+`createCardPack`) while still admitting `shrek`. **The catalog check is what rejects it.** The
+done-criterion is asserted in `__tests__/unit/server/services/cardCatalog.service.test.ts`, with
+the reasoning recorded in a comment block in `validation.test.ts` so it is not "corrected" back.
+
+**User-visible removal: the "✎ Write your own" button is gone** (`components/CardPicker.tsx`). It
+was the client half of D1 — a text box whose contents went into the Claude prompt verbatim. This
+partly contradicts **Option B** below, which recommends user-supplied names as an opt-in
+complement. Option B is not dead, but it cannot return as a text box on the submit path: it needs
+the persistence audit that Option B itself calls "the hard part", and it must route through cards
+that carry IDs (i.e. the card-pack system). What was removed is the un-audited version.
+
+**Verified by:** `cardCatalog.service.test.ts` (custom packs, maturity filtering, fail-closed on an
+unreadable pack, and that the returned strings are the catalog's); the rewritten
+`validation.test.ts` gates; and harness `abuse`, which now drives **two** cases — injected prose
+and a well-formed-but-unknown ID — because only the second exercises the catalog.
+
+### Two adjacent defects found while doing this — recorded, not fixed
+
+**[S3] Custom card packs are selected but never dealt.** `getPackCards`
+(`cardpack.service.ts:110`) has no callers. Every `available_cards` emit site dealt from
+`getFilteredContent(room.isMature)` regardless of `room.cardPackId` — which is nonetheless set,
+persisted, reported in matchmaking and written to `gameHistory` as `cardPackUsed`. The community
+packs are decorative, and the history records a pack that was never in play.
+`cardCatalog.service.ts` now honours `room.cardPackId`, so the mechanism exists — but dealing the
+selected pack is a behaviour change, not an IP fix, and it is out of Chunk 4's scope. The client
+browse UI (`getFilteredContentRich`) is still standard-content-only, so packs would half-work today.
+
+**[S3] A player can submit a card they were not dealt.** Outside SOLO the server deals a random
+hand of 8 per category, but resolution is against the room's *full* catalog, so any real card ID is
+accepted. Fairness bug, not an IP one — every accepted ID is still server-side content — and
+closing it needs per-player hand state on the room, which the serializer would have to carry.
+Deliberately left: it would have widened this change past the IP boundary.
+
 ### Proposed de-risked content strategy
 
 Three options. My recommendation is a combination — see `DECISIONS.md` #4.

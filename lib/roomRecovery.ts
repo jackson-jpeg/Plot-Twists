@@ -36,7 +36,7 @@ export function applyRoomRecoverySnapshot(snapshot: RoomRecoverySnapshot): void 
   )
 
   selectionStore.setHasSubmitted(Boolean(snapshot.hasSubmittedSelection))
-  selectionStore.setSelection(snapshot.selection ?? { character: '', setting: '', circumstance: '' })
+  selectionStore.setSelection(snapshot.selection ?? { character: null, setting: null, circumstance: null })
 
   audienceStore.setSpectatorMessages(snapshot.spectatorMessages ?? [])
 

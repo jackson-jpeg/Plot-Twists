@@ -32500,31 +32500,31 @@
     {
       "code": "SSSS",
       "host": {
-        "id": "eb4cf60d-8faa-45ba-889e-ca5be60786b0",
-        "publicId": "3a4eabb8-c713-4209-9b09-69c70a227105",
+        "id": "99a69e62-9655-48b5-b2d7-6dd3b4c01969",
+        "publicId": "a9a9d7a7-7ecd-4181-8bc2-c276d7580d84",
         "nickname": "Host",
         "role": "HOST",
         "isHost": true,
-        "sessionId": "legacy_6cdbc23c-f831-4bfa-8fce-98eb119a96d0",
+        "sessionId": "legacy_848646c0-a871-4087-b312-e049df84f4b8",
         "connected": false
       },
       "players": {
-        "eb4cf60d-8faa-45ba-889e-ca5be60786b0": {
-          "id": "eb4cf60d-8faa-45ba-889e-ca5be60786b0",
-          "publicId": "3a4eabb8-c713-4209-9b09-69c70a227105",
+        "99a69e62-9655-48b5-b2d7-6dd3b4c01969": {
+          "id": "99a69e62-9655-48b5-b2d7-6dd3b4c01969",
+          "publicId": "a9a9d7a7-7ecd-4181-8bc2-c276d7580d84",
           "nickname": "Host",
           "role": "HOST",
           "isHost": true,
-          "sessionId": "legacy_6cdbc23c-f831-4bfa-8fce-98eb119a96d0",
+          "sessionId": "legacy_848646c0-a871-4087-b312-e049df84f4b8",
           "connected": false
         },
-        "b41f00ec-fb12-4c86-a670-7fba24ede1d2": {
-          "id": "b41f00ec-fb12-4c86-a670-7fba24ede1d2",
-          "publicId": "f0ed0d9a-13c3-40de-80c4-87b511966e16",
+        "0df4cd4e-8a9e-4d1e-85e0-b70b2504f58b": {
+          "id": "0df4cd4e-8a9e-4d1e-85e0-b70b2504f58b",
+          "publicId": "baa30ad8-621f-4ea9-b623-642bae1b0f83",
           "nickname": "Dave",
           "role": "PLAYER",
           "isHost": false,
-          "sessionId": "legacy_0b7df103-0c6d-4d1b-81fe-b89c7fa8f872",
+          "sessionId": "legacy_7bf92fa0-ea6d-4382-b761-0bc2a1549a05",
           "score": 0,
           "connected": false
         }
@@ -32536,8 +32536,8 @@
       "currentLineIndex": 0,
       "isPaused": false,
       "votes": {},
-      "createdAt": 1785293058642,
-      "lastActivity": 1785293058674,
+      "createdAt": 1785296379068,
+      "lastActivity": 1785296379128,
       "cardPackId": "standard",
       "audioSettings": {
         "voiceEnabled": false,
@@ -40577,7 +40577,3390 @@
         "turnChimeEnabled": true
       },
       "id": "FGY2"
+    },
+    {
+      "code": "U2CX",
+      "host": {
+        "id": "94fc7ad8-308d-4a9b-a01c-2bc8bcfcd98a",
+        "publicId": "946b3c60-a837-4a6c-ae99-f7c16dee53a1",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_a9f59f05-b4f9-4f04-90ab-cb48e17b0c01",
+        "hasSubmittedVote": false,
+        "hasSubmittedSelection": false,
+        "connected": false
+      },
+      "players": {
+        "d667c964-3bc1-4299-9b4a-fec164147cd3": {
+          "id": "d667c964-3bc1-4299-9b4a-fec164147cd3",
+          "publicId": "62e6c604-6cf9-422d-8243-c978226ae3fb",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_0f229478-238f-453b-a9d2-562677109103",
+          "score": 0,
+          "hasSubmittedSelection": false,
+          "hasSubmittedVote": false,
+          "connected": false
+        },
+        "cb46216a-3c37-4bf1-8101-f0c1de74e0dd": {
+          "id": "cb46216a-3c37-4bf1-8101-f0c1de74e0dd",
+          "publicId": "6bafd221-63a5-4462-9174-8ea675a417ce",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_161ccf58-027b-45cc-9e5c-22e2affc1254",
+          "score": 0,
+          "hasSubmittedSelection": false,
+          "hasSubmittedVote": false,
+          "connected": false
+        },
+        "f6c4ed6a-8f58-427c-af7f-5dcaba8e019e": {
+          "id": "f6c4ed6a-8f58-427c-af7f-5dcaba8e019e",
+          "publicId": "5c22205a-26de-43ba-aab6-ab7b0fc9602a",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_38ef48a2-2de8-408a-9c1c-c87f58abe30e",
+          "score": 0,
+          "hasSubmittedSelection": false,
+          "hasSubmittedVote": false,
+          "connected": false
+        }
+      },
+      "gameState": "LOBBY",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {},
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "setting": "Rivendell (Lord of the Rings)",
+      "createdAt": 1785296138493,
+      "lastActivity": 1785296199284,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "U2CX"
+    },
+    {
+      "code": "8DUL",
+      "host": {
+        "id": "610dcab4-c93d-4b8b-8b5f-d19d42b0bdcd",
+        "publicId": "d4ee09f9-bddb-402b-9153-1051be31819f",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_c8f18d06-0dc3-4c47-a7df-d0010cf257e4",
+        "connected": false
+      },
+      "players": {
+        "390f3e37-eff0-4822-82aa-bde34b65320c": {
+          "id": "390f3e37-eff0-4822-82aa-bde34b65320c",
+          "publicId": "1832c809-df7d-407a-8d26-30187b09d219",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_18be470f-0a06-42ca-8438-f49e496967fd",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "EVE",
+          "connected": false
+        },
+        "7de1d5e9-9d2c-4031-acee-fa8a4ff87780": {
+          "id": "7de1d5e9-9d2c-4031-acee-fa8a4ff87780",
+          "publicId": "eb0d2511-24b6-412f-ac02-33198c5dc81d",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_7a747f92-4b2c-41a6-a9a9-821a6beaa6a4",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "EVE",
+          "connected": false
+        },
+        "c45bf4a4-20af-402c-a7ba-634b7cc13fb2": {
+          "id": "c45bf4a4-20af-402c-a7ba-634b7cc13fb2",
+          "publicId": "2d199ebd-22d8-4989-8250-cfb8e5efbb0b",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_da11cd7f-d64b-4410-ac5c-c6459b18da24",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "EVE",
+          "connected": false
+        }
+      },
+      "gameState": "PERFORMING",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {
+        "390f3e37-eff0-4822-82aa-bde34b65320c": {
+          "character": "EVE",
+          "setting": "Hill Valley Clock Tower (Back to the Future)",
+          "circumstance": "Lost in a corn maze"
+        },
+        "7de1d5e9-9d2c-4031-acee-fa8a4ff87780": {
+          "character": "EVE",
+          "setting": "Hill Valley Clock Tower (Back to the Future)",
+          "circumstance": "Lost in a corn maze"
+        },
+        "c45bf4a4-20af-402c-a7ba-634b7cc13fb2": {
+          "character": "EVE",
+          "setting": "Hill Valley Clock Tower (Back to the Future)",
+          "circumstance": "Lost in a corn maze"
+        }
+      },
+      "script": {
+        "title": "The Harness Test",
+        "synopsis": "A deterministic scene generated by the audit harness.",
+        "lines": [
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 1. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 2. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 3. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 4. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 5. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 6. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 7. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 8. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 9. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 10. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 11. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 12. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 13. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 14. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 15. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 16. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 17. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 18. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 19. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 20. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 21. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 22. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 23. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 24. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 25. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 26. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 27. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 28. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 29. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 30. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 31. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 32. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 33. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 34. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 35. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          }
+        ],
+        "imageUrl": "/images/default-poster.svg"
+      },
+      "currentLineIndex": 1,
+      "isPaused": true,
+      "votes": {},
+      "setting": "Hill Valley Clock Tower (Back to the Future)",
+      "createdAt": 1785296139292,
+      "lastActivity": 1785296199436,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "8DUL"
+    },
+    {
+      "code": "JRR5",
+      "host": {
+        "id": "dc0efb19-2ad3-445d-ba09-a1d9644a42f1",
+        "publicId": "691f7836-8a1d-4376-8d6a-5e4e6f0864d6",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_f2c40d70-593a-44de-8ae8-0c6e01b7ee14",
+        "connected": false
+      },
+      "players": {
+        "af873a46-c3c9-4a63-a99b-a29180a8c9b4": {
+          "id": "af873a46-c3c9-4a63-a99b-a29180a8c9b4",
+          "publicId": "4f3dc884-bf3c-4815-a7d6-563c6f39c5b2",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_f539f70f-9be0-4596-b1c0-4ce4fff7dd7f",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Fiona",
+          "connected": false
+        },
+        "c5014ed6-5a1b-4cd6-ac5e-7afee1bf6022": {
+          "id": "c5014ed6-5a1b-4cd6-ac5e-7afee1bf6022",
+          "publicId": "e8c4ff5e-af87-4de3-be23-2f1c586f7b78",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_22d0bcae-8d72-4ee7-90e8-f90276fa4655",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Fiona",
+          "connected": false
+        },
+        "db487987-4330-4dfe-a353-9bfff38fcf0c": {
+          "id": "db487987-4330-4dfe-a353-9bfff38fcf0c",
+          "publicId": "43b6e920-4087-42aa-9fda-987b26b9e7c7",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_5e0bb283-c4ee-464e-8d6d-93552a6bc712",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Fiona",
+          "connected": false
+        }
+      },
+      "gameState": "RESULTS",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {
+        "af873a46-c3c9-4a63-a99b-a29180a8c9b4": {
+          "character": "Fiona",
+          "setting": "Springfield Nuclear Plant",
+          "circumstance": "Taking care of someone's exotic pet"
+        },
+        "c5014ed6-5a1b-4cd6-ac5e-7afee1bf6022": {
+          "character": "Fiona",
+          "setting": "Springfield Nuclear Plant",
+          "circumstance": "Taking care of someone's exotic pet"
+        },
+        "db487987-4330-4dfe-a353-9bfff38fcf0c": {
+          "character": "Fiona",
+          "setting": "Springfield Nuclear Plant",
+          "circumstance": "Taking care of someone's exotic pet"
+        }
+      },
+      "script": {
+        "title": "The Harness Test",
+        "synopsis": "A deterministic scene generated by the audit harness.",
+        "lines": [
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 1. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 2. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 3. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 4. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 5. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 6. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 7. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 8. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 9. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 10. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 11. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 12. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 13. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 14. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 15. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 16. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 17. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 18. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 19. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 20. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 21. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 22. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 23. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 24. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 25. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 26. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 27. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 28. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 29. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 30. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 31. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 32. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 33. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 34. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 35. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          }
+        ],
+        "imageUrl": "/images/default-poster.svg"
+      },
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "setting": "Springfield Nuclear Plant",
+      "createdAt": 1785296145428,
+      "lastActivity": 1785296265597,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "results": {
+        "allResults": [],
+        "highlights": []
+      },
+      "id": "JRR5"
+    },
+    {
+      "code": "QXPN",
+      "host": {
+        "id": "41d481d9-2fe6-4a24-91df-673e60b47d8a",
+        "publicId": "d48aec23-55e5-4fc4-a1be-31e2dfac840d",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_6b37d6ef-f773-49d6-a479-637c68633f72",
+        "connected": false
+      },
+      "players": {
+        "3493f39b-0484-4c31-b3a6-aa6a9469f8d8": {
+          "id": "3493f39b-0484-4c31-b3a6-aa6a9469f8d8",
+          "publicId": "cdde5d78-95cb-4c24-b12b-5b169f6d6968",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_61b28510-6084-40a5-8156-51a284c8d157",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Rey",
+          "hasSubmittedVote": true,
+          "connected": false
+        },
+        "3d2287bf-57de-41e7-8b86-5c716033b0f2": {
+          "id": "3d2287bf-57de-41e7-8b86-5c716033b0f2",
+          "publicId": "5cc73336-9414-40ec-922a-f4512b3f0f41",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_ea0ab459-b73d-451a-8d25-4bdf5dbf4732",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Rey",
+          "hasSubmittedVote": true,
+          "connected": false
+        }
+      },
+      "gameState": "RESULTS",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {
+        "3493f39b-0484-4c31-b3a6-aa6a9469f8d8": {
+          "character": "Rey",
+          "setting": "Bag End (Lord of the Rings)",
+          "circumstance": "Discovering your magic item is cursed"
+        },
+        "3d2287bf-57de-41e7-8b86-5c716033b0f2": {
+          "character": "Rey",
+          "setting": "Bag End (Lord of the Rings)",
+          "circumstance": "Discovering your magic item is cursed"
+        },
+        "8287dc05-b636-407c-9459-1f8b935e4dbe": {
+          "character": "Rey",
+          "setting": "Bag End (Lord of the Rings)",
+          "circumstance": "Discovering your magic item is cursed"
+        }
+      },
+      "script": {
+        "title": "The Harness Test",
+        "synopsis": "A deterministic scene generated by the audit harness.",
+        "lines": [
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 1. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 2. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 3. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 4. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 5. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 6. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 7. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 8. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 9. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 10. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 11. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 12. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 13. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 14. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 15. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 16. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 17. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 18. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 19. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 20. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 21. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 22. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 23. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 24. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 25. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 26. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 27. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 28. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 29. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 30. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 31. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 32. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 33. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 34. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 35. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          }
+        ],
+        "imageUrl": "/images/default-poster.svg"
+      },
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {
+        "3493f39b-0484-4c31-b3a6-aa6a9469f8d8": "3d2287bf-57de-41e7-8b86-5c716033b0f2",
+        "3d2287bf-57de-41e7-8b86-5c716033b0f2": "3493f39b-0484-4c31-b3a6-aa6a9469f8d8"
+      },
+      "setting": "Bag End (Lord of the Rings)",
+      "createdAt": 1785296205610,
+      "lastActivity": 1785296282724,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "results": {
+        "winner": {
+          "playerId": "3d2287bf-57de-41e7-8b86-5c716033b0f2",
+          "playerName": "Bob",
+          "votes": 1
+        },
+        "allResults": [
+          {
+            "playerId": "3d2287bf-57de-41e7-8b86-5c716033b0f2",
+            "playerName": "Bob",
+            "votes": 1
+          },
+          {
+            "playerId": "3493f39b-0484-4c31-b3a6-aa6a9469f8d8",
+            "playerName": "Alice",
+            "votes": 1
+          }
+        ],
+        "highlights": []
+      },
+      "id": "QXPN"
+    },
+    {
+      "code": "7FMJ",
+      "host": {
+        "id": "759dbec9-a9f4-4e06-82a8-99391cef3e55",
+        "publicId": "fb6b528a-6206-4f91-9118-a65eb66484e6",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_3fd3376b-0148-4646-8063-c9d23f1d036d"
+      },
+      "players": {
+        "759dbec9-a9f4-4e06-82a8-99391cef3e55": {
+          "id": "759dbec9-a9f4-4e06-82a8-99391cef3e55",
+          "publicId": "fb6b528a-6206-4f91-9118-a65eb66484e6",
+          "nickname": "Host",
+          "role": "HOST",
+          "isHost": true,
+          "sessionId": "legacy_3fd3376b-0148-4646-8063-c9d23f1d036d"
+        },
+        "614f0025-fe79-4587-ab66-e3e5268d2012": {
+          "id": "614f0025-fe79-4587-ab66-e3e5268d2012",
+          "publicId": "9a657eed-959d-43e2-8ffe-a4f469edd89f",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_8a79753c-219c-441d-9dd5-f37da18b284b",
+          "score": 0
+        },
+        "fc2013a5-6239-4fe1-b95f-6c675d9bf48a": {
+          "id": "fc2013a5-6239-4fe1-b95f-6c675d9bf48a",
+          "publicId": "cfddddf8-f1ae-44e1-b569-ab3567e02bc6",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_dcc6b83c-3a1a-436f-adf7-5ac554ebfb73",
+          "score": 0,
+          "hasSubmittedSelection": true
+        },
+        "890c3358-2fdd-4afb-92e1-05d9094e4f65": {
+          "id": "890c3358-2fdd-4afb-92e1-05d9094e4f65",
+          "publicId": "01bcd832-a8bb-4e04-a4e3-9f71ed0f9b1b",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_48f37922-4bce-40cd-8843-99c61292d06b",
+          "score": 0,
+          "hasSubmittedSelection": true
+        }
+      },
+      "gameState": "SELECTION",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {
+        "fc2013a5-6239-4fe1-b95f-6c675d9bf48a": {
+          "character": "Timon",
+          "setting": "Diagon Alley (Harry Potter)",
+          "circumstance": "Training a new employee who's terrible"
+        },
+        "890c3358-2fdd-4afb-92e1-05d9094e4f65": {
+          "character": "Timon",
+          "setting": "Diagon Alley (Harry Potter)",
+          "circumstance": "Training a new employee who's terrible"
+        }
+      },
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "createdAt": 1785296222736,
+      "lastActivity": 1785296223394,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "7FMJ"
+    },
+    {
+      "code": "7RXA",
+      "host": {
+        "id": "68ce2345-6afc-4ec8-b9b8-8956a7e599c9",
+        "publicId": "59d8632d-527d-477b-8e58-c3e06a9d571d",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_16bbe17e-1ef7-4d1b-9e64-1437448d6159",
+        "connected": false
+      },
+      "players": {
+        "0fd84cf3-1493-44e1-9348-feaea46bb778": {
+          "id": "0fd84cf3-1493-44e1-9348-feaea46bb778",
+          "publicId": "a7a4f431-1b96-48cb-b93f-937871c91187",
+          "nickname": "P1",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_2e604f49-881a-4ac8-ae70-d355a38c0600",
+          "score": 0,
+          "connected": false
+        },
+        "941a5d00-d987-4e1f-8cd3-77b15adb2162": {
+          "id": "941a5d00-d987-4e1f-8cd3-77b15adb2162",
+          "publicId": "752439ad-a538-4cef-9a25-ca2c7cfa8cf2",
+          "nickname": "P2",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_fb0618dd-67d3-494e-bede-e9f24f285006",
+          "score": 0,
+          "connected": false
+        },
+        "47b954da-42d7-431d-9aeb-c6128cff9d5a": {
+          "id": "47b954da-42d7-431d-9aeb-c6128cff9d5a",
+          "publicId": "5ae8308d-7e56-48ce-9501-f3e727796dc1",
+          "nickname": "P3",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_144baf17-66e7-463f-b96f-da9f37c72cba",
+          "score": 0,
+          "connected": false
+        },
+        "8659716d-c95c-4e90-9562-b7a75b580187": {
+          "id": "8659716d-c95c-4e90-9562-b7a75b580187",
+          "publicId": "0d7f0e20-6581-4182-8dfd-b64c35471d7e",
+          "nickname": "P4",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_2983e52c-0cfd-4eff-8c08-737344b99fbb",
+          "score": 0,
+          "connected": false
+        },
+        "3e4ec976-3f37-4c0d-9174-c0257e50d32c": {
+          "id": "3e4ec976-3f37-4c0d-9174-c0257e50d32c",
+          "publicId": "f6848c2a-91a9-4efb-a007-c7c5f7dd9634",
+          "nickname": "P5",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_97e95d9f-3398-46d3-8d8c-c6513efffe33",
+          "score": 0,
+          "connected": false
+        },
+        "8b264211-de14-4493-b270-a32675b1eff0": {
+          "id": "8b264211-de14-4493-b270-a32675b1eff0",
+          "publicId": "08f83266-4ff5-4544-80ee-44b6eccb74f3",
+          "nickname": "P6",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_f6bbec78-a22f-4a01-bcad-971898f1066f",
+          "score": 0,
+          "connected": false
+        },
+        "5d86449e-85c8-452d-bd72-ec5c99c2f044": {
+          "id": "5d86449e-85c8-452d-bd72-ec5c99c2f044",
+          "publicId": "8cb4961c-f60a-44de-98fc-1f8006fc6a0d",
+          "nickname": "P7",
+          "role": "SPECTATOR",
+          "isHost": false,
+          "sessionId": "legacy_7267d058-0591-4264-87ce-223187ddb303",
+          "score": 0,
+          "connected": false
+        },
+        "142b4f8c-8e0a-4d7e-8eb5-2645403c8632": {
+          "id": "142b4f8c-8e0a-4d7e-8eb5-2645403c8632",
+          "publicId": "d9df5a12-4f92-4b7c-9515-963d63d6353a",
+          "nickname": "P8",
+          "role": "SPECTATOR",
+          "isHost": false,
+          "sessionId": "legacy_41672ad2-cf93-493e-baf9-e91b7edc66f1",
+          "score": 0,
+          "connected": false
+        }
+      },
+      "gameState": "LOBBY",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {},
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "createdAt": 1785296254235,
+      "lastActivity": 1785296314355,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "7RXA"
+    },
+    {
+      "code": "3SDB",
+      "host": {
+        "id": "1a617d7e-8473-4659-be7d-e292637b57d3",
+        "publicId": "02e11ac1-b51c-4386-bb06-ea5d7b439f16",
+        "nickname": "You",
+        "role": "PLAYER",
+        "isHost": true,
+        "sessionId": "legacy_eaeefd75-73bf-4023-ad8a-f0e22cf681a3",
+        "connected": false
+      },
+      "players": {},
+      "gameState": "SELECTION",
+      "gameMode": "SOLO",
+      "isMature": false,
+      "selections": {},
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "createdAt": 1785296254335,
+      "lastActivity": 1785296314360,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "3SDB"
+    },
+    {
+      "code": "JVCN",
+      "host": {
+        "id": "8c4e95c9-9030-4fa6-a998-1e7f6fdb3c8a",
+        "publicId": "d7097784-7c99-4cb7-a450-1319e1a8db62",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_b9ad4ae2-bd2b-44b7-878e-054461cef109",
+        "connected": false
+      },
+      "players": {
+        "77e15ce6-2dc5-484c-81fc-b8f914dddb1f": {
+          "id": "77e15ce6-2dc5-484c-81fc-b8f914dddb1f",
+          "publicId": "d648df8e-5421-4357-a97a-29c0a764141e",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_7f09f4c3-6792-4647-a6c4-96f1bf2a00b2",
+          "score": 0,
+          "connected": false
+        },
+        "a284ae6f-7f32-4d8c-b549-78b22c2fb073": {
+          "id": "a284ae6f-7f32-4d8c-b549-78b22c2fb073",
+          "publicId": "b0179f4e-4e06-4038-8954-41d16d193d14",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_ff38021b-a6f9-4b4b-8477-58cd2d1ceff7",
+          "score": 0,
+          "connected": false
+        },
+        "9bc787a9-b4b0-460c-b3de-3c54605f2e6f": {
+          "id": "9bc787a9-b4b0-460c-b3de-3c54605f2e6f",
+          "publicId": "c1efe4e4-ee91-46e1-8e77-80cbf250831e",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_34ae3d43-beb7-4d51-974c-5364300c7b72",
+          "score": 0
+        }
+      },
+      "gameState": "SELECTION",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {},
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "createdAt": 1785296254365,
+      "lastActivity": 1785296314408,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "JVCN"
+    },
+    {
+      "code": "89DY",
+      "host": {
+        "id": "bd17b0d1-0dff-4932-ad7f-19ee701e471b",
+        "publicId": "55699708-4bab-48b0-ac45-cdcbf942adce",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_c77e2b4f-8cfd-45f8-9309-1a8ab0a584bc",
+        "connected": false
+      },
+      "players": {
+        "928e2800-5d47-4193-878e-f4476718f6d8": {
+          "id": "928e2800-5d47-4193-878e-f4476718f6d8",
+          "publicId": "cc97dac3-6b76-48f4-988b-308b730085ad",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "session-alice",
+          "score": 0,
+          "connected": false
+        },
+        "8e5efe73-e65c-4557-b39a-08b47d7d893d": {
+          "id": "8e5efe73-e65c-4557-b39a-08b47d7d893d",
+          "publicId": "f84230bc-93d9-4413-be3f-ec30211fe723",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "session-bob",
+          "score": 0,
+          "connected": false
+        },
+        "9c2e4643-83b5-42d1-8d72-3df009a5cc8f": {
+          "id": "9c2e4643-83b5-42d1-8d72-3df009a5cc8f",
+          "publicId": "8d8783de-5d46-4330-8596-60c36d66cde8",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "session-carol",
+          "score": 0
+        }
+      },
+      "gameState": "LOBBY",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {},
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "createdAt": 1785296254415,
+      "lastActivity": 1785296314970,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "89DY"
+    },
+    {
+      "code": "EFNA",
+      "host": {
+        "id": "ade2c63d-72cf-408e-8ef1-80ba39cf5059",
+        "publicId": "25bc45f2-e312-4cd3-8d6c-5cd547f10fb3",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_a7d26a44-f8e1-4340-b739-a6dde0dc4e50",
+        "connected": false
+      },
+      "players": {
+        "38b61592-4f28-4b58-9640-e122c8a1b40d": {
+          "id": "38b61592-4f28-4b58-9640-e122c8a1b40d",
+          "publicId": "575bcffe-84eb-4ade-bbde-96d45799f4c2",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "sess-a",
+          "score": 0,
+          "connected": false
+        },
+        "0e19505c-f96a-4181-8f63-d48bfabfedef": {
+          "id": "0e19505c-f96a-4181-8f63-d48bfabfedef",
+          "publicId": "34e835d5-dadf-4fb1-bfdf-badb42c94ebe",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "sess-b",
+          "score": 0,
+          "connected": false
+        },
+        "898b7f59-7dcd-42fc-8255-630d1fd966af": {
+          "id": "898b7f59-7dcd-42fc-8255-630d1fd966af",
+          "publicId": "a8085b48-58e4-465d-b788-2745e3e9585c",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "sess-c",
+          "score": 0,
+          "connected": false
+        }
+      },
+      "gameState": "LOBBY",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {},
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "createdAt": 1785296254976,
+      "lastActivity": 1785296315315,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "EFNA"
+    },
+    {
+      "code": "MQXN",
+      "host": {
+        "id": "ee22dde6-a500-48ba-be32-8adb12fb29ad",
+        "publicId": "1fcb60a3-e1d6-423e-a1a0-4c8be3407bf6",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_bab5e00c-bf50-4a59-8879-a0c215a4927a",
+        "connected": false
+      },
+      "players": {
+        "30e18d24-ee4c-4b4b-8abb-8e9387070aee": {
+          "id": "30e18d24-ee4c-4b4b-8abb-8e9387070aee",
+          "publicId": "7aa8b46f-bd3d-46c8-b738-c7bd7156cf7e",
+          "nickname": "P1",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_4396cf9b-abcd-405a-8591-b8191a89789d",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Scarlet Witch",
+          "connected": false
+        },
+        "d2fbe77c-3dc0-499b-8624-75ee596345bd": {
+          "id": "d2fbe77c-3dc0-499b-8624-75ee596345bd",
+          "publicId": "0837bc4a-efe8-410e-a1da-8a9a709dcd78",
+          "nickname": "P2",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_eb8e422c-99b5-4705-b1f7-555c8d4e8e54",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Scarlet Witch",
+          "connected": false
+        },
+        "79d02909-b517-42d5-8bc9-281d150ad44a": {
+          "id": "79d02909-b517-42d5-8bc9-281d150ad44a",
+          "publicId": "597994f2-4083-4033-bfdd-3343dc3b4db5",
+          "nickname": "P3",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_e91f2ef4-f1d3-4a9b-9a86-5e1a65dd6330",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Scarlet Witch",
+          "connected": false
+        },
+        "5d7a99c1-378b-43ca-b748-8ad87badec43": {
+          "id": "5d7a99c1-378b-43ca-b748-8ad87badec43",
+          "publicId": "3442f7ee-4d00-4680-b906-764c4e1a8f39",
+          "nickname": "P4",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_61161a11-631e-4bd4-99fb-0d638626f3ac",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Scarlet Witch",
+          "connected": false
+        },
+        "c5acc658-15fa-43dc-a182-09edebf2979a": {
+          "id": "c5acc658-15fa-43dc-a182-09edebf2979a",
+          "publicId": "ab67bc76-d80f-435c-a55c-35259499063b",
+          "nickname": "P5",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_fdf2ab2b-b333-43b5-81d7-d37fc807b935",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Scarlet Witch",
+          "connected": false
+        },
+        "4c40281c-8ca6-4f34-82e7-39a878369a38": {
+          "id": "4c40281c-8ca6-4f34-82e7-39a878369a38",
+          "publicId": "fb20be22-fe1b-45c9-ab13-d1452a64efd7",
+          "nickname": "P6",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_45dd6030-4fc2-4dd5-bb0f-e38f65f142db",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Scarlet Witch",
+          "connected": false
+        },
+        "4f58e585-be0f-41ab-990f-f16383896bce": {
+          "id": "4f58e585-be0f-41ab-990f-f16383896bce",
+          "publicId": "15dc6260-2966-4b01-9acf-0b1ea8f57df9",
+          "nickname": "Lurker",
+          "role": "SPECTATOR",
+          "isHost": false,
+          "sessionId": "legacy_4550eff2-45c3-480d-879a-9482a3463f92",
+          "score": 0,
+          "hasSubmittedVote": true,
+          "connected": false
+        }
+      },
+      "gameState": "RESULTS",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {
+        "30e18d24-ee4c-4b4b-8abb-8e9387070aee": {
+          "character": "Scarlet Witch",
+          "setting": "The Emerald City (Wizard of Oz)",
+          "circumstance": "Discovering your magic item is cursed"
+        },
+        "d2fbe77c-3dc0-499b-8624-75ee596345bd": {
+          "character": "Scarlet Witch",
+          "setting": "The Emerald City (Wizard of Oz)",
+          "circumstance": "Discovering your magic item is cursed"
+        },
+        "79d02909-b517-42d5-8bc9-281d150ad44a": {
+          "character": "Scarlet Witch",
+          "setting": "The Emerald City (Wizard of Oz)",
+          "circumstance": "Discovering your magic item is cursed"
+        },
+        "5d7a99c1-378b-43ca-b748-8ad87badec43": {
+          "character": "Scarlet Witch",
+          "setting": "The Emerald City (Wizard of Oz)",
+          "circumstance": "Discovering your magic item is cursed"
+        },
+        "c5acc658-15fa-43dc-a182-09edebf2979a": {
+          "character": "Scarlet Witch",
+          "setting": "The Emerald City (Wizard of Oz)",
+          "circumstance": "Discovering your magic item is cursed"
+        },
+        "4c40281c-8ca6-4f34-82e7-39a878369a38": {
+          "character": "Scarlet Witch",
+          "setting": "The Emerald City (Wizard of Oz)",
+          "circumstance": "Discovering your magic item is cursed"
+        }
+      },
+      "script": {
+        "title": "The Harness Test",
+        "synopsis": "A deterministic scene generated by the audit harness.",
+        "lines": [
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 1. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 2. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 3. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 4. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 5. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 6. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 7. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 8. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 9. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 10. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 11. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 12. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 13. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 14. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 15. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 16. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 17. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 18. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 19. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 20. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 21. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 22. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 23. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 24. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 25. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 26. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 27. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 28. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 29. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 30. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 31. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 32. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 33. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 34. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 35. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          }
+        ],
+        "imageUrl": "/images/default-poster.svg"
+      },
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {
+        "4f58e585-be0f-41ab-990f-f16383896bce": "30e18d24-ee4c-4b4b-8abb-8e9387070aee"
+      },
+      "setting": "The Emerald City (Wizard of Oz)",
+      "createdAt": 1785296255834,
+      "lastActivity": 1785296376145,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "results": {
+        "winner": {
+          "playerId": "30e18d24-ee4c-4b4b-8abb-8e9387070aee",
+          "playerName": "P1",
+          "votes": 1
+        },
+        "allResults": [
+          {
+            "playerId": "30e18d24-ee4c-4b4b-8abb-8e9387070aee",
+            "playerName": "P1",
+            "votes": 1
+          }
+        ],
+        "highlights": []
+      },
+      "id": "MQXN"
+    },
+    {
+      "code": "F24C",
+      "host": {
+        "id": "c98ed0cd-a700-4445-acd8-ad3130580b12",
+        "publicId": "3d739198-7be3-4157-963f-f7324ce1efb3",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "sess-host-rc",
+        "connected": false
+      },
+      "players": {},
+      "gameState": "PERFORMING",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {
+        "17197bae-5e40-48f7-a468-ce9af21eda1a": {
+          "character": "The Tin Man",
+          "setting": "The Office Conference Room (The Office)",
+          "circumstance": "Trapped in an escape room"
+        },
+        "04506dac-ee24-4a3d-9e93-bd9d9b53e4a7": {
+          "character": "The Tin Man",
+          "setting": "The Office Conference Room (The Office)",
+          "circumstance": "Trapped in an escape room"
+        },
+        "310d7003-1557-4327-8844-60fb7c268e08": {
+          "character": "The Tin Man",
+          "setting": "The Office Conference Room (The Office)",
+          "circumstance": "Trapped in an escape room"
+        }
+      },
+      "script": {
+        "title": "The Harness Test",
+        "synopsis": "A deterministic scene generated by the audit harness.",
+        "lines": [
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 1. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 2. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 3. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 4. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 5. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 6. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 7. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 8. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 9. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 10. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 11. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 12. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 13. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 14. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 15. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 16. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 17. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 18. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 19. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 20. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 21. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 22. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 23. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 24. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 25. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 26. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 27. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 28. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 29. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 30. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 31. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 32. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 33. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 34. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 35. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          }
+        ],
+        "imageUrl": "/images/default-poster.svg"
+      },
+      "currentLineIndex": 1,
+      "isPaused": true,
+      "votes": {},
+      "setting": "The Office Conference Room (The Office)",
+      "createdAt": 1785296316160,
+      "lastActivity": 1785296377709,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "F24C"
+    },
+    {
+      "code": "FT9S",
+      "host": {
+        "id": "1fd68f7f-7020-444a-9d62-fcf7a6841c70",
+        "publicId": "e6a0d421-e5b8-4175-b262-573b11a1f359",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_ecd3cead-d43c-466c-a370-21b2257eab07",
+        "connected": false
+      },
+      "players": {
+        "8295e89f-0aba-4299-abb6-afd5fd19db6f": {
+          "id": "8295e89f-0aba-4299-abb6-afd5fd19db6f",
+          "publicId": "af01061a-4a77-46d7-8553-e96274f6d2c0",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_428e441f-3106-4ed0-8186-3c95f4ef132d",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Buzz Lightyear",
+          "connected": false
+        },
+        "6de59259-6d55-4ed6-b207-b85e56a5b591": {
+          "id": "6de59259-6d55-4ed6-b207-b85e56a5b591",
+          "publicId": "17061455-a57e-4e29-8626-7482ae4b46d9",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_efed291e-9baf-44d7-a239-4d5f9b0cdc88",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Buzz Lightyear",
+          "connected": false
+        },
+        "bb332e6b-2fbd-4042-ad10-88169da15571": {
+          "id": "bb332e6b-2fbd-4042-ad10-88169da15571",
+          "publicId": "b527186e-fb69-45b0-b2f4-b842f2c072bc",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_95470e96-a621-49b8-9144-8f151ce2d740",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Buzz Lightyear",
+          "connected": false
+        }
+      },
+      "gameState": "PERFORMING",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {
+        "8295e89f-0aba-4299-abb6-afd5fd19db6f": {
+          "character": "Buzz Lightyear",
+          "setting": "Monsters Inc. Factory Floor",
+          "circumstance": "Bringing the worst dish to the office potluck"
+        },
+        "6de59259-6d55-4ed6-b207-b85e56a5b591": {
+          "character": "Buzz Lightyear",
+          "setting": "Monsters Inc. Factory Floor",
+          "circumstance": "Bringing the worst dish to the office potluck"
+        },
+        "bb332e6b-2fbd-4042-ad10-88169da15571": {
+          "character": "Buzz Lightyear",
+          "setting": "Monsters Inc. Factory Floor",
+          "circumstance": "Bringing the worst dish to the office potluck"
+        }
+      },
+      "script": {
+        "title": "The Harness Test",
+        "synopsis": "A deterministic scene generated by the audit harness.",
+        "lines": [
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 1. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 2. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 3. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 4. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 5. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 6. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 7. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 8. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 9. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 10. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 11. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 12. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 13. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 14. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 15. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 16. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 17. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 18. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 19. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 20. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 21. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 22. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 23. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 24. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 25. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 26. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 27. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 28. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 29. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 30. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 31. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 32. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 33. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 34. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 35. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          }
+        ],
+        "imageUrl": "/images/default-poster.svg"
+      },
+      "currentLineIndex": 1,
+      "isPaused": true,
+      "votes": {},
+      "setting": "Monsters Inc. Factory Floor",
+      "createdAt": 1785296317691,
+      "lastActivity": 1785296378276,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "FT9S"
+    },
+    {
+      "code": "7D6U",
+      "host": {
+        "id": "66428467-84f5-410a-a175-30c0847b0384",
+        "publicId": "c02a637b-9114-4cc4-bc82-dfeffcf7dceb",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_b6751309-0fd4-4ba0-b998-4c164c1cf056",
+        "connected": false
+      },
+      "players": {
+        "66428467-84f5-410a-a175-30c0847b0384": {
+          "id": "66428467-84f5-410a-a175-30c0847b0384",
+          "publicId": "c02a637b-9114-4cc4-bc82-dfeffcf7dceb",
+          "nickname": "Host",
+          "role": "HOST",
+          "isHost": true,
+          "sessionId": "legacy_b6751309-0fd4-4ba0-b998-4c164c1cf056",
+          "connected": false
+        },
+        "235f5fd8-7622-413e-90a4-22a1b5ca888f": {
+          "id": "235f5fd8-7622-413e-90a4-22a1b5ca888f",
+          "publicId": "7e422758-aa7f-4c0d-8c37-06a819cf6df8",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_1a2f53c4-5c05-4b48-8d1c-89704fdd0d34",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Chandler Bing",
+          "hasSubmittedVote": true,
+          "connected": false
+        },
+        "366b62d8-95e3-4c47-b426-7a14aeb8943f": {
+          "id": "366b62d8-95e3-4c47-b426-7a14aeb8943f",
+          "publicId": "ad3fc149-78bd-4bee-9fb8-b2ed24fbe895",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_3502fa2c-a5c8-4f08-b46d-81573d7f3c3c",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Chandler Bing",
+          "hasSubmittedVote": true,
+          "connected": false
+        },
+        "8b050c8f-0ad3-4ce4-95bd-dbf6718f2a70": {
+          "id": "8b050c8f-0ad3-4ce4-95bd-dbf6718f2a70",
+          "publicId": "2f9f54da-47a6-4451-8e91-fc99521c52d3",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_8f68cde2-2a95-4a7a-b489-75a6dacf5568",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Chandler Bing",
+          "hasSubmittedVote": true,
+          "connected": false
+        }
+      },
+      "gameState": "RESULTS",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {
+        "235f5fd8-7622-413e-90a4-22a1b5ca888f": {
+          "character": "Chandler Bing",
+          "setting": "Shrek's Swamp",
+          "circumstance": "Lost in a corn maze"
+        },
+        "366b62d8-95e3-4c47-b426-7a14aeb8943f": {
+          "character": "Chandler Bing",
+          "setting": "Shrek's Swamp",
+          "circumstance": "Lost in a corn maze"
+        },
+        "8b050c8f-0ad3-4ce4-95bd-dbf6718f2a70": {
+          "character": "Chandler Bing",
+          "setting": "Shrek's Swamp",
+          "circumstance": "Lost in a corn maze"
+        }
+      },
+      "script": {
+        "title": "The Harness Test",
+        "synopsis": "A deterministic scene generated by the audit harness.",
+        "lines": [
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 1. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 2. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 3. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 4. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 5. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 6. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 7. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 8. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 9. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 10. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 11. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 12. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 13. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 14. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 15. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 16. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 17. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 18. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 19. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 20. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 21. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 22. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 23. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 24. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 25. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 26. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 27. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 28. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 29. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 30. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 31. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 32. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 33. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 34. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 35. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          }
+        ],
+        "imageUrl": "/images/default-poster.svg"
+      },
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {
+        "235f5fd8-7622-413e-90a4-22a1b5ca888f": "366b62d8-95e3-4c47-b426-7a14aeb8943f",
+        "366b62d8-95e3-4c47-b426-7a14aeb8943f": "235f5fd8-7622-413e-90a4-22a1b5ca888f",
+        "8b050c8f-0ad3-4ce4-95bd-dbf6718f2a70": "366b62d8-95e3-4c47-b426-7a14aeb8943f"
+      },
+      "setting": "Shrek's Swamp",
+      "createdAt": 1785296318281,
+      "lastActivity": 1785296379054,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "results": {
+        "winner": {
+          "playerId": "366b62d8-95e3-4c47-b426-7a14aeb8943f",
+          "playerName": "Bob",
+          "votes": 2
+        },
+        "allResults": [
+          {
+            "playerId": "366b62d8-95e3-4c47-b426-7a14aeb8943f",
+            "playerName": "Bob",
+            "votes": 2
+          },
+          {
+            "playerId": "235f5fd8-7622-413e-90a4-22a1b5ca888f",
+            "playerName": "Alice",
+            "votes": 1
+          }
+        ],
+        "highlights": []
+      },
+      "id": "7D6U"
+    },
+    {
+      "code": "JRA4",
+      "host": {
+        "id": "f250ffa5-6cad-4e42-907f-0064c7d48a20",
+        "publicId": "6f5e381c-d6b6-41a3-b9e4-b4912c1f69b2",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_eccd8697-21d0-4ccc-9800-b13d84b8e6f8",
+        "connected": false
+      },
+      "players": {
+        "f250ffa5-6cad-4e42-907f-0064c7d48a20": {
+          "id": "f250ffa5-6cad-4e42-907f-0064c7d48a20",
+          "publicId": "6f5e381c-d6b6-41a3-b9e4-b4912c1f69b2",
+          "nickname": "Host",
+          "role": "HOST",
+          "isHost": true,
+          "sessionId": "legacy_eccd8697-21d0-4ccc-9800-b13d84b8e6f8",
+          "connected": false
+        },
+        "2160750b-7852-49ee-941e-a8dae3d7233b": {
+          "id": "2160750b-7852-49ee-941e-a8dae3d7233b",
+          "publicId": "b91b545e-beaa-4314-8e74-93524ae15ce2",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "sess-mid-a",
+          "score": 0,
+          "connected": false
+        },
+        "d077edfa-3970-4d36-93cd-b675b081945d": {
+          "id": "d077edfa-3970-4d36-93cd-b675b081945d",
+          "publicId": "b5200eb9-6849-4c1d-9a89-1202b35bcc3b",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_9bc7ebce-9d0d-4891-9bf6-e2a4451dab1f",
+          "score": 0,
+          "connected": false
+        },
+        "7968facf-d485-49a9-a623-fd74af83b2aa": {
+          "id": "7968facf-d485-49a9-a623-fd74af83b2aa",
+          "publicId": "3ce4d09a-7706-4c62-809d-1fe949e44ba9",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_8d71a3bb-a8d2-4409-9223-bf5601a55db1",
+          "score": 0,
+          "connected": false
+        }
+      },
+      "gameState": "SELECTION",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {},
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "createdAt": 1785296379137,
+      "lastActivity": 1785296379896,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "JRA4"
+    },
+    {
+      "code": "GLAZ",
+      "host": {
+        "id": "fbb628ae-6349-4595-b67e-e751e7c7f3f4",
+        "publicId": "cde06b17-dbf5-4493-9347-dfdfe0de5de7",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_3970215d-d9bc-4ff4-8c98-0a020c517f9c",
+        "hasSubmittedVote": false,
+        "connected": false
+      },
+      "players": {
+        "fbb628ae-6349-4595-b67e-e751e7c7f3f4": {
+          "id": "fbb628ae-6349-4595-b67e-e751e7c7f3f4",
+          "publicId": "cde06b17-dbf5-4493-9347-dfdfe0de5de7",
+          "nickname": "Host",
+          "role": "HOST",
+          "isHost": true,
+          "sessionId": "legacy_3970215d-d9bc-4ff4-8c98-0a020c517f9c",
+          "hasSubmittedVote": false,
+          "connected": false
+        },
+        "c649b5bd-80d6-4b55-9b79-b46acb9498a7": {
+          "id": "c649b5bd-80d6-4b55-9b79-b46acb9498a7",
+          "publicId": "1ff5c089-ec54-4baa-a16a-e8809f6da05c",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_d5f9ad06-79bc-43d1-9ae8-6f48ac4029be",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Dwight Schrute",
+          "hasSubmittedVote": false,
+          "connected": false
+        },
+        "9ddc8b25-985c-4839-9a09-3a7afd68ea71": {
+          "id": "9ddc8b25-985c-4839-9a09-3a7afd68ea71",
+          "publicId": "15686ae4-bdb6-4190-a3ed-35639c651f7b",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_aa54b8e3-3fff-4647-b4dc-ba4432c908f7",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Dwight Schrute",
+          "hasSubmittedVote": false,
+          "connected": false
+        },
+        "50a6b9f7-466a-4b23-aaad-cd2ae6d52b6a": {
+          "id": "50a6b9f7-466a-4b23-aaad-cd2ae6d52b6a",
+          "publicId": "8ca2cbb1-c192-4633-9d00-187bbbac3002",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_f21bfa93-4f7f-494a-b3f7-721e9d743d9f",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Dwight Schrute",
+          "hasSubmittedVote": false,
+          "connected": false
+        }
+      },
+      "gameState": "PERFORMING",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {
+        "c649b5bd-80d6-4b55-9b79-b46acb9498a7": {
+          "character": "Dwight Schrute",
+          "setting": "Pride Rock (The Lion King)",
+          "circumstance": "Planning a birthday party for a boss nobody likes"
+        },
+        "9ddc8b25-985c-4839-9a09-3a7afd68ea71": {
+          "character": "Dwight Schrute",
+          "setting": "Pride Rock (The Lion King)",
+          "circumstance": "Planning a birthday party for a boss nobody likes"
+        },
+        "50a6b9f7-466a-4b23-aaad-cd2ae6d52b6a": {
+          "character": "Dwight Schrute",
+          "setting": "Pride Rock (The Lion King)",
+          "circumstance": "Planning a birthday party for a boss nobody likes"
+        }
+      },
+      "script": {
+        "title": "The Harness Test",
+        "synopsis": "A deterministic scene generated by the audit harness.",
+        "lines": [
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 1. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 2. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 3. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 4. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 5. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 6. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 7. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 8. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 9. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 10. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 11. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 12. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 13. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 14. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 15. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 16. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 17. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 18. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 19. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 20. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 21. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 22. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 23. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 24. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 25. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 26. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 27. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 28. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 29. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 30. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 31. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 32. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 33. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 34. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 35. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          }
+        ],
+        "imageUrl": "/images/default-poster.svg"
+      },
+      "currentLineIndex": 0,
+      "isPaused": true,
+      "votes": {},
+      "setting": "Pride Rock (The Lion King)",
+      "createdAt": 1785296379923,
+      "lastActivity": 1785296380683,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "results": {
+        "winner": {
+          "playerId": "9ddc8b25-985c-4839-9a09-3a7afd68ea71",
+          "playerName": "Bob",
+          "votes": 2
+        },
+        "allResults": [
+          {
+            "playerId": "9ddc8b25-985c-4839-9a09-3a7afd68ea71",
+            "playerName": "Bob",
+            "votes": 2
+          },
+          {
+            "playerId": "c649b5bd-80d6-4b55-9b79-b46acb9498a7",
+            "playerName": "Alice",
+            "votes": 1
+          }
+        ],
+        "highlights": []
+      },
+      "id": "GLAZ"
+    },
+    {
+      "code": "AKHJ",
+      "host": {
+        "id": "f690513c-3c27-4aba-a597-b4f6a5bfa8d8",
+        "publicId": "41268de4-7fd4-4603-8d54-00c196efef11",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_9ce62a91-131b-4443-83df-e0c4a81fefe6",
+        "hasSubmittedSelection": false,
+        "connected": false
+      },
+      "players": {
+        "f690513c-3c27-4aba-a597-b4f6a5bfa8d8": {
+          "id": "f690513c-3c27-4aba-a597-b4f6a5bfa8d8",
+          "publicId": "41268de4-7fd4-4603-8d54-00c196efef11",
+          "nickname": "Host",
+          "role": "HOST",
+          "isHost": true,
+          "sessionId": "legacy_9ce62a91-131b-4443-83df-e0c4a81fefe6",
+          "hasSubmittedSelection": false,
+          "connected": false
+        },
+        "71921868-9f46-441a-8cd0-cc3cef0674bc": {
+          "id": "71921868-9f46-441a-8cd0-cc3cef0674bc",
+          "publicId": "38374b54-f057-4bff-9c1f-728ebda69f28",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_98ac75c3-0007-408c-8159-fb8a8b3afc55",
+          "score": 0,
+          "hasSubmittedSelection": false,
+          "connected": false
+        },
+        "b6e0ba9b-5d06-43f2-abca-c27abbe7bbf8": {
+          "id": "b6e0ba9b-5d06-43f2-abca-c27abbe7bbf8",
+          "publicId": "35181acc-1c42-486c-9e91-814f6b38a121",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_bb40e671-01cf-4017-b3d9-aa0126dfc731",
+          "score": 0,
+          "hasSubmittedSelection": false,
+          "connected": false
+        },
+        "b251da7e-545f-45c9-9add-65ad48ebd032": {
+          "id": "b251da7e-545f-45c9-9add-65ad48ebd032",
+          "publicId": "0e030077-451f-4708-91db-1179ef485d2f",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_2aa222c4-f189-4921-bfee-e584c43949c0",
+          "score": 0,
+          "hasSubmittedSelection": false,
+          "connected": false
+        }
+      },
+      "gameState": "SELECTION",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {},
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "createdAt": 1785296380693,
+      "lastActivity": 1785296392792,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "AKHJ"
+    },
+    {
+      "code": "V2G8",
+      "host": {
+        "id": "1b5db999-65c8-4bb3-bcba-08176a7ca0cc",
+        "publicId": "91a5fca2-2da3-4d4b-8c56-34a02e3e2a29",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_ad2a1ae2-f42c-412f-a1f5-780e532a59e9"
+      },
+      "players": {
+        "1b5db999-65c8-4bb3-bcba-08176a7ca0cc": {
+          "id": "1b5db999-65c8-4bb3-bcba-08176a7ca0cc",
+          "publicId": "91a5fca2-2da3-4d4b-8c56-34a02e3e2a29",
+          "nickname": "Host",
+          "role": "HOST",
+          "isHost": true,
+          "sessionId": "legacy_ad2a1ae2-f42c-412f-a1f5-780e532a59e9"
+        },
+        "241c930a-13ac-445a-967d-eafa7411eae8": {
+          "id": "241c930a-13ac-445a-967d-eafa7411eae8",
+          "publicId": "0b49b97c-60aa-448e-aa4e-0cfdb478c1e3",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_f68a4ec2-ecad-4b43-8592-02d2f7ec6936",
+          "score": 0,
+          "hasSubmittedSelection": true
+        },
+        "ad703dc8-442c-4abc-b576-c953a567a049": {
+          "id": "ad703dc8-442c-4abc-b576-c953a567a049",
+          "publicId": "c18270d9-7eb3-473e-b97f-3ce7d951b61a",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_fef1ecec-9ef4-4226-82b6-76c2e59d000d",
+          "score": 0,
+          "hasSubmittedSelection": true
+        },
+        "113d525e-2244-4b26-a126-7fcdacc46b01": {
+          "id": "113d525e-2244-4b26-a126-7fcdacc46b01",
+          "publicId": "5af6cb26-5098-48f4-acca-99cedb269dfb",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_a907e66d-f0b9-4e07-9383-8ccb8e5fc05b",
+          "score": 0,
+          "hasSubmittedSelection": true
+        }
+      },
+      "gameState": "SELECTION",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {},
+      "currentLineIndex": 0,
+      "isPaused": false,
+      "votes": {},
+      "createdAt": 1785296392811,
+      "lastActivity": 1785296392884,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "V2G8"
+    },
+    {
+      "code": "77WV",
+      "host": {
+        "id": "2416b03c-bee4-4e29-b2d3-93adffb8db28",
+        "publicId": "36cc4f4c-229a-4db2-9840-67a38662bf96",
+        "nickname": "Host",
+        "role": "HOST",
+        "isHost": true,
+        "sessionId": "legacy_8e707203-66c1-42c4-a143-ce7fe43023f0",
+        "connected": false
+      },
+      "players": {
+        "2416b03c-bee4-4e29-b2d3-93adffb8db28": {
+          "id": "2416b03c-bee4-4e29-b2d3-93adffb8db28",
+          "publicId": "36cc4f4c-229a-4db2-9840-67a38662bf96",
+          "nickname": "Host",
+          "role": "HOST",
+          "isHost": true,
+          "sessionId": "legacy_8e707203-66c1-42c4-a143-ce7fe43023f0",
+          "connected": false
+        },
+        "5b343780-75b7-4c47-a2b1-241d947a38bc": {
+          "id": "5b343780-75b7-4c47-a2b1-241d947a38bc",
+          "publicId": "d22a5570-bdde-444d-aae3-30ad3e31cd61",
+          "nickname": "Alice",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_76de634c-b036-4485-825d-8690b2755845",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Yoda"
+        },
+        "e10576c5-c42f-496a-846f-86819d0ecea0": {
+          "id": "e10576c5-c42f-496a-846f-86819d0ecea0",
+          "publicId": "d332c796-6f16-46e4-9b1e-0db053e6ea89",
+          "nickname": "Bob",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_e2808913-f649-4874-b82d-2f275ad23e68",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Yoda"
+        },
+        "917337d4-0208-4aff-a1d1-730dc820c765": {
+          "id": "917337d4-0208-4aff-a1d1-730dc820c765",
+          "publicId": "f5f5425b-ce08-4aa4-be49-4d6bd328ff27",
+          "nickname": "Carol",
+          "role": "PLAYER",
+          "isHost": false,
+          "sessionId": "legacy_c3aea4c4-ad26-49ce-8b89-4b3bff446142",
+          "score": 0,
+          "hasSubmittedSelection": true,
+          "assignedCharacter": "Yoda"
+        }
+      },
+      "gameState": "PERFORMING",
+      "gameMode": "ENSEMBLE",
+      "isMature": false,
+      "selections": {
+        "5b343780-75b7-4c47-a2b1-241d947a38bc": {
+          "character": "Yoda",
+          "setting": "Under the Sea (The Little Mermaid)",
+          "circumstance": "Pet-sitting a high-maintenance animal"
+        },
+        "e10576c5-c42f-496a-846f-86819d0ecea0": {
+          "character": "Yoda",
+          "setting": "Under the Sea (The Little Mermaid)",
+          "circumstance": "Pet-sitting a high-maintenance animal"
+        },
+        "917337d4-0208-4aff-a1d1-730dc820c765": {
+          "character": "Yoda",
+          "setting": "Under the Sea (The Little Mermaid)",
+          "circumstance": "Pet-sitting a high-maintenance animal"
+        }
+      },
+      "script": {
+        "title": "The Harness Test",
+        "synopsis": "A deterministic scene generated by the audit harness.",
+        "lines": [
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 1. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 2. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 3. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 4. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 5. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 6. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 7. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 8. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 9. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 10. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 11. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 12. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 13. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 14. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 15. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 16. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 17. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 18. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 19. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 20. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 21. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 22. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 23. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 24. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 25. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 26. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 27. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 28. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 29. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 30. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 31. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 32. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER THREE",
+            "text": "Harness line 33. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER ONE",
+            "text": "Harness line 34. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          },
+          {
+            "speaker": "PLAYER TWO",
+            "text": "Harness line 35. This is deterministic filler dialogue used for load testing.",
+            "mood": "neutral"
+          }
+        ],
+        "imageUrl": "/images/default-poster.svg"
+      },
+      "currentLineIndex": 0,
+      "isPaused": true,
+      "votes": {},
+      "setting": "Under the Sea (The Little Mermaid)",
+      "createdAt": 1785296404922,
+      "lastActivity": 1785296405102,
+      "cardPackId": "standard",
+      "audioSettings": {
+        "voiceEnabled": false,
+        "voiceSettings": {
+          "enabled": false,
+          "provider": "browser",
+          "speed": 1,
+          "pitch": 1,
+          "volume": 0.8
+        },
+        "soundEffectsEnabled": true,
+        "soundEffectsVolume": 0.5,
+        "ambienceEnabled": false,
+        "ambienceVolume": 0.3,
+        "turnChimeEnabled": true
+      },
+      "id": "77WV"
     }
   ],
-  "savedAt": 1785293084473
+  "savedAt": 1785296405102
 }

@@ -57,6 +57,28 @@ instruments in the same repo, contradicting each other, and the green one was be
 Reverting any inversion to restore green recreates exactly the problem that was just removed.
 Full table in `AUDIT.md` → *Assertion audit*.
 
+### 🔴 STANDING RULE — two mechanisms, or it is not a finding
+
+**No defect is reported without independent confirmation by a mechanism different from the one
+that found it.** Not a second run of the same instrument — a *different* instrument. A harness red
+gets confirmed by a unit test, by reading the code path, or by driving the server by hand. A unit
+failure gets confirmed by the harness or by the real path.
+
+**The rule holds with the sign reversed: a green arriving at a convenient moment is a hypothesis
+too.** Mid-change on 2026-07-29 `spectatorVote` flipped green because the vote was silently never
+registering. A false green is a false finding wearing better clothes, and nothing in the suite
+will tell you.
+
+Where this came from, in one day's work: three plausible reds were instrument bugs (listed below),
+one green was a broken code path, and one freshly-written test asserted the right thing at the
+wrong layer — `validation.test.ts` claimed shape validation rejects the literal `"Shrek"`, which
+it does not and should not; see the comment block in that file. Five for five, the first result
+was wrong about something. "I ran it and it was red" is not evidence, it is a prompt to check.
+
+Cost of the rule is minutes. Cost of skipping it is either a defect report that sends the next
+session chasing an instrument bug, or a real defect closed because the test that "proved" it fixed
+was vacuous.
+
 ### 🔴 A red harness case is a hypothesis, not a finding. Verify before reporting.
 
 While adding the six new scenarios, **three separate plausible reds turned out to be instrument
@@ -162,6 +184,32 @@ separate so the unit can set `ProtectHome=true`, which makes `/root` — Sanger 
 invisible to the process. Measured: **without** it, the plotslop user could read Sanger's source
 and enumerate `/root/Sanger/.env.local`. The unit is installed but **not enabled and not started**;
 it cannot run until the secrets land.
+
+### 🚧 BLOCKING — isolation is NOT proven until it is re-verified on the live unit
+
+Every isolation measurement so far was taken on a **transient** `systemd-run` unit carrying the
+same directives. That proves the directives work. It does **not** prove the installed
+`plotslop.service` gets them, and a typo, an override drop-in, or a delegated cgroup would not
+show up any other way. **The Sanger isolation is not proven until this passes.**
+
+Run all four against the running long-lived service, reading **effective** values out of the
+actual cgroup, not out of the unit file:
+
+- [ ] `systemctl show plotslop -p MemoryMax,MemoryHigh,MemorySwapMax,CPUQuotaPerSecUSec,TasksMax,User`
+      — and cross-read `/sys/fs/cgroup/system.slice/plotslop.service/memory.max`, `memory.high`,
+      `memory.swap.max`, `cpu.max`. The file is the claim; the cgroup is the fact.
+- [ ] **OOM kill fires**, and the process *dies* rather than stalling — `journalctl -u plotslop`
+      shows `result 'oom-kill'` and `Restart=always` brings it back. A reclaim-throttled stall is
+      worse than a crash: `Restart=` never fires. That is why `MemoryHigh` is 700M and not 640M.
+- [ ] **CPU quota bites** under a *multi-threaded* load. A single-threaded spinner proves nothing —
+      it uses one core whatever the quota says. Compare total CPU-seconds over a fixed wall window.
+- [ ] **`ProtectHome` denies `/root`** from inside the *service's* namespace:
+      `systemctl show plotslop -p MainPID` then `nsenter -t <pid> -m -- ls /root` → must fail.
+- [ ] **Data dir is inside the tree and nowhere else** — `ls /proc/<pid>/cwd` resolves to
+      `/srv/plotslop`, `lsof -p <pid> | grep '\.json'` shows no handle outside it, and a write
+      outside `ReadWritePaths` returns `EROFS`.
+
+Record the numbers, not "verified". See `AUDIT.md` → *VPS co-tenancy*.
 
 **`npm test` runs coverage with a ratchet** (stmts 17 / branches 10 / funcs 14 / lines 17), set
 just below actual. It is a regression guard, not a target.

@@ -33,7 +33,11 @@ describe('applyRoomRecoverySnapshot', () => {
       assignedCharacter: 'Detective',
       myRole: 'PLAYER',
       hasSubmittedSelection: true,
-      selection: { character: 'Detective', setting: 'Train', circumstance: 'Storm' },
+      selection: {
+        character: { id: 'char-detective', name: 'Detective' },
+        setting: { id: 'set-train', name: 'Train' },
+        circumstance: { id: 'circ-storm', name: 'Storm' },
+      },
       spectatorMessages: [],
       votingStatus: { hasVoted: false },
       results: {

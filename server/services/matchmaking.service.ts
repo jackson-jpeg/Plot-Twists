@@ -2,7 +2,7 @@
  * Matchmaking Service — Public rooms and Quick Play
  */
 
-import { getFilteredContent } from '../../lib/content'
+import { dealCards } from './cardCatalog.service'
 import type { Server as SocketIOServer } from 'socket.io'
 import type {
   Room,
@@ -154,7 +154,9 @@ function startAutoCountdown(
         roomService.updateRoom(room)
         io.to(room.code).emit('game_state_change', 'SELECTION')
 
-        io.to(room.code).emit('available_cards', getFilteredContent(room.isMature))
+        dealCards(room)
+          .then((cards) => io.to(room.code).emit('available_cards', cards))
+          .catch((err) => logger.error(`[Matchmaking] Failed to deal cards for room ${room.code}:`, err))
 
         logger.info(`[Matchmaking] Auto-started game in room ${room.code}`)
       }

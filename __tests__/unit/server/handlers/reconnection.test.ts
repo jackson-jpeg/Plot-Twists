@@ -276,7 +276,7 @@ describe('clearAllRoomTimeouts', () => {
 })
 
 describe('buildRoomRecoverySnapshot', () => {
-  it('includes persisted results and director review state', () => {
+  it('includes persisted results and director review state', async () => {
     const player = makePlayer({ id: 'player-2', assignedCharacter: 'Detective' })
     const room = makeRoom({
       code: 'SNAP',
@@ -293,14 +293,14 @@ describe('buildRoomRecoverySnapshot', () => {
     })
     room.players.set(player.id, player)
 
-    const snapshot = buildRoomRecoverySnapshot(room, player.id, player)
+    const snapshot = await buildRoomRecoverySnapshot(room, player.id, player)
 
     expect(snapshot.results).toEqual(room.results)
     expect(snapshot.directorsReview).toEqual(room.directorsReview)
     expect(snapshot.assignedCharacter).toBe('Detective')
   })
 
-  it('flags host disconnect state for reconnecting audience members', () => {
+  it('flags host disconnect state for reconnecting audience members', async () => {
     const player = makePlayer({ id: 'player-3' })
     const host = makePlayer({ id: 'host-1', isHost: true, role: 'HOST', connected: false, socketId: '' })
     const room = makeRoom({
@@ -312,7 +312,7 @@ describe('buildRoomRecoverySnapshot', () => {
     room.players.set(host.id, host)
     room.players.set(player.id, player)
 
-    const snapshot = buildRoomRecoverySnapshot(room, player.id, player)
+    const snapshot = await buildRoomRecoverySnapshot(room, player.id, player)
 
     expect(snapshot.hostDisconnected).toBe(true)
     expect(snapshot.isPaused).toBe(true)

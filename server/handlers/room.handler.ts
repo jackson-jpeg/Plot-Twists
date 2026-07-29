@@ -24,7 +24,7 @@ import { isBetaFeatureEnabled } from '@/lib/betaFeatures'
 
 // Rate limiters (moved from server.ts)
 const roomCreationLimiter = new SocketRateLimiter(CONFIG.abuse.roomCreateMax, CONFIG.abuse.roomCreateWindowMs)
-const joinRoomLimiter = new SocketRateLimiter(30, 60 * 1000) // 30 joins per minute
+const joinRoomLimiter = new SocketRateLimiter(CONFIG.abuse.roomJoinMax, CONFIG.abuse.roomJoinWindowMs)
 
 /**
  * Clear the abuse counters. HARNESS ONLY — see SocketRateLimiter.clearAll.

@@ -70,5 +70,7 @@ export const CONFIG = {
     roomCreateMax: envNum('ROOM_CREATE_MAX', 10),
     roomCreateWindowMs: envNum('ROOM_CREATE_WINDOW_MS', 5 * 60 * 1000),
     maxLiveRoomsPerCreator: envNum('MAX_LIVE_ROOMS_PER_CREATOR', 5),
+    roomJoinMax: envNum('ROOM_JOIN_MAX', 30),
+    roomJoinWindowMs: envNum('ROOM_JOIN_WINDOW_MS', 60 * 1000),
   },
 } as const

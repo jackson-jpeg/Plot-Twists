@@ -153,6 +153,19 @@ async function main() {
       ANTHROPIC_API_KEY: 'sk-ant-harness-fake',
       ANTHROPIC_BASE_URL: `http://127.0.0.1:${MOCK_PORT}`,
       LOG_LEVEL: 'error',
+
+      // Chunk 3 keyed the room limits on client IP, and this driver opens 220 sockets from
+      // 127.0.0.1 — indistinguishable from the abuse those limits exist to stop. The first
+      // run after Chunk 3 landed reported `0/6 rooms completed` with `growth 0.0 MB`, which
+      // is not a memory measurement at all: it is a measurement of a server that was
+      // correctly refusing to do anything.
+      //
+      // Raised through the env knobs rather than bypassed in code, so this exercises the same
+      // CONFIG.abuse path production reads. A load test measures capacity; the `rateLimit`
+      // scenario in run.ts is what measures the limits, and it runs at production defaults.
+      ROOM_CREATE_MAX: '10000',
+      ROOM_JOIN_MAX: '10000',
+      MAX_LIVE_ROOMS_PER_CREATOR: '10000',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   })
@@ -176,7 +189,21 @@ async function main() {
    */
   const pids = new Set<number>([server.pid!])
   const refreshPids = () => {
-    const frontier = [server.pid!]
+    // FOURTH instrument correction to this file, 2026-07-29, and the subtlest.
+    //
+    // The frontier used to be seeded with `[server.pid]` and extended ONLY by newly-discovered
+    // pids: `if (!pids.has(pid)) { pids.add(pid); frontier.push(pid) }`. So on every call after
+    // the first, every known pid was already in the set, nothing was pushed, and the walk never
+    // descended past depth one. A process that appeared AFTER its parent was already known —
+    // which is exactly what `npx → tsx → node` does — could never be found.
+    //
+    // Symptom: alternating runs reported 4 pids (85+2+64+121 MB, baseline ~268 MB) and 3 pids
+    // (85+2+62 MB, baseline 149 MB, growth 0.0), on identical inputs. The missing 121 MB was
+    // the server itself. Two runs of the same command disagreeing by 120 MB is what gave it
+    // away; a single run would have looked plausible either way.
+    //
+    // Re-seed the frontier from EVERY known pid each pass.
+    const frontier = [...pids]
     while (frontier.length) {
       const parent = frontier.pop()!
       try {
@@ -226,7 +253,16 @@ async function main() {
   await sleep(500)
   refreshPids()
   baselineKb = [...pids].reduce((sum, pid) => sum + rssKb(pid), 0)
+
+  // THIRD instrument correction to this file, 2026-07-29. `peakKb` had been accumulating
+  // since before the server finished booting, so "PEAK" could be a boot-time high-water mark
+  // that load never exceeded — which is how a 6-room run reported peak EXACTLY equal to
+  // baseline and 0.0 MB growth while completing 6/6 rooms. Rebasing here means peak measures
+  // what happens AFTER the room is quiet, which is the only thing the number is meant to say.
+  peakKb = baselineKb
+
   console.log(`baseline (idle server): ${(baselineKb / 1024).toFixed(1)} MB`)
+  console.log(`  sampled pids: ${[...pids].map(pid => `${pid}:${(rssKb(pid) / 1024).toFixed(0)}MB`).join(' ')}`)
   console.log(`driving ${ROOMS} rooms x ${PLAYERS_PER_ROOM} players x ${ROUNDS} rounds...`)
 
   const started = Date.now()

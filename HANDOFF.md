@@ -13,10 +13,10 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Canonical repo** | `/root/Plot-Twists` — Next.js 16 + Socket.IO game server. The game logic, AI layer, IP content library live here. |
 | **Branch** | `audit/2026-07-28-snapshot` (tracks `origin/`). **Not** `master`, **not** `v2`. |
 | **iOS repo** | `/root/PlotTwists-Native` — SwiftUI/tvOS. **Shelved.** See §6. |
-| **Harness** | **38/46** — `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts` (~2 min; `voteTimerRace` waits out a real 60s timeout) |
-| **Unit suite** | **425/430, 5 failing BY DESIGN** — `[VPS] npx jest`. See §3. |
+| **Harness** | **49/49** — `[VPS] cd /root/Plot-Twists && ANTHROPIC_API_KEY=sk-ant-harness-fake npx tsx scripts/harness/run.ts` (~2 min) |
+| **Unit suite** | **436/436** — `[VPS] npx jest`. All eight assertion-audit gates are now green. See §3 before you relax. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
-| **Current chunk** | **Chunk 4 code-complete** (2026-07-29) — see §7. **Chunk 1** code-complete but blocked on Jackson: Firestore, three secrets, DNS. Chunk 2 item 1 landed *via* Chunk 4 layer 2; items 2–7 not started. Chunk 3 not started. |
+| **Current chunk** | **Chunks 2 and 3 complete** (2026-07-29). **Chunk 1** code-complete, cutover STAGED and unexecuted, blocked on Jackson. **🔴 Chunk 4 is REOPENED** — layer 1 did not do what it claimed; see §8. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
 `/root/PlotTwists-Native/AUDIT-iOS.md`.
@@ -42,15 +42,16 @@ not features and are fine.**
 
 Ordered by how expensive the mistake is.
 
-### 🔴 The 5 failing tests are the deliverable. Do not "fix" them.
+### 🟢 The suite is green — and that is the state a fresh session should be MOST careful with
 
 An assertion audit (2026-07-29) swept all 398 tests and found **8 across 5 suites that encoded
-known defects as expected behaviour**. They were green, and they read as coverage. All 8 were
-inverted and are now **gates** — each goes green only when its chunk item lands.
+known defects as expected behaviour**. All 8 were inverted into gates. **All 8 are now green**,
+each because its chunk item landed: three with IP layer 2, then D2b ×2, D3b, middleware and the
+`subscriptions` missing-`game_error` handler with Chunk 2.
 
-**Three of the eight have since gone green, correctly**: the `validation.test.ts` D1 gates, when IP
-layer 2 landed. That is what a gate is for. Five remain red — D2b ×2, D3b, middleware, and the
-`subscriptions` missing-`game_error` handler.
+Every one of those five was proved to FAIL with its fix reverted, in the same session it went
+green, before being believed. Do that again for anything new. A green suite is the condition
+under which the assertion audit was necessary in the first place.
 
 The trigger was `hostAbandon`, found asserting `!states.includes('VOTING')` — a documented S2
 written down as the spec — **by accident**. The worst one found deliberately:
@@ -115,27 +116,31 @@ Always say which kind of movement a number represents. "The harness went up" is 
 Explicitly still uncovered: multi-instance behaviour (see CONSTRAINT-1), reconnect during LOADING
 specifically, Firestore rules.
 
-### 🟠 The IP fix is three layers. Shipping any one alone is theater.
+### 🔴 The IP fix is three layers, and LAYER 1 DID NOT DO WHAT IT CLAIMS.
 
-Jackson's correction, and the most important non-obvious fact in the project:
+Jackson's original correction still stands and is the most important non-obvious fact here:
 
 1. Catalog rewrite of 252 named characters → archetypes
-2. **Server-side validation that submitted card IDs resolve against the catalog**, with free text
-   never interpolated into a system prompt
+2. **Server-side validation that submitted card IDs resolve against the catalog**, with free
+   text never interpolated into a system prompt
 3. Output screening for named real people and owned franchises
 
-**All three landed 2026-07-29** (commits `8c1ca476` 4a, `5b383321` layers 2+3, `b0277826` layer 1).
-Do not treat this as "IP done and dusted" — read `AUDIT.md` → *IP layer 1/2/3* first. In
-particular:
+**Layers 2 and 3 landed and hold.** Layer 1 did not, and this was only discovered on
+2026-07-29 when the playtest packet made someone read the catalog. See §8. Do not repeat the
+earlier claim in this file that all three landed — that claim was mine and it was wrong.
 
-- The layer 3 screen is a **deterministic term list**. It catches named entities and nothing else.
-  "A wheezing tyrant in black armour who is secretly your father" passes it clean. A semantic pass
-  is the follow-up and has not been built.
-- Layer 2 removed the **"✎ Write your own" free-text card**. That is a user-visible feature
-  removal, and it partly contradicts AUDIT.md Option B.
-- The Chunk 4 done-criterion grep is a **fixed term list** and passed while the system prompt still
-  named a living person four times. Do not treat a clean grep as a clean repo — screen with the
-  layer 3 matcher as a second mechanism.
+Still true, and now demonstrated rather than hypothesised:
+
+- The layer 3 screen is a **deterministic term list**. It catches named entities and nothing
+  else. "A wheezing tyrant in black armour who is secretly your father" passes it clean. That
+  was written here as a hypothetical. `PLAYTEST-2026-07-29.md` shows it is the actual state of
+  most of the catalog.
+- Layer 2 removed the **"✎ Write your own" free-text card**. A user-visible feature removal
+  that partly contradicts AUDIT.md Option B.
+- **Runtime checks cannot see source files.** The layer-3 screen inspects generated scripts and
+  the catalog tests inspect exported names; neither can see a comment. That is how four section
+  comments naming franchises survived layer 1 with every check passing. Now gated by
+  `__tests__/unit/lib/contentSource.test.ts`, which reads `lib/content.ts` as text.
 
 ### 🟠 Settled. Do not re-raise.
 
@@ -150,6 +155,9 @@ particular:
 ---
 
 ## 4. Open — needs Jackson, not you
+
+> **The authoritative, ordered list is `NEEDS-JACKSON.md`.** This section is kept as context
+> for the four that have been open longest; anything new lives there.
 
 1. **Firestore (`DECISIONS.md` #7).** Two findings from 2026-07-29: there is **no Firebase project
    ID anywhere in either repo**, and `/root/PlotTwists-Native/firebase-debug.log` shows the CLI
@@ -197,12 +205,32 @@ The consequence that matters: **every `systemctl restart` ends every live game m
 host-disconnect recovery is still broken (D3, red). Full section in `AUDIT.md`, including a
 falsifiable trigger for when the adapter must be replaced.
 
-**Memory ceiling is measured, not guessed — but the measurement has a stated floor.**
-`MemoryMax=768M` stands. `scripts/harness/load.ts` drives real rooms against a separately-spawned
-server and samples only that subtree: **peak 334.7 MB at 20 rooms x 10 players (220 sockets)**,
-44% of the ceiling. Two caveats that matter more than the number: 80% of that RSS is the idle Node
-runtime (baseline 268 MB), and the mock Anthropic returns *instantly*, so real in-flight generation
-pushes true peak higher by an unmeasured amount. Re-run with `npx tsx scripts/harness/load.ts 20 10 2`.
+**Memory ceiling is measured, not guessed — and the instrument has now been wrong four times.**
+`MemoryMax=768M` **stands.** Re-measured 2026-07-29 after fixing a fourth sampler bug, five runs:
+
+| Load | Baseline | Peak | Growth |
+|---|---|---|---|
+| 6 rooms × 10 (66 sockets) | 270.7 / 271.3 MB | **336.0 / 334.8 MB** | 65.3 / 63.5 MB |
+| 20 rooms × 10 (220 sockets) | 262.4 / 268.3 / 270.8 MB | **323.0 / 325.1 / 332.0 MB** | 60.6 / 56.8 / 61.2 MB |
+
+Worst observed peak **336 MB = 44% of the ceiling.** Jackson's "within 30%" trigger needs ~538 MB.
+
+**Three things the number hides.** ~80% is idle Node runtime, not the game. The mock Anthropic
+returns *instantly*, so this is a FLOOR — real in-flight generation is higher by an unmeasured
+amount; do not quote 336 as production. And **six rooms now cost the same as twenty**, which
+retires the earlier "sub-linear growth" reading in this file: that comparison was computed from
+a sampler that was undercounting the 20-room runs.
+
+**Four instrument bugs in this one script, all with the same signature.** (1) Sampled the `npx`
+wrapper, not the server. (2) Swallowed stderr, so a driver-caused failure read as a product
+failure. (3) `server.kill()` left a stale listener, so a run measured the *previous* run's
+server. (4) `refreshPids` seeded its BFS frontier only from newly-discovered pids, so it never
+descended past depth one after the first pass and intermittently missed the actual server
+process — alternating runs of an identical command reported 4 pids/268 MB and 3 pids/149 MB.
+
+**Suspect any run where peak equals baseline.** That has now been the tell every single time.
+Run it at least twice; two runs disagreeing by 120 MB is what exposed (4), and one run alone
+would have looked plausible either way. `[VPS] npx tsx scripts/harness/load.ts 20 10 2`
 
 **Deploy is two trees.** Source `/root/Plot-Twists` (root-owned, editable, autosync'd to the Mac),
 runtime `/srv/plotslop` (owned by the `plotslop` system user), via `scripts/deploy.sh`. They are
@@ -285,9 +313,68 @@ sitting red pending "Chunk 2 item 1".
 768M ceiling, so it stands. Caveat: ~80% of that is idle Node runtime, and the mock returns instantly,
 so real peak with in-flight generation is higher by an unmeasured amount.
 
-**Not started:** Chunk 2 items 2–7 (item 1 landed as Chunk 4 layer 2), Chunk 3, nginx/TLS/cutover.
-**Not closed in Chunk 4:** nobody has played a full game against the rewritten catalog — the one
-done-criterion automation cannot close.
+**Later the same day — six more commits, and Chunk 4 reopened:**
+
+| Commit | What |
+|---|---|
+| `f7ea659e` | This file, brought up to date after it went stale at the six-commit mark |
+| `80f50737` | **Chunk 2 items 2–7** — harness 38/46 → 47/48, suite → 432/432, all five gates green |
+| `ea9504ea` | **Chunk 3** — rate limiters re-keyed, live-room cap, dead config, Fisher-Yates, npm audit (7 criticals → 0) |
+| `d3f31d97` | Cutover STAGED and unexecuted — nginx, unit, certbot, `cutover.sh` |
+| `a5655949` | Playtest packet — **and the finding that reopens Chunk 4** |
+
+---
+
+## 8. 🔴 CHUNK 4 IS REOPENED — read this before touching the catalog
+
+**Layer 1 did not do what it claims, and the record in this file said otherwise for a session.**
+
+`b0277826` is described above as "375 catalog entries rewritten to archetypes". They were
+rewritten to **paraphrase**, not archetype. Every entry is still an individually identifiable
+description of the same protected character, and the catalog kept its franchise-by-franchise
+ordering — the first eight characters are one sitcom ensemble in cast order, then another, then
+the superheroes, then the space opera.
+
+    "A noodle-shop panda who became a martial arts prodigy"
+    "A cheerful fish with no short-term memory"
+    "A grey wizard who arrives precisely when he means to"
+    "A grumpy swamp ogre who just wants to be left alone"
+
+Found 2026-07-29 by generating `PLAYTEST-2026-07-29.md` and reading 25 real dealt hands. Nothing
+automated could have found it: layer 3 is a fixed denylist of NAMES and returns clean on all of
+it, permanently.
+
+**Why this may be worse than the original**, in Jackson's own framing about the poster briefs:
+exposure is what you did, intent is what you wrote down about doing it. A description engineered
+to evoke a character without naming it is the second thing.
+
+**NOT fixed, deliberately.** A true archetype rewrite trades away exactly the recognisability
+that makes the mashups land, and how much to trade is a product decision Jackson reserved. Top
+item in `NEEDS-JACKSON.md`.
+
+**What WAS fixed:** four section comments in `lib/content.ts` still named the franchise the
+entries beneath them came from. Layer 1 deleted the `source:` field from all 375 entries and
+never touched the comments. Now gated by `__tests__/unit/lib/contentSource.test.ts`, which reads
+the file as TEXT — because every other IP check inspects runtime values and none of them can see
+a comment.
+
+---
+
+## 9. Corrections to the record found on 2026-07-29
+
+Four, and they are listed because the pattern matters more than any one of them: **the written
+record has now been wrong about a completed item three sessions running.** Go looking.
+
+1. **Chunk 4 layer 1** — above. Called complete; was paraphrase.
+2. **The "2-minute PERFORMING sweep"** at `room.service.ts:463`, which CHUNKS.md item 3 and the
+   harness both describe as ending an abandoned round with zero votes, is inside
+   `loadRoomsFromFirestore` and **only runs at server startup**. During a live session nothing
+   moved the room at all — the real behaviour was worse than recorded.
+3. **Chunk 3 item 4 (Fisher-Yates)** was already closed by IP layer 2, which replaced the code
+   path it points at. The biased idiom survived in three OTHER files the chunk did not list.
+4. **`aiFailure` × 2 in the harness** were instrument artefacts, not defects: they asserted on
+   two event names the server never emits, and their own failure text contradicted the state
+   path printed beside it. Verified green with zero product changes.
 
 One correction on the record: when the `publicId` approach was chosen, it was justified partly by
 "`player.id` is `playerSessionId ?? userId ?? legacy_uuid`". **That was wrong** — that expression

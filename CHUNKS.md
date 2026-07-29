@@ -32,6 +32,8 @@ Two rules, both from Jackson, both non-negotiable in every chunk report from her
    reverting an inversion. Each inverted test goes green only when its chunk item lands.
 
 **Must ship before any feature work:** Chunks 1, 2, 3, 4.
+**Status 2026-07-29:** Chunks 2 and 3 ✅ complete. Chunk 1 code-complete, cutover staged and
+unexecuted, blocked on Jackson. **Chunk 4 🔴 REOPENED — layer 1 did not do what it claimed.**
 **Parallel-safe:** Chunk 6 (CI), Chunk 7 (design tokens) — any time after Chunk 1.
 **Blocked on a decision:** Chunk 5 (rename) — `DECISIONS.md` #10 only; #3 is resolved.
 **Shelved, do not start:** iOS/tvOS and the mascot. Both in `BACKLOG.md`.
@@ -89,7 +91,7 @@ Record the numbers, not "verified". **The Sanger isolation is not proven until t
 
 ---
 
-## Chunk 2 — Stop the party from dying
+## Chunk 2 — Stop the party from dying ✅ COMPLETE 2026-07-29
 
 **Goal:** the five defects that end a real game night.
 
@@ -109,25 +111,30 @@ Record the numbers, not "verified". **The Sanger isolation is not proven until t
 6. **Spectator votes must not count** — `voting.handler.ts:19-26` resolves the voter across all `room.players` with no role filter; only the target is role-checked. Combined with the silent spectator demotion, an overflow joiner decides the winner. (~1h)
 7. **Guard zero-vote results** — `calculateResults` emits `game_over` with `winner: undefined` and `allResults: []` as a normal outcome (`voting.service.ts:162-176`). (~1h)
 
+**RESULT: harness 38/46 → 47/48, then 49/49 after Chunk 3.** Denominator moved twice, both
+times for a new check, both noted below. Of the +9 in this chunk, **seven are behaviour changes
+and two are an instrument correction** — the `aiFailure` pair asserted on event names the server
+never emits and went green with zero product changes.
+
 **Done when** the harness goes from **38/46** to at least **44/46** — every check below flipping from red to green, both results shown in the same session:
 | Scenario → case | Fixed by |
 |---|---|
 | `abuse` → server REJECTS off-catalog card text | item 1 |
 | `abuse` → injected text does NOT reach the model prompt | item 1 |
-| `aiFailure` → mode=malformed / mode=error | item 2 |
-| `hostAbandon` → the round survives an abandoned host | item 3 |
+| ~~`aiFailure` → mode=malformed / mode=error~~ | **NOT a gate for item 2.** Instrument bug: asserted on `game_error_message`/`script_generation_failed`, neither of which the server emits here. It has always emitted the structured `game_error`. The real defect was client-side and invisible to a socket harness; `subscriptions.test.ts` gates it. |
+| `hostAbandon` → the round survives an abandoned host | item 3 — **case rewritten.** It asserted a state the product could never reach on its own; the room does not lose "an ending", it loses the ABILITY to end. Now drives the recovery: promote, then the promoted player ends the show. +1 check. |
 | `voterDrop` → results resolve promptly when a voter drops | item 4 |
 | `identity` → a guessed/stolen playerSessionId cannot claim a seat | item 5b |
-| `identityBroadcast` → players_update does not broadcast credentials | item 5c |
-| `identityBroadcast` → a broadcast playerId cannot claim a seat | item 5a+5c |
-| `spectatorVote` → a spectator vote does not count | item 6 |
+| ~~`identityBroadcast` → players_update does not broadcast credentials~~ | Already green before this chunk — the D2b serialisation boundary closed it. |
+| ~~`identityBroadcast` → a broadcast playerId cannot claim a seat~~ | Already green before this chunk, same reason. |
+| `spectatorVote` → a spectator vote does not count | item 6 — plus a **false-green guard**, +1 check. Once item 7 landed this would have gone green because a spectator-only round stops reaching RESULTS at all, proving nothing about spectators. Now also asserts the ballot is never recorded. |
 | `emptyResults` → a zero-vote round is not a normal game_over | item 7 |
 
 **Report harness as `N/46` at the top of every chunk from here, and say whether a change is coverage or behaviour.** No defect is closed without its case failing before the fix and passing after, both shown in the same session.
 
 ---
 
-## Chunk 3 — Abuse hardening
+## Chunk 3 — Abuse hardening ✅ COMPLETE 2026-07-29
 
 **Goal:** a single client can't OOM the server. **Machine:** `[VPS]` · **Blocked on:** Chunk 1
 
@@ -137,11 +144,28 @@ Record the numbers, not "verified". **The Sanger isolation is not proven until t
 4. **Fisher-Yates** for card dealing — `selection.handler.ts:126-130` uses `sort(() => Math.random() - 0.5)`, biased toward authored order. (~10 min)
 5. `npm audit` triage — 42 vulnerabilities, 7 critical; bump `socket.io`/`engine.io-client` for the `ws` advisories. (~2h)
 
+**RESULT 2026-07-29: done.** Harness 47/48 → 49/49 (+1 check, below). `npm audit` 42 → 37 with
+**all 7 criticals gone**; package.json untouched, lockfile only.
+
+Two corrections to this chunk's own text:
+- **Item 4 was already closed.** It points at `selection.handler.ts:126`, but IP layer 2
+  replaced that path and `cardCatalog.service.sample` is already a correct Fisher-Yates. The
+  biased idiom survived in three OTHER files this chunk does not list.
+- **Item 3 understated it.** Three dead config entries were named; FIVE of `CONFIG`'s six groups
+  had zero readers, and `generation.timeoutMs` said 45s while the timeout actually running was a
+  hardcoded 120s.
+
+**+1 check:** `the RATE limiter is what refuses, not just the standing-room cap`. Without it the
+new live-room cap would have satisfied the rate-limit gate — a pass for the wrong mechanism.
+
+**Known ceiling, recorded not hidden:** IP-keying means carrier-grade NAT shares one bucket.
+Both limits are env knobs (`CONFIG.abuse`). See `NEEDS-JACKSON.md` item 7.
+
 **Done when:** `rateLimit: reconnecting does NOT reset the room-creation limit` passes and no criticals remain in the runtime dependency path.
 
 ---
 
-## Chunk 4 — IP de-risk (THREE LAYERS — ship together) ✅ CODE-COMPLETE 2026-07-29
+## Chunk 4 — IP de-risk (THREE LAYERS — ship together) 🔴 REOPENED 2026-07-29
 
 **Goal:** remove the S1 legal exposure. **Machine:** `[VPS]`
 **Was blocked on:** Chunk 2 item 1 (which *is* layer 2) — **layer 2 was built here**, because the
@@ -195,6 +219,29 @@ Submitted card **IDs** resolve against the catalog. Free text never interpolated
 Screen generated content for named real people and owned franchises before `script_ready` is emitted. A cheap classifier pass or a Haiku-tier call. Log generations with room code and timestamp so a complaint can be investigated. (~1d)
 
 **Done when:** all three layers are live; `grep -iE "shrek|seinfeld|darth|barbie|hogwarts|marvel|sopranos"` across `lib/`, `server/`, and the iOS asset catalog returns zero matches; a player submitting the literal string "Shrek" is rejected at the server; a generation that names a real person is caught by layer 3; and a full game still produces a funny script.
+
+---
+
+
+### 🔴 REOPENED 2026-07-29 — layer 1 produced paraphrase, not archetypes
+
+Layers 2 and 3 landed and hold. **Layer 1 did not.** All 252 characters remain individually
+identifiable descriptions of the same protected characters, and the catalog kept its
+franchise-by-franchise ordering. Found by generating `PLAYTEST-2026-07-29.md` and reading 25
+real dealt hands — nothing automated could have found it, because layer 3 is a fixed denylist
+of NAMES and returns clean on described-but-unnamed characters permanently.
+
+**Blocked on a decision, not on work.** How far to trade recognisability for exposure is a
+product call Jackson reserved. Three options are laid out in `NEEDS-JACKSON.md` item 1.
+
+**Closed in the meantime:** four section comments in `lib/content.ts` still named the franchise
+the entries beneath them came from — layer 1 deleted the `source:` field and never touched the
+comments. Gated now by `__tests__/unit/lib/contentSource.test.ts`, which reads the file as TEXT,
+because every other IP check inspects runtime values and none of them can see a comment.
+
+**Done criterion, revised:** not closed until (a) the decision above is answered and executed,
+and (b) the source audit passes, and (c) a human has read a fresh playtest packet generated
+*after* the rewrite.
 
 ---
 

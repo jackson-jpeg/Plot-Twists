@@ -325,6 +325,45 @@ and the reason "4.0×" is not the same claim as "profitable".
 
 **Closed.** Gates nothing further.
 
+### 🔴 REOPENED 2026-07-30 — the table above is stale by 37.6%, and its own escape clause fired
+
+Every number in the margin table assumes **$0.0407 per round**. That was the 30–38 line era.
+`#14` raised the band to **42–52** the same week and recorded the new per-round figure ($0.0550)
+**without recomputing the tiers** — so the margins have been wrong in the written record since
+the budget changed.
+
+Re-measured 2026-07-30 through the production path, 6 generations plus the director's review
+(`.ab-generation.json`, `.real-generation.json`):
+
+| | in | out | cost |
+|---|---:|---:|---:|
+| script generation, 8-player ENSEMBLE | 4,911 | 2,443 | $0.0514 |
+| director's review | 262 | 259 | $0.0047 |
+| **round** | **5,173** | **2,702** | **$0.0560** |
+
+| tier | net $/credit (Stripe) | was → now | net $/credit (Apple) | was → now |
+|---|---:|---|---:|---|
+| Starter, $5 / 20 | $0.228 | 5.6× → **4.1×** | $0.175 | 4.3× → 3.1× |
+| Party, $10 / 50 | $0.188 | 4.6× → **3.4×** | $0.140 | 3.4× → 2.5× |
+| Pro, $50 / 300 | $0.161 | 4.0× → **2.9×** | $0.117 | 2.9× → 2.1× |
+| Studio Head, $100 / 1000 | $0.097 | 2.4× → **1.7×** | $0.070 | 1.7× → **1.25×** |
+
+**Every tier still clears cost on the web.** Nothing here is an emergency. Two things are worth
+saying anyway:
+
+1. **This entry wrote its own tripwire and the tripwire did not fire.** It says: *"If Studio Head
+   is ever offered through Apple IAP, that tier gets re-run against fresh numbers before it
+   ships."* The numbers changed on 2026-07-30 and nobody re-ran anything, because the clause was
+   written to trigger on a **payment-rail** change and what actually moved was **cost**. A
+   condition that guards one input while the other one moves is not a guard.
+2. **Studio Head via Apple IAP is 1.25×** — 20¢ of margin on a $100 purchase, before hosting,
+   before posters, before support. That is the tier to price or drop, not to ship.
+
+Still not in the table: Gemini poster generation (unmeasured), hosting (now a fixed VPS cost),
+Firestore.
+
+**Reopened as a watch item, not as a blocker.** It gates nothing before the playtest.
+
 ---
 
 ## ✅ 10. Should the copy commit to the joke, or stay earnest? — CLOSED 2026-07-30

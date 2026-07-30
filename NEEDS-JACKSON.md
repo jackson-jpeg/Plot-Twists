@@ -13,43 +13,42 @@ voice (#10 — applied), the install prompt (Option A — applied), the `TermsCo
 settings (my call — kept; reasoning recorded in `scripts/build-catalog.ts` so it is not
 re-litigated a fourth time).
 
-**Closed by work:** Chunk 5, the rename, complete — `HANDOFF.md` §12.
+**Closed by work:** Chunk 5, the rename, complete (`HANDOFF.md` §12) — **and deployed.**
+`plotslop.com` has served PlotSlop since **2026-07-30 17:25 UTC**. Verification below.
 
 ---
 
-## 1. 🔴 Deploy. Everything from today is invisible until you do.
+## 0. ✅ DEPLOYED 2026-07-30 17:25 UTC — you ran it, and it is verified
 
-**New, and now the top item.** Chunk 5 is committed and verified — 450/450, 49/49, tsc clean,
-`next build` exit 0 — but **`plotslop.com` still serves the pre-rename build.** Right now, live,
-the site:
+You ran `deploy.sh`, which built, synced and pruned but **took its abort path at the restart
+prompt** — stdin was not a TTY, so `read` got EOF and it correctly refused to assume consent. You
+then ran `reset-failed && restart` yourself. Working as designed.
 
-- titles itself **"Plot Twists"**;
-- tells every host to send players to **`plottwists.com/join`** — a domain that resolves to
-  `156.254.10.135`, **somebody else's server** (item 6);
-- emits `og:image="http://localhost:3000/opengraph-image"`, so every shared link preview is broken;
-- serves a `robots.txt` and `sitemap.xml` full of `http://localhost:3000` URLs.
+| Check | Result |
+|---|---|
+| Service | active, enabled, **0 errors** since restart |
+| Database | JSON file adapter — Firebase still correctly off |
+| Shutdown | graceful, persisted 0 rooms (nobody was mid-game) |
+| Title | **PlotSlop** |
+| `og:image` | `https://plotslop.com/opengraph-image` → **200, 135 KB PNG** |
+| `robots.txt` / `sitemap.xml` | both on `https://plotslop.com` |
+| `localhost:3000` anywhere on the live site | **0** |
+| Old domains in shipped JS | **0 files** |
+| Legal pages | `support@`/`privacy@plotslop.com`, Stripe-only, Apple claims gone |
+| apex / www / http→https | 200 / 200 / 301 |
+| **sang3r.com** | **200** — unaffected |
+| **Two clients, real TLS** | **PASS** — room created, joined, host observed the joiner, both `transport=websocket`, no credential fields in the payload |
 
-All four are fixed in the repo and verified against a real production build.
+**The localhost OG bug is dead.** Link previews in iMessage, Discord and Twitter now resolve —
+which for a game whose entire join path is sharing a link was the one worth shipping.
 
-**Why I did not deploy.** CONSTRAINT-1: game state is process-local, so a restart ends every game
-in flight. You wrote that this stopped being a pipe-`y` decision the moment the service went live.
-One command when you want it:
-
-```
-[VPS] sudo bash scripts/deploy.sh          # it prompts before the restart — answer it yourself
-```
-
-Weekday daytime, never Friday–Sunday evening.
-
-**One correction to carry in with you.** The previous version of this file said the OG fix was "one
-line in `/etc/plotslop/env` plus a restart". That was wrong twice: `NEXT_PUBLIC_*` values are baked
-in at **build** time, and the fallback chain never reached the dead domain anyway — it stopped at a
-`localhost:3000` default hidden in `next.config.js`. `HANDOFF.md` §9 #14. **You no longer need to
-set anything**; the build now produces `https://plotslop.com` with the variable unset.
+Before the restart I confirmed the window was safe rather than assuming it: zero live socket
+connections, `rooms.json` = `items: []`, no game activity in two hours, Thursday early afternoon
+your time. CONSTRAINT-1's risk was genuinely empty.
 
 ---
 
-## 2. 🔴 The seat cap — the scope freeze gates on a number the game cannot seat
+## 1. 🔴 The seat cap — the scope freeze gates on a number the game cannot seat
 
 **You asked for the blast radius before the change. Here it is. I have not touched the cap.**
 
@@ -84,7 +83,7 @@ fixing either one pre-empts you.
 | Card dealing, voting, results, progression | **Untouched.** Dealing is per-room; the rest iterate the player map. |
 | Tests | **Nothing asserts the cap.** Which is its own small problem: raising it would turn nothing red. |
 | **The UI** | **Three hardcoded numbers**, all strings: `HostLobby.tsx:338` (`Max 8`), `HostLobby.tsx:504` (`3-6 performers`), `opengraph-image.tsx:34` (`?? 8`). The cast list itself is wrapping chips and reflows at any count. |
-| **The playtest artefacts** | **The real cost.** Both need regenerating at whatever you pick — item 3. |
+| **The playtest artefacts** | **The real cost.** Both need regenerating at whatever you pick — item 2. |
 
 **My recommendation, and why it is not a slam dunk.** Mechanically, 8 is nearly free. But your
 stated reasoning for the 30-38 line cap was *"eight people performing seventy lines is where a
@@ -99,7 +98,7 @@ drift apart again. I will do that with your answer, not before.
 
 ---
 
-## 3. 🟠 Both playtest artefacts were measured at 8 traits. You were right.
+## 2. 🟠 Both playtest artefacts were measured at 8 traits. You were right.
 
 You asked whether the three scripts and the `$0.053` were generated with 8. **They were** —
 `scripts/real-generation.ts:54` sets `PLAYERS = 8`, and the output confirms it independently: all
@@ -110,7 +109,7 @@ three scripts list 8 traits and produced 8, 10 and 8 distinct speaking parts.
 - **The three scripts: invalid as a preview, and they need a real re-run.** An 8-part scene at a
   fixed 30-38 lines is a denser cast with fewer lines each — a different artefact from what a real
   room can produce. I have **not** re-run them: a real run costs money and the right cast size is
-  item 2, which is yours. Once you have decided:
+  item 1, which is yours. Once you have decided:
   `[VPS] sudo npx tsx scripts/real-generation.ts` (needs root — it reads the key from
   `/etc/plotslop/env`), then `npx tsx scripts/playtest-packet.ts > PLAYTEST-2026-07-29.md`.
 - **The cost figure survives the cast-size problem — but the packet was stale for an unrelated
@@ -130,7 +129,7 @@ three scripts list 8 traits and produced 8, 10 and 8 distinct speaking parts.
 
 ---
 
-## 4. 🔴 Cutover step 6 — unchanged, still yours, still blocking
+## 3. 🔴 Cutover step 6 — unchanged, still yours, still blocking
 
 The five-box cgroup re-verification on the *running* unit. Every isolation measurement so far was
 taken on a transient `systemd-run` unit; that proves the directives work, not that **this** unit
@@ -142,7 +141,7 @@ or the next start refuses and hands you a **stale** error.
 
 ---
 
-## 5. 🟠 Delete the Vercel project
+## 4. 🟠 Delete the Vercel project
 
 Link check clean, nothing references it, and it **cannot serve this product** — `npm start` is
 `tsx server.ts`, a custom Socket.IO server that Vercel's Next preset never runs.
@@ -157,7 +156,7 @@ project → Settings → Delete Project.
 
 ---
 
-## 6. 🟠 `plottwists.com` belongs to someone else, and the site was pointing players at it
+## 5. 🟠 `plottwists.com` belongs to someone else, and the site was pointing players at it
 
 Not a question — something you should know, because it was in no inventory.
 
@@ -170,13 +169,13 @@ plottwists.com  →  156.254.10.135
 
 And it was the **join instruction on the host's lobby screen** — *"plottwists.com/join → CODE"* —
 plus a second copy under the QR block. At a party that is the sentence people read and type. All
-three now resolve through `lib/siteUrl.ts` and ship with item 1.
+three now resolve through `lib/siteUrl.ts` and shipped with the deploy.
 
 Nothing to do unless you once owned `plottwists.com` and want it back.
 
 ---
 
-## 7. 🟡 A Clerk *production* instance for plotslop.com
+## 6. 🟡 A Clerk *production* instance for plotslop.com
 
 Unchanged. The live site runs on the **dev** instance `alive-jawfish-19.clerk.accounts.dev` — fine
 for playtesting, not for launch. The `pk_live` you nearly sent was bound to
@@ -184,7 +183,7 @@ for playtesting, not for launch. The `pk_live` you nearly sent was bound to
 
 ---
 
-## 8. 🟡 The Android signing-key fingerprint — Chunk 5 step 4, the one step I could not do
+## 7. 🟡 The Android signing-key fingerprint — Chunk 5 step 4, the one step I could not do
 
 `public/.well-known/assetlinks.json` still reads
 `"sha256_cert_fingerprints": ["TODO:REPLACE_WITH_YOUR_SIGNING_KEY_FINGERPRINT"]`. Android deep
@@ -195,7 +194,7 @@ Low stakes while the game is web-only.
 
 ---
 
-## 9. 🟡 Carrier-grade NAT, eventually
+## 8. 🟡 Carrier-grade NAT, eventually
 
 Unchanged, not urgent. Rate limiters are keyed on client IP, which fixed a real bypass but puts
 thousands of unrelated mobile subscribers in one bucket. It cannot bite at playtest volume. At

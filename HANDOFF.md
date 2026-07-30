@@ -18,7 +18,7 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
 | **plotslop.com** | 🟢 **LIVE 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Cert for both names expires **2026-10-27**. `plotslop.service` active and enabled on :3100 behind nginx TLS; apex and `www` return 200, HTTP 301s to HTTPS, sang3r.com verified unaffected. **Two clients have joined a room over the public endpoint.** Cutover step 6 (cgroup re-verification) is still Jackson's and still blocking — see §11. |
 | **Current chunk** | **Chunks 2, 3 and 5 complete.** **Chunk 5 (the rename) DONE 2026-07-30** — see §12. `DECISIONS.md` #7 and #10 are both closed. **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 blocked on Jackson. |
-| **⚠️ The live site is one build behind the repo** | Chunk 5 is committed and verified but **deliberately not deployed**. `plotslop.com` still serves the pre-rename bundle: it still titles itself "Plot Twists", still tells hosts to send players to `plottwists.com/join`, and still emits `og:image="http://localhost:3000/…"`. Under CONSTRAINT-1 a deploy ends every game in flight, so it is a human decision — item 1 in `NEEDS-JACKSON.md`. **Do not read a live-site check as a check of this repo until that ships.** |
+| **Deployed** | ✅ **Chunk 5 is LIVE as of 2026-07-30 17:25 UTC.** Jackson ran the deploy. `plotslop.com` serves PlotSlop: correct title, `og:image` absolute on the right host and returning a 135 KB PNG, `robots.txt`/`sitemap.xml` on the real domain, **zero** `localhost:3000` and **zero** old-domain references in the shipped bundle, legal pages corrected, sang3r.com unaffected, and a two-client join over public TLS passing on the new build. Verification table: `NEEDS-JACKSON.md` §0. |
 | **Seating** | **ENSEMBLE seats 6 performers, not 8** (`server/utils/constants.ts:11`). The scope-freeze gate is "eight people who are not my friends", so the gate and the product disagree — see §13, confirmed two ways. **Do not raise the cap**: Jackson asked for the blast radius before the change, and the change is his. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
@@ -695,10 +695,17 @@ plus a real `next build` (exit 0) because three of the changes only manifest in 
   were fixed because those are a security item; the identifiers were not.
 - **`docs/`, and every `*.md`.** They are historical records and correctly describe the old name.
 
-### The one thing that is not done
+### Deployed 2026-07-30 17:25 UTC
 
-**None of it is live.** The repo is renamed; `plotslop.com` still serves the pre-rename build.
-Deploying is a human decision under CONSTRAINT-1 — `NEEDS-JACKSON.md` item 1.
+Jackson ran it the same day. `deploy.sh` built, synced and pruned, then **took its abort path at
+the restart prompt** — stdin was not a TTY, `read` got EOF, and it refused to assume consent rather
+than defaulting to yes. He ran `reset-failed && restart` himself. The guard worked as designed, and
+that is worth knowing before anyone "fixes" the prompt to be non-interactive.
+
+Before the restart the window was confirmed empty rather than assumed: zero live socket
+connections, `rooms.json` = `items: []`, no game activity in two hours. Post-deploy verification
+table is in `NEEDS-JACKSON.md` §0 — including the check a curl cannot make, two clients sharing a
+room over public TLS on the new build.
 
 ---
 

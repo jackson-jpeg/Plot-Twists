@@ -97,3 +97,26 @@ Real, but not on the critical path to a playtest:
 - **Migrate `claude-sonnet-4-5-20250929` → `claude-sonnet-5`** and wire up the dead `CONFIG.generation.model` / `timeoutMs` knobs so the env vars actually do something. (AUDIT Track 3)
 - **Backup/restore drill.** Confirm Firestore PITR is on, script an export, run one restore. Becomes urgent the moment there is a paying customer — Stripe and RevenueCat are already wired. (AUDIT Track 10)
 - **Track 5 measurements that were never taken** because the build was broken: throttled-4G Lighthouse, player-device JS payload, Motion 12 main-thread work, theater-mode contrast ratios, screen-reader path.
+
+---
+
+## Carrier-grade NAT and the room-creation limit
+
+Moved here from `NEEDS-JACKSON.md` on 2026-07-30. It sat in a blocking queue for four passes
+without ever being blocking.
+
+Rate limiters are keyed on client IP, which fixed a real bypass but puts thousands of unrelated
+mobile subscribers behind one carrier NAT into a single bucket. **It cannot bite at playtest
+volume.** At scale it presents as *"the game is broken on mobile data"* rather than as a rate
+limit, which is what makes it worth writing down — the symptom does not name the cause.
+
+Both limits are env knobs (`ROOM_CREATE_MAX`, `ROOM_CREATE_WINDOW_MS`,
+`MAX_LIVE_ROOMS_PER_CREATOR`) and signed-in hosts are already immune, so there are two cheap
+mitigations before anything structural.
+
+The durable fix is **requiring an account to create a room**. That is a product decision and it is
+Jackson's, but it is not one that needs making before strangers have played the game once.
+
+Related and now correct as of 2026-07-30: `trust proxy` is set, so `req.ip` is the real client
+rather than the nginx loopback. Before that fix the CGNAT concern was moot in the worst possible
+way — *everybody* shared one bucket, not just one carrier's subscribers.

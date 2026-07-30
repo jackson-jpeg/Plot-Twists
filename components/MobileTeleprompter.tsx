@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion'
 import { getMoodIndicator } from '@/lib/teleprompterUtils'
+import { buildSpeakerLabels } from '@/lib/speakerLabel'
+import { getCharactersInScene } from '@/lib/scriptUtils'
 import { SPRING_BOUNCY, SPRING } from '@/lib/motion'
 import type { Script } from '@/lib/types'
 import { isCapacitorNative } from '@/lib/platform'
@@ -36,6 +38,14 @@ export function MobileTeleprompter({
   const previousSpeakerRef = useRef<string>('')
   const x = useMotionValue(0)
   const opacity = useTransform(x, [-100, 0, 100], [0.5, 1, 0.5])
+
+  // Display-only. `isMyTurn` below still compares the FULL speaker string — the label is what the
+  // player reads, never what decides whose turn it is. See lib/speakerLabel.ts.
+  const speakerLabels = React.useMemo(
+    () => buildSpeakerLabels(getCharactersInScene(script)),
+    [script],
+  )
+  const labelFor = (speaker: string) => speakerLabels.get(speaker) ?? speaker
 
   // Load font size from localStorage
   useEffect(() => {
@@ -231,8 +241,11 @@ export function MobileTeleprompter({
                 letterSpacing: '0.12em',
                 color: isMyTurn ? 'var(--color-stage-red, #c23b22)' : '#8a8478',
                 marginBottom: '8px',
-              }}>
-                {currentLine.speaker}
+              }}
+              /* Screen readers get the whole trait; sighted players get something that fits. */
+              aria-label={currentLine.speaker}
+              >
+                {labelFor(currentLine.speaker)}
               </p>
 
               {/* Mood indicator */}
@@ -293,8 +306,11 @@ export function MobileTeleprompter({
             color: '#5a5548',
             lineHeight: 1.4,
           }}>
-            <span style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {script.lines[currentLineIndex + 1].speaker}
+            <span
+              style={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}
+              aria-label={script.lines[currentLineIndex + 1].speaker}
+            >
+              {labelFor(script.lines[currentLineIndex + 1].speaker)}
             </span>
             {' \u2014 '}
             {script.lines[currentLineIndex + 1].text.length > 80

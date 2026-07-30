@@ -48,6 +48,46 @@ Revisit only after the web app has been played by strangers.
 
 ---
 
+## Chunk 7 — the homepage design pass
+
+Parked 2026-07-30 by Jackson, explicitly **after the playtest**. Logged here so it is not
+re-discovered a third time. **Do not start any of it.**
+
+The findings, in his words:
+
+- **Four stacked headings, with "Now Showing" duplicated.** Measured on the live page: the string
+  appears **four** times before a visitor reaches the fold — the marquee subtitle
+  (`components/LandingPage.tsx:81`), the section heading
+  (`components/HomepagePosterShowcase.tsx:203`), the glass pill on the hero card, and the status
+  label on the active sidebar row. The other five rows say "Coming Soon", which is the same word
+  doing a different job.
+- **Letterspaced uppercase used for body copy throughout.** Not just for labels — the hero hook and
+  every sidebar hook are set `textTransform: uppercase` at `letterSpacing: 0.04–0.06em`. That is a
+  label treatment applied to sentences, and it is why the page reads as slower than it is.
+- **Three competing accents on near-black.** Stage gold (`--color-stage-gold`), the orange-red CTA
+  (`--color-accent`), and a per-entry accent from each showcase palette that changes every 4.8s.
+  Nothing establishes which one means "primary action".
+- **No hierarchy between the five sidebar cards.** Six rows, identical weight, distinguished only
+  by border colour and opacity. Nothing says which one a first-time visitor should read.
+
+One more, found while fixing the poster wall and **not** on Jackson's list — left alone under the
+same freeze:
+
+- **A near-white strip under the landing page on mobile.** `body` is `--color-bg: #FAFAF9`
+  (`app/globals.css:35`, applied at `:389`) and the app shell paints nothing over it, so any dark
+  route whose `<main>` is taller than its content shows body colour through the gap. On the landing
+  route that gap is the 72px bottom-nav allowance. Pre-existing and independent of the cards: the
+  padding belongs to `<main>`, and `/join` has no strip only because its `<main>` has no bottom
+  padding. Shortening the poster wall did not create it, it just brings it into view sooner.
+  Desktop is unaffected. The fix is one background declaration, but which element owns the page
+  background is a shell decision, which is Chunk 7's to make.
+
+**Not in scope for Chunk 7 because it is already done:** the empty image slots. Fixed 2026-07-30 —
+see `lib/homepageShowcase.ts` and `DECISIONS.md` #15. The cards are typographic and there is no
+artwork pipeline behind them to revive.
+
+---
+
 ## Deferred technical work
 
 Real, but not on the critical path to a playtest:

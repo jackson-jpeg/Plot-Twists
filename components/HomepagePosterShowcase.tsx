@@ -5,11 +5,20 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { HOMEPAGE_SHOWCASE } from '@/lib/homepageShowcase'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 
+/**
+ * TYPOGRAPHIC CARDS, NO IMAGE SLOTS. See `lib/homepageShowcase.ts` for why there is no artwork and
+ * why none is coming. Every trace of the image path is gone rather than left dormant — a card that
+ * still reserves space for a picture it will never receive is what shipped six empty gradients.
+ *
+ * This is NOT the homepage design pass. That is Chunk 7, after the playtest, and it is logged in
+ * BACKLOG.md with its own findings (duplicated headings, letterspaced body copy, three competing
+ * accents, no sidebar hierarchy). Nothing here touches any of them.
+ */
+
 interface HomepagePosterCardProps {
   title: string
   hook: string
-  imagePath?: string
-  fallbackBackground: string
+  background: string
   accent: string
   text: string
   active?: boolean
@@ -18,13 +27,10 @@ interface HomepagePosterCardProps {
 function HomepagePosterCard({
   title,
   hook,
-  imagePath,
-  fallbackBackground,
+  background,
   accent,
   active = false,
 }: HomepagePosterCardProps) {
-  const [imageFailed, setImageFailed] = useState(false)
-
   return (
     <article
       style={{
@@ -34,35 +40,23 @@ function HomepagePosterCard({
         border: active
           ? `2px solid ${accent}`
           : '1.5px solid rgba(255,255,255,0.06)',
-        background: imageFailed || !imagePath ? fallbackBackground : 'var(--color-void)',
+        background,
         boxShadow: active
           ? `0 28px 64px rgba(0, 0, 0, 0.54), 0 0 0 1px ${accent}22`
           : '0 18px 44px rgba(0, 0, 0, 0.38)',
         minHeight: '100%',
+        // The grid stretches this card to match the sidebar column. Without the card passing that
+        // height down, the content box stops at its own minHeight and everything below it is bare
+        // gradient — which is the exact look this change exists to remove.
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      {imagePath && !imageFailed && (
-        <img
-          src={imagePath}
-          alt={title}
-          onError={() => setImageFailed(true)}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
-        />
-      )}
-
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: imageFailed || !imagePath
-            ? 'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.52) 100%)'
-            : 'linear-gradient(180deg, rgba(8,7,11,0.04) 0%, rgba(8,7,11,0.22) 38%, rgba(8,7,11,0.88) 100%)',
+          background: 'linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.52) 100%)',
         }}
       />
 
@@ -72,7 +66,11 @@ function HomepagePosterCard({
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          minHeight: 520,
+          // Was 520 — a poster-shaped hole waiting for a poster. Now a floor rather than a cap:
+          // `flex: 1` takes whatever height the card was stretched to, so the badge sits at the
+          // top and the title at the bottom however tall the row turns out to be.
+          flex: 1,
+          minHeight: 340,
           padding: '22px',
         }}
       >
@@ -235,8 +233,7 @@ export function HomepagePosterShowcase() {
             <HomepagePosterCard
               title={activePoster.title}
               hook={activePoster.hook}
-              imagePath={activePoster.imagePath}
-              fallbackBackground={activePoster.palette.background}
+              background={activePoster.palette.background}
               accent={activePoster.palette.accent}
               text={activePoster.palette.text}
               active
@@ -261,9 +258,11 @@ export function HomepagePosterShowcase() {
               onClick={() => setActiveIndex(index)}
               style={{
                 display: 'grid',
-                gridTemplateColumns: '80px minmax(0, 1fr)',
+                // Was `80px minmax(0, 1fr)` — an 80px column holding a 2:3 gradient rectangle with
+                // nothing in it. The accent rule that replaces it is 3px, and unmistakably a rule.
+                gridTemplateColumns: '3px minmax(0, 1fr)',
                 gap: '14px',
-                alignItems: 'center',
+                alignItems: 'stretch',
                 minWidth: isDesktop ? undefined : '296px',
                 padding: '12px',
                 borderRadius: '18px',
@@ -281,36 +280,16 @@ export function HomepagePosterShowcase() {
                 transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
               }}
             >
-              {/* Thumbnail */}
+              {/* Accent rule — keeps each row's palette doing work without an image slot */}
               <div
+                aria-hidden="true"
                 style={{
-                  aspectRatio: '2 / 3',
-                  borderRadius: '12px',
-                  background: poster.palette.background,
-                  overflow: 'hidden',
-                  position: 'relative',
-                  flexShrink: 0,
-                  opacity: index === activeIndex ? 1 : 0.72,
+                  borderRadius: '2px',
+                  background: poster.palette.accent,
+                  opacity: index === activeIndex ? 1 : 0.36,
                   transition: 'opacity 0.2s',
                 }}
-              >
-                {poster.imagePath && (
-                  <img
-                    src={poster.imagePath}
-                    alt=""
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
-                    onError={(event) => {
-                      event.currentTarget.style.display = 'none'
-                    }}
-                  />
-                )}
-              </div>
+              />
 
               {/* Text */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>

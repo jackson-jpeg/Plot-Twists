@@ -484,3 +484,36 @@ the number he approved, and he is told so plainly rather than having it averaged
 
 **The visible consequence, not changed:** speaker labels on the teleprompter are now sentences
 rather than names. Legible, uglier, and a design call that is his.
+
+---
+
+## ✅ #15 — The homepage poster wall: delete the image slots, do not generate posters
+
+**Decided 2026-07-30 (late). Jackson's instruction: *"Either generate non-infringing posters
+through the existing image pipeline for the six featured entries, or restyle the cards so they
+don't have image slots at all. Tell me which is cheaper before you do it."***
+
+**Chosen: restyle. No artwork, and no artwork pipeline behind these cards.**
+
+The dollar comparison is not close but it is also not the reason. Six Gemini images would have
+cost ~$0.24. The costs that decided it:
+
+| | generate | restyle |
+|---|---|---|
+| Rewrite `scripts/generate-homepage-posters.ts` + six briefs (both deleted in 4a) | yes | no |
+| New IP surface needing a human judgement call | **yes — six images, Jackson's call** | no |
+| Repo weight | ~11 MB | 0 |
+| Survives Chunk 7's redesign | probably not | n/a |
+| Items added to Jackson's queue | 1 | 0 |
+
+**The deciding factor: the six archetype titles map one-to-one onto the characters Chunk 4a
+removed.** Any brief detailed enough to produce a good poster is a brief that has to be defended,
+and 4a's whole finding was that the briefs were worse than the images because they were evidence of
+intent. Generating artwork would re-open, three days later, the exact question 4a closed.
+
+`imagePath` was **deleted from the interface** rather than left optional-and-unset. An unset
+optional reads as "artwork is coming"; it is not, and the next person to read the file should not
+have to work that out. See `HANDOFF.md` §16.
+
+**Not decided here:** anything else about the homepage. The design pass is Chunk 7, after the
+playtest, logged in `BACKLOG.md` with Jackson's four findings and one more found while doing this.

@@ -9,12 +9,22 @@
  * `lib/content.ts` and is the server-side source of truth.
  */
 
+/**
+ * NO ARTWORK FIELD, DELIBERATELY. Chunk 4a deleted `public/poster-showcase/` — six rendered PNGs
+ * of named third-party characters — and left `imagePath?` behind against artwork that was never
+ * generated. Nothing ever set it, so the card fell through to its no-image path and the homepage
+ * shipped six empty gradient slots: an `<img>` that never mounted, and a 2:3 thumbnail that was a
+ * bare gradient rectangle.
+ *
+ * The field is gone rather than left optional-and-unset, because an unset optional reads as
+ * "artwork is coming" and it is not. Replacing it would mean writing six new render briefs for
+ * archetypes that map one-to-one onto the characters 4a removed, which is the artefact 4a existed
+ * to delete. The cards are typographic now. See DECISIONS.md #15.
+ */
 export interface HomepageShowcaseEntry {
   slug: string
   title: string
   hook: string
-  /** Optional — the card renders the gradient when no artwork is present. */
-  imagePath?: string
   palette: {
     background: string
     accent: string

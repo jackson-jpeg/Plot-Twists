@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { getCharactersInScene } from '@/lib/scriptUtils'
+import { buildSpeakerLabels } from '@/lib/speakerLabel'
 import { getMoodIndicator, getVisibleLines } from '@/lib/teleprompterUtils'
 import dynamic from 'next/dynamic'
 const TeleprompterSettingsPanel = dynamic(() => import('@/components/TeleprompterSettings').then(m => ({ default: m.TeleprompterSettings })), { ssr: false, loading: () => <div style={{ height: 40 }} /> })
@@ -134,6 +135,13 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
   // Guard: script must exist (parent checks this too)
   if (!script) return null
 
+  // Speakers ARE the trait cards now (see lib/speakerLabel.ts). Eight of them at full length,
+  // stacked above every visible line and joined into the cast list below the title, is a wall of
+  // sentences on the one screen the whole room is looking at.
+  const cast = getCharactersInScene(script)
+  const speakerLabels = buildSpeakerLabels(cast)
+  const labelFor = (speaker: string) => speakerLabels.get(speaker) ?? speaker
+
   return (
     <motion.div
       key="performing"
@@ -214,7 +222,7 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
             A PlotSlop Original
           </p>
           <p style={{ fontSize: '10px', color: '#a09a8e', marginTop: '8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            {getCharactersInScene(script).join(' \u00B7 ')}
+            {cast.map(labelFor).join(' \u00B7 ')}
           </p>
         </div>
 
@@ -284,8 +292,10 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
                         textTransform: 'uppercase',
                         letterSpacing: '0.12em',
                         color: isCurrent ? 'var(--color-stage-gold, #b8860b)' : '#5a5548',
-                      }}>
-                        {line.speaker}
+                      }}
+                      aria-label={line.speaker}
+                      >
+                        {labelFor(line.speaker)}
                       </span>
                       {isCurrent && moodIndicator.label !== 'Neutral' && (
                         <motion.span

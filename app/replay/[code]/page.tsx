@@ -10,6 +10,8 @@ import { useTeleprompterSettings } from '@/hooks/useTeleprompterSettings'
 import dynamic from 'next/dynamic'
 const TeleprompterSettingsPanel = dynamic(() => import('@/components/TeleprompterSettings').then(m => ({ default: m.TeleprompterSettings })), { ssr: false, loading: () => <div style={{ height: 40 }} /> })
 import { getVisibleLines } from '@/lib/teleprompterUtils'
+import { buildSpeakerLabels } from '@/lib/speakerLabel'
+import { getCharactersInScene } from '@/lib/scriptUtils'
 import React from 'react'
 import { ReplayJsonLd } from '@/components/JsonLd'
 import { analytics } from '@/lib/analytics'
@@ -260,6 +262,10 @@ export default function ReplayPage() {
 
   const currentLine = game.script.lines[currentLineIndex]
 
+  // Display only — a replay's speakers are the trait cards the room played (lib/speakerLabel.ts).
+  const speakerLabels = buildSpeakerLabels(getCharactersInScene(game.script))
+  const labelFor = (speaker: string) => speakerLabels.get(speaker) ?? speaker
+
   return (
     <div className="min-h-dvh" style={{ background: 'var(--color-bg)', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
       <ReplayJsonLd
@@ -412,7 +418,7 @@ export default function ReplayPage() {
               >
                 {currentLine.mood}
               </div>
-              <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--color-text-primary)' }}>{currentLine.speaker}</h3>
+              <h3 className="text-xl font-bold mb-3" style={{ color: 'var(--color-text-primary)' }} aria-label={currentLine.speaker}>{labelFor(currentLine.speaker)}</h3>
               <p className="text-2xl max-w-2xl mx-auto leading-relaxed" style={{ color: 'var(--color-text-primary)' }}>
                 "{currentLine.text}"
               </p>
@@ -491,7 +497,7 @@ export default function ReplayPage() {
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{line.speaker}:</span>
+                  <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }} aria-label={line.speaker}>{labelFor(line.speaker)}:</span>
                   <span className="ml-2" style={{ color: 'var(--color-text-secondary)' }}>"{line.text}"</span>
                 </motion.div>
               ))}

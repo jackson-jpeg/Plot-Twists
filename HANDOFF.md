@@ -14,13 +14,15 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Branch** | `audit/2026-07-28-snapshot` (tracks `origin/`). **Not** `master`, **not** `v2`. |
 | **iOS repo** | `/root/PlotTwists-Native` — SwiftUI/tvOS. **Shelved, and re-scoped 2026-07-29:** when it returns it is a HOST/TV surface only, never required for players. See §6 and `DECISIONS.md` #12. |
 | **Harness** | **50/50** — `[VPS] cd /root/Plot-Twists && npx tsx scripts/harness/run.ts` (~2 min; it forces its own fake key and its own temp database, so pass neither). Two instrument bugs fixed 2026-07-29: the script-generation counter (§9 #9) and a **shared database that made it report 38/46 with eight fabricated failures** (§9 #12). If you see a number other than 50/50, read #12 before believing it. Denominator moved 49 → 50 on 2026-07-30 when the `playerCount` scenario gained a third check; the same pass turned two false greens in it into real assertions (§13). |
-| **Unit suite** | **517/517** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450 → 469 → 517: the source-audit suite grew 4 → 16 → 18 tests, 2026-07-30 added 19 seat-cap tests (`playerCounts.test.ts`) where previously **nothing asserted `MAX_PLAYERS` at all**, and the same evening added 48 for the line budget and the cast binding (§14) — where, again, nothing asserted either. Mostly coverage — but the two drift guards (real UI source in `playerCounts.test.ts`, real prompt text in `comedyPrompts.cast.test.ts`) are behaviour. See §3 before you relax. |
+| **Unit suite** | **540/540** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450 → 469 → 517 → 540: the source-audit suite grew 4 → 16 → 18 tests, 2026-07-30 added 19 seat-cap tests (`playerCounts.test.ts`) where previously **nothing asserted `MAX_PLAYERS` at all**, the same evening added 48 for the line budget and the cast binding (§14), and 23 more late that night for the short speaker label (§15) — where, again, nothing asserted either. Mostly coverage — but the three drift guards (real UI source in `playerCounts.test.ts`, real prompt text in `comedyPrompts.cast.test.ts`, real component source in `speakerLabel.test.ts`) are behaviour. See §3 before you relax. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
 | **plotslop.com** | 🟢 **LIVE 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Cert for both names expires **2026-10-27**. `plotslop.service` active and enabled on :3100 behind nginx TLS; apex and `www` return 200, HTTP 301s to HTTPS, sang3r.com verified unaffected. **Two clients have joined a room over the public endpoint.** Cutover step 6 (cgroup re-verification) is still Jackson's and still blocking — see §11. |
 | **Current chunk** | **Chunks 2, 3 and 5 complete.** **Chunk 5 (the rename) DONE 2026-07-30** — see §12. `DECISIONS.md` #7 and #10 are both closed. **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 blocked on Jackson. |
-| **Deployed** | ✅ **LIVE as of 2026-07-30 18:38 UTC** — the seat-cap pass, on top of the 17:25 Chunk 5 deploy. Verified after the restart: apex/www 200, sang3r.com 200, zero errors in the journal, `ENSEMBLE:8` present in all three cap-bearing chunks **fetched over TLS** with zero `ENSEMBLE:6`, and all three OG image routes returning `200 image/png` — **including the invite card, which had been returning 500 since it was built** (§9 #24). |
+| **Deployed** | ✅ **LIVE as of 2026-07-30 20:17 UTC** — the short speaker label (§15) and the homepage poster wall (§16), on top of the 19:18 line-budget/cast-binding deploy. Verified in a real browser at two viewports, plus 16 routes curled with no 500s. Previously: ✅ **2026-07-30 18:38 UTC** — the seat-cap pass, on top of the 17:25 Chunk 5 deploy. Verified after the restart: apex/www 200, sang3r.com 200, zero errors in the journal, `ENSEMBLE:8` present in all three cap-bearing chunks **fetched over TLS** with zero `ENSEMBLE:6`, and all three OG image routes returning `200 image/png` — **including the invite card, which had been returning 500 since it was built** (§9 #24). |
 | **Script length** | **42-52 lines, `max_tokens` 3,000** (`server/services/scriptCustomization.service.ts`). Jackson's ruling 2026-07-30, replacing 30-38 / 2,600 — triggered by his own rule that mean speaking lines per seated player at 8 must not fall under 5. Both branches of `generateScript` now READ that table rather than restating it. See §14. |
 | **Cast binding** | **A script's `speaker` field is now the player's trait card, verbatim.** It was invented first names until 2026-07-30, which meant no line in any script had ever belonged to anybody in the room. `server/services/scriptCast.service.ts` enforces and measures it. **Read §14 before touching `comedyPrompts.ts`.** |
+| **Speaker labels** | Displayed short, compared long. `lib/speakerLabel.ts` renders a unique prefix of the trait ("Reads every sign…"); every `===`, the text export and every `aria-label` keep the full string. **Shortening is a rendering concern; identity is not** — see §15. |
+| **Deploy** | `[VPS] cd /root/Plot-Twists && bash scripts/deploy.sh`. **Two trees:** it builds in the source tree and rsyncs to `/srv/plotslop`, which is the unit's `WorkingDirectory`. Building in `/root/Plot-Twists` and restarting the service changes **nothing** and looks entirely successful — see §16. The restart prompt takes its EOF abort under a non-TTY: complete it by hand with `systemctl reset-failed plotslop && systemctl restart plotslop` after checking the window. **Do not pipe `y` into it.** |
 | **Seating** | **ENSEMBLE seats 8 performers** (`server/utils/constants.ts`). Raised from 6 by Jackson's decision on 2026-07-30; the scope-freeze gate of "eight people who are not my friends" is now seatable. Every seat count in the UI derives from the constant via `lib/playerCounts.ts` — **do not restate one as a literal**, there is a test that fails if you do. See §13. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
@@ -1078,3 +1080,129 @@ The one visible cost is cosmetic and it is real: **speaker labels on the telepro
 sentences, not names.** `MobileTeleprompter.tsx:226-236` renders them at 13px uppercase mono,
 centred, and a 50-character trait wraps to two or three lines above every single line of dialogue.
 It is legible and it is uglier. Not changed — it is a design call and it is Jackson's.
+
+**→ ANSWERED 2026-07-30, late: shorter display form, binding kept. See §15.**
+
+---
+
+## 15. The short speaker label — 2026-07-30, late
+
+Jackson's answer to the question §14 left open: *"Do the shorter display form, keep the binding."*
+
+`lib/speakerLabel.ts` shortens what is **displayed**. Nothing else changes. The rule the whole
+design rests on, and the thing to preserve if you touch any of this:
+
+> **Shortening is a rendering concern. Identity is not.**
+
+| Keeps the full trait string | Shows the short label |
+|---|---|
+| `MobileTeleprompter`'s `isMyTurn` (`components/MobileTeleprompter.tsx:99`) | the current-line speaker |
+| `app/clips/page.tsx:36`, `app/digest/page.tsx:40` — winner and per-player attribution | the "Up Next" footer |
+| `lib/scriptUtils.formatScriptAsText` — the archival copy a player shares | the host screen, per line and in the cast list |
+| every `aria-label` — assistive tech gets the whole card | the replay viewer, both views |
+
+**It is a PREFIX, not a summary, and that is deliberate.** The player is holding the card. A prefix
+is something they can match against what is in their hand; an extracted noun phrase ("A
+NEGOTIATION") is not. Prefixes are also deterministic, which is what makes the uniqueness guarantee
+below possible at all.
+
+### The failure mode this could have introduced, and how it is prevented
+
+Two traits in the live deck share an opening — *"Has already searched your bag"* and *"Has already
+named the children"*. If both collapsed to the same label, the teleprompter would show one player's
+cue to another. **That is a worse bug than the wrapping it replaces.** So colliding labels grow one
+word at a time until they separate: uniqueness beats brevity whenever the two conflict, and the
+growth loop terminates even when two speakers are genuinely inseparable.
+
+Measured on the three real 8-trait casts in `.real-generation.json`: 45-character traits become
+17-26 character labels, one line each at 13px, all eight distinct in all three scripts.
+
+`STAGE_DIRECTION_SPEAKERS` moved to `lib/speakerLabel.ts` and `scriptCast.service.ts` re-exports it.
+Both sides must agree on what counts as a person; two copies would drift, and the drift would show
+up as a stage direction quietly reported as a seated player with no lines. Client components cannot
+import from `server/`, so the shared definition has to live in `lib/` and not the other way round.
+
+### Verification
+
+23 tests in `__tests__/unit/lib/speakerLabel.test.ts`. Suite 517 → **540**. Both guards proved
+non-vacuous per rule 2.2, by injection:
+
+- neutering the growth loop turned the collision test red;
+- swapping `isMyTurn` to compare the **label** turned the source-scan test red.
+
+Exactly those two, nothing else. Restored and re-greened.
+
+The last describe block reads component source as **text**, because the display/identity separation
+cannot be observed at runtime — a future edit that swaps `labelFor(...)` into the `===` would pass
+every behavioural test in the file.
+
+### 🔴 What is NOT verified
+
+**No rendered teleprompter on a real game.** Same wall as §14: no game has been completed on the
+deployed instance (`/srv/plotslop/data/` holds no `gameHistory.json`), and the credit gate stops an
+anonymous host generating one. What *is* proven is that the code reaches browsers — the served
+chunk `https://plotslop.com/_next/static/chunks/3oh64kd_0kthm.js` contains the compiled
+`/^\s*someone\s+who\s+/i` wrapper regex. Disk presence and a served bundle are two mechanisms;
+neither one is a rendered label. **One signed-in round closes it.**
+
+---
+
+## 16. The homepage poster wall — 2026-07-30, late
+
+**Six empty gradient placeholders, fixed by deleting the image slots rather than by making images.**
+
+Chunk 4a deleted `public/poster-showcase/` — six rendered PNGs of named third-party characters —
+and left `imagePath?` behind on `HomepageShowcaseEntry` against artwork that was never generated.
+Nothing ever set it, so `{imagePath && <img/>}` never mounted and the 2:3 thumbnail stayed a bare
+gradient rectangle. **Live for two days.**
+
+Confirmed two ways before touching anything, per rule 2.2: the code path read end-to-end, and the
+live DOM (`imgCount: 0`; six thumbnail divs with zero children and a pure `linear-gradient`
+background). Curling the page is **not** enough here and this is worth knowing — the homepage is
+client-rendered behind an auth check, so `curl` returns a 25 KB skeleton containing the word
+"PlotSlop" and nothing else. It takes a real browser to see this page at all.
+
+### Why not generate posters
+
+Costed both, because Jackson asked which was cheaper before the work started. Gemini would have
+been ~$0.24 for six images. That is not where the cost is:
+
+- `scripts/generate-homepage-posters.ts` and the briefs were both deleted in 4a — both would be
+  rewritten;
+- the six archetype titles map one-to-one onto the characters 4a removed, so any brief detailed
+  enough to produce a good poster is a brief that has to be **defended** — and briefs-as-evidence-
+  of-intent is precisely what 4a deleted;
+- it puts ~11 MB back in the repo and a "review six images for IP leakage" item back on Jackson's
+  queue;
+- Chunk 7 redesigns this section anyway.
+
+**The deciding factor was not the $0.24. Generating artwork re-opens the question 4a closed three
+days earlier.**
+
+### What changed
+
+`imagePath` is **gone from the interface**, not left optional-and-unset — an unset optional reads
+as "artwork is coming" and it is not. The hero card lost its `<img>` and `imageFailed` state; the
+80px thumbnail column became a 3px accent rule. The card is `display:flex` and its content box is
+`flex: 1`, because the grid stretches the card to the sidebar's height and without that the content
+stopped at its own `minHeight` and everything below it was bare gradient — the exact look being
+removed.
+
+**This is not the homepage design pass.** That is Chunk 7, logged in `BACKLOG.md` with Jackson's
+four findings, and nothing here touches any of them.
+
+### Deployed 2026-07-30 20:17 UTC
+
+Verified in a real browser at 1280px and 390px: zero `<img>` elements, six rows, `3px` grid column,
+no horizontal overflow. 16 live routes curled, **no 500s**.
+
+### 🟠 The deploy has two trees, and building in the wrong one looks like success
+
+`npm run build` in `/root/Plot-Twists` followed by `systemctl restart plotslop` **does nothing.**
+The unit runs `WorkingDirectory=/srv/plotslop`; the source tree is only an input. `scripts/deploy.sh`
+builds in the source tree and then **rsyncs to `/srv/plotslop`**, and it is the rsync that matters.
+
+Caught tonight only by loading the page in a browser after restarting and finding the old layout.
+Every gate was green and the service was healthy. Both trees also need the env sourced —
+`next build` fails without `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, which is documented at the top of
+`deploy.sh` and is easy to hit when invoking `npm run build` by hand.

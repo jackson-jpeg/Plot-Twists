@@ -1,15 +1,18 @@
 # NEEDS-JACKSON
 
 **The single queue.** Everything blocked on you, ordered by what unblocks the most.
-Rewritten 2026-07-30 (third pass, after the line-budget decision). Machine labels: `[VPS]` = the
+Rewritten 2026-07-30 (fourth pass, after the speaker-label ruling). Machine labels: `[VPS]` = the
 Linux box, `[MACBOOK]` = your Mac.
 
 Nothing below is waiting on me. Where I could do the part that did not need you, I did it and said
 so.
 
-**Closed this pass by your decision:** the line budget (**42-52 / 3,000**) and the per-character
-instruction, applied without waiting for the playtest as you asked. Acceptance met — median 6,
-floor 4, zero invented characters. Detail in `HANDOFF.md` §14.
+**Closed this pass by your decision:** the teleprompter label — shorter display form, binding kept.
+Shipped and live. **The queue is down to six, and the top item is no longer a design question.**
+
+**Closed earlier tonight by your decision:** the line budget (**42-52 / 3,000**) and the
+per-character instruction, applied without waiting for the playtest as you asked. Acceptance met —
+median 6, floor 4, zero invented characters. Detail in `HANDOFF.md` §14.
 
 **Closed on the previous pass:** the seat cap. `MAX_PLAYERS.ENSEMBLE` is **8**. `HANDOFF.md` §13.
 
@@ -17,6 +20,104 @@ floor 4, zero invented characters. Detail in `HANDOFF.md` §14.
 the install prompt (Option A), the `TermsContent` refund line, the public-domain settings.
 
 **Closed by work:** Chunk 5, the rename (`HANDOFF.md` §12) — deployed and verified.
+
+---
+
+## ⭐ While you are hosting tonight — what to watch, in order
+
+You asked. Six things, most important first.
+
+**1. Sign in before you create the room.** Credits are tied to a Clerk user
+(`server/socket/helpers.ts:99`), so an anonymous host cannot generate a script at all — you get
+*"Authentication required to generate scripts."* This is the single most likely way the evening
+stops dead in the first two minutes.
+
+**2. Does YOUR TURN actually fire?** This is the thing that has never been verified end to end, and
+tonight is the only way to verify it. On your phone during the performance, the label above each
+line should be the opening of somebody's card, and when it is yours the screen should flash **YOUR
+TURN** and show a red **YOUR LINE** bar. If that never happens for anyone all night, the binding is
+still broken and everything I shipped tonight is theatre.
+
+**3. Does anyone get a cue that is not theirs, or two people start reading at once?** That would be
+a label collision — two cards shortening to the same prefix. There is a guarantee against it and 23
+tests, but a real room is the first time eight arbitrary cards have been in play together.
+
+**4. Watch for a part nobody claims.** A speaker label nobody recognises means the model invented a
+character despite the prompt. The server logs it — see the grep below.
+
+**5. Do not let me deploy while you are playing.** All game state is process-local, so a restart
+ends every live game mid-round with no recovery. I will not touch the service tonight.
+
+**6. If you switch on audience plot twists and they feel canned,** that path catches its own errors
+and silently falls back to template twists (`server/services/audience.service.ts:579`). It is a
+parked feature and I have not verified it against the live model — the failure looks like "boring"
+rather than "broken", which is why it is worth naming.
+
+### Afterwards, this turns your playtest into a measurement
+
+```
+[VPS] journalctl -u plotslop --since "1 hour ago" | grep -E "Cast binding|not seated|no lines at all|below the 3-line"
+```
+
+Every generation logs one `Cast binding` line with the real per-seat distribution — `12/5/5/6/6/6/4/6`
+and so on — plus a warning for any off-cast speaker, any silent player and anyone under the floor.
+That is your acceptance bar measured on real people instead of on my three test generations. Send
+me the output and I will tell you what it says.
+
+---
+
+## 0b. ✅ DEPLOYED 2026-07-30 20:17 UTC — the short label and the poster wall
+
+Two unrelated things, both live, both verified in a real browser rather than by curl.
+
+**The speaker label.** You said shorter form, keep the binding. Labels are now the shortest unique
+prefix of the trait — *"Reads every sign…"*, *"Interprets all silence…"* — 17-26 characters instead
+of 45, one line each at 13px. Applied on the teleprompter (current line and Up Next), the host
+screen (per line and the cast list under the title) and the replay viewer.
+
+The binding is untouched, and that separation is the whole design: **shortening is a rendering
+concern, identity is not.** `isMyTurn`, the clip and digest attribution, the shareable text export
+and every `aria-label` all still carry the full trait string. A test reads the component source as
+text to keep it that way, because no runtime check can see a future edit that swaps one for the
+other.
+
+The one thing worth knowing: two cards in your deck open the same way — *"Has already searched your
+bag"* and *"Has already named the children"*. If they shortened to the same label the teleprompter
+would show one player's cue to another, which is worse than the wrapping. Colliding labels grow a
+word at a time until they separate.
+
+**The poster wall.** Six empty gradient slots on the homepage, live since 4a. Fixed by removing the
+image slots, not by generating posters — the cost comparison you asked for is in `DECISIONS.md`
+#15, and the deciding factor was not the $0.24 of Gemini calls but that six new render briefs would
+re-open the IP question 4a closed three days ago.
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | 0 errors |
+| `npx jest` | **540/540** (was 517) |
+| `npx tsx scripts/harness/run.ts` | **50/50** |
+| `npm run build` | exit 0 |
+| Live routes | **16 curled, no 500s** |
+| Homepage rendered at 1280px and 390px | zero `<img>`, six rows, no horizontal overflow |
+| Label code in the **served** JS bundle | confirmed over TLS, not just on disk |
+| Journal since restart | 0 errors |
+
+### 🟠 One thing I got wrong tonight, and it is the same lesson as this morning
+
+I built in `/root/Plot-Twists`, restarted the service, and it changed nothing. The unit runs
+`WorkingDirectory=/srv/plotslop`; `deploy.sh` builds in the source tree and **rsyncs** to the
+runtime tree, and it is the rsync that matters. Every gate was green and the service was healthy
+the whole time.
+
+I only caught it because I loaded the page in a browser and saw the old layout. Recorded in
+`HANDOFF.md` §16 and in the §1 deploy row so the next session does not repeat it.
+
+### 🔴 Still not verified: a rendered teleprompter on a real game
+
+Same wall as §0. No game has been completed on the deployed instance, so there is no replay to
+render, and the credit gate stops an anonymous host generating one. What is proven is that the code
+reaches browsers — the served chunk contains the compiled label function. **Your round tonight
+closes this and the §0 item together.**
 
 ---
 
@@ -153,6 +254,11 @@ now sentences rather than names. `MobileTeleprompter.tsx:226` renders them at 13
 centred — a 50-character trait wraps to two or three lines above every line of dialogue. Legible,
 and uglier than it was. Say the word and I will design a shorter display form that keeps the
 binding.
+
+**→ ✅ ANSWERED AND SHIPPED the same night.** You said shorter form, keep the binding. It is live —
+see §0b. Labels are now a unique prefix ("Reads every sign…", "Interprets all silence…"), one line
+each. The binding is untouched: every `===`, the shared text export and every `aria-label` still
+carry the whole trait.
 
 ---
 

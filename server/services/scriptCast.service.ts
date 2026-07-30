@@ -34,12 +34,17 @@
 import type { Script } from '../../lib/types'
 import { logger } from '../../lib/logger'
 
-/** Speakers that are narration rather than a person, and so are never expected on the cast list. */
-const STAGE_DIRECTION_SPEAKERS = ['NARRATOR', 'STAGE DIRECTION', 'ACTION', 'DIRECTION']
-
-export function isStageDirectionSpeaker(speaker: string): boolean {
-  return STAGE_DIRECTION_SPEAKERS.includes(speaker.trim().toUpperCase())
-}
+/**
+ * Narration-vs-person lives in `lib/` because BOTH sides need the same answer: this binder must not
+ * count NARRATOR as a silent cast member, and `lib/speakerLabel.ts` must not shorten it into
+ * something that is no longer the word NARRATOR. Two copies of the list would drift, and the drift
+ * would be invisible — a stage direction quietly reported as a player with no lines.
+ *
+ * Client components cannot import from `server/`, so the shared definition has to sit in `lib/`
+ * and be re-exported here rather than the other way round.
+ */
+export { isStageDirectionSpeaker, STAGE_DIRECTION_SPEAKERS } from '../../lib/speakerLabel'
+import { isStageDirectionSpeaker } from '../../lib/speakerLabel'
 
 /**
  * Collapse a speaker label to a comparison key.

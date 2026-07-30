@@ -68,3 +68,6 @@ screenshots/
 # committed. The adapter mkdirs the directory on boot, so nothing needs to be in git.
 data/*.json
 .real-generation.json
+
+# clerk configuration (can include secrets)
+/.clerk/

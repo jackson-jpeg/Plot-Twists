@@ -5,6 +5,27 @@
 
 import type { Script, ScriptLine } from '../../../lib/types'
 
+/**
+ * ⚠️ EXPERIMENT SCAFFOLDING — ADDED 2026-07-30, DELETE WITH ONE COMMIT IF THE ANSWER IS "NO".
+ *
+ * Jackson is reconsidering Chunk 4 and asked for a blind A/B on the only question that matters:
+ * is the named-character deck actually funnier than the trait deck? Answering that requires
+ * generating scripts BOTH ways through the real pipeline, so the alternative has to exist
+ * somewhere. It exists here, behind a parameter that defaults to today's behaviour.
+ *
+ * 'trait' — SHIPPING BEHAVIOUR. The character slot is a trait or flaw (Chunk 4 layer 1).
+ * 'name'  — NOT SHIPPING, NOT REACHABLE FROM ANY HANDLER. The character slot is a name a player
+ *           typed. Reachable only from `scripts/ab-generation.ts`, which is never imported by
+ *           jest, by the harness, or by the server.
+ *
+ * The default is asserted byte-identical to the un-parameterised output in
+ * `comedyPrompts.cast.test.ts` — the guard that keeps this from changing the product by accident.
+ *
+ * To delete: remove this type, the four `castStyle` parameters, the two `castStyle === 'name'`
+ * branches, and `scripts/ab-generation.ts`. Nothing else references it.
+ */
+export type CastStyle = 'trait' | 'name'
+
 /** Get mature (18+) comedy writing guidelines */
 export function getMatureGuidelines(): string {
   return `
@@ -131,7 +152,8 @@ AVOID LIKE POISON:
 /** Get the full system prompt for comedy script generation */
 export function getSystemPrompt(
   isMature: boolean,
-  previousScript?: Script
+  previousScript?: Script,
+  castStyle: CastStyle = 'trait'
 ): string {
   const comedyGuidelines = isMature ? getMatureGuidelines() : getFamilyFriendlyGuidelines()
 
@@ -165,9 +187,13 @@ Whatever a character IS, every line they speak should sound like it:
 
 Mixing a pirate and a poet? The pirate does NOT start speaking in verse — the CONTRAST is the comedy.
 
-Build these voices from the character DESCRIPTION you are given. Never write a
+${castStyle === 'name'
+  ? `Build these voices from the character NAMES you are given. Each one is a character an
+audience already knows — write them as themselves: their voice, their preoccupations, their
+particular way of being wrong. The recognition IS the joke; do not soften it into a generic type.`
+  : `Build these voices from the character DESCRIPTION you are given. Never write a
 character as a named person from real life, or as a named character from an
-existing film, show, game or book.
+existing film, show, game or book.`}
 
 ═══════════════════════════════════════════════════════
 SPECIFICITY BEATS GENERIC EVERY TIME
@@ -349,9 +375,14 @@ export function getModeInstructions(
   gameMode: 'SOLO' | 'HEAD_TO_HEAD' | 'ENSEMBLE',
   rawCharacters: string[],
   setting: string,
-  circumstance: string
+  circumstance: string,
+  castStyle: CastStyle = 'trait'
 ): string {
-  const characters = rawCharacters.map(asPerformer)
+  // `asPerformer` exists because a trait is not a noun phrase. A NAME already is one, and
+  // wrapping it produces "someone who marvin Q. Public" — so the wrapper is skipped, not fixed.
+  // (That placeholder is deliberately nobody: `contentSource.test.ts` screens this file's
+  // COMMENTS with the live layer-3 matcher, and it caught the real name I first wrote here.)
+  const characters = castStyle === 'name' ? rawCharacters : rawCharacters.map(asPerformer)
   if (gameMode === 'HEAD_TO_HEAD') {
     return `
 ═══════════════════════════════════════
@@ -413,10 +444,15 @@ Put each of those strings into the "speaker" field COPIED CHARACTER FOR CHARACTE
 one, do not tidy its punctuation or capitalisation, do not turn it into a first name, do not add
 a title. The app matches this string against the card in that player's hand to tell them it is
 their turn — so a "speaker" that is not on the list above is a part with nobody holding it.
-
+${castStyle === 'name'
+  ? `
+Write each of them as the character that name refers to — their voice, their preoccupations,
+their particular way of being wrong. Everyone in the room knows who these people are; play the
+recognition, do not explain it.`
+  : `
 Yes, these are sentences rather than names. Write them as speaker labels anyway. The comedy comes
 from a person visibly BEING that sentence, which is also how everyone else in the room knows who
-just spoke.
+just spoke.`}
 
 TWO HARD RULES, AND THEY OUTRANK EVERY STYLE NOTE BELOW:
 

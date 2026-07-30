@@ -73,6 +73,26 @@ app.prepare().then(async () => {
 
   const expressApp = express()
 
+  // ONE hop, and the number is load-bearing.
+  //
+  // Everything reaches this process through nginx on 127.0.0.1, so without this `req.ip` is the
+  // loopback address for every visitor on earth and express-rate-limit puts the whole internet in
+  // one bucket. express-rate-limit v7 detects the contradiction and throws a ValidationError on
+  // every request — which is how this was found, in the journal, rather than by anything failing.
+  //
+  // `1` RATHER THAN `true`, and this is the part worth reading twice. nginx sends
+  // `X-Forwarded-For $proxy_add_x_forwarded_for`, which APPENDS the real peer to whatever the
+  // client sent. `true` trusts the whole chain and takes the leftmost entry, so a client sending
+  // its own `X-Forwarded-For: 1.2.3.4` would choose its own rate-limit key — a limiter that is
+  // worse than no limiter, because it looks like one. `1` counts a single hop back from this
+  // server, which is exactly the entry nginx appended and the only one a client cannot forge.
+  //
+  // Scope, so nobody over-reads this: the limiters that cost money (room creation, script
+  // generation) are SocketRateLimiter instances keyed on the socket, never on req.ip, and were
+  // never affected. What this repairs is gameMetadataLimiter — 30/min on two read-only
+  // /api/game routes, until now shared by everybody on the internet at once.
+  expressApp.set('trust proxy', 1)
+
   // Express-level CORS middleware (ensures ALL responses have CORS headers, not just Socket.IO)
   expressApp.use(cors({
     origin: (origin, callback) => {

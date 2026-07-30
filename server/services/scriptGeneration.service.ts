@@ -7,7 +7,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import type { Script, ScriptLine, ScriptCustomization } from '../../lib/types'
 import { ScriptSchema } from '../../lib/schema'
 import { extractJSON } from '../utils/jsonExtractor'
-import { getSystemPrompt, getModeInstructions } from './prompts/comedyPrompts'
+import { getSystemPrompt, getModeInstructions, type CastStyle } from './prompts/comedyPrompts'
 import {
   buildCustomizationPrompt,
   getMaxTokens,
@@ -34,7 +34,10 @@ export async function generateScript(
   previousScript?: Script,
   customization?: ScriptCustomization,
   onProgress?: (data: { phase: string; percent: number; title?: string }) => void,
-  onUsage?: (usage: { inputTokens: number; outputTokens: number }) => void
+  onUsage?: (usage: { inputTokens: number; outputTokens: number }) => void,
+  // ⚠️ EXPERIMENT SCAFFOLDING — see the `CastStyle` doc comment in prompts/comedyPrompts.ts.
+  // Defaults to shipping behaviour and no handler passes it. Delete with that type.
+  castStyle: CastStyle = 'trait'
 ): Promise<Script> {
   const isSoloMode = gameMode === 'SOLO'
   const numPlayers = characters.length
@@ -67,8 +70,8 @@ export async function generateScript(
   const lineRange = getLineCountRange(customization?.scriptLength ?? 'standard')
   const maxTokens = getMaxTokens(customization?.scriptLength ?? 'standard')
 
-  const systemPrompt = getSystemPrompt(isMature, previousScript)
-  const modeInstructions = getModeInstructions(gameMode, characters, setting, circumstance)
+  const systemPrompt = getSystemPrompt(isMature, previousScript, castStyle)
+  const modeInstructions = getModeInstructions(gameMode, characters, setting, circumstance, castStyle)
 
   const userMessage = `Write a scene using these ingredients:
 
@@ -93,7 +96,7 @@ ${customizationPrompt}
 YOUR MISSION
 ═══════════════════════════════════════
 1. Find the GAME of this scene immediately (what's the core comic premise?)
-2. Build each voice FROM ITS TRAIT, and never let two of them sound alike
+2. Build each voice FROM ITS ${castStyle === 'name' ? 'CHARACTER' : 'TRAIT'}, and never let two of them sound alike
 3. Escalate from funny to FUNNIER to absolutely ridiculous
 4. Use specific details, not generic reactions
 5. Build patterns and break them (rule of three)

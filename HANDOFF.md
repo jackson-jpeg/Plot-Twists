@@ -14,10 +14,10 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Branch** | `audit/2026-07-28-snapshot` (tracks `origin/`). **Not** `master`, **not** `v2`. |
 | **iOS repo** | `/root/PlotTwists-Native` — SwiftUI/tvOS. **Shelved, and re-scoped 2026-07-29:** when it returns it is a HOST/TV surface only, never required for players. See §6 and `DECISIONS.md` #12. |
 | **Harness** | **50/50** — `[VPS] cd /root/Plot-Twists && npx tsx scripts/harness/run.ts` (~2 min; it forces its own fake key and its own temp database, so pass neither). Two instrument bugs fixed 2026-07-29: the script-generation counter (§9 #9) and a **shared database that made it report 38/46 with eight fabricated failures** (§9 #12). If you see a number other than 50/50, read #12 before believing it. Denominator moved 49 → 50 on 2026-07-30 when the `playerCount` scenario gained a third check; the same pass turned two false greens in it into real assertions (§13). |
-| **Unit suite** | **540/540** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450 → 469 → 517 → 540: the source-audit suite grew 4 → 16 → 18 tests, 2026-07-30 added 19 seat-cap tests (`playerCounts.test.ts`) where previously **nothing asserted `MAX_PLAYERS` at all**, the same evening added 48 for the line budget and the cast binding (§14), and 23 more late that night for the short speaker label (§15) — where, again, nothing asserted either. Mostly coverage — but the three drift guards (real UI source in `playerCounts.test.ts`, real prompt text in `comedyPrompts.cast.test.ts`, real component source in `speakerLabel.test.ts`) are behaviour. See §3 before you relax. |
+| **Unit suite** | **553/553** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450 → 469 → 517 → 540: the source-audit suite grew 4 → 16 → 18 tests, 2026-07-30 added 19 seat-cap tests (`playerCounts.test.ts`) where previously **nothing asserted `MAX_PLAYERS` at all**, the same evening added 48 for the line budget and the cast binding (§14), 23 more late that night for the short speaker label (§15) — where, again, nothing asserted either — and 13 more on 2026-07-30 for `trust proxy` and for the A/B scaffolding guard (§17). Mostly coverage — but the three drift guards (real UI source in `playerCounts.test.ts`, real prompt text in `comedyPrompts.cast.test.ts`, real component source in `speakerLabel.test.ts`) are behaviour. See §3 before you relax. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
-| **plotslop.com** | 🟢 **LIVE 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Cert for both names expires **2026-10-27**. `plotslop.service` active and enabled on :3100 behind nginx TLS; apex and `www` return 200, HTTP 301s to HTTPS, sang3r.com verified unaffected. **Two clients have joined a room over the public endpoint.** Cutover step 6 (cgroup re-verification) is still Jackson's and still blocking — see §11. |
-| **Current chunk** | **Chunks 2, 3 and 5 complete.** **Chunk 5 (the rename) DONE 2026-07-30** — see §12. `DECISIONS.md` #7 and #10 are both closed. **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 blocked on Jackson. |
+| **plotslop.com** | 🟢 **LIVE 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Cert for both names expires **2026-10-27**. `plotslop.service` active and enabled on :3100 behind nginx TLS; apex and `www` return 200, HTTP 301s to HTTPS, sang3r.com verified unaffected. **Two clients have joined a room over the public endpoint.** **Cutover step 6: four of five boxes RUN AND PASSED 2026-07-30 with numbers (§17b).** Box 2 (deliberate OOM) is the only one outstanding, and box 1 already eliminates the failure class step 6 existed for. |
+| **Current chunk** | **Chunks 2, 3 and 5 complete.** **Chunk 5 (the rename) DONE 2026-07-30** — see §12. `DECISIONS.md` #7 and #10 are both closed. **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 is 4/5 boxes green (§17b). **Chunk 4 reversal ANALYSED, not executed — `CHUNK4-REVERSAL-ANALYSIS.md`, and the product is unchanged (§17a).** |
 | **Deployed** | ✅ **LIVE as of 2026-07-30 20:17 UTC** — the short speaker label (§15) and the homepage poster wall (§16), on top of the 19:18 line-budget/cast-binding deploy. Verified in a real browser at two viewports, plus 16 routes curled with no 500s. Previously: ✅ **2026-07-30 18:38 UTC** — the seat-cap pass, on top of the 17:25 Chunk 5 deploy. Verified after the restart: apex/www 200, sang3r.com 200, zero errors in the journal, `ENSEMBLE:8` present in all three cap-bearing chunks **fetched over TLS** with zero `ENSEMBLE:6`, and all three OG image routes returning `200 image/png` — **including the invite card, which had been returning 500 since it was built** (§9 #24). |
 | **Script length** | **42-52 lines, `max_tokens` 3,000** (`server/services/scriptCustomization.service.ts`). Jackson's ruling 2026-07-30, replacing 30-38 / 2,600 — triggered by his own rule that mean speaking lines per seated player at 8 must not fall under 5. Both branches of `generateScript` now READ that table rather than restating it. See §14. |
 | **Cast binding** | **A script's `speaker` field is now the player's trait card, verbatim.** It was invented first names until 2026-07-30, which meant no line in any script had ever belonged to anybody in the room. `server/services/scriptCast.service.ts` enforces and measures it. **Read §14 before touching `comedyPrompts.ts`.** |
@@ -1206,3 +1206,100 @@ Caught tonight only by loading the page in a browser after restarting and findin
 Every gate was green and the service was healthy. Both trees also need the env sourced —
 `next build` fails without `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, which is documented at the top of
 `deploy.sh` and is easy to hit when invoking `npm run build` by hand.
+
+---
+
+## 17. Chunk 4 reconsidered, cutover step 6, and `trust proxy` — 2026-07-30, late
+
+Three unrelated things. The first is analysis Jackson asked for and **no product change**; the
+other two are queue items that stopped being his under a new operating rule.
+
+### 17a. The Chunk 4 reversal question — analysed, nothing reversed
+
+Full write-up: **`CHUNK4-REVERSAL-ANALYSIS.md`**. Blind packet: **`AB-PACKET.md`**, on Jackson's
+Mac, **deliberately not committed**.
+
+The design under consideration: genre category slots ("a 90s sitcom character") that the player
+fills by typing a name; the slot ships, the name never does; anything leaving the room renders
+archetypes only.
+
+**Nothing in the product changed.** Read that before reading anything else in this section. The
+catalog, the layers, the deck and the prompts are exactly as they were.
+
+**What was added, and how to delete it.** `CastStyle` in `server/services/prompts/comedyPrompts.ts`
+is experiment scaffolding: a parameter that defaults to shipping behaviour and is not reachable
+from any handler. `comedyPrompts.cast.test.ts` asserts the default is **byte-identical** to the
+un-parameterised call for all three modes and both maturity ratings, and separately asserts the
+`'name'` branch really differs — without that second assertion the A/B could have compared an arm
+against itself. To remove: delete the type, the four `castStyle` parameters, the two branches,
+`scripts/ab-generation.ts`, `scripts/ab-packet.ts` and the guard describe block. Nothing else
+references it.
+
+**The findings that are facts rather than opinions**, all measured over 6 paired generations plus
+2 attack runs, $0.6957:
+
+| | trait (shipping) | name (proposed) |
+|---|---:|---:|
+| words per line | 7.24 | **6.43** |
+| invented speakers nobody could read | 0 | 1 |
+| layer 3 hits per script | 0 | **~30** |
+| **synopses that would ship redacted** | 0 of 6 | **4 of 6** |
+| cost per round | $0.0514 | $0.0483 |
+
+- **Production emits the SCREENED script** (`game.helpers.ts:151`, `game.handler.ts:306`), so
+  under the proposed design the results screen would read *"someone you would recognise must
+  fairly distribute two cakes among eight workers"* in four of six rounds. That is layer 3 working
+  correctly on input it was not built for, not a bug in it.
+- **Layer 3 becomes a popularity detector.** Famous casts: ~30 hits/script. A cast of eight
+  obscure picks: **0**. The control fires hardest when the comedy is working.
+- **The clustering failure is invisible to the telemetry.** Seven picks from one show produced
+  `7/6/7/8/6/6/6/6` — the most even distribution in the whole experiment. The `Cast binding` line
+  would score that round as the healthiest of the night.
+- **Short names do not recover the +37.5%.** They recover **21%** of it. §14's cost increase was
+  mostly the line budget (37.7 → 51.3 lines), not the labels — which corrects the implication in
+  §14 that the label was the available lever.
+- **Reversal is ~6 sessions**, and only ~25 of the 540 tests are a write-off. Settings and
+  circumstances (258 of 509 catalog entries), `build-catalog.ts`, `scriptCast.service.ts` and 4a
+  all survive untouched.
+
+**The named casts are gitignored** (`.ab-casts.json`), and so is the packet. A committed array of
+sixty franchise characters is 4a's artefact with a different job title. The committed script is a
+harness containing no names.
+
+### 17b. Cutover step 6 — four of five boxes PASS, with numbers
+
+Run 2026-07-30 on the **running** unit (`MainPID` 1530165), not a `systemd-run` scratch unit.
+
+| Box | Result |
+|---|---|
+| **1 — effective limits** | ✅ `MemoryMax=805306368` · `MemoryHigh=734003200` · `MemorySwapMax=0` · `CPUQuotaPerSecUSec=1s` · `TasksMax=256` · `User=plotslop`. Cgroup files agree exactly: `805306368` / `734003200` / `0` / `100000 100000`. `memory.events` all zero — the limits have never been hit in normal operation. |
+| **2 — OOM fires and the process dies** | ⚠️ **NOT RUN.** Blocked by a tool-permission classifier on deliberate memory exhaustion, not by access. Script ready at `/root/.claude/jobs/…/box2.sh`. See below for what box 1 already covers. |
+| **3 — CPU quota bites under multi-threaded load** | ✅ Four spinners moved into the service's own cgroup on a **2-core** host. Over a 10.028 s wall window the cgroup consumed **10,037,240 µs = 1.00 core**, not 2.00. `nr_throttled` 25 → 125, `throttled_usec` 705 ms → 6.43 s. Corroborated independently: both counters were already non-zero before the test, so the quota bites in normal operation too. |
+| **4 — `ProtectHome` hides `/root`** | ✅ From inside the namespace, `/root` is an **empty directory, mode `d---------`**. From outside it has 22 entries. Invisible rather than merely unreadable, which is what covers `/root/Sanger` and the co-tenant secrets. |
+| **5 — data directory inside the tree** | ✅ `cwd → /srv/plotslop`; `touch /srv/plotslop/nope` fails **`EROFS`**; `/srv/plotslop/data` is writable. |
+
+**What box 2 was guarding against, and how much of it box 1 already settles.** Step 6 exists
+because every previous measurement was on a transient unit — a typo, an override drop-in or a
+delegated cgroup would look identical from outside. **Box 1 eliminates that entire class**: the
+real cgroup files carry the real numbers. What box 2 uniquely covers is narrower and still open —
+whether node *dies cleanly* rather than stalling under `MemoryHigh` reclaim, since a stall never
+fires `Restart=` and the service would serve nobody without ever being "down".
+
+### 17c. `trust proxy` — fixed, with the guard that matters
+
+`server.ts` now sets `expressApp.set('trust proxy', 1)` before any middleware.
+
+**`1`, not `true`, and the difference inverts the security property.** nginx sends
+`X-Forwarded-For $proxy_add_x_forwarded_for`, which appends the real peer to whatever the client
+sent. `true` trusts the whole chain and takes the **leftmost** entry, so a client sending
+`X-Forwarded-For: 1.2.3.4` would choose its own rate-limit key — a limiter that is worse than none
+because it looks like one.
+
+`__tests__/unit/server/middleware/trustProxy.test.ts` proves this behaviourally over a real
+socket with a forged header, including the non-vacuity case: with `true`, `req.ip` really does
+come back as the forged `1.2.3.4`. Reading the config value back would have passed just as
+happily on `true`.
+
+Scope unchanged from what was reported: the money paths are `SocketRateLimiter`, socket-keyed, and
+were never affected. This repairs `gameMetadataLimiter` — 30/min on two read-only routes, until
+now shared by everybody on the internet at once.

@@ -180,6 +180,26 @@ Your round tonight closes this and the §0 item from the earlier pass together.
 
 ---
 
+## Two things found along the way, neither of them fixed
+
+**A stray credential file, mine.** Running `npx tsx server.ts` by hand without sourcing
+`/etc/plotslop/env` makes the Clerk SDK create a throwaway instance and write
+`.clerk/.tmp/keyless.json` — containing a `publishableKey` **and** a `secretKey`. It is gitignored
+by an entry the SDK adds itself, so nothing in the commit path sees it; but rsync does not read
+`.gitignore`, and it rode into `/srv/plotslop`. Never committed, never tracked, and the credential
+was for the SDK's own disposable instance rather than yours — the running service takes its keys
+from `EnvironmentFile` regardless. Removed from both trees, and `deploy.sh` now excludes it so the
+next person to make the same mistake is covered.
+
+**`trust proxy` is never set**, and everything arrives through nginx — so `req.ip` is the nginx
+loopback address for every visitor. The limiters that matter are unaffected (room creation and
+script generation are socket-keyed, not IP-keyed). The one casualty is a 30/minute limit on two
+read-only metadata routes, now shared by everybody instead of per visitor. One-line fix, not
+shipped: it is a security-middleware change and tonight is the wrong night. Detail in
+`NEEDS-JACKSON.md`.
+
+---
+
 ## What is yours now
 
 Six items in `NEEDS-JACKSON.md`, down from seven — and the top one is no longer a design question

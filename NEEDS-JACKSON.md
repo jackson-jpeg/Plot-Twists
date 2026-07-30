@@ -53,6 +53,27 @@ and silently falls back to template twists (`server/services/audience.service.ts
 parked feature and I have not verified it against the live model — the failure looks like "boring"
 rather than "broken", which is why it is worth naming.
 
+### 🟠 One thing I found while checking the journal, and deliberately did not fix tonight
+
+```
+Error [ValidationError]: The 'X-Forwarded-For' header is set but the Express
+'trust proxy' setting is false (default).
+```
+
+`trust proxy` is **never set** anywhere in the repo, and everything arrives through nginx. So for
+the Express routes, `req.ip` is the nginx loopback address for every visitor on earth.
+
+**Scope, before you worry about it:** the limiters that matter are unaffected. Room creation and
+script generation — the paths that cost money — are `SocketRateLimiter` instances keyed by
+`rateLimitKey(socket)`, not by Express IP. The only casualty is `gameMetadataLimiter`, 30
+requests/minute on two read-only `/api/game/...` metadata routes, which is now **30/minute shared
+by everybody** rather than per visitor. It gives no per-attacker protection and could in principle
+throttle a real room, though eight people are unlikely to reach it.
+
+The fix is one line (`expressApp.set('trust proxy', 1)`). I did not ship it, because it changes how
+`req.ip` resolves everywhere including logging, it is a security-middleware change, and doing that
+unrequested an hour before you put strangers on the site is the wrong risk. Say the word tomorrow.
+
 ### Afterwards, this turns your playtest into a measurement
 
 ```

@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { SITE_DOMAIN } from '@/lib/siteUrl'
 
 export const runtime = 'edge'
 
@@ -12,7 +13,7 @@ export async function GET(
   const wsUrl = process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
   // Fetch game data via internal API
-  let title = 'Plot Twists'
+  let title = 'PlotSlop'
   let players: Array<{ id?: string; nickname: string; character: string; isWinner: boolean }> = []
   let gameMode = 'ENSEMBLE'
   let comedyStyle = ''
@@ -91,7 +92,7 @@ export async function GET(
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
             <span style={{ fontSize: '32px' }}>🎭</span>
             <span style={{ fontSize: '18px', fontWeight: 700, color: '#9B9590', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
-              Plot Twists
+              PlotSlop
             </span>
           </div>
 
@@ -141,7 +142,7 @@ export async function GET(
 
         {/* Bottom bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 80px 24px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-          <span style={{ fontSize: '14px', color: '#6B6560' }}>plot-twists.com</span>
+          <span style={{ fontSize: '14px', color: '#6B6560' }}>{SITE_DOMAIN}</span>
           <span style={{ fontSize: '14px', color: '#6B6560' }}>
             {players.length} player{players.length !== 1 ? 's' : ''}
           </span>

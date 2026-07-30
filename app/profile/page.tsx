@@ -556,7 +556,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-cream)', fontFamily: 'var(--font-mono)' }}>
-                  Install Plot Twists
+                  Install PlotSlop
                 </p>
                 <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
                   Add to home screen for the best experience

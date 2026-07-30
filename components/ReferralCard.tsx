@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { useAuth } from '@/contexts/AuthContext'
 import { SPRING_GENTLE } from '@/lib/motion'
+import { SITE_URL } from '@/lib/siteUrl'
 
 export function ReferralCard() {
   const { socket, isConnected } = useSocket()
@@ -39,7 +40,7 @@ export function ReferralCard() {
 
   const handleCopy = async () => {
     if (!referralCode) return
-    const text = `Join me on Plot Twists! Use my invite code: ${referralCode}\nhttps://plottwists.live/join`
+    const text = `Join me on PlotSlop! Use my invite code: ${referralCode}\n${SITE_URL}/join`
     try {
       if (navigator.share) {
         await navigator.share({ text })

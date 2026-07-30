@@ -1,7 +1,8 @@
 import { ImageResponse } from 'next/og'
+import { SITE_URL } from '@/lib/siteUrl'
 
 export const runtime = 'edge'
-export const alt = 'Plot Twists - Watch This Scene!'
+export const alt = 'PlotSlop - Watch This Scene!'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -15,7 +16,7 @@ interface GameMeta {
 }
 
 export default async function Image({ params }: { params: { code: string } }) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://plottwists.app'
+  const baseUrl = SITE_URL
   let game: GameMeta | null = null
 
   try {
@@ -85,7 +86,7 @@ export default async function Image({ params }: { params: { code: string } }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '40px' }}>🎭</span>
               <span style={{ color: '#F59E42', fontSize: '22px', fontWeight: 700, letterSpacing: '0.08em' }}>
-                PLOT TWISTS
+                PLOTSLOP
               </span>
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>

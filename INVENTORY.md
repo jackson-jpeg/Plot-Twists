@@ -47,6 +47,24 @@ All 403 tracked files were staged-deleted while simultaneously present on disk a
 
 `[VPS] curl -sSI https://web-production-c7981.up.railway.app/socket.io/?EIO=4&transport=polling` → **404**.
 
+### ⚠️ CORRECTION 2026-07-30 — this table was incomplete, and so was the rename that used it
+
+It lists **one** brand domain. The code contained **four**, and the three missing ones were found
+only by grepping for what the code *prints* rather than for the name being renamed away. Recorded
+here because the rename inventory in §13 was driven off this table, so its gap became the rename's
+gap. Corrected in Chunk 5 (`HANDOFF.md` §12, §9 #15).
+
+| Domain | Then | Now |
+|---|---|---|
+| `plot-twists.com` | as above, no DNS | removed from CORS and all live code |
+| **`plottwists.com`** | **never recorded** — resolved to **`156.254.10.135`, a third party's server**, and was printed as the join instruction on the host lobby (`HostLobby.tsx:253,310`) | resolved through `lib/siteUrl.ts` |
+| `plottwists.app` | never recorded — no DNS. Was the SEO canonical in `robots.ts`/`sitemap.ts`, the replay OG base, and the share-URL base in `user.handler.ts` | same |
+| `plottwists.live` | never recorded — no DNS. Watermarked into generated share images | same |
+
+Also missing from the domain table, and noted at the time as the specific gap that let the auth
+entitlement survive: **a row for `webcredentials:` domains.** The "Universal links" row in §13
+cites `entitlements:13-14` and stops at `applinks:`.
+
 Not present in this VPS's nginx (`/etc/nginx/sites-enabled/`: chirpchirps, docket4.me, dork, highdesert, leftsaid, openclaw, sang3r.com, screenreceipts, sogojet.com, vps-api).
 
 ---

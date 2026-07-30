@@ -30,7 +30,7 @@ export function TermsContent() {
             className="inline-flex items-center gap-1 text-sm mb-8 transition-colors hover:opacity-80"
             style={{ color: 'var(--color-accent)' }}
           >
-            <span>&larr;</span> Back to Plot Twists
+            <span>&larr;</span> Back to PlotSlop
           </Link>
 
           <h1 className="text-3xl font-bold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>
@@ -44,7 +44,7 @@ export function TermsContent() {
             <Section>
               <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>1. Acceptance of Terms</h2>
               <p>
-                By accessing or using Plot Twists (the &ldquo;Service&rdquo;), you agree to be bound by these Terms of Service.
+                By accessing or using PlotSlop (the &ldquo;Service&rdquo;), you agree to be bound by these Terms of Service.
                 If you do not agree to these terms, do not use the Service.
               </p>
             </Section>
@@ -52,8 +52,8 @@ export function TermsContent() {
             <Section>
               <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>2. Description of Service</h2>
               <p>
-                Plot Twists is an improv comedy game where players draw cards, AI generates comedy scripts, and players
-                perform them live. The Service is available via web browser and iOS app.
+                PlotSlop is an improv comedy game where players draw cards, AI generates comedy scripts, and players
+                perform them live. The Service is available in a web browser; no installation is required.
               </p>
             </Section>
 
@@ -70,10 +70,9 @@ export function TermsContent() {
               <ul className="list-disc pl-5 space-y-2">
                 <li>The Service uses a credit system. Each script generation consumes one credit.</li>
                 <li>Free users receive a limited number of credits per week that reset automatically.</li>
-                <li>Additional credits can be purchased through Stripe (web) or Apple In-App Purchase (iOS).</li>
+                <li>Additional credits can be purchased through Stripe on the web.</li>
                 <li>Purchased credits (&ldquo;banked credits&rdquo;) do not expire and are non-transferable.</li>
-                <li>All purchases are final. Refunds are handled in accordance with the applicable platform&apos;s
-                  refund policy (Stripe or Apple App Store).</li>
+                <li>All purchases are final. Refunds are handled in accordance with Stripe&apos;s refund policy.</li>
                 <li>Credits have no cash value and cannot be exchanged for currency.</li>
               </ul>
             </Section>
@@ -135,7 +134,7 @@ export function TermsContent() {
             <Section>
               <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>10. Limitation of Liability</h2>
               <p>
-                To the maximum extent permitted by law, Plot Twists shall not be liable for any indirect, incidental,
+                To the maximum extent permitted by law, PlotSlop shall not be liable for any indirect, incidental,
                 special, or consequential damages arising from your use of the Service, including loss of data, credits,
                 or profits.
               </p>
@@ -155,7 +154,7 @@ export function TermsContent() {
                 For questions about these Terms, contact us at:
               </p>
               <p className="mt-2 font-medium" style={{ color: '#f0ece4' }}>
-                support@plot-twists.com
+                support@plotslop.com
               </p>
             </Section>
           </div>
@@ -163,7 +162,7 @@ export function TermsContent() {
           <div className="mt-12 pt-6 border-t text-center text-xs" style={{ borderColor: 'rgba(240,236,228,0.1)', color: 'rgba(240,236,228,0.3)' }}>
             <Link href="/privacy" className="underline transition-opacity hover:opacity-70" style={{ color: 'rgba(240,236,228,0.5)' }}>Privacy Policy</Link>
             {' '}&middot;{' '}
-            <Link href="/" className="transition-opacity hover:opacity-70" style={{ color: 'rgba(240,236,228,0.5)' }}>Plot Twists</Link>
+            <Link href="/" className="transition-opacity hover:opacity-70" style={{ color: 'rgba(240,236,228,0.5)' }}>PlotSlop</Link>
           </div>
         </div>
       </main>

@@ -373,7 +373,7 @@ export async function exportGameAsText(gameId: string): Promise<string | null> {
   lines.push(game.title.toUpperCase())
   lines.push('=' .repeat(50))
   lines.push('')
-  lines.push(`A Plot Twists Production`)
+  lines.push(`A PlotSlop Production`)
   lines.push(`Played on ${new Date(game.playedAt).toLocaleDateString()}`)
   lines.push('')
   lines.push('CAST')

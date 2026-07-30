@@ -17,6 +17,7 @@ import { useGameStore } from '@/stores/gameStore'
 import { useConnectionStore } from '@/stores/connectionStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import { socketManager } from '@/lib/socketManager'
+import { SITE_DOMAIN } from '@/lib/siteUrl'
 
 export interface HostLobbyProps {
   settings: RoomSettings
@@ -167,7 +168,7 @@ export function HostLobby({
           color: 'rgba(255,255,255,0.45)',
           textTransform: 'uppercase' as const,
         }}>
-          <span>PROD: <span style={{ color: 'rgba(255,255,255,0.7)' }}>Plot Twists</span></span>
+          <span>PROD: <span style={{ color: 'rgba(255,255,255,0.7)' }}>PlotSlop</span></span>
           <span>SCENE: <span style={{ color: 'rgba(255,255,255,0.7)' }}>{selectedPackName || 'TBD'}</span></span>
           <span>TAKE: <span style={{ color: 'rgba(255,255,255,0.7)' }}>1</span></span>
         </div>
@@ -250,7 +251,7 @@ export function HostLobby({
             letterSpacing: '0.02em',
             textAlign: isDesktop ? 'left' : 'center',
           }}>
-            plottwists.com/join &rarr; {roomCode}
+            {SITE_DOMAIN}/join &rarr; {roomCode}
           </p>
           {creditBalance && (
             <p style={{
@@ -307,7 +308,7 @@ export function HostLobby({
             lineHeight: 1.5,
             color: 'var(--color-text-secondary)',
           }}>
-            Or go to <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>plottwists.com/join</span> and enter the code
+            Or go to <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{SITE_DOMAIN}/join</span> and enter the code
           </p>
         </div>
       </div>

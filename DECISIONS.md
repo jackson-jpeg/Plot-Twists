@@ -156,9 +156,32 @@ Order: **7 (rules) → 5/6 (Railway) → DNS.**
 
 ---
 
-## 🔴 7. Firestore + Storage rules — EXPORT THESE FIRST
+## ✅ 7. Firestore + Storage rules — CLOSED MOOT 2026-07-30
 
-**This is the top open item.** There is no `firestore.rules`, `storage.rules`, or `firebase.json` in either repo, so nobody has read the deployed rules. `firebase-admin` bypasses rules server-side, but `firebase` (client SDK) is a direct dependency and `lib/firebase.ts` initialises it in the browser — so there is a client-reachable path to the same project, live right now, independent of the deploy.
+**Jackson, 2026-07-30: *"Firestore: no project exists. Close DECISIONS.md #7 as moot."*** Closed.
+No project means no deployed rules to export, no collections to enumerate, and no disclosure
+question. Everything below this block is retained as the record of what was checked and why it was
+ranked first; none of it is outstanding.
+
+**Two premises in the original text were already false before this closed, and both are corrected
+rather than deleted** — because each was what ranked this item above everything else:
+
+1. **"A client-reachable path to the same project, live right now."** `lib/firebase.ts` is
+   imported by **nothing**: a search for it across `app/`, `components/`, `lib/`, `server/`,
+   `stores/`, `contexts/` and `hooks/` returns no importer. It is dead code, and it additionally
+   self-guards on `isFirebaseConfigured`, which is false while the env vars are unset. There was
+   no live browser path even if a project had existed.
+2. **The severity that followed from (1).** This was "the top open item" largely because it was
+   believed to be exposed independently of the deploy. It was not.
+
+**What remains true and still binds:** `NEXT_PUBLIC_FIREBASE_PROJECT_ID` and
+`FIREBASE_SERVICE_ACCOUNT_KEY` stay unset, the JSON adapter at `/srv/plotslop/data` is the
+database on purpose, and `cutover.sh` still refuses to run if either is ever set. Closing this
+decision does not relax that guard.
+
+**Original text follows, for the record.**
+
+**This was the top open item.** There is no `firestore.rules`, `storage.rules`, or `firebase.json` in either repo, so nobody has read the deployed rules. `firebase-admin` bypasses rules server-side, but `firebase` (client SDK) is a direct dependency and `lib/firebase.ts` initialises it in the browser — so there is a client-reachable path to the same project, live right now, independent of the deploy.
 
 ### How to export — the honest answer
 
@@ -304,13 +327,31 @@ and the reason "4.0×" is not the same claim as "profitable".
 
 ---
 
-## 10. Should the copy commit to the joke, or stay earnest?
+## ✅ 10. Should the copy commit to the joke, or stay earnest? — CLOSED 2026-07-30
 
-Affects ~122 `Plot Twists` copy occurrences during the rename.
+**Jackson, 2026-07-30: *"your recommendation stands — commit to the bit in user-facing copy,
+comedyPrompts.ts stays earnest."*** Closed, and applied in the Chunk 5 copy pass.
 
-**Recommendation: commit to the bit in user-facing copy only — not in the system prompt.** `comedyPrompts.ts` is craft instruction to the model; making it ironic will measurably degrade output. Rewrite the UI strings, manifest description, and store copy; leave the prompt earnest.
+**What shipped under it:**
 
-**Blocked:** the copy pass in Chunk 5. The mechanical rename is unaffected.
+- **103 brand occurrences** swapped `Plot Twists` → `PlotSlop` across 45 files. The count is 103,
+  not the 122 estimated here, because the estimate was taken before the docs were excluded.
+- **The joke is carried by the description strings, not the name.** Root `description`, both OG
+  and Twitter blocks, the PWA manifest description, the `/join`, `/explore` and `/profile` route
+  descriptions, and the onboarding step. Title strings keep "improv", "comedy" and "party game"
+  because they are the SEO surface and the bit does not need to cost the search terms.
+- **`comedyPrompts.ts` was not touched.** Verified by diff, not by intention — it is craft
+  instruction to the model and irony there degrades output.
+- **`app/terms/TermsContent.tsx` refund line fixed in the same pass**, per the same instruction:
+  it stated refunds as "Stripe or Apple App Store". iOS is host-only and no player buys through
+  Apple (#12), so the Apple half was wrong. Removing it turned up **three more stale Apple/iOS
+  claims on the legal pages** that were not in the original item — the Terms said the Service is
+  "available via web browser and iOS app", and the Privacy Policy listed Apple as a payment
+  processor and as a third party receiving data. All four now describe Stripe on the web only.
+
+**Not renamed, deliberately:** `localStorage` keys (`plottwists_*`, `plot-twists-*`) and the
+registered store identifiers (`com.plottwists.app`, `merchant.com.plottwists.app`,
+`com.plottwists.credits.*`). See NEEDS-JACKSON.md for why each is a different kind of decision.
 
 ---
 

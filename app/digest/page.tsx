@@ -109,7 +109,7 @@ export default function DigestPage() {
 
   const handleShare = async () => {
     const text = [
-      `My Week in Comedy on Plot Twists`,
+      `My Week in Comedy on PlotSlop`,
       `${digest.stats.gamesPlayed} games played`,
       `${digest.stats.mvpsWon} MVPs won`,
       `${digest.stats.reactionsEarned} reactions earned`,

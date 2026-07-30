@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { SITE_DOMAIN } from '@/lib/siteUrl'
 
 interface CharacterCardShareProps {
   playerName: string
@@ -41,7 +42,7 @@ export function CharacterCardShare({
       const file = new File([blob], `character-card-${format}.png`, { type: 'image/png' })
 
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: `${playerName} as ${characterName} — Plot Twists` })
+        await navigator.share({ files: [file], title: `${playerName} as ${characterName} — PlotSlop` })
       } else {
         window.open(cardUrl, '_blank')
       }
@@ -118,7 +119,7 @@ export function CharacterCardShare({
               ))}
             </div>
             <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' as const }}>
-              Plot Twists
+              PlotSlop
             </span>
           </div>
 
@@ -183,7 +184,7 @@ export function CharacterCardShare({
           {/* Show title footer */}
           <div className="text-center mt-4">
             <p className="font-display" style={{ fontSize: '16px', fontWeight: 700, color: 'white' }}>{showTitle}</p>
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>plottwists.live</p>
+            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>{SITE_DOMAIN}</p>
           </div>
         </div>
       </div>

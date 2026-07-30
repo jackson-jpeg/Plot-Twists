@@ -93,7 +93,7 @@ export async function GET(
               <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.2)' }}>{data.setting}</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '18px', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>Plot Twists</span>
+              <span style={{ fontSize: '18px', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>PlotSlop</span>
             </div>
           </div>
         </div>

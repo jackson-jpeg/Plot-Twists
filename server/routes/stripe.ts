@@ -8,6 +8,7 @@ import type { Server as SocketIOServer } from 'socket.io'
 import express from 'express'
 import type { ClientToServerEvents, ServerToClientEvents } from '../../lib/types'
 import { authenticateRequest } from '../middleware/auth'
+import { SITE_URL } from '../../lib/siteUrl'
 import { addBankedCredits, getCredits, deductBankedCredits, ensureCreditsExist } from '../services/credit.service'
 import { recordTransaction, getUserTransactions } from '../services/payment.service'
 import { upsertUser, getUser } from '../services/user.service'
@@ -289,7 +290,7 @@ export async function registerStripeRoutes(
             product_data: {
               name: `${pkg.label}`,
               description: `${pkg.scripts} script credits — use anytime, never expire`,
-              images: ['https://plot-twists.com/icon.svg']
+              images: [`${SITE_URL}/icon.svg`]
             },
             unit_amount: pkg.price
           },

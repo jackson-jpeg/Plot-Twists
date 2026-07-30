@@ -1,7 +1,7 @@
 import { track } from '@vercel/analytics'
 
 /**
- * Centralized analytics tracking for Plot Twists.
+ * Centralized analytics tracking for PlotSlop.
  * Uses Vercel Analytics track() for custom events.
  */
 export const analytics = {

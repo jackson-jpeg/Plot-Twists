@@ -8,8 +8,8 @@
 	</array>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:plot-twists.com</string>
-		<string>webcredentials:plot-twists.com</string>
+		<string>applinks:plotslop.com</string>
+		<string>webcredentials:plotslop.com</string>
 	</array>
 	<key>aps-environment</key>
 	<string>production</string>

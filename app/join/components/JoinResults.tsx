@@ -102,7 +102,7 @@ export function JoinResults({
       const file = new File([blob], 'my-character.png', { type: 'image/png' })
 
       if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'My Character — Plot Twists' })
+        await navigator.share({ files: [file], title: 'My Character — PlotSlop' })
       } else {
         window.open(cardUrl, '_blank')
       }

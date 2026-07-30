@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { SITE_URL } from '@/lib/siteUrl'
 
 interface Props {
   params: { code: string }
@@ -6,19 +7,19 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const shareCode = params.code
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://plottwists.app'
+  const baseUrl = SITE_URL
 
   // Fetch game data from HTTP API for dynamic metadata
-  let title = shareCode ? `Plot Twists - Replay ${shareCode}` : 'Script Not Found | Plot Twists'
-  let description = 'Watch this hilarious AI-generated improv scene from Plot Twists!'
-  let ogTitle = 'Plot Twists - Watch This Scene!'
+  let title = shareCode ? `PlotSlop - Replay ${shareCode}` : 'Script Not Found | PlotSlop'
+  let description = 'Watch this hilarious AI-generated improv scene from PlotSlop!'
+  let ogTitle = 'PlotSlop - Watch This Scene!'
 
   try {
     const res = await fetch(`${baseUrl}/api/game/${shareCode}`, { next: { revalidate: 300 } })
     if (res.ok) {
       const game = await res.json()
-      title = `"${game.title}" - Plot Twists Replay`
-      ogTitle = `"${game.title}" - Plot Twists`
+      title = `"${game.title}" - PlotSlop Replay`
+      ogTitle = `"${game.title}" - PlotSlop`
       const playerNames = game.players?.map((p: { character: string }) => p.character).join(', ')
       description = game.synopsis || `An improv comedy scene starring ${playerNames}. Watch the performance!`
     }
@@ -33,7 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: ogTitle,
       description,
       type: 'website',
-      siteName: 'Plot Twists',
+      siteName: 'PlotSlop',
     },
     twitter: {
       card: 'summary_large_image',

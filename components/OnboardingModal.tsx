@@ -14,7 +14,7 @@ interface OnboardingModalProps {
 
 const STEPS = [
   {
-    title: 'Welcome to Plot Twists!',
+    title: 'Welcome to PlotSlop!',
     icon: '🎭',
     content: (
       <div style={{ textAlign: 'center' }}>
@@ -27,8 +27,8 @@ const STEPS = [
           🎭
         </motion.div>
         <p style={{ color: 'var(--color-text-secondary)', lineHeight: 1.6, fontSize: '16px', maxWidth: '400px', margin: '0 auto' }}>
-          The AI-powered improv party game where random cards become hilarious comedy scenes.
-          No acting skills required!
+          Three random cards go in. An AI writes a scene that should not exist. You read it out loud
+          to your friends. No acting skills required — genuinely, that is the point.
         </p>
       </div>
     ),

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Purchase Complete - Plot Twists',
+  title: 'Purchase Complete - PlotSlop',
   description: 'Your credits have been added to your account.',
 }
 

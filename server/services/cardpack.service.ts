@@ -30,8 +30,8 @@ export async function initializeCardPackService(): Promise<void> {
     const newStandardPack: CardPack = {
       id: STANDARD_PACK_ID,
       name: 'Standard Pack',
-      description: 'The original Plot Twists card collection with 200+ characters, settings, and circumstances',
-      author: 'Plot Twists',
+      description: 'The original PlotSlop card collection with 200+ characters, settings, and circumstances',
+      author: 'PlotSlop',
       theme: 'mixed',
       isMature: false, // Has both safe and mature content
       isBuiltIn: true,

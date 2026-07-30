@@ -1,5 +1,7 @@
-// Service Worker for Plot Twists PWA
-const CACHE_NAME = 'plot-twists-v2'
+// Service Worker for the PlotSlop PWA
+// Renamed AND version-bumped together: the cache key is what evicts the old pre-rename
+// shell from browsers that already installed it. Bumping is not optional here.
+const CACHE_NAME = 'plotslop-v3'
 const STATIC_ASSETS = [
   '/',
   '/join',
@@ -106,7 +108,7 @@ self.addEventListener('push', (event) => {
       data: data.data || {},
       vibrate: [200, 100, 200],
     }
-    event.waitUntil(self.registration.showNotification(data.title || 'Plot Twists', options))
+    event.waitUntil(self.registration.showNotification(data.title || 'PlotSlop', options))
   } catch {
     // Invalid push payload
   }

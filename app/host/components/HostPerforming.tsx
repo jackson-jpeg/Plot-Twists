@@ -211,7 +211,7 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
             {script.title}
           </h2>
           <p style={{ fontFamily: 'var(--font-serif)', fontSize: '11px', color: '#8a8478', marginTop: '4px', letterSpacing: '0.05em' }}>
-            A Plot Twists Original
+            A PlotSlop Original
           </p>
           <p style={{ fontSize: '10px', color: '#a09a8e', marginTop: '8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             {getCharactersInScene(script).join(' \u00B7 ')}

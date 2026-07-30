@@ -65,7 +65,7 @@ export function LandingPage() {
               textTransform: 'uppercase',
             }}
           >
-            Plot Twists
+            PlotSlop
           </h1>
 
           <p

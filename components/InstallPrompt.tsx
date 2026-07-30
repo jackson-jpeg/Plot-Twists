@@ -37,8 +37,17 @@ function isSafari(): boolean {
  * Kept everywhere else, including home, because offering PWA install to a HOST — who runs this
  * repeatedly on the same device — is genuinely useful. The distinction is player path versus host
  * path, not install-good versus install-bad.
+ *
+ * Jackson's ruling (Option A, 2026-07-30): suppress on `/join` and `/game`, keep elsewhere.
+ *
+ * `/game` IS LISTED BUT IS NOT CURRENTLY A ROUTE, which is worth stating rather than leaving for
+ * someone to rediscover. There is no `app/game/page.tsx` — `GameShell`, the whole phase machine
+ * from lobby to results, is imported and rendered by `app/join/page.tsx`. The player's entire
+ * in-game path therefore already sits under `/join` and was already covered. The entry is kept
+ * so that if the shell is ever promoted to its own route it arrives suppressed, rather than
+ * silently regaining a banner.
  */
-const SUPPRESSED_PREFIXES = ['/join']
+const SUPPRESSED_PREFIXES = ['/join', '/game']
 
 export function InstallPrompt() {
   const pathname = usePathname()
@@ -137,7 +146,7 @@ export function InstallPrompt() {
           <div className="flex items-center gap-3 max-w-lg mx-auto">
             <div className="flex-1 flex flex-col gap-0.5">
               <strong style={{ color: 'var(--color-text-primary)', fontSize: '14px' }}>
-                Install Plot Twists
+                Install PlotSlop
               </strong>
               <span style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>
                 {isIOSDevice

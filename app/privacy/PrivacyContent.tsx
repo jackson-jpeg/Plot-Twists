@@ -30,7 +30,7 @@ export function PrivacyContent() {
             className="inline-flex items-center gap-1 text-sm mb-8 transition-colors hover:opacity-80"
             style={{ color: 'var(--color-accent)' }}
           >
-            <span>&larr;</span> Back to Plot Twists
+            <span>&larr;</span> Back to PlotSlop
           </Link>
 
           <h1 className="text-3xl font-bold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>
@@ -44,8 +44,8 @@ export function PrivacyContent() {
             <Section>
               <h2 className="text-lg font-semibold mb-2" style={{ color: '#f0ece4', fontFamily: 'var(--font-serif)' }}>1. Introduction</h2>
               <p>
-                Plot Twists (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) operates the Plot Twists mobile application and
-                website at plot-twists.com (the &ldquo;Service&rdquo;). This Privacy Policy explains how we collect, use, and protect
+                PlotSlop (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;) operates the PlotSlop
+                website at plotslop.com (the &ldquo;Service&rdquo;). This Privacy Policy explains how we collect, use, and protect
                 your information when you use our Service.
               </p>
             </Section>
@@ -57,7 +57,7 @@ export function PrivacyContent() {
                 <li><strong>Display name</strong> &mdash; A nickname you choose that is shown to other players.</li>
                 <li><strong>Game history</strong> &mdash; Records of games you&apos;ve played including scripts, characters, and votes.</li>
                 <li><strong>Player statistics</strong> &mdash; Win/loss records, streaks, and performance data.</li>
-                <li><strong>Payment information</strong> &mdash; Processed securely through Stripe (web) or Apple In-App Purchase (iOS). We do not store credit card numbers.</li>
+                <li><strong>Payment information</strong> &mdash; Processed securely through Stripe. We do not store credit card numbers.</li>
                 <li><strong>Device information</strong> &mdash; Anonymous analytics data including device type and app version, collected via Vercel Analytics.</li>
               </ul>
             </Section>
@@ -80,7 +80,6 @@ export function PrivacyContent() {
                 <li><strong>Clerk</strong> &mdash; Authentication. <a href="https://clerk.com/legal/privacy" className="underline transition-opacity hover:opacity-70" style={{ color: 'var(--color-accent)' }}>Privacy Policy</a></li>
                 <li><strong>Firebase (Google)</strong> &mdash; Database and storage. <a href="https://firebase.google.com/support/privacy" className="underline transition-opacity hover:opacity-70" style={{ color: 'var(--color-accent)' }}>Privacy Policy</a></li>
                 <li><strong>Stripe</strong> &mdash; Payment processing (web only). <a href="https://stripe.com/privacy" className="underline transition-opacity hover:opacity-70" style={{ color: 'var(--color-accent)' }}>Privacy Policy</a></li>
-                <li><strong>Apple</strong> &mdash; In-App Purchase processing (iOS only). <a href="https://www.apple.com/legal/privacy/" className="underline transition-opacity hover:opacity-70" style={{ color: 'var(--color-accent)' }}>Privacy Policy</a></li>
                 <li><strong>Anthropic (Claude)</strong> &mdash; AI script generation. Card selections (not personal data) are sent to generate scripts. <a href="https://www.anthropic.com/privacy" className="underline transition-opacity hover:opacity-70" style={{ color: 'var(--color-accent)' }}>Privacy Policy</a></li>
                 <li><strong>Vercel</strong> &mdash; Hosting and anonymous analytics. <a href="https://vercel.com/legal/privacy-policy" className="underline transition-opacity hover:opacity-70" style={{ color: 'var(--color-accent)' }}>Privacy Policy</a></li>
               </ul>
@@ -142,7 +141,7 @@ export function PrivacyContent() {
                 If you have questions about this Privacy Policy or wish to exercise your data rights, contact us at:
               </p>
               <p className="mt-2 font-medium" style={{ color: '#f0ece4' }}>
-                privacy@plot-twists.com
+                privacy@plotslop.com
               </p>
             </Section>
           </div>
@@ -150,7 +149,7 @@ export function PrivacyContent() {
           <div className="mt-12 pt-6 border-t text-center text-xs" style={{ borderColor: 'rgba(240,236,228,0.1)', color: 'rgba(240,236,228,0.3)' }}>
             <Link href="/terms" className="underline transition-opacity hover:opacity-70" style={{ color: 'rgba(240,236,228,0.5)' }}>Terms of Service</Link>
             {' '}&middot;{' '}
-            <Link href="/" className="transition-opacity hover:opacity-70" style={{ color: 'rgba(240,236,228,0.5)' }}>Plot Twists</Link>
+            <Link href="/" className="transition-opacity hover:opacity-70" style={{ color: 'rgba(240,236,228,0.5)' }}>PlotSlop</Link>
           </div>
         </div>
       </main>

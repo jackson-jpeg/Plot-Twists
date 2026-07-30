@@ -91,9 +91,9 @@ export function HostResults({
 
   const triggerShare = (url: string) => {
     analytics.replayShared('host_results')
-    const text = `I just played "${script?.title}" on Plot Twists!`
+    const text = `I just played "${script?.title}" on PlotSlop!`
     if (navigator.share) {
-      navigator.share({ title: 'Plot Twists', text, url }).catch(() => copyShareUrl(url))
+      navigator.share({ title: 'PlotSlop', text, url }).catch(() => copyShareUrl(url))
     } else {
       copyShareUrl(url)
     }

@@ -81,7 +81,7 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
             marginBottom: '20px',
             textAlign: 'center',
           }}>
-            A Plot Twists Original
+            A PlotSlop Original
           </p>
 
           {/* Script title */}

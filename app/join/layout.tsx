@@ -1,8 +1,8 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Join a Game | Plot Twists',
-  description: 'Join an improv comedy game on Plot Twists. Enter a room code, pick your character, and perform AI-written comedy scripts with friends.',
+  title: 'Join a Game | PlotSlop',
+  description: 'Someone has handed you four letters. Type them in, pick a character, and read whatever the AI wrote. No app, no account, no dignity.',
 }
 
 export default function JoinLayout({ children }: { children: React.ReactNode }) {

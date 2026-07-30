@@ -48,9 +48,16 @@ export async function generateScript(
   //
   // BOTH BRANCHES MATTER AND THAT IS EASY TO GET WRONG. The host UI defaults
   // scriptLength:'standard' and sends it, so a real game almost always takes the CUSTOMIZATION
-  // branch — while scripts/real-generation.ts passes no customization and takes the DEFAULT
-  // branch. Capping only the default would have measured clean here and changed nothing in
+  // branch. Capping only the DEFAULT branch would have measured clean here and changed nothing in
   // production, which is the failure mode this comment exists to prevent repeating.
+  //
+  // CORRECTED 2026-07-30. This comment used to end "— while scripts/real-generation.ts passes no
+  // customization and takes the DEFAULT branch." That stopped being true on 2026-07-29, when
+  // real-generation.ts was changed to send PRODUCTION_CUSTOMIZATION for exactly the reason the
+  // rest of the comment gives; `.real-generation.json` records `{"scriptLength":"standard",…}`.
+  // A comment whose entire job is to stop someone measuring the branch nobody plays had come to
+  // assert that the measurement script measures that branch. Both branches are capped, and both
+  // land on 30-38 / 2,600 for 'standard', so the numbers were never affected — only the guidance.
   const lineRange = customization
     ? getLineCountRange(customization.scriptLength)
     : { min: 30, max: 38 }

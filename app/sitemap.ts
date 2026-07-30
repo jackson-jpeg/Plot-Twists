@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next'
+import { SITE_URL } from '@/lib/siteUrl'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://plottwists.app'
+  const baseUrl = SITE_URL
 
   return [
     {

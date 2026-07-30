@@ -30,14 +30,17 @@ const handle = app.getRequestHandler()
 function getAllowedOrigins(): string[] {
   if (dev) return ['http://localhost:3000', 'http://localhost:3001']
   const origins = [
-    // New name. Added ahead of the DNS cutover so the rename is never atomic —
-    // both domains are accepted during the transition. Remove the plot-twists.com
-    // entries once the cutover has settled (CHUNKS.md, Chunk 5 step 7).
+    // The transitional `plot-twists.com` entries are GONE as of the rename completion
+    // (CHUNKS.md Chunk 5 step 6). They existed so the cutover would not have to be atomic; it
+    // has settled — plotslop.com serves the game. Removing them is not tidy-up: that
+    // registration is being allowed to lapse on purpose (DECISIONS.md #1), so after expiry
+    // anyone can register it, and a stale allowlist entry would hand them a trusted origin
+    // against a server that is now live.
     'https://plotslop.com',
     'https://www.plotslop.com',
-    'https://plot-twists.com',
-    'https://www.plot-twists.com',
-    'https://web-production-c7981.up.railway.app',
+    // Railway went with them, for the same reason rather than for tidiness: the trial ended,
+    // the app answers 404, and DECISIONS.md #5 moved the deploy to this VPS. No browser can be
+    // on that origin, so it was standing trust in a name this project no longer controls.
     'capacitor://localhost',
     'ionic://localhost'
   ]
@@ -48,8 +51,12 @@ function getAllowedOrigins(): string[] {
   return origins
 }
 
-// Matches either project name so a Vercel rename doesn't silently break previews.
-const VERCEL_PREVIEW_REGEX = /^https:\/\/(plotslop|plot-twists)(-[a-z0-9-]+)*\.vercel\.app$/
+// The `plot-twists` alternative is dropped with the rest of the old name. What remains is a
+// standing trust in every `plotslop*.vercel.app` preview origin, and it should not outlive the
+// Vercel project — which cannot serve this game at all (the custom Socket.IO server never runs
+// under Vercel's Next preset). Deleting the project needs Jackson's credential; it is item 2 in
+// NEEDS-JACKSON.md, and this line is why that item is not cosmetic.
+const VERCEL_PREVIEW_REGEX = /^https:\/\/plotslop(-[a-z0-9-]+)*\.vercel\.app$/
 
 function isAllowedOrigin(origin: string): boolean {
   if (getAllowedOrigins().includes(origin)) return true

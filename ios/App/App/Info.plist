@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Plot Twists</string>
+	<string>PlotSlop</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -63,6 +63,6 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSUserNotificationsUsageDescription</key>
-	<string>Plot Twists will notify you when it's your turn to perform or when a game is starting.</string>
+	<string>PlotSlop will notify you when it's your turn to perform or when a game is starting.</string>
 </dict>
 </plist>

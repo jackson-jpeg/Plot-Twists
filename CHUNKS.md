@@ -245,10 +245,33 @@ and (b) the source audit passes, and (c) a human has read a fresh playtest packe
 
 ---
 
-## Chunk 5 — Rename execution
+## Chunk 5 — Rename execution ✅ COMPLETE 2026-07-30
 
 **Goal:** PlotSlop everywhere on web. **iOS excluded.** **Machine:** `[VPS]`
-**Blocked on:** `DECISIONS.md` #10 (copy voice). #3 is resolved — PLOTSLOP is clean.
+**Was blocked on:** `DECISIONS.md` #10 — closed by Jackson 2026-07-30, so this ran in one pass.
+
+**Full write-up: `HANDOFF.md` §12.** Verified after: 450/450 · 49/49 · tsc 0 · `next build` exit 0.
+The build is not optional here — three of the changes only manifest in one.
+
+| Step | State |
+|---|---|
+| 1. Mechanical rename | ✅ **103** `Plot Twists` → `PlotSlop` across 45 files. The estimate of 122 counted docs, which are excluded as historical record. **The 84 `PlotTwists` / 84 `plottwists` figures were misleading:** almost all are the *`plot twist` game mechanic*, not the brand — `PlotTwistVoting`, `plotTwistTimeouts`, `PLOT_TWIST_VOTING_DURATION`. A blind case-insensitive rename would have destroyed the audience-interaction feature. Brand vs mechanic was separated by exact-case pattern before anything was changed. |
+| 2. Copy pass | ✅ Commits to the bit in descriptions; titles keep the SEO words. `comedyPrompts.ts` untouched, verified by diff. |
+| 3. `package.json`, `manifest.json`, OG copy, `robots.ts`/`sitemap.ts` | ✅ — and this uncovered the real bug. The absolute URLs were never reaching their fallbacks at all: `next.config.js` inlined `NEXT_PUBLIC_APP_URL` as `http://localhost:3000` at build time, so the live sitemap and every `og:image` pointed at localhost. Now one constant, `lib/siteUrl.ts`. See `HANDOFF.md` §9 #14. |
+| 4. `assetlinks.json` fingerprint | ❌ **Still `TODO:REPLACE_WITH_YOUR_SIGNING_KEY_FINGERPRINT`.** Needs the Android signing key, which is Jackson's. Android deep links have never worked and still do not. `NEEDS-JACKSON.md`. |
+| 5. Clerk / Stripe / GitHub / Vercel dashboards | ❌ Jackson's, unchanged. |
+| 6. Remove `plot-twists.com` from CORS | ✅ Removed, with the dead Railway origin, and the Vercel regex narrowed to `plotslop`. |
+
+**Beyond the written scope**, because the grep the chunk specifies would not have found it: three
+*other* dead domains were live in the code — `plottwists.com`, `plottwists.app`, `plottwists.live`.
+`plottwists.com` **resolves to someone else's server** and was the join instruction on the host
+screen. `HANDOFF.md` §9 #15.
+
+**Done-when, honestly assessed:** the grep criterion is met for the web app. The second half — *"a
+full game plays end-to-end on plotslop.com"* — **is not met and cannot be until this is deployed.**
+The live site still serves the pre-rename build.
+
+### Original plan, for reference
 
 1. Mechanical rename across ~98 files: `Plot Twists` (122), `PlotTwists` (84), `plottwists` (84), `plot-twists` (35). (~4h)
 2. Copy pass in the chosen voice. **Do not touch `comedyPrompts.ts`** — it is craft instruction to the model; making it ironic will degrade output. (~4h)

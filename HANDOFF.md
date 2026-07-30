@@ -17,7 +17,9 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Unit suite** | **450/450** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450: the source-audit suite grew 4 → 16 → 18 tests. Coverage, not behaviour. See §3 before you relax. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
 | **plotslop.com** | 🟢 **LIVE 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Cert for both names expires **2026-10-27**. `plotslop.service` active and enabled on :3100 behind nginx TLS; apex and `www` return 200, HTTP 301s to HTTPS, sang3r.com verified unaffected. **Two clients have joined a room over the public endpoint.** Cutover step 6 (cgroup re-verification) is still Jackson's and still blocking — see §11. |
-| **Current chunk** | **Chunks 2 and 3 complete.** **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 blocked on Jackson. |
+| **Current chunk** | **Chunks 2, 3 and 5 complete.** **Chunk 5 (the rename) DONE 2026-07-30** — see §12. `DECISIONS.md` #7 and #10 are both closed. **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 blocked on Jackson. |
+| **⚠️ The live site is one build behind the repo** | Chunk 5 is committed and verified but **deliberately not deployed**. `plotslop.com` still serves the pre-rename bundle: it still titles itself "Plot Twists", still tells hosts to send players to `plottwists.com/join`, and still emits `og:image="http://localhost:3000/…"`. Under CONSTRAINT-1 a deploy ends every game in flight, so it is a human decision — item 1 in `NEEDS-JACKSON.md`. **Do not read a live-site check as a check of this repo until that ships.** |
+| **Seating** | **ENSEMBLE seats 6 performers, not 8** (`server/utils/constants.ts:11`). The scope-freeze gate is "eight people who are not my friends", so the gate and the product disagree — see §13, confirmed two ways. **Do not raise the cap**: Jackson asked for the blast radius before the change, and the change is his. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
 `/root/PlotTwists-Native/AUDIT-iOS.md`.
@@ -419,10 +421,11 @@ be named.
 
 ---
 
-## 9. Corrections to the record found on 2026-07-29
+## 9. Corrections to the record found on 2026-07-29 and 2026-07-30
 
-**Twelve now, across four passes**, and they are listed because the pattern matters more than any
-one of them: **the written record has been wrong about a completed item four sessions running.**
+**Eighteen now, across five passes** (13–18 are 2026-07-30 and are at the end of this section),
+and they are listed because the pattern matters more than any
+one of them: **the written record has been wrong about a completed item five sessions running.**
 Go looking. The afternoon pass found three more (5–7) *inside the fix for number 1*, and the
 evening pass found two more (8–9) *inside the fix for those* — which is the strongest available
 argument for not trusting a completion claim, including one made hours ago.
@@ -551,6 +554,80 @@ explain, and I went looking instead of re-running until it looked right.*
 
 ---
 
+### 2026-07-30 pass — six more
+
+**13. The product cannot seat the number of people the scope freeze gates on.** The freeze reads
+"eight people who are not my friends"; `MAX_PLAYERS.ENSEMBLE` is **6**. Nothing in any document
+had connected the two. Full treatment in §13 — it is the most consequential item in this list
+because it is a gate that cannot be passed as written.
+
+**14. The `metadataBase` diagnosis was wrong, and so was the fix.** The record (NEEDS-JACKSON item
+2, and §3 of the cutover report) says `NEXT_PUBLIC_BASE_URL` is unset so `metadataBase` "falls back
+to the dead domain", and that the remedy is "one line plus a restart". Both are false:
+
+- `next.config.js` declared `NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ||
+  'http://localhost:3000'` in its `env` block, which Next inlines at **build** time. Every
+  `BASE_URL || APP_URL || <domain>` chain therefore stopped at the *second* term. The third term
+  — the dead domain everyone was worried about — was unreachable dead code.
+- The live site was serving `og:image="http://localhost:3000/opengraph-image"` and a sitemap of
+  `http://localhost:3000` URLs. Confirmed by reading the response, not the source:
+  `curl -s https://plotslop.com/ | grep og:image` and `curl -s https://plotslop.com/robots.txt`.
+- Because these are `NEXT_PUBLIC_*`, they are baked into the bundle. **Setting the variable in
+  `/etc/plotslop/env` and restarting changes nothing** — it needs a rebuild and a redeploy, which
+  under CONSTRAINT-1 ends every game in flight. "One line plus a restart" understated it twice.
+
+Fixed by `lib/siteUrl.ts` (one constant, `NODE_ENV`-aware) and by deleting the `next.config.js`
+default. Verified against a real production build: sitemap and `robots.txt` now emit
+`https://plotslop.com` and `og:image` is absolute on the right host, **with the env var still
+unset** — so the fallback itself is now correct rather than merely overridable.
+
+**15. The survivor table tracked one dead domain. There were four.** Appendix A item 11 greps only
+`plot-twists.com`. Also live in the code, and missed by every pass:
+
+| Domain | Where | Why it matters |
+|---|---|---|
+| **`plottwists.com`** | `HostLobby.tsx:253,310` | **Resolves to `156.254.10.135` — somebody else's server.** It is the join instruction printed on the host's screen at every party: "plottwists.com/join → CODE". Not a dead link; a live third party. |
+| `plottwists.app` | `robots.ts`, `sitemap.ts`, both replay files, `user.handler.ts`, `JsonLd.tsx` | No DNS. Was the SEO canonical and the share-URL base. |
+| `plottwists.live` | `poster-story`, `CharacterCardShare`, `DirectorsReview`, `ReferralCard` | No DNS. Watermarked into generated share images. |
+
+The lesson generalises the one in §8: **a grep for the name you renamed *from* will not find the
+names you never knew you had.** The inventory's rename table counted `plot-twists` variants and
+never asked which domains the code actually prints.
+
+**16. `PLAYTEST-2026-07-29.md` on disk is stale, and its headline cost figure is the pre-cap one.**
+The committed packet is timestamped 18:23; `.real-generation.json` is 19:05 and
+`scripts/playtest-packet.ts` is 19:20. The packet was never regenerated after the final run, so it
+reports the scripts and costs from *before* the length cap landed:
+
+| | committed packet | current data |
+|---|---:|---:|
+| script lines | 59–73 | 38, 38, 38 |
+| round in / out | 3883 / 2763 | 4635 / 1787 |
+| **cost per round** | **$0.0531** | **$0.0407** |
+
+The `$0.0531` still appears in the current generator — as the hardcoded *before* column of the
+length-cap comparison. Reading the committed `.md` gives you a "before" number labelled as the
+current one. Confirmed two ways: recomputing from the artifact, and re-running the generator into
+a scratch file and diffing. `.real-generation.json` is untracked, so this cannot be seen from git.
+
+**17. `DECISIONS.md` #7's severity rested on a false premise.** It was "the top open item" largely
+because `lib/firebase.ts` was said to initialise the client SDK in the browser, giving "a
+client-reachable path, live right now". **Nothing imports `lib/firebase.ts`** — it is dead code,
+and it self-guards on `isFirebaseConfigured` besides. Now closed moot on Jackson's ruling anyway,
+but the ranking that put it first was wrong on its facts.
+
+**18. A load-bearing code comment describes the opposite of what the code does.**
+`scriptGeneration.service.ts:50-53` says *"scripts/real-generation.ts passes no customization and
+takes the DEFAULT branch"*. It has passed `PRODUCTION_CUSTOMIZATION` since 2026-07-29 — the
+artifact records `{"scriptLength":"standard",…}`. The comment exists specifically to stop someone
+measuring the branch nobody plays, so it is the worst possible one to have inverted. Corrected.
+
+*Two of these — 15 and 16 — were found only because a number or a name did not match the document
+describing it, and the mismatch was chased rather than explained away. That is the same technique
+that caught 12, and it is the only one in this list that generalises.*
+
+---
+
 ## 11. plotslop.com — LIVE as of 2026-07-29
 
 Jackson pointed DNS himself on 2026-07-29 and authorised the certificate step; everything past it
@@ -581,3 +658,122 @@ DNS points here but no `:443` server block claims the name yet, so TLS falls thr
 site on the same IP. That state started the moment DNS flipped, not when the certificate was
 issued — but it ends only at cutover step 4. Over plain HTTP the domain correctly returns
 `plotslop: awaiting certificate`.
+
+---
+
+## 12. Chunk 5 — the rename, DONE 2026-07-30
+
+**Goal from `CHUNKS.md`:** PlotSlop everywhere on web, iOS excluded. Gate was `DECISIONS.md` #10,
+which Jackson closed on 2026-07-30. Gates re-verified after: **450/450 · 49/49 · tsc 0 errors**,
+plus a real `next build` (exit 0) because three of the changes only manifest in a build.
+
+### What changed
+
+| Area | Change |
+|---|---|
+| **Brand copy** | 103 occurrences of `Plot Twists` → `PlotSlop` across 45 files. |
+| **The bit** | Root/OG/Twitter descriptions, PWA manifest, `/join` `/explore` `/profile` descriptions, onboarding. Titles keep "improv/comedy/party game" — the SEO surface should not pay for the joke. `comedyPrompts.ts` untouched, verified by diff. |
+| **Four dead domains** | Not one. See §9 #15 — `plot-twists.com`, `plottwists.com` (**someone else's server**), `plottwists.app`, `plottwists.live`. All now resolve through `lib/siteUrl.ts`. |
+| **CORS** | `plot-twists.com` + `www.` removed (Chunk 5 step 6 — the cutover has settled). Railway removed with them: trial ended, returns 404, `DECISIONS.md` #5 moved the deploy here. Vercel preview regex narrowed to `plotslop` only. |
+| **Legal pages** | Privacy and Terms renamed, `privacy@`/`support@` → `plotslop.com`. Refund line fixed per Jackson's ruling — **plus three more stale Apple/iOS claims the item did not mention** (see `DECISIONS.md` #10). |
+| **Install prompt** | Option A. `/join` and `/game` suppressed. Note `/game` is not currently a route — `GameShell` renders under `/join`, so the player path was already covered; the entry is future-proofing. |
+| **Shells** | Android deep-link host and display name; the Capacitor `webcredentials:` entitlement, which was **a security item**, not cosmetics — it pointed at a domain being allowed to expire (`CHUNKS.md` #13-15). |
+| **Service worker** | `CACHE_NAME` `plot-twists-v2` → `plotslop-v3`. The bump is load-bearing: without it an installed PWA keeps serving the pre-rename shell. |
+
+### Deliberately NOT renamed
+
+- **`localStorage` keys** (`plottwists_active_room`, `plottwists_player_session_id`,
+  `plottwists_reconnect_*`, `plot-twists-theme`, `plot-twists-install-dismissed`). They are
+  invisible to users, and two of them are the **guest reconnect credential** — renaming those
+  silently breaks reconnection for anyone holding a live session, which is the exact failure
+  Chunk 2 item 5b existed to fix. A rename here buys nothing and costs a reconnect bug.
+- **Registered store identifiers** — `com.plottwists.app`, `merchant.com.plottwists.app`,
+  `com.plottwists.credits.*`. These are identities registered with Apple and Google, not strings.
+  `DECISIONS.md` #2 already defers them by not renaming.
+- **`ios/App/` Capacitor Swift sources** (`PlotTwistsViewController`). iOS is excluded from this
+  chunk and the class name is coupled to the storyboard and `pbxproj`. The *domains* in that tree
+  were fixed because those are a security item; the identifiers were not.
+- **`docs/`, and every `*.md`.** They are historical records and correctly describe the old name.
+
+### The one thing that is not done
+
+**None of it is live.** The repo is renamed; `plotslop.com` still serves the pre-rename build.
+Deploying is a human decision under CONSTRAINT-1 — `NEEDS-JACKSON.md` item 1.
+
+---
+
+## 13. Seating — the scope-freeze gate cannot be passed as written
+
+**This is the finding to read first.** Jackson's freeze lifts when he has *"played this with eight
+people who are not my friends."* **ENSEMBLE seats six performers.** Nothing in any document
+connected the gate to the constant, and the constant was recorded in `INVENTORY.md` §7 all along.
+
+### Is 6 real? Yes. Confirmed two ways, per rule 2.2.
+
+**Mechanism 1 — source.** `MAX_PLAYERS.ENSEMBLE = 6` (`server/utils/constants.ts:11`), enforced at
+`room.handler.ts:186`. It is not overridden anywhere: the only readers are `matchmaking.service.ts`
+(2×, both listing filters), `room.handler.ts` (2×) and `routes/api.ts` (display). There is no env
+knob. The 7th joiner is **not rejected** — they are seated as `SPECTATOR` (`room.handler.ts:203`).
+`game.helpers.ts:117-125` then builds the trait list from **PLAYER-role selections only**,
+explicitly excluding spectators, so six is also the ceiling on what reaches the model.
+
+**Mechanism 2 — a live room.** Eight clients driven through a real ENSEMBLE round against the real
+handlers, reading the prompt out of the mock Anthropic endpoint rather than out of the source:
+
+```
+8 joiners → 6 PLAYER, 2 SPECTATOR, 0 rejected     (roster: 9 people incl. host)
+CRITICAL: You have 6 characters...                (the prompt the model received)
+```
+
+**So the room holds nine bodies; the scene holds six parts.** The host is role `HOST`, not
+`PLAYER`, in ENSEMBLE — they run the teleprompter and do not consume a seat or contribute a trait.
+
+### 🔴 The live UI advertises a cap the server does not honour
+
+`HostLobby.tsx:338` renders **`Max {gameMode === 'HEAD_TO_HEAD' ? 2 : 8}`** — so the host is told
+the cast maxes at **8**. Two things make this worse than a stale string:
+
+1. **The same screen contradicts itself.** 165 lines further down, the mode selector describes
+   ENSEMBLE as *"3-6 performers + host"*.
+2. **It is live right now.** Confirmed in the deployed bundle, not just the source:
+   `grep` over `/srv/plotslop/.next/static/chunks/*.js` finds
+   `Max ","HEAD_TO_HEAD"===e.gameMode?2:8`.
+
+The failure mode is precisely the playtest: the host reads "Max 8", invites eight people, and
+guests seven and eight are silently seated as spectators. **Left unfixed on purpose** — which of
+the two numbers is wrong is Jackson's cap decision, and fixing it either way pre-empts him. The
+durable fix is to derive both strings from `MAX_PLAYERS` so they cannot disagree again.
+
+### Both playtest artefacts measure a shape the product cannot produce
+
+`scripts/real-generation.ts:54` sets `const PLAYERS = 8` and line 114 builds **eight** traits.
+Confirmed from the output rather than the generator: all three scripts in `.real-generation.json`
+list 8 traits and produced 8, 10 and 8 distinct speaking parts.
+
+| | Verdict |
+|---|---|
+| **The three scripts** | **Invalid as a preview.** An 8-part scene is a different artefact from a 6-part one at the same fixed 30-38 lines — denser cast, fewer lines each. Re-run at 6. |
+| **The cost figure** | **Survives, but the packet's number is wrong for a different reason.** Cast size is not what drives cost: the line budget and `max_tokens` are fixed constants, not functions of player count, so dropping two traits removes ~2 short strings from a ~4,380-token prompt (~1%). But the committed packet's `$0.053` is stale — see §9 #16; current data gives **$0.0407**. |
+
+### Blast radius, if Jackson raises it (asked for *before* the change — do not pre-empt)
+
+| Touched? | Item |
+|---|---|
+| ❌ **No** | **`AUTO_START_THRESHOLD`** (`matchmaking.service.ts:22`) — `ENSEMBLE: 3` is a *minimum*. Raising the max does not move it. |
+| ❌ **No** | **The prompt's line budget** — `{min:30,max:38}` for `standard`, a constant. `numPlayers` appears in the prompt only as narration ("N people are reading this aloud"). |
+| ❌ **No** | **The 2,600 `max_tokens` ceiling** — also a constant. The ENSEMBLE ×1.25 multiplier that *was* player-coupled was already removed on 2026-07-29, with the reasoning that cast size does not change tokens-per-line. |
+| ❌ **No** | **Card dealing** — `dealCards` deals one hand per *room*, not per player. **Voting, results, progression** all iterate the player map; no hardcoded counts. |
+| ⚠️ **Yes** | **The UI, but only as strings.** The cast list is `flex flex-wrap` chips and reflows at any count. What breaks is the two hardcoded numbers above. |
+| ⚠️ **Yes** | **`opengraph-image.tsx:34`** — `preview?.maxPlayers ?? 8`, a third hardcoded 8. |
+| ⚠️ **Yes, and this is the real cost** | **Both playtest artefacts must be regenerated at the final number** — whatever it is. If the cap goes to 8, the existing scripts become valid and the cost figure needs re-running anyway because the packet is stale. |
+
+**No test asserts the cap** — a grep of `__tests__/` for `MAX_PLAYERS` returns nothing — so raising
+it would not turn anything red. The harness scenario `playerCount` asserts `asPlayer <= 6` and
+would silently keep passing at 8. That is worth fixing *with* any cap change, not after.
+
+**Judgement, offered because it was asked for and not acted on:** the cheap move is 8, since
+nothing mechanical resists it and the UI already claims it. The reason to think first is Jackson's
+own stated basis for the 30-38 cap — *"eight people performing seventy lines is where a party stops
+being fun"* — which was reasoning about **eight**. At 8 performers over 38 lines each player gets
+under five lines, and the failure mode is people standing around. That is a design question about
+what an ENSEMBLE round should feel like, which is why it is his.

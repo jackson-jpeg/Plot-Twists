@@ -39,7 +39,7 @@ export function TopBar() {
             textDecoration: 'none',
             letterSpacing: '0.03em',
           }}>
-          Plot Twists
+          PlotSlop
         </Link>
 
         {isDesktop && (

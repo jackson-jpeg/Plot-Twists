@@ -1,358 +1,222 @@
 # NEEDS-JACKSON
 
 **The single queue.** Everything blocked on you, ordered by what unblocks the most.
-Updated 2026-07-29 (second pass). Machine labels: `[VPS]` = the Linux box, `[MACBOOK]` = your Mac.
+Rewritten 2026-07-30. Machine labels: `[VPS]` = the Linux box, `[MACBOOK]` = your Mac.
 
-Nothing below is waiting on me. Where I could do the part that did not need you, I did it and
-said so.
+Nothing below is waiting on me. Where I could do the part that did not need you, I did it and said
+so. The 2026-07-29 queue is in git history; every item on it is either closed below or carried
+forward here with a new number.
 
-**Closed since this morning:** Q1, the catalog rewrite (`HANDOFF.md` §8). **Closed this evening:**
-DNS and the certificate (item 2), the script-length cap (`DECISIONS.md` #9, now closed on measured
-margins), the straight-man casting change, the install-prompt suppression, the three secrets
-(item 1), and **the cutover itself (item 5) — PlotSlop is serving on `https://plotslop.com` and a
-second client has joined a room.**
+**Closed by your rulings this session:** Firestore (`DECISIONS.md` #7 — moot, no project), copy
+voice (#10 — applied), the install prompt (Option A — applied), the `TermsContent` refund line
+(applied, and it turned out to be four wrong Apple/iOS claims rather than one), the public-domain
+settings (my call — kept; reasoning recorded in `scripts/build-catalog.ts` so it is not
+re-litigated a fourth time).
 
-**Newly opened:** item 11, the dozen surviving `plot-twists.com` references you predicted.
-
----
-
-## 1. ✅ Three secrets → `/etc/plotslop/env` — DONE 2026-07-29
-
-All three installed. **`600 root:root`**, root-owned, outside the repo and outside `/root`.
-
-Containment verified the same way as the Anthropic key: `grep -rlF` each value across **both**
-repos returns nothing, `git status` clean in both, nothing written to `.env.local` or a fixture.
-The harness still forces `sk-ant-harness-fake`.
-
-`bash scripts/cutover.sh --check` now passes all 11 preconditions.
-
-**One check worth recording, because it speaks to the `pk_live` you nearly sent.** A Clerk
-publishable key is base64 and carries its own instance hostname, so it can be *read* rather than
-inferred from the `pk_test_` prefix:
-
-```
-$ ... | base64 -d
-alive-jawfish-19.clerk.accounts.dev
-```
-
-A genuine dev instance, no DNS dependency, **not** bound to `clerk.plot-twists.com`.
-
-`next build` goes **green** — confirmed by the route that was failing, not the exit code: `/admin`
-now appears as `○ (Static) prerendered`, the page that threw `Missing publishableKey`.
-
-**Two things this leaves open**, both moved down the queue:
-- PlotSlop needs its own Clerk **production** instance before launch — item 11. The live site is
-  currently running on a dev instance.
-- The playtest packet's generated scripts, which are now unblocked and were regenerated earlier
-  today against the real API.
+**Closed by work:** Chunk 5, the rename, complete — `HANDOFF.md` §12.
 
 ---
 
-## 2. ✅ DNS and TLS — DONE 2026-07-29
+## 1. 🔴 Deploy. Everything from today is invisible until you do.
 
-You pointed it, I took it to the certificate and stopped there.
+**New, and now the top item.** Chunk 5 is committed and verified — 450/450, 49/49, tsc clean,
+`next build` exit 0 — but **`plotslop.com` still serves the pre-rename build.** Right now, live,
+the site:
 
-`plotslop.com` → `187.77.218.14`, TTL 60, agreed by four resolvers. `www` CNAMEs to the apex.
-No AAAA, as you instructed — **it stays that way; nothing here needs one.**
+- titles itself **"Plot Twists"**;
+- tells every host to send players to **`plottwists.com/join`** — a domain that resolves to
+  `156.254.10.135`, **somebody else's server** (item 6);
+- emits `og:image="http://localhost:3000/opengraph-image"`, so every shared link preview is broken;
+- serves a `robots.txt` and `sitemap.xml` full of `http://localhost:3000` URLs.
 
-Certificate issued for both names, expires **2026-10-27**, renewal dry-run passes. Verified by
-reading the certificate rather than trusting certbot's exit code, and by proving port 80 was
-reachable from off-box before spending an issuance attempt. sang3r.com was re-checked after the
-nginx reload and is unaffected.
+All four are fixed in the repo and verified against a real production build.
 
-**One thing to know before you or anyone else opens the domain:** `https://plotslop.com` currently
-shows a **certificate name-mismatch warning** naming chirpchirps.com. Nothing is wrong — DNS points
-here but no `:443` block claims the name yet, so TLS falls through to another site on this IP. It
-resolves at cutover step 4, and only there. Plain HTTP correctly serves
-`plotslop: awaiting certificate`.
+**Why I did not deploy.** CONSTRAINT-1: game state is process-local, so a restart ends every game
+in flight. You wrote that this stopped being a pipe-`y` decision the moment the service went live.
+One command when you want it:
+
+```
+[VPS] sudo bash scripts/deploy.sh          # it prompts before the restart — answer it yourself
+```
+
+Weekday daytime, never Friday–Sunday evening.
+
+**One correction to carry in with you.** The previous version of this file said the OG fix was "one
+line in `/etc/plotslop/env` plus a restart". That was wrong twice: `NEXT_PUBLIC_*` values are baked
+in at **build** time, and the fallback chain never reached the dead domain anyway — it stopped at a
+`localhost:3000` default hidden in `next.config.js`. `HANDOFF.md` §9 #14. **You no longer need to
+set anything**; the build now produces `https://plotslop.com` with the variable unset.
 
 ---
 
-## 3. 🟠 NEW — Vercel is emailing you about failed preview deploys. That is me.
+## 2. 🔴 The seat cap — the scope freeze gates on a number the game cannot seat
 
-You asked mid-session. Diagnosed, and the cause is boring; what it exposes is not.
+**You asked for the blast radius before the change. Here it is. I have not touched the cap.**
 
-**Why they started:** every push to `audit/2026-07-28-snapshot` triggers a Vercel preview build,
-and I have pushed **20 commits to that branch today**. One email each.
-
-**Why they fail:** reproduced locally with `npx next build` — it is not a Vercel problem.
-
-```
-Error occurred prerendering page "/admin"
-Error: @clerk/clerk-react: Missing publishableKey.
-Export encountered an error on /admin/page: /admin, exiting the build.
-```
-
-`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is needed at **build** time, and `/admin` is statically
-prerendered. Same missing key as item 1 — **the build has been broken since the key went missing,
-not since I started pushing. I only made it visible, twenty times.**
-
-**The part that actually matters: this project cannot run on Vercel at all.** `package.json`
-start is `tsx server.ts` — a custom Socket.IO server. Vercel's Next.js preset never runs it, and
-serverless functions cannot hold WebSocket connections. **A *successful* Vercel deploy would
-produce a site where no game can start.** The last green deploy on `v2` was 2026-04-23, which is
-roughly when the architecture stopped matching it. Per `DECISIONS.md` #12 the game is served from
-this VPS behind nginx, so the Vercel project is a leftover pointing at an architecture the product
-left behind.
-
-**What I did:** disabled preview deploys for the audit branch only, in `vercel.json`. Narrow,
-reversible, stops the emails, touches nothing else. Your account was not touched.
-
-**What I did not do, because it is your account and your call:**
-
-- **Delete or disconnect the Vercel project.** My recommendation. It cannot serve this product,
-  and while it exists it is a live URL someone could point a domain at by mistake.
-- **Keep it and set the Clerk env vars in Vercel** — sensible only if you want previews as a
-  build-check. It would still not run a playable game.
-
-**Link check now done — clean.** Nothing in either repo links to a `*.vercel.app` URL for this
-project; the only hit anywhere was my own note saying the check hadn't been run. Second mechanism:
-no nginx config on this box references a Vercel host for it either. So there is nothing to break by
-pulling it.
-
-**I could not do the delete.** `~/.local/share/com.vercel.cli/auth.json` is `{}` — no token on this
-box — the CLI isn't installed, the repo has no `.vercel/project.json`, and the `gh` token carries
-only `gist, read:org, repo`, so I can't even remove the webhook. It needs your Vercel login:
-Vercel → the project → Settings → Delete Project.
-
-**One thing the link check turned up that argues *for* deleting.** `server.ts:52` CORS-allows
-`^https://(plotslop|plot-twists)(-[a-z0-9-]+)*\.vercel\.app$`. While that project exists, any
-preview deploy under those names is an origin the production game server trusts — and **that server
-went live this evening**, so this stopped being theoretical.
-
----
-
-## 4. 🔴 Firestore — does the project exist at all?
-
-Unchanged and still first among the deploy-blockers by risk, in your ordering.
-
-There is **no Firebase project ID anywhere in either repo**, and
-`/root/PlotTwists-Native/firebase-debug.log` shows the CLI calling `projects//services/…` — an
-**empty** project segment. That session was never linked to a project.
-
-- **If no project exists:** `DECISIONS.md` #7 closes permanently as moot. Say so and I will
-  close it rather than carry it forward.
-- **If one does exist:** send collection names and rough doc counts **before anything is
-  deleted**. If non-Jackson user records sat under permissive rules, that is a disclosure
-  question, not a cleanup question.
-
-`[MACBOOK]` or any browser signed into Firebase. Project ID is in the console URL.
-
-The cutover script refuses to run if the Firebase env vars are ever set, because that switches
-the live database off the JSON adapter and onto a project whose rules nobody has read.
-
----
-
-## 5. ✅ The cutover — APPLIED 2026-07-29. Step 6 is still yours.
-
-**PlotSlop is live on `https://plotslop.com`, and a second client can join a room.**
-
-Steps 1–5 and 7 applied. `nginx -t` before every reload, and **sang3r.com re-checked after each
-and returned 200.** The certificate was reused (`not yet due for renewal`), so no rate-limit spend.
-
-The chirpchirps.com name-mismatch from item 2 is **resolved** — the domain now presents its own
-certificate:
+Your freeze lifts when you have *"played this with eight people who are not my friends."*
+`MAX_PLAYERS.ENSEMBLE` is **6**. Confirmed two ways — reading every reader of the constant, and
+driving eight real clients through a live ENSEMBLE round and reading the prompt the model got:
 
 ```
-subject=CN = plotslop.com     notAfter=Oct 27 17:45:24 2026 GMT
+8 joiners → 6 PLAYER, 2 SPECTATOR, 0 rejected      (9 in the room, counting the host)
+CRITICAL: You have 6 characters...                 (what actually reached the model)
 ```
 
-| Check | Result |
-|---|---|
-| `https://plotslop.com` | 200 |
-| `https://www.plotslop.com` | 200 |
-| `http://plotslop.com` | 301 → https |
-| `https://sang3r.com` | 200, unaffected |
+Nobody is turned away — joiners 7 and 8 become **spectators**, and the trait list is built from
+PLAYER-role selections only. So eight people can be in the room; six can be in the scene. The host
+holds a `HOST` role rather than a player seat, so they neither consume a seat nor add a trait.
 
-**And the check a curl 200 cannot make.** Two independent Socket.IO clients over the public TLS
-endpoint: host created room `3722`, second client joined, and **the host observed the joiner
-arrive**. That cross-socket broadcast is the one thing a single-client test cannot fake. Both
-connections asserted `transport=websocket`, so a silent fall back to long-polling — which passes a
-naive smoke test and behaves badly in a real game — would have failed instead.
-Script: `/root/.claude/jobs/6520be62/tmp/two-client-smoke.mjs`.
+**The live UI already claims 8.** `HostLobby.tsx:338` renders `Max 8` for ENSEMBLE while the mode
+card *on the same screen* says *"3-6 performers"*. It is in the deployed bundle today. So the
+playtest failure mode is concrete: you read "Max 8", invite eight, and two of them end up
+spectating.
 
-### Step 6 remains yours and remains blocking
+**I left it broken deliberately** — which of those two numbers is wrong *is* this decision, and
+fixing either one pre-empts you.
 
-The five-box cgroup re-verification on the *running* unit. Every isolation measurement so far was
-on a transient `systemd-run` unit; that proves the directives work, not that **this** unit gets
-them. Full commands and pass/fail criteria for each box are in `SESSION-2026-07-29-EVENING.md`
-§7b, and the checklist prints from `cutover.sh` itself.
-
-⚠️ One addition learned this evening: a deliberate OOM test spends `StartLimitBurst`. Finish with
-`systemctl reset-failed plotslop`, or the next start refuses and shows you a **stale** error.
-
-### Now that it is live
-
-- **Running on a dev Clerk instance** — see item 11.
-- **Stripe and Twilio unset**, so payments and phone verification are off. Logged at startup.
-  Deliberate; neither is needed to play.
-- **CONSTRAINT-1 is live from here.** All game state is process-local, so every deploy ends every
-  game in flight. `deploy.sh` prompts before restarting — from now that prompt is a real decision
-  for a human, not something to pipe `y` into.
-
----
-
-## 6. 🟠 NEW — the install prompt fires on the player join path
-
-Small, and it directly contradicts the decision you just made.
-
-`InstallPrompt` renders globally from `app/layout.tsx:159`, so it appears on `/join`. On iOS
-Safari it fires on a timer regardless of which page the player is on. Under *"players join in a
-phone browser with a room code, no install, ever"*, an install banner over the join flow
-interrupts the exact moment that must not be interrupted — somebody who was handed a code at a
-party and has thirty seconds of patience.
-
-**I did not change it**, because it is not obviously wrong everywhere: offering PWA install to a
-**host**, who will run this repeatedly on the same device, is reasonable. Which surfaces keep it
-is a UX call.
+**What raising it to 8 would touch — less than you'd expect:**
 
 | | |
 |---|---|
-| **A** | Suppress on `/join` and `/game`, keep elsewhere *(my recommendation)* |
-| **B** | Remove entirely — "no install, ever" means what it says |
-| **C** | Leave it |
+| `AUTO_START_THRESHOLD` | **Untouched.** `ENSEMBLE: 3` is a minimum, not a maximum. |
+| The prompt's line budget | **Untouched.** 30-38 is a constant, not a function of cast size. |
+| The 2,600 `max_tokens` ceiling | **Untouched.** Also constant — the one player-coupled multiplier was already removed on 2026-07-29. |
+| Card dealing, voting, results, progression | **Untouched.** Dealing is per-room; the rest iterate the player map. |
+| Tests | **Nothing asserts the cap.** Which is its own small problem: raising it would turn nothing red. |
+| **The UI** | **Three hardcoded numbers**, all strings: `HostLobby.tsx:338` (`Max 8`), `HostLobby.tsx:504` (`3-6 performers`), `opengraph-image.tsx:34` (`?? 8`). The cast list itself is wrapping chips and reflows at any count. |
+| **The playtest artefacts** | **The real cost.** Both need regenerating at whatever you pick — item 3. |
+
+**My recommendation, and why it is not a slam dunk.** Mechanically, 8 is nearly free. But your
+stated reasoning for the 30-38 line cap was *"eight people performing seventy lines is where a
+party stops being fun"* — you were already thinking in eights. At 8 performers across 38 lines each
+player averages under five lines, and the failure mode flips from "too long" to "standing around".
+At 6 it is about six lines each. **If eight is load-bearing because it is your playtest, raise the
+cap. If six is the better scene, change the freeze wording instead.** Same decision from opposite
+ends; only you can pick.
+
+Either way the durable fix is to derive all three UI strings from `MAX_PLAYERS` so they cannot
+drift apart again. I will do that with your answer, not before.
 
 ---
 
-## 7. 🟠 `DECISIONS.md` #10 — copy voice
+## 3. 🟠 Both playtest artefacts were measured at 8 traits. You were right.
 
-Commit to the joke, or stay earnest? Affects ~122 copy occurrences. **Blocks Chunk 5 only.**
+You asked whether the three scripts and the `$0.053` were generated with 8. **They were** —
+`scripts/real-generation.ts:54` sets `PLAYERS = 8`, and the output confirms it independently: all
+three scripts list 8 traits and produced 8, 10 and 8 distinct speaking parts.
 
-My recommendation is unchanged: commit to the bit in user-facing copy, leave `comedyPrompts.ts`
-earnest — it is craft instruction to the model and making it ironic will measurably degrade
-output.
+**They do not fail the same way, so they do not need the same fix:**
 
-One addition since this morning: `app/terms/TermsContent.tsx:76` states the refund policy as
-"Stripe or Apple App Store". True today, wrong the moment iOS is host-only and no player ever
-buys through Apple. It is a legal page, so it should be right. Folds into the same pass.
+- **The three scripts: invalid as a preview, and they need a real re-run.** An 8-part scene at a
+  fixed 30-38 lines is a denser cast with fewer lines each — a different artefact from what a real
+  room can produce. I have **not** re-run them: a real run costs money and the right cast size is
+  item 2, which is yours. Once you have decided:
+  `[VPS] sudo npx tsx scripts/real-generation.ts` (needs root — it reads the key from
+  `/etc/plotslop/env`), then `npx tsx scripts/playtest-packet.ts > PLAYTEST-2026-07-29.md`.
+- **The cost figure survives the cast-size problem — but the packet was stale for an unrelated
+  reason, and I fixed that.** Cast size barely moves cost: the line budget and `max_tokens` are
+  constants, so two fewer traits change the prompt by about 1%. **But the committed packet predated
+  its own data** — the `.md` was written at 18:23 and the generation ran at 19:05, so it was
+  reporting pre-length-cap numbers:
 
----
+| | packet said | actually |
+|---|---:|---:|
+| script lines | 59–73 | 38, 38, 38 |
+| **cost per round** | **$0.0531** | **$0.0407** |
+| $9 buys | ~169 rounds | **~221 rounds ≈ 36 evenings** |
 
-## 8. 🟡 NEW — two public-domain settings I flagged rather than quietly kept
-
-Both are legal. Both are arguable, and you should get the choice.
-
-- **"A Laboratory In A Thunderstorm With A Sheet Over Something."** Frankenstein is public domain
-  (1818), but the lightning-powered laboratory is not in the novel — it is the 1931 film, which
-  is not public domain. I reached for the copyrighted imagery, not the book's.
-- **"An Opera House Box That Is Always Kept Empty."** Box Five is from the 1910 Leroux novel and
-  is genuinely public domain, but public association runs through the musical, which is not.
-
-Both are cheap to cut and neither is load-bearing. Default if you say nothing: they stay.
-
-There is also a rule conflict I resolved by interpretation and should flag: your rule 2 ("no entry
-may map 1:1 to an identifiable character") and rule 3 ("public domain is allowed") pull against
-each other, because a Holmes or Dracula card is legal *and* nameable. I kept public domain out of
-the character deck entirely and used it only in settings, where what is evoked is a scene rather
-than a person. If you want named public-domain characters in the character slot, rule 2 needs an
-explicit exemption.
+  Regenerated from the existing data, so the cost table is now right and carries a banner marking
+  the scripts above it as an 8-cast artefact. **Your budget is 23% better than the packet claimed.**
 
 ---
 
-## 9. 🟡 Account-required room creation, eventually
+## 4. 🔴 Cutover step 6 — unchanged, still yours, still blocking
 
-Not blocking, but you should know the ceiling exists before it bites.
+The five-box cgroup re-verification on the *running* unit. Every isolation measurement so far was
+taken on a transient `systemd-run` unit; that proves the directives work, not that **this** unit
+gets them. Commands and pass/fail per box: `SESSION-2026-07-29-EVENING.md` §7b; the checklist also
+prints from `cutover.sh`.
 
-Chunk 3 re-keyed the rate limiters onto client IP, which fixed a real bypass (50 rooms in ~2s by
-reconnecting). The cost is that **carrier-grade NAT puts thousands of unrelated mobile
-subscribers in one bucket.** At playtest volume this cannot bite — it needs eleven strangers
-behind one carrier IP creating rooms inside the same five minutes. At scale it will, and it will
-present as *"the game is broken on mobile data"*, not as a rate limit.
-
-**Your web-first decision makes this more likely to matter, not less**, because every player is
-now on a phone browser rather than an installed app, and phone browsers are where CGNAT lives.
-
-Mitigated for now: both limits are env knobs, answerable from `/etc/plotslop/env` without a
-deploy (`ROOM_CREATE_MAX`, `ROOM_CREATE_WINDOW_MS`, `MAX_LIVE_ROOMS_PER_CREATOR`). Signed-in
-hosts are already immune — their key is the Clerk subject, not the IP.
-
-The durable fix is requiring an account to create a room. Product decision, so it is yours, and
-it is not urgent.
+⚠️ A deliberate OOM test spends `StartLimitBurst`. Finish with `systemctl reset-failed plotslop`,
+or the next start refuses and hands you a **stale** error.
 
 ---
 
-## 10. 🟡 You removed a feature and should know it stuck
+## 5. 🟠 Delete the Vercel project
 
-Not a question, a notification, repeated because it is user-visible and easy to lose.
+Link check clean, nothing references it, and it **cannot serve this product** — `npm start` is
+`tsx server.ts`, a custom Socket.IO server that Vercel's Next preset never runs.
 
-**"✎ Write your own" is gone.** It was the client half of D1 and it partly contradicts your own
-Option B in `AUDIT.md`. As recorded there: *Option B is not dead, but it cannot return as a text
-box on the submit path.*
+I narrowed `server.ts`'s preview-origin trust to `plotslop*.vercel.app` (the `plot-twists`
+alternative went with the rename), but **that trust should not outlive the project**: while it
+exists, any preview deploy under that name is an origin the live game server accepts.
 
-A second one joins it today: **the card browser no longer shows a source line under each card.**
-`CardBrowseModal` and `CardPicker` both rendered `item.source`, which was the franchise name. The
-field is deleted, so the badge is gone. Nobody would have seen it recently — layer 1 emptied the
-data a session ago — but the code was still there and would have rendered attribution to players
-the moment anything repopulated it.
+Blocked the same way as before — no Vercel token on this box, CLI not installed, no
+`.vercel/project.json`, and the `gh` token carries only `gist, read:org, repo`. Vercel → the
+project → Settings → Delete Project.
 
 ---
 
-## 11. 🔴 NEW — the rename inventory missed about a dozen live references
+## 6. 🟠 `plottwists.com` belongs to someone else, and the site was pointing players at it
 
-You asked me to grep both repos for `clerk.plot-twists.com` and other survivors, and predicted the
-inventory had missed "at least one live auth config." It had. It also missed eleven other things.
+Not a question — something you should know, because it was in no inventory.
 
-### The auth one you suspected
+The rename tables tracked `plot-twists.com`. The code also contained **`plottwists.com`**,
+**`plottwists.app`** and **`plottwists.live`**. The last two have no DNS. The first one resolves:
 
-`PlotTwists/iOS/PlotTwists.entitlements:15` — `webcredentials:clerk.plot-twists.com`.
-
-It **is** recorded as a security item (`CHUNKS.md` #15, `DECISIONS.md` #1). The gap is elsewhere:
-**`INVENTORY.md`'s domain table has no row for web-credentials domains at all.** Its "Universal
-links" row cites `entitlements:13-14` and stops. So the inventory undercounts by exactly the auth
-entry, which is why a rename driven off that table would have left it behind.
-
-### 🔴 The one that is live *right now*, on the site that just went up
-
-`app/layout.tsx:55`
-
-```ts
-const metadataBaseUrl = process.env.NEXT_PUBLIC_BASE_URL
-  || process.env.NEXT_PUBLIC_APP_URL
-  || 'https://plot-twists.com'
+```
+plottwists.com  →  156.254.10.135
 ```
 
-Neither variable is set in `/etc/plotslop/env`, so `metadataBase` resolves to the dead domain and
-**every `og:image` and `twitter:image` absolute URL on plotslop.com points at nothing.** Broken link
-previews in iMessage, Discord and Twitter — for a game whose entire join path is "share a link."
+And it was the **join instruction on the host's lobby screen** — *"plottwists.com/join → CODE"* —
+plus a second copy under the QR block. At a party that is the sentence people read and type. All
+three now resolve through `lib/siteUrl.ts` and ship with item 1.
 
-**I did not fix it.** You scoped the domain work as blocking pre-launch rather than tonight, and
-this is config on a service that is now serving. It is one line plus a restart:
-`NEXT_PUBLIC_BASE_URL=https://plotslop.com`. Say the word.
+Nothing to do unless you once owned `plottwists.com` and want it back.
 
-### The rest
+---
 
-| # | Location | Consequence |
-|---|---|---|
-| 2 | `server/routes/stripe.ts:292` | Dead `icon.svg` **in the Stripe checkout** — broken image at the moment of payment |
-| 3 | `app/api/clip-card/[gameId]/route.tsx:144` | "plot-twists.com" rendered **into every shareable clip card image** |
-| 4 | `lib/scriptUtils.ts:36` | Appended to every exported script |
-| 5 | `app/privacy/PrivacyContent.tsx:48,145` | Privacy policy names the wrong website, plus a dead `privacy@` |
-| 6 | `app/terms/TermsContent.tsx:158` | Dead `support@` on a legal page |
-| 7 | `ios/App/App/App.entitlements:11-12` | Capacitor shell's `applinks:` + `webcredentials:` |
-| 8 | `android/app/src/main/AndroidManifest.xml:29` | Android deep-link host |
-| 9 | `PlotTwists/Shared/Config.swift:36` | `webDomain` — **the source of the QR code and invite URL** |
-| 10 | `ResultsView.swift:1447,1573,1934` | Share text ×2 and a displayed domain, user-visible |
-| 11 | `ScriptViewer.swift:572` | Export footer |
-| 12 | `TVLobbyView.swift:147` | "or visit plot-twists.com" on the TV lobby |
-| 13 | `PlotTwistsTests/PlotTwistsTests.swift:7` | Asserts the old value — will fail when #9 is fixed. Expected, not breakage |
+## 7. 🟡 A Clerk *production* instance for plotslop.com
 
-`server.ts:38-39` (CORS) is already tracked as Chunk 5 step 7. Docs-only mentions are excluded —
-they are historical records and correctly describe the old name.
+Unchanged. The live site runs on the **dev** instance `alive-jawfish-19.clerk.accounts.dev` — fine
+for playtesting, not for launch. The `pk_live` you nearly sent was bound to
+`clerk.plot-twists.com`, the dead domain.
 
-Nothing in this list was changed. Sequencing is yours.
+---
 
-### Also still blocking pre-launch, from your own message
+## 8. 🟡 The Android signing-key fingerprint — Chunk 5 step 4, the one step I could not do
 
-PlotSlop needs its own Clerk **production** instance on plotslop.com. The `pk_live` you nearly sent
-was bound to `clerk.plot-twists.com`, the dead domain. The site is live on a **dev** instance until
-that exists — fine for playtesting, not for launch.
+`public/.well-known/assetlinks.json` still reads
+`"sha256_cert_fingerprints": ["TODO:REPLACE_WITH_YOUR_SIGNING_KEY_FINGERPRINT"]`. Android deep
+links have never worked and still do not. It needs the fingerprint of your Android signing key
+(`keytool -list -v -keystore <your.keystore>`). Everything else in that file is now correct.
+
+Low stakes while the game is web-only.
+
+---
+
+## 9. 🟡 Carrier-grade NAT, eventually
+
+Unchanged, not urgent. Rate limiters are keyed on client IP, which fixed a real bypass but puts
+thousands of unrelated mobile subscribers in one bucket. It cannot bite at playtest volume. At
+scale it presents as *"the game is broken on mobile data"*, not as a rate limit. Both limits are
+env knobs (`ROOM_CREATE_MAX`, `ROOM_CREATE_WINDOW_MS`, `MAX_LIVE_ROOMS_PER_CREATOR`) and signed-in
+hosts are already immune. The durable fix — requiring an account to create a room — is a product
+decision and it is yours.
 
 ---
 
 ## Not waiting on you
 
-For completeness, so you can see what moved without you: the catalog restructure is done and
-gated, four more IP leaks were found and fixed (one of them shipping to the model on every
-request), the source-audit gate went from one file to five, the playtest packet is regenerated at
-40 hands, and both `DECISIONS.md` #4 and #12 are written. Suite 448/448, harness 49/49, typecheck
-clean. Details in `HANDOFF.md` §7 and §8.
+Chunk 5 shipped in full (`HANDOFF.md` §12): 103 brand occurrences across 45 files, the copy pass in
+the voice you chose, four dead domains consolidated behind one constant, CORS and the Vercel regex
+cleaned, the legal pages corrected, the install prompt suppressed per Option A, the Capacitor
+`webcredentials:` entitlement moved off the expiring domain, and the service-worker cache bumped so
+installed PWAs actually evict the old shell.
+
+Six more corrections to the written record are in `HANDOFF.md` §9 — that list is now eighteen, and
+the record has been wrong about a completed item **five sessions running**. The two worth your
+attention are **#14** (the OG diagnosis in the previous version of *this file* was wrong, and so was
+the fix it prescribed) and **#16** (the playtest packet predated its own data).
+
+Verification after everything: **450/450 unit · 49/49 harness · tsc 0 errors · `next build` exit 0.**

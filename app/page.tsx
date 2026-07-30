@@ -191,7 +191,7 @@ export default function Home() {
         >
           <div className="flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
             <TheaterMasksIcon />
-            <span className="font-display font-bold" style={{ fontSize: '17px' }}>Plot Twists</span>
+            <span className="font-display font-bold" style={{ fontSize: '17px' }}>PlotSlop</span>
           </div>
           <UserMenu />
         </motion.div>
@@ -213,7 +213,7 @@ export default function Home() {
               lineHeight: 1.1,
             }}
           >
-            {firstName ? `Hey, ${firstName}` : 'Plot Twists'}
+            {firstName ? `Hey, ${firstName}` : 'PlotSlop'}
           </h1>
           {levelInfo && (
             <motion.div

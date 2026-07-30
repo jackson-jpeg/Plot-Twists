@@ -1,7 +1,7 @@
 {
-  "name": "Plot Twists - AI Improv Comedy Game",
-  "short_name": "Plot Twists",
-  "description": "AI-powered, real-time multiplayer improv comedy party game",
+  "name": "PlotSlop — AI Improv Comedy Game",
+  "short_name": "PlotSlop",
+  "description": "An AI writes you a gloriously stupid scene. You perform it out loud. Somebody wins.",
   "id": "/",
   "start_url": "/",
   "scope": "/",

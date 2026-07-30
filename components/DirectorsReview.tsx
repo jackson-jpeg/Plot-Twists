@@ -4,6 +4,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { SPRING_BOUNCY } from '@/lib/motion'
 import type { DirectorsReview as DirectorsReviewType } from '@/lib/types'
+import { SITE_DOMAIN } from '@/lib/siteUrl'
 
 interface DirectorsReviewProps {
   review: DirectorsReviewType
@@ -124,7 +125,7 @@ export function DirectorsReview({ review, showTitle, date, delay = 0, onShare }:
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-6" style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
-          <span>plottwists.live</span>
+          <span>{SITE_DOMAIN}</span>
           <span>{formattedDate}</span>
         </div>
       </div>

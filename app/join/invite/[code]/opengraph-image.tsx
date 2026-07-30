@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Join a Plot Twists game'
+export const alt = 'Join a PlotSlop game'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -83,7 +83,7 @@ export default async function Image({ params }: { params: { code: string } }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
             <span style={{ fontSize: '36px' }}>🎭</span>
             <span style={{ color: '#F59E42', fontSize: '20px', fontWeight: 700, letterSpacing: '0.08em' }}>
-              PLOT TWISTS
+              PLOTSLOP
             </span>
           </div>
 

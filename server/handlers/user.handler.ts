@@ -3,6 +3,7 @@ import type { AppServer, AppSocket, HandlerContext } from './types'
 import { withErrorHandler } from '../middleware/socketErrorHandler'
 import { SocketRateLimiter } from '../middleware/rateLimiter'
 import { rateLimitKey } from '../utils/clientIdentity'
+import { SITE_URL } from '../../lib/siteUrl'
 import {
   getPlayerGames,
   getGame,
@@ -58,7 +59,7 @@ export function registerUserHandlers(io: AppServer, socket: AppSocket, ctx: Hand
     try {
       const result = await shareGame(gameId)
       if (result.success && result.shareCode) {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://plottwists.app'
+        const baseUrl = SITE_URL
         callback({
           success: true,
           shareUrl: `${baseUrl}/replay/${result.shareCode}`

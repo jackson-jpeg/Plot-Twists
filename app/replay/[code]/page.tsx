@@ -39,7 +39,7 @@ const SHARE_PLATFORMS = [
     name: 'Reddit',
     icon: '🟠',
     getUrl: (url: string, title: string) =>
-      `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(`I played "${title}" on Plot Twists!`)}`
+      `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(`I played "${title}" on PlotSlop!`)}`
   },
   {
     name: 'SMS',
@@ -141,7 +141,7 @@ export default function ReplayPage() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `"${game.title}" - Plot Twists`,
+          title: `"${game.title}" - PlotSlop`,
           text: `Check out this hilarious improv scene: "${game.title}"`,
           url: shareUrl,
         })

@@ -641,7 +641,7 @@ function AchievementCard({ achievement, unlocked, index = 0 }: { achievement: Ac
     : 0
 
   const handleShare = async () => {
-    const text = `I unlocked "${achievement.name}" (${achievement.rarity}) in Plot Twists! ${achievement.icon}`
+    const text = `I unlocked "${achievement.name}" (${achievement.rarity}) in PlotSlop! ${achievement.icon}`
     if (navigator.share) {
       try {
         await navigator.share({ text, url: window.location.origin })

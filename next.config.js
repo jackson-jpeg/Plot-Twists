@@ -14,8 +14,16 @@ const nextConfig = {
   },
 
   // Environment variables that should be available on the client
+  //
+  // NEXT_PUBLIC_APP_URL IS DELIBERATELY NOT DEFAULTED HERE. It used to read
+  // `process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'`, and because Next inlines this
+  // block at BUILD time, an unset variable baked the literal 'http://localhost:3000' into the
+  // production bundle. Every `NEXT_PUBLIC_BASE_URL || NEXT_PUBLIC_APP_URL || <domain>` chain in
+  // the app therefore stopped at the second term, and the live site advertised
+  // og:image="http://localhost:3000/opengraph-image" and a localhost sitemap. Defaulting a
+  // public origin in the bundler is what made that invisible; the fallback now lives in
+  // lib/siteUrl.ts, where it can see NODE_ENV. Leave this unset.
   env: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || '',
     NEXT_PUBLIC_ENABLE_ANALYTICS: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS || 'false',
     NEXT_PUBLIC_ENABLE_ERROR_TRACKING: process.env.NEXT_PUBLIC_ENABLE_ERROR_TRACKING || 'false',

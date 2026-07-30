@@ -104,8 +104,8 @@ export function CardPackSelector({
   const selectedPack = packs.find(p => p.id === selectedPackId) || {
     id: STANDARD_PACK_ID,
     name: 'Standard Pack',
-    description: 'The original Plot Twists collection',
-    author: 'Plot Twists',
+    description: 'The original PlotSlop collection',
+    author: 'PlotSlop',
     theme: 'mixed',
     isMature: false,
     isBuiltIn: true,

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import { SITE_URL } from '@/lib/siteUrl'
 import './globals.css'
 import { Fredoka, DM_Sans, Courier_Prime, Instrument_Serif, Space_Mono } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
@@ -52,14 +53,14 @@ const spaceMono = Space_Mono({
   display: 'swap',
 })
 
-const metadataBaseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://plot-twists.com'
+const metadataBaseUrl = SITE_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(metadataBaseUrl),
-  title: 'Plot Twists - AI Improv Party Game',
-  description: 'An AI-powered improv comedy game. Pick random cards, perform hilarious stories, vote for MVP. Perfect for theater kids and game nights!',
+  title: 'PlotSlop - AI Improv Party Game',
+  description: 'An AI writes you a genuinely terrible comedy scene. You perform it out loud, with feeling, in front of your friends. Then everyone votes on who sold the slop hardest. No acting ability required. Nothing to install.',
   keywords: ['improv', 'party game', 'comedy', 'AI', 'theater', 'multiplayer', 'social game'],
-  authors: [{ name: 'Plot Twists' }],
+  authors: [{ name: 'PlotSlop' }],
   manifest: '/manifest.json',
   icons: [
     { rel: 'icon', url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
@@ -69,18 +70,18 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Plot Twists',
+    title: 'PlotSlop',
   },
   openGraph: {
-    title: 'Plot Twists - AI Improv Party Game',
-    description: 'An AI-powered improv comedy game. Pick random cards, perform hilarious stories, vote for MVP.',
+    title: 'PlotSlop — the AI writes it, you have to say it out loud',
+    description: 'Pick three cards. An AI turns them into a scene nobody asked for. Perform it at a party. Vote for MVP.',
     type: 'website',
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Plot Twists - AI Improv Party Game',
-    description: 'An AI-powered improv comedy game. Pick random cards, perform hilarious stories, vote for MVP.',
+    title: 'PlotSlop — the AI writes it, you have to say it out loud',
+    description: 'Pick three cards. An AI turns them into a scene nobody asked for. Perform it at a party. Vote for MVP.',
   },
 }
 

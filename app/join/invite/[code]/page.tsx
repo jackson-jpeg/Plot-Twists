@@ -180,7 +180,7 @@ export function InvitePage() {
             className="font-display"
             style={{ fontSize: '15px', fontWeight: 700, letterSpacing: '0.06em', color: 'var(--color-text-primary)' }}
           >
-            Plot Twists
+            PlotSlop
           </span>
         </motion.div>
 

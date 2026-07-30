@@ -458,6 +458,25 @@ const SETTINGS_AUTHORED: Authored[] = [
   // 'An Opera House Box That Is Always Kept Empty' passes the same test and is KEPT: Box Five
   // being permanently reserved is in Leroux's 1910 novel, which is the public-domain source. That
   // public association runs through the musical does not make the novel's own detail unusable.
+  //
+  // RE-REVIEWED AND AFFIRMED 2026-07-30, on Jackson's "your call, apply the same test". Recorded
+  // here so it is not re-litigated a third time. Two things were checked rather than assumed:
+  //
+  //   1. Every remaining public-domain setting was re-run against the provenance test, including
+  //      the fairy-tale group — 'A Ball That Ends At Midnight, Sharp', 'A Tower With No Door And
+  //      One Window', 'A Cottage Made Entirely Of Confectionery'. All pass: each describes the
+  //      Perrault/Grimm/Leroux detail itself, never an adaptation's invention. The Frankenstein
+  //      lab remains the only entry that has ever failed it.
+  //
+  //   2. Whether layer 3 screens the names these settings might elicit — 'Cinderella',
+  //      'Phantom of the Opera', 'Dracula'. It does NOT, and that is correct rather than a hole:
+  //      it is the same policy that removed 'Rapunzel' and excludes 'Sherlock'. The name of a
+  //      public-domain character is not the protected thing — only a specific later DESIGN is,
+  //      and a name cannot carry a design. See the header of lib/protectedTerms.ts.
+  //
+  // Worth knowing how (2) nearly went the other way: the first check was a grep, which matched
+  // 'Rapunzel' inside protectedTerms.ts's own "REMOVED, do not re-add" comment and read as though
+  // the term were live. Loading the array and testing membership reversed the conclusion.
   ...c('horror', 'safe', [
     'A Castle At The Top Of A Very Long Staircase In The Carpathians',
     'A Ship’s Log Being Written By Somebody Running Out Of Crew',

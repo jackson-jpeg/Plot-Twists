@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { SITE_DOMAIN } from '@/lib/siteUrl'
 
 export const runtime = 'edge'
 
@@ -108,8 +109,8 @@ export async function GET(
 
             {/* Branding */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
-              <span style={{ fontSize: '18px', color: '#F59E42', fontWeight: 600 }}>Plot Twists</span>
-              <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.3)' }}>plottwists.live</span>
+              <span style={{ fontSize: '18px', color: '#F59E42', fontWeight: 600 }}>PlotSlop</span>
+              <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.3)' }}>{SITE_DOMAIN}</span>
             </div>
           </div>
         </div>

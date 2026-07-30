@@ -17,8 +17,18 @@ interface RoomPreview {
   players: { nickname: string }[]
 }
 
-export default async function Image({ params }: { params: { code: string } }) {
-  const code = params.code.toUpperCase()
+// `params` is a PROMISE in Next 15+. This route destructured it synchronously from the day the
+// invite feature landed, so every request threw
+// `TypeError: Cannot read properties of undefined (reading 'toUpperCase')` and the route returned
+// 500 — not a degraded card, no card at all. Every sibling route in this repo already awaits it
+// (`poster-story`, `character-card`, `clip-card`); this one was the outlier.
+//
+// It also means the localhost-fetch bug fixed alongside it had never been reachable here: the
+// throw happens two lines above the fetch. Found 2026-07-30, by curling the deployed route
+// instead of trusting that a rebuilt page renders.
+export default async function Image({ params }: { params: Promise<{ code: string }> }) {
+  const { code: rawCode } = await params
+  const code = rawCode.toUpperCase()
 
   let preview: RoomPreview | null = null
   try {

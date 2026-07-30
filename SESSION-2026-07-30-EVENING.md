@@ -1,26 +1,46 @@
 # Session — 2026-07-30, evening pass
 
 **The seat cap decision, executed.** Everything you asked for in the four numbered items is done,
-plus the measurement you asked for at the end. One thing is waiting on you and it is at the top.
+plus the measurement you asked for at the end. It is deployed and verified.
 
 Machine labels: `[VPS]` = the Linux box, `[MACBOOK]` = your Mac.
 
 ---
 
-## The one thing that needs you
+## Deployed, and it uncovered a route that has never worked
 
-**There is an undeployed build.** `plotslop.com` is still serving the 17:25 UTC version. None of
-tonight's work is live — not the cap of 8, not the derived copy, not the Audience group, not the
-four localhost fetches described below.
+**Live as of 18:38 UTC.** You ran `deploy.sh`; it took its abort path at the restart prompt again
+(no TTY, so `read` got EOF and it correctly refused to assume consent). I checked the window —
+**zero** established connections on :3100, `rooms.json` = `items: []` — and completed the restart.
+
+Then I curled the OG routes instead of assuming a rebuilt page renders. **The invite-link card —
+the link you send people to join — was returning HTTP 500, and had been since the day it was
+built.**
 
 ```
-[VPS] sudo bash scripts/deploy.sh
+⨯ TypeError: Cannot read properties of undefined (reading 'toUpperCase')
 ```
 
-I did not run it. The restart ends every game in flight, and that prompt is the step I leave to
-you. There were zero live socket connections when I checked, so the window is free.
+`params` is a **Promise** in Next 15+, and that route destructured it synchronously. Every sibling
+route in this repo already awaits it. So nobody pasting a join link into iMessage or Discord has
+ever seen a preview card.
 
-Gates: **469/469 unit · 50/50 harness · tsc 0 errors · `next build` exit 0.**
+**It also means the localhost fix I shipped an hour earlier was never reachable in that file** —
+the throw is two lines above the fetch. Two defects stacked, the outer hiding the inner.
+`app/replay/[code]/opengraph-image.tsx` had the identical bug with a quieter symptom: `undefined`
+in a template literal, so it fetched `/api/game/undefined` and silently drew the generic card.
+
+**The lesson is mine.** `tsc`, `jest`, `next build` and a grep of the shipped bundle were **all
+green** on a route that returns 500 to every caller. Compiling is not responding. Curl the endpoint.
+
+| Check after the fix and second restart | |
+|---|---|
+| Service | active, **0 errors** since restart |
+| apex / www / sang3r.com | 200 / 200 / **200** |
+| Seat cap **over TLS** | `ENSEMBLE:8` in all three cap-bearing chunks; **zero** `ENSEMBLE:6` |
+| Old copy strings in deployed JS | `3-6 performers` 0 · `1-6 Players` 0 · `?2:8` 0 |
+| Root / **invite** / replay OG cards | 200 135 KB · **200 118 KB** · 200 117 KB |
+| `/api/room-preview/TEST` via the public origin | `{"error":"Room not found"}` — the route `API_ORIGIN` now reaches |
 
 ---
 
@@ -163,9 +183,9 @@ rather you learn that from eight real people than have me guess now.
 
 ---
 
-## What I found that contradicts the written record — five more
+## What I found that contradicts the written record — six more
 
-You told me to assume it had happened again and go looking. It had. **The worst one is mine.**
+You told me to assume it had happened again and go looking. It had — **six times**, and the two worst are mine. The sixth (the invite card's 500) is at the top of this file, because it was found after the deploy.
 
 ### 🔴 "The localhost OG bug is dead" was written after verifying the half that could not fail
 
@@ -209,8 +229,8 @@ does not match "localhost". Fixed with a new `API_ORIGIN` in `lib/siteUrl.ts`.
 | **"Silently demoted to SPECTATOR"** | Asserted in `NEEDS-JACKSON.md` and in the harness message itself. False in both — §3 above. |
 | **`INVENTORY.md`'s constant table** | `VOTING_TIMEOUT` listed as `60_000`; it has been **25_000** since Chunk 2. And `AI_MAX_TOKENS = { ENSEMBLE: 10000 }` listed as live tuning when **nothing imports it** and the real ceiling is **2,600**. A dead constant in the inventory claiming 4× the true limit is a trap for the next session that reads it to find out what the limits are. Constant deleted, table corrected. |
 
-**The list now stands at 23, and the record has been wrong about a completed item six sessions
-running.** The pattern across all five found tonight is worth one sentence: *every one was a claim
+**The list now stands at 24, and the record has been wrong about a completed item six sessions
+running.** The pattern across all six found tonight is worth one sentence: *every one was a claim
 about something being handled, written from one side of a boundary and never checked from the
 other.* When the record says "X is handled", read the code that **consumes** X, not the code that
 emits it.
@@ -229,7 +249,7 @@ emits it.
 | Cap, shipped bundle | `ENSEMBLE:8` present, **zero** `ENSEMBLE:6`, and none of the three old copy strings anywhere in the built JS |
 | Drift guard | proved red by re-injecting `'1-6 Players'`, then restored |
 
-Committed as `67c3f43f` and pushed. **Not deployed.**
+Committed and pushed. **Deployed and verified — see the top of this file.**
 
 ---
 
@@ -237,11 +257,10 @@ Committed as `67c3f43f` and pushed. **Not deployed.**
 
 Full version in `NEEDS-JACKSON.md` (a copy sits beside this file).
 
-1. **Run the deploy** — item 0 above.
-2. **The line budget** — a number is recommended, not applied.
-3. **Cutover step 6** — the cgroup re-verification on the running unit. Still blocking.
-4. **Delete the Vercel project** — no token on this box.
-5. `plottwists.com` — informational.
-6. **Clerk production instance** — the live site is on the dev instance.
-7. **Android signing-key fingerprint** — the one Chunk 5 step I could not do.
-8. **CGNAT** — eventually, not urgent.
+1. **The line budget** — a number is recommended, not applied. Nothing else is blocked on it.
+2. **Cutover step 6** — the cgroup re-verification on the running unit. Still blocking.
+3. **Delete the Vercel project** — no token on this box.
+4. `plottwists.com` — informational.
+5. **Clerk production instance** — the live site is on the dev instance.
+6. **Android signing-key fingerprint** — the one Chunk 5 step I could not do.
+7. **CGNAT** — eventually, not urgent.

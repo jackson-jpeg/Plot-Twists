@@ -18,7 +18,7 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
 | **plotslop.com** | 🟢 **LIVE 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Cert for both names expires **2026-10-27**. `plotslop.service` active and enabled on :3100 behind nginx TLS; apex and `www` return 200, HTTP 301s to HTTPS, sang3r.com verified unaffected. **Two clients have joined a room over the public endpoint.** Cutover step 6 (cgroup re-verification) is still Jackson's and still blocking — see §11. |
 | **Current chunk** | **Chunks 2, 3 and 5 complete.** **Chunk 5 (the rename) DONE 2026-07-30** — see §12. `DECISIONS.md` #7 and #10 are both closed. **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 blocked on Jackson. |
-| **Deployed** | ✅ **Chunk 5 is LIVE as of 2026-07-30 17:25 UTC.** Jackson ran the deploy. `plotslop.com` serves PlotSlop: correct title, `og:image` absolute on the right host and returning a 135 KB PNG, `robots.txt`/`sitemap.xml` on the real domain, **zero** `localhost:3000` and **zero** old-domain references in the shipped bundle, legal pages corrected, sang3r.com unaffected, and a two-client join over public TLS passing on the new build. Verification table: `NEEDS-JACKSON.md` §0. |
+| **Deployed** | ✅ **LIVE as of 2026-07-30 18:38 UTC** — the seat-cap pass, on top of the 17:25 Chunk 5 deploy. Verified after the restart: apex/www 200, sang3r.com 200, zero errors in the journal, `ENSEMBLE:8` present in all three cap-bearing chunks **fetched over TLS** with zero `ENSEMBLE:6`, and all three OG image routes returning `200 image/png` — **including the invite card, which had been returning 500 since it was built** (§9 #24). |
 | **Seating** | **ENSEMBLE seats 8 performers** (`server/utils/constants.ts`). Raised from 6 by Jackson's decision on 2026-07-30; the scope-freeze gate of "eight people who are not my friends" is now seatable. Every seat count in the UI derives from the constant via `lib/playerCounts.ts` — **do not restate one as a literal**, there is a test that fails if you do. See §13. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
@@ -421,7 +421,7 @@ be named.
 
 ---
 
-## 9. Corrections to the record found on 2026-07-29 and 2026-07-30 — twenty-three of them
+## 9. Corrections to the record found on 2026-07-29 and 2026-07-30 — twenty-four of them
 
 **Eighteen now, across five passes** (13–18 are 2026-07-30 and are at the end of this section),
 and they are listed because the pattern matters more than any
@@ -686,10 +686,41 @@ while updating it for the new cap — by reading the table against the source ra
   reads `INVENTORY.md` to find out what the limits are. Both corrected; the dead constant is
   deleted from `constants.ts`, with a note where it stood.
 
-*The pattern across 19-23: every one is a claim about a thing being absent or handled, written
+**24. 🔴 The invite-link OG card has returned HTTP 500 since the day it was built, and #19's fix
+was never reachable.** Found by curling the deployed route after the restart rather than trusting
+that a rebuilt page renders:
+
+```
+GET https://plotslop.com/join/invite/TEST/opengraph-image  →  500
+⨯ TypeError: Cannot read properties of undefined (reading 'toUpperCase')
+```
+
+`params` is a **Promise** in Next 15+. `app/join/invite/[code]/opengraph-image.tsx` destructured it
+synchronously — `params.code.toUpperCase()` — from the commit that introduced the invite feature
+(`d81091f2`). Every sibling route in the repo already awaits it. So the join-path link preview has
+never rendered at all: not a degraded card, **no card**.
+
+**And it lands on #19.** The throw happens two lines *above* the fetch, so the `localhost:3000`
+bug fixed there had never actually been reached in that file. Two real defects stacked in one
+route, and the outer one hid the inner one.
+
+`app/replay/[code]/opengraph-image.tsx` has the identical mistake with a different symptom: inside
+a template literal `params.code` is `undefined` rather than a throw, so it fetched
+`/api/game/undefined`, got a non-ok response, and quietly rendered the generic card. **A hard 500
+and a silent degradation out of the same one-word omission.** Both fixed, both verified over TLS:
+invite `200, image/png, 117 KB`; replay `200, image/png, 117 KB`.
+
+**Why this one is the sharpest lesson in the list.** #19 was "I verified the wrong half." #24 is
+worse: I verified that the *file* was correct — it typechecked, it built, the right string was in
+the bundle — and never asked the deployed route for a response. `tsc`, `jest`, `next build` and a
+grep of the shipped JS were all green on a route that returns 500 to every caller. **Compiling is
+not responding. Curl the endpoint.**
+
+*The pattern across 19-24: every one is a claim about a thing being absent or handled, written
 from one side of a boundary and never checked from the other. 19 checked the server's output but
 not the routes that call it; 22 checked the server's ack but not the two clients that render it;
-23 was a table nobody had re-read against the file it describes.
+23 was a table nobody had re-read against the file it describes; 24 checked that code was built
+but never that it ran.
 **When the record says "X is handled", find the code that consumes X, not the code that emits it.***
 
 ---

@@ -15,12 +15,17 @@ interface GameMeta {
   setting: string
 }
 
-export default async function Image({ params }: { params: { code: string } }) {
+// Same missing `await params` as the invite card — see the note there. This one does not 500,
+// which is why it survived longer: `params.code` is undefined inside a template literal, so it
+// fetched `/api/game/undefined`, got a non-ok response, and quietly rendered the generic card.
+// A silent degradation and a hard 500 out of the identical mistake.
+export default async function Image({ params }: { params: Promise<{ code: string }> }) {
+  const { code } = await params
   const baseUrl = SITE_URL
   let game: GameMeta | null = null
 
   try {
-    const res = await fetch(`${baseUrl}/api/game/${params.code}`, { next: { revalidate: 300 } })
+    const res = await fetch(`${baseUrl}/api/game/${code}`, { next: { revalidate: 300 } })
     if (res.ok) {
       game = await res.json()
     }

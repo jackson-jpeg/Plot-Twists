@@ -18,22 +18,45 @@ the install prompt (Option A), the `TermsContent` refund line, the public-domain
 
 ---
 
-## 0. ⚠️ There is an undeployed build. The live site does not have any of today's second pass.
+## 0. ✅ DEPLOYED 2026-07-30 18:38 UTC — and it uncovered a route that has never worked
 
-`plotslop.com` is still serving the **17:25 UTC** build. Everything below the line — the seat cap
-of 8, the derived UI copy, the Audience group in the host lobby, and the four localhost fetches in
-item 3 — is committed and built but **not live**.
+You ran `deploy.sh`. It reached the restart prompt and took its abort path again — stdin was not a
+TTY, so `read` got EOF and it correctly refused to assume consent. I checked the window first
+(**zero** established connections on :3100, `rooms.json` = `items: []`) and completed the restart.
+
+| Check | Result |
+|---|---|
+| Service | active, **0 errors** in the journal since restart |
+| apex / www / sang3r.com | 200 / 200 / **200** |
+| Seat cap **over TLS** | `ENSEMBLE:8` in all three cap-bearing chunks fetched from the live site; **zero** `ENSEMBLE:6` |
+| Old copy strings in the deployed JS | `3-6 performers` **0** · `1-6 Players` **0** · `?2:8` **0** |
+| Root OG card | 200, 135 KB PNG |
+| **Invite-link OG card** | **200, 118 KB PNG — it was returning 500 before this deploy** |
+| **Replay OG card** | 200, 117 KB PNG |
+| `/api/room-preview/TEST` via the public origin | `{"error":"Room not found"}` — the route `API_ORIGIN` now reaches |
+
+### 🔴 The invite-link preview has never worked, and I only found it by curling the live route
+
+After restarting I curled the OG routes instead of assuming a rebuilt page renders. The invite card
+— the link you send people to join — returned **HTTP 500**:
 
 ```
-[VPS] sudo bash scripts/deploy.sh
+⨯ TypeError: Cannot read properties of undefined (reading 'toUpperCase')
 ```
 
-I did not run it. Restarting ends every game in flight (CONSTRAINT-1), and the script's restart
-prompt is deliberately the one step I leave to you — it is also why the last deploy took its abort
-path when I invoked it non-interactively. There were **zero live socket connections** when I
-checked at 18:4x UTC, so the window is currently free.
+`params` is a **Promise** in Next 15+, and that route destructured it synchronously from the commit
+that introduced the invite feature. Every sibling route in the repo already awaits it. So anyone
+who has ever pasted a join link into iMessage or Discord got **no preview card at all**.
 
-Gates before you run it: **469/469 unit · 50/50 harness · tsc 0 errors · `next build` exit 0.**
+**It also means the localhost fix I shipped an hour earlier was never reachable in that file** —
+the throw happens two lines above the fetch. Two defects stacked, the outer one hiding the inner.
+
+`app/replay/[code]/opengraph-image.tsx` had the identical bug with a quieter symptom: `undefined`
+inside a template literal, so it fetched `/api/game/undefined` and silently rendered the generic
+card. Both fixed and both verified above.
+
+**The lesson, and it is mine:** `tsc`, `jest`, `next build` and a grep of the shipped bundle were
+**all green** on a route that returns 500 to every caller. Compiling is not responding.
 
 ---
 
@@ -93,7 +116,7 @@ or the next start refuses and hands you a **stale** error.
 
 ---
 
-## 3. 🟢 Nothing needed — but you should know the OG fix I reported yesterday was half a fix
+## 3. 🟢 Nothing needed — the OG fix I reported earlier today was half a fix, twice over
 
 Not a question. It is the correction I would most want to read if I were you, and it is mine.
 
@@ -112,7 +135,7 @@ Two of the four files **already imported** the site-URL constant — the rename 
 fixed the domain they *displayed*, and left the domain they *fetched*. A grep for dead brand names
 does not match "localhost".
 
-Fixed, tested, built. Ships with item 0.
+Fixed and deployed. **And it turned out to be the smaller of two bugs in that file** — see §0: the route was throwing two lines above the fetch, so this had never been reached there at all.
 
 ---
 
@@ -179,14 +202,14 @@ files, a new `lib/playerCounts.ts`, a spectator **Audience** group on the host's
 tests including a drift guard that reads real UI source, and two false greens in the harness turned
 into real assertions. `HANDOFF.md` §13.
 
-**Five more corrections to the record**, §9 #19-23 — the OG one above, a `https://localhost:3000`
+**Six more corrections to the record**, §9 #19-24 — the OG one above, a `https://localhost:3000`
 baked into the SSR bundle, the blast-radius undercount, and "silent demotion", which was asserted
 in two places and was false in both: the *joiner* has always been told; the *host* was not.
 
-That list now stands at **twenty-three**, and the record has been wrong about a completed item **six
-sessions running**. The pattern across the five found today is worth one sentence: every one was a
+That list now stands at **twenty-four**, and the record has been wrong about a completed item **six
+sessions running**. The pattern across the six found today is worth one sentence: every one was a
 claim about something being handled, written from one side of a boundary and never checked from the
 other. When the record says "X is handled", read the code that *consumes* X, not the code that
 emits it.
 
-Verification after everything: **469/469 unit · 50/50 harness · tsc 0 errors · `next build` exit 0.**
+Verification after everything: **469/469 unit · 50/50 harness · tsc 0 errors · `next build` exit 0**, plus the live-site checks in §0 — which is the pair that mattered, because §0 found what the first four could not.

@@ -1,15 +1,17 @@
 # NEEDS-JACKSON
 
 **The single queue.** Everything blocked on you, ordered by what unblocks the most.
-Rewritten 2026-07-30 (second pass, after the seat-cap decision). Machine labels: `[VPS]` = the
+Rewritten 2026-07-30 (third pass, after the line-budget decision). Machine labels: `[VPS]` = the
 Linux box, `[MACBOOK]` = your Mac.
 
 Nothing below is waiting on me. Where I could do the part that did not need you, I did it and said
 so.
 
-**Closed this pass by your decision:** the seat cap. `MAX_PLAYERS.ENSEMBLE` is **8**, all four
-follow-on items are done, and the playtest artefacts have been re-run at 8. Detail in
-`HANDOFF.md` §13.
+**Closed this pass by your decision:** the line budget (**42-52 / 3,000**) and the per-character
+instruction, applied without waiting for the playtest as you asked. Acceptance met — median 6,
+floor 4, zero invented characters. Detail in `HANDOFF.md` §14.
+
+**Closed on the previous pass:** the seat cap. `MAX_PLAYERS.ENSEMBLE` is **8**. `HANDOFF.md` §13.
 
 **Closed earlier today by your rulings:** Firestore (`DECISIONS.md` #7 — moot), copy voice (#10),
 the install prompt (Option A), the `TermsContent` refund line, the public-domain settings.
@@ -18,89 +20,139 @@ the install prompt (Option A), the `TermsContent` refund line, the public-domain
 
 ---
 
-## 0. ✅ DEPLOYED 2026-07-30 18:38 UTC — and it uncovered a route that has never worked
+## 0. ✅ DEPLOYED 2026-07-30 19:18 UTC — the line budget and the cast fix are live
 
-You ran `deploy.sh`. It reached the restart prompt and took its abort path again — stdin was not a
-TTY, so `read` got EOF and it correctly refused to assume consent. I checked the window first
-(**zero** established connections on :3100, `rooms.json` = `items: []`) and completed the restart.
+You approved 42-52 / 3,000 and ordered the per-character instruction applied without waiting for
+the playtest. All of it is in, all of it passes your acceptance bar, and it is on plotslop.com.
+
+`deploy.sh` took its abort path at the restart prompt again — stdin is not a TTY, `read` gets EOF,
+and it correctly refuses to assume consent. I checked the window first (**zero** connections on
+:3100, no persisted rooms) and completed the restart at 19:18:42.
 
 | Check | Result |
 |---|---|
 | Service | active, **0 errors** in the journal since restart |
-| apex / www / sang3r.com | 200 / 200 / **200** |
-| Seat cap **over TLS** | `ENSEMBLE:8` in all three cap-bearing chunks fetched from the live site; **zero** `ENSEMBLE:6` |
-| Old copy strings in the deployed JS | `3-6 performers` **0** · `1-6 Players` **0** · `?2:8` **0** |
-| Root OG card | 200, 135 KB PNG |
-| **Invite-link OG card** | **200, 118 KB PNG — it was returning 500 before this deploy** |
-| **Replay OG card** | 200, 117 KB PNG |
-| `/api/room-preview/TEST` via the public origin | `{"error":"Room not found"}` — the route `API_ORIGIN` now reaches |
+| apex / www / sang3r.com | 200 / 200 / 200 |
+| Deployed band and ceiling | `standard: { min: 42, max: 52 }`, `standard: 3000` in `/srv/plotslop` |
+| Deployed prompt | carries the closed cast list and both rules |
+| All 14 HTTP routes this touches | every one responds — 3 OG cards `200 image/png`, replay/clips/digest/host/join 200, share cards 200 or a clean 404, **no 500s** |
+| Live socket path | 9 sockets connected, room created, 8 seats joined, cards dealt |
 
-### 🔴 The invite-link preview has never worked, and I only found it by curling the live route
+### What I could NOT verify, and I am not going to pretend otherwise
 
-After restarting I curled the OG routes instead of assuming a rebuilt page renders. The invite card
-— the link you send people to join — returned **HTTP 500**:
+**A real generation on the deployed server.** I wrote a smoke test that drives nine sockets into a
+live room to force one, because "compiling is not responding" was this morning's lesson and the
+whole change lives in the socket path. It got as far as the credit gate and stopped:
 
 ```
-⨯ TypeError: Cannot read properties of undefined (reading 'toUpperCase')
+[WARN] Operation blocked: no hostUid for room Y42X
+       → "Authentication required to generate scripts."
 ```
 
-`params` is a **Promise** in Next 15+, and that route destructured it synchronously from the commit
-that introduced the invite feature. Every sibling route in the repo already awaits it. So anyone
-who has ever pasted a join link into iMessage or Discord got **no preview card at all**.
+That is `server/socket/helpers.ts:99` working as designed — credits are tied to a Clerk user, so
+**a host who is not signed in cannot generate a script in production.** Worth knowing before the
+playtest: you must be signed in to host. It is not a defect and I did not change it.
 
-**It also means the localhost fix I shipped an hour earlier was never reachable in that file** —
-the throw happens two lines above the fetch. Two defects stacked, the outer one hiding the inner.
-
-`app/replay/[code]/opengraph-image.tsx` had the identical bug with a quieter symptom: `undefined`
-inside a template literal, so it fetched `/api/game/undefined` and silently rendered the generic
-card. Both fixed and both verified above.
-
-**The lesson, and it is mine:** `tsc`, `jest`, `next build` and a grep of the shipped bundle were
-**all green** on a route that returns 500 to every caller. Compiling is not responding.
+So what I have instead, stated exactly: the deployed process **loaded** the new code (the import
+chain `server.ts → handlers → game.handler → scriptGeneration.service → scriptCast.service` is
+fully static, and the process booted clean and served a room), and the generation path itself ran
+end-to-end against the **real API** four times on this box through the production `generateScript`,
+plus through the full socket path with the mock in the harness. What is untested is that specific
+combination — the deployed process making a real call. One signed-in round of yours closes it.
 
 ---
 
-## 1. 🟠 The line budget — your rule fired, and here is the number you asked for
+## 1. 🟠 The line budget and the cast fix — DONE, and the cost is higher than I told you
 
-You said: *"average speaking lines per player at 8. If it's under 5, the fix is raising the 30-38
-line budget, NOT lowering the cap back. Recommend a number, don't apply it."*
+Your four asks, and where each landed:
 
-**It is 4.71. Under 5.** Measured from three fresh live-API generations at 8 traits
-(`PLAYTEST-2026-07-30.md` → *How much each player actually says*).
+| | | |
+|---|---|---|
+| 1 | Band 42-52, `max_tokens` 3,000 | ✅ applied |
+| 2 | No speaker below 3 | ✅ applied — **measured floor is 4** |
+| 3 | Exactly the seated cast, no invented characters | ✅ applied — **8/8/8 parts, zero invented** |
+| 4 | Re-run three generations, report median/range/speakers | ✅ below |
 
-**But the mean is the flattering number, and that is the finding.**
+### The measurement you asked for
+
+| | before | after |
+|---|---:|---:|
+| lines per script | 37.7 | **51.3** |
+| **median lines per seated player** | 0 | **6** |
+| range | 0-0 | **4-12** |
+| **distinct parts vs 8 seats** | 9 / 8 / 9 | **8 / 8 / 8** |
+| mean per seated player | 0.00 | 6.42 |
+
+**Your acceptance bar was median ≥ 5 and no speaker below 3. It is median 6, floor 4.**
+
+### 🔴 Why the "before" column says 0.00 and not the 4.71 I gave you this morning
+
+Because 4.71 was wrong, and the way it was wrong is the biggest thing in this session.
+
+`MobileTeleprompter.tsx:99` decides whose phone says YOUR TURN:
+
+```ts
+const isMyTurn = currentLine.speaker === myCharacter
+```
+
+`myCharacter` is the **verbatim text of the trait card** the player picked. And the prompt was
+handing the model a list of traits alongside an output format whose example read
+`"speaker": "Character Name"` — so it invented first names. Marcus. Denise. Paulo.
+
+**Zero of eight traits matched in any of three scripts.** Not usually, not mostly — zero, three
+times out of three. Every part in every script this product has ever generated belonged to nobody,
+and YOUR TURN has never once fired for any player.
+
+My 4.71 divided script lines by seat count, which quietly assumed a speaker is a player. The
+distribution *shape* I showed you was real and it produced the right recommendation. The number was
+0.00.
+
+Your instinct — *"at a full room that's a part nobody reads"* — was right about a ninth character
+and it turned out to be true of **all** of them.
+
+### What that forced
+
+"Exactly the seated cast" is now enforced as *the speaker field literally is the trait string*.
+The prompt hands over the cast list and demands it back character-for-character; a new
+`scriptCast.service.ts` snaps near-misses and logs anything it cannot bind. **One of the three
+re-runs needed 6 labels snapped** — the model varied punctuation on 6 lines — so the snapper is
+load-bearing, not belt-and-braces.
+
+SOLO is deliberately exempt: inventing its ensemble is the entire mode.
+
+### The cost, and I got the forecast wrong
 
 | | |
-|---|---|
-| Mean per seated player | **4.71** |
-| **Median across every speaker** | **3.5** |
-| Range | **2 - 12** |
-| Distinct speakers the model wrote | **9, 8, 9** — against 8 traits |
+|---|---:|
+| per round, before | $0.0400 |
+| **per round, now** | **$0.0550** |
+| I told you | ~$0.0437 (+15%) |
+| Actual | **+37.5%** |
 
-The model does not divide the budget evenly. One character took **11 of 38** lines in one script
-and **12 of 38** in another; three speakers got **2**. And two of the three scripts invented a
-**ninth** character, whose lines still have to be read by somebody in the room. So the realistic
-experience at 8 is not "everyone gets 4.7" — it is one person carrying the scene while two or three
-people hold two lines each and wait.
+Neither cause is the line budget. The cast list adds ~500 input tokens, and a ~50-character
+speaker label on every line adds ~7 output tokens per line. **I forecast the change I was
+recommending and not the change I was about to make.** $9 buys **~164 rounds** instead of ~225.
 
-### My recommendation: **42-52, and raise `max_tokens` to 3,000.**
+If that trade is not worth it to you, the lever is the label: short names would cost less and
+would break the binding again. I would keep the binding.
 
-Not 30-38 scaled by 8/6. The reasoning:
+### On quality — you asked to be told plainly
 
-| | |
-|---|---|
-| **Why the range widens rather than shifts** | A fixed narrow band is what forces the model to pay for a ninth character by starving three others. Giving it 10 lines of slack lets it seat everyone without cutting the busiest part. |
-| **52 lines ≈ 6.5 per seat, median ~5** | That puts the *median* above your threshold, not just the mean. Aiming the mean at 5 leaves half the room below it. |
-| **`max_tokens` 2,600 → 3,000** | Measured output is **39 tokens/line**. 52 lines ≈ 2,030 tokens — 78% of the current ceiling, which is too close for a model that occasionally writes long. 3,000 gives ~14% headroom and is still nowhere near a runaway. |
-| **Runtime cost: about 40 seconds** | A 38-line script is **1.8 minutes** of reading at 120 wpm (5.8 words/line, measured). At 52 lines it is **2.5 minutes**. Your "seventy lines is where a party stops being fun" line was about ~3.4 minutes; 52 is comfortably inside it. |
-| **Money cost: about 15%** | $0.0400 → **~$0.0437** per round. $9 buys ~206 rounds instead of ~225. |
+**The scenes did not get stiff, and they did not get evenly boring.** Line length held (6.29
+words/line, longest 14 — no essay drift), the traits drive the voices harder than before, and the
+lead survived: busiest seats took 12, 10 and 9 lines against a floor of 4. The prompt says the
+floor is a floor and says explicitly that it is *not* an instruction to divide lines evenly,
+because that was the failure mode you named.
 
-**The honest caveat:** raising the budget raises the floor, it does not fix the skew. If after a
-playtest the complaint is *"one person did all the talking"* rather than *"I didn't get to say
-much"*, the fix is in the prompt — an explicit per-character line-share instruction — not in the
-budget. I would rather you find that out with eight real people than have me guess at it now.
+Read script 3 in the packet ("Say Cheese and Nothing Else"). *Interprets all silence as agreement*
+gets a line that is just `...` followed by `Unanimous. We're staying.` That joke only exists
+because the trait is the character.
 
-**Not applied.** You asked for a number.
+**One visible cost, not fixed, because it is your call:** speaker labels on the teleprompter are
+now sentences rather than names. `MobileTeleprompter.tsx:226` renders them at 13px uppercase mono,
+centred — a 50-character trait wraps to two or three lines above every line of dialogue. Legible,
+and uglier than it was. Say the word and I will design a shorter display form that keeps the
+binding.
 
 ---
 
@@ -197,19 +249,32 @@ decision and it is yours.
 
 ## Not waiting on you
 
-**The seat cap, in full.** 8 seats, twelve hardcoded counts replaced with derivations across nine
-files, a new `lib/playerCounts.ts`, a spectator **Audience** group on the host's lobby, 19 new unit
-tests including a drift guard that reads real UI source, and two false greens in the harness turned
-into real assertions. `HANDOFF.md` §13.
+**The line budget and the cast fix, in full.** The band and ceiling; a closed cast list in the
+prompt with a 3-line floor stated as a floor rather than a ration; a new `scriptCast.service.ts`
+that snaps speaker labels onto the seated cast and logs what it cannot bind; both branches of
+`generateScript` now reading the length table instead of restating it; the playtest packet's
+distribution section rewritten to attribute against the cast list. 48 new unit tests — the suite
+is **517/517**, up from 469, and nothing had asserted the line budget or the binding before.
 
-**Six more corrections to the record**, §9 #19-24 — the OG one above, a `https://localhost:3000`
-baked into the SSR bundle, the blast-radius undercount, and "silent demotion", which was asserted
-in two places and was false in both: the *joiner* has always been told; the *host* was not.
+**Three more corrections to the record**, `HANDOFF.md` §9 #25-27:
 
-That list now stands at **twenty-four**, and the record has been wrong about a completed item **six
-sessions running**. The pattern across the six found today is worth one sentence: every one was a
-claim about something being handled, written from one side of a boundary and never checked from the
-other. When the record says "X is handled", read the code that *consumes* X, not the code that
-emits it.
+- **#25** — the 4.71 I gave you this morning was 0.00. The metric divided by a denominator it never
+  checked the numerator against.
+- **#26** — the playtest packet *praised* the bug in prose, calling invented speaker names "the
+  grammar doing what it was supposed to do", in the artefact you were meant to read before a
+  playtest.
+- **#27** — my +15% cost forecast came in at +37.5%, because I modelled the change I was
+  recommending and not the change I was about to make.
 
-Verification after everything: **469/469 unit · 50/50 harness · tsc 0 errors · `next build` exit 0**, plus the live-site checks in §0 — which is the pair that mattered, because §0 found what the first four could not.
+That list now stands at **twenty-seven**, and the record has been wrong about a completed item
+**seven sessions running**. Assume it will be again.
+
+The pattern in these three is one step past yesterday's. Those were claims checked from the wrong
+side of a boundary. These are three places where the instrument, the artefact and the forecast all
+**agreed with each other and were wrong together**, because they shared a premise none of them
+tested — that a `speaker` string means a person. Agreement between your own instruments is not
+corroboration when they share an assumption.
+
+Verification after everything: **517/517 unit · 50/50 harness · tsc 0 errors · `next build` exit 0
+· 14 live routes curled, no 500s · 4 real API generations**. And one thing deliberately left
+unverified and named as such in §0, rather than rounded up to "done".

@@ -153,18 +153,36 @@ restart, and the ValidationError that was there before is gone.
 
 ---
 
-## 🔴 THE ONE THING I NEED FROM YOU THAT IS NOT A CREDENTIAL
+## ✅ ANSWERED 2026-07-30 — was: "the one thing I need from you that is not a credential"
 
-### Read `AB-PACKET.md` and tell me a letter.
+### ~~Read `AB-PACKET.md` and tell me a letter.~~ Done. Nothing here is yours any more.
 
-It is on your Mac in `~/Downloads/PlotSlop-2026-07-30-night/`. Six pairs, twelve scripts, about
-ten minutes. Same setting and situation within each pair; the only thing that differs is the cast.
+**The packet has been read and the question is closed. The queue below is back to the three
+credentials.** Verdict: **do not reverse Chunk 4** — the twelve scripts score **3–3 by arm**, so
+the name arm does not win. Priced at zero, freeze holds, on merit rather than on cost.
 
-You said this is the only part you would do, and it is the only part that cannot be done without
-you — not because it needs your credentials, but because "is it funnier" has no instrument.
+> **⚠️ And do not act on any letter-based result, including one recorded earlier.** This ask was
+> defective when it was written. It said "tell me a letter", and the packet header claimed A was
+> the same arm in all six pairs. **It is not** — the assignment is a fixed 3/3 split re-drawn per
+> pair. A unanimous 6–0 preference for either arm therefore tallied **by letter** as 3 A / 3 B,
+> and the sentence that used to sit here called 3–3 "a real answer… it prices the whole question
+> at zero and the freeze holds by default". **The instrument returned "no difference" exactly
+> when the answer was "unanimous."** The data was always sound; the protocol was inverted.
+> Verdicts are collected **per pair** and tallied **by arm**, never by letter. Full write-up:
+> correction #28 in `HANDOFF.md` §9.
 
-**A 3–3 split is a real answer** and the most useful one available: it prices the whole question
-at zero and the freeze holds by default.
+**Two things came out of the packet that no instrument in the repo can see**, and they matter
+more than the verdict:
+
+- **Engines beat voices, on both sides of the experiment.** What predicted funniness in all six
+  pairs was not names vs traits — it was whether a card supplies a **mechanism** (a behaviour
+  generating escalating consequences: *solves it in the first minute and is ignored*) or only a
+  **voice** (a manner of speaking: *says "as I was saying" having said nothing*). The 251-entry
+  trait deck audits to **156 engines / 95 voices**. Reported only; **no rewrite — that is
+  post-playtest work and the freeze holds.**
+- **A live performance hazard in the name arm.** Pair 5 renders Scooby-Doo phonetically
+  (*"Rwo rakes? Rhat's rike, rour rakes!"*) across four lines a player must perform aloud, cold,
+  off a phone, in front of seven strangers. Every metric scores those lines as healthy.
 
 The analysis is in **`CHUNK4-REVERSAL-ANALYSIS.md`** — reversal cost layer by layer (~6 sessions,
 and only ~25 of the 553 tests are a write-off), the strongest argument against the design, and

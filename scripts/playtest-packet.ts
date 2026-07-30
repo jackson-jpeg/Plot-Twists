@@ -249,9 +249,9 @@ async function main() {
     if (real.players > MAX_PLAYERS.ENSEMBLE) {
       p('> ⚠️ **These scripts do not represent a scene this product can currently stage.**')
       p(`> \`MAX_PLAYERS.ENSEMBLE\` is **${MAX_PLAYERS.ENSEMBLE}**, so a live room can put at most`)
-      p(`> ${MAX_PLAYERS.ENSEMBLE} traits in front of the model: the 7th joiner is seated as a`)
-      p('> SPECTATOR and contributes nothing to the prompt. A larger cast at the same fixed 30-38')
-      p('> lines is a denser scene with fewer lines each, which is a different artefact — so read')
+      p(`> ${MAX_PLAYERS.ENSEMBLE} traits in front of the model: joiner ${MAX_PLAYERS.ENSEMBLE + 1} is seated as a`)
+      p('> SPECTATOR and contributes nothing to the prompt. A larger cast at the same fixed line')
+      p('> budget is a denser scene with fewer lines each, which is a different artefact — so read')
       p('> these for tone and for the IP screening result, not as a preview of a real round.')
       p('> **Re-run this script once the cap is settled** (`HANDOFF.md` §13).')
       p('>')
@@ -260,12 +260,20 @@ async function main() {
       p('> roughly 1% — the figure is sound even though the scripts are not.')
       p()
     }
-    p('**One thing to notice before you read them.** Nobody told the model to name the characters.')
-    p('It derived a speaker name from each trait on its own — Chewer, Dreamer, Prophet, Echo,')
-    p('Verbose, Secretary. That is the grammar doing what it was supposed to do: a trait is a')
-    p('performable handle, so the model can build a voice and a name out of it without a franchise')
-    p('to lean on. It could not have done that with "a grumpy swamp ogre" — it would just have')
-    p('written the ogre.')
+    p('**One thing to notice before you read them, and it replaces what this section used to say.**')
+    p('The earlier version of this packet admired the fact that nobody told the model to name the')
+    p('characters and it invented names anyway — Marcus, Denise, Paulo — calling that "the grammar')
+    p('doing what it was supposed to do". It was not. A player\'s identity in this product is the')
+    p('verbatim text of their trait card, and `MobileTeleprompter` decides whose phone says YOUR')
+    p('TURN by comparing that string to `line.speaker` with `===`. Invented names meant that')
+    p('comparison was false for every line of every script ever generated: **zero of eight traits')
+    p('matched in any of the three previous scripts.** Every part belonged to nobody, and no player')
+    p('has ever been told a line was theirs.')
+    p()
+    p('The prompt now hands the model the cast list and demands those exact strings back, and the')
+    p('server snaps near-misses and logs anything it cannot bind. That is why the speaker labels')
+    p('below are sentences rather than names. It reads oddly on the page and correctly in the room:')
+    p('the label above a line is the card in somebody\'s hand.')
     p()
 
     real.results.forEach((r, i) => {
@@ -291,50 +299,74 @@ async function main() {
 
     // ── how much each player actually says ──────────────────────────────────
     // Added 2026-07-30. The seat cap moved to 8 and the line budget did not, so the question that
-    // decides whether 8 is a good scene is not "how many lines" but "how many lines EACH". A mean
-    // alone hides the answer: the model reliably gives one character two to three times the
-    // floor, so the mean sits comfortably above what most of the room experiences.
+    // decides whether 8 is a good scene is not "how many lines" but "how many lines EACH".
+    //
+    // REWRITTEN THE SAME DAY, AND THE REWRITE IS THE POINT. The first version counted lines per
+    // DISTINCT SPEAKER and then divided the total by the seat count. Both halves quietly assumed
+    // that a speaker is a seated player. They were not: the model was returning invented first
+    // names ("Marcus", "Denise") while a player's identity is the verbatim text of their trait
+    // card, so zero lines in all three scripts belonged to anybody in the room, and this section
+    // reported a comfortable 4.71 while the true figure was 0.00 for every player.
+    //
+    // It now attributes lines to the CAST LIST — the same strings the teleprompter matches on —
+    // and counts anything else as unattributed. A part with nobody holding it is the finding, not
+    // a rounding note, so it can no longer hide inside a mean.
     {
       const perScript = real.results.map(r => {
         const spoken = r.script.lines.filter(l => l.speaker && !/stage|direction/i.test(l.speaker))
         const by = new Map<string, number>()
         spoken.forEach(l => by.set(l.speaker, (by.get(l.speaker) ?? 0) + 1))
-        const counts = [...by.values()].sort((a, b) => b - a)
-        return { spoken: spoken.length, speakers: by.size, counts }
+        const seated = r.traits.map(t => by.get(t) ?? 0)
+        const offCast = [...by.keys()].filter(s => !r.traits.includes(s))
+        return {
+          spoken: spoken.length,
+          speakers: by.size,
+          seated: [...seated].sort((a, b) => b - a),
+          orphanLines: offCast.reduce((a, s) => a + (by.get(s) ?? 0), 0),
+          orphanParts: offCast.length,
+        }
       })
-      const allCounts = perScript.flatMap(s => s.counts).sort((a, b) => a - b)
-      const median = allCounts.length % 2
-        ? allCounts[(allCounts.length - 1) / 2]
-        : (allCounts[allCounts.length / 2 - 1] + allCounts[allCounts.length / 2]) / 2
-      const totalSpoken = perScript.reduce((a, s) => a + s.spoken, 0)
-      const meanPerSeat = totalSpoken / perScript.length / real.players
+      const allSeated = perScript.flatMap(s => s.seated).sort((a, b) => a - b)
+      const median = allSeated.length % 2
+        ? allSeated[(allSeated.length - 1) / 2]
+        : (allSeated[allSeated.length / 2 - 1] + allSeated[allSeated.length / 2]) / 2
+      const meanPerSeat = allSeated.reduce((a, b) => a + b, 0) / allSeated.length
+      const totalOrphanParts = perScript.reduce((a, s) => a + s.orphanParts, 0)
+      const totalOrphanLines = perScript.reduce((a, s) => a + s.orphanLines, 0)
 
       p('---')
       p()
       p('## How much each player actually says')
       p()
-      p('| script | spoken lines | distinct speakers | busiest | quietest |')
-      p('|---|---:|---:|---:|---:|')
+      p('Attributed against the trait cards themselves — the same strings the teleprompter compares')
+      p('to decide whose phone says YOUR TURN. A line whose speaker is not one of them is counted as')
+      p('unread, because in the room that is what it is.')
+      p()
+      p('| script | spoken lines | parts | busiest seat | quietest seat | unread lines |')
+      p('|---|---:|---:|---:|---:|---:|')
       real.results.forEach((r, i) => {
         const s = perScript[i]
-        p(`| ${i + 1}. ${r.script.title} | ${s.spoken} | ${s.speakers} | ${s.counts[0]} | ${s.counts[s.counts.length - 1]} |`)
+        p(`| ${i + 1}. ${r.script.title} | ${s.spoken} | ${s.speakers} | ${s.seated[0]} | ` +
+          `${s.seated[s.seated.length - 1]} | ${s.orphanLines} |`)
       })
       p()
-      p(`**Mean per seated player: ${meanPerSeat.toFixed(2)} lines. Median across every speaker: ${median}.**`)
-      p(`Range ${allCounts[0]}-${allCounts[allCounts.length - 1]}.`)
+      p(`**Mean per seated player: ${meanPerSeat.toFixed(2)} lines. Median: ${median}. ` +
+        `Range ${allSeated[0]}-${allSeated[allSeated.length - 1]}.**`)
       p()
-      p('The gap between that mean and that median is the finding. The budget divides evenly on')
-      p('paper; the model does not divide it evenly in practice. Read the busiest and quietest')
-      p('columns rather than the mean when judging whether a cast this size has enough to do.')
-      p()
-      const extras = perScript.filter(s => s.speakers > real.players).length
-      if (extras > 0) {
-        p(`Note: ${extras} of ${perScript.length} scripts invented **more speakers than there are traits** ` +
-          `(${perScript.map(s => s.speakers).join(', ')} against ${real.players}).`)
-        p('Those extra parts still have to be read by someone, so the real per-player figure is')
-        p('slightly worse than the table suggests.')
-        p()
+      if (totalOrphanParts > 0) {
+        p(`🔴 **${totalOrphanParts} part(s) across ${perScript.length} scripts belong to nobody in the room**, ` +
+          `carrying ${totalOrphanLines} lines between them. Either somebody reads two parts or those`)
+        p('lines go unread. The prompt forbids this (comedyPrompts.ts RULE 1) and the server logs it')
+        p('at warn — if this number is not zero, read that log before the playtest.')
+      } else {
+        p(`✅ Every part in every script is one of the ${real.players} seated players. No invented`)
+        p('characters, nothing unread, nobody doubling up.')
       }
+      p()
+      p('Read the busiest and quietest columns rather than the mean. The scene is *supposed* to have')
+      p('a lead — a flat scene where everyone gets identical airtime is a worse scene — so the number')
+      p('that matters is the quietest seat, not the spread.')
+      p()
     }
 
     if (real.review) {

@@ -13,6 +13,7 @@ import {
   getMaxTokens,
   getLineCountRange
 } from './scriptCustomization.service'
+import { bindCastToScript, logCastBinding } from './scriptCast.service'
 import { logger } from '../../lib/logger'
 import { CONFIG } from '../utils/config'
 
@@ -56,15 +57,15 @@ export async function generateScript(
   // real-generation.ts was changed to send PRODUCTION_CUSTOMIZATION for exactly the reason the
   // rest of the comment gives; `.real-generation.json` records `{"scriptLength":"standard",…}`.
   // A comment whose entire job is to stop someone measuring the branch nobody plays had come to
-  // assert that the measurement script measures that branch. Both branches are capped, and both
-  // land on 30-38 / 2,600 for 'standard', so the numbers were never affected — only the guidance.
-  const lineRange = customization
-    ? getLineCountRange(customization.scriptLength)
-    : { min: 30, max: 38 }
-
-  const maxTokens = customization
-    ? getMaxTokens(customization.scriptLength)
-    : 2600
+  // assert that the measurement script measures that branch.
+  //
+  // AND THE TWO BRANCHES ARE NOW ONE NUMBER, 2026-07-30. They used to hold duplicate literals
+  // (`{min:30,max:38}` and `2600`) that HAPPENED to equal the 'standard' row of the table. A
+  // comment explaining that both branches must be kept in step is a worse guarantee than not
+  // having two things to keep in step, and the seat-cap pass earlier the same day was twelve
+  // instances of exactly that lesson. Raising the band now moves both branches by construction.
+  const lineRange = getLineCountRange(customization?.scriptLength ?? 'standard')
+  const maxTokens = getMaxTokens(customization?.scriptLength ?? 'standard')
 
   const systemPrompt = getSystemPrompt(isMature, previousScript)
   const modeInstructions = getModeInstructions(gameMode, characters, setting, circumstance)
@@ -270,8 +271,19 @@ Write the scene now. Make it genuinely funny - the kind of funny where people wi
       throw new Error(`Invalid script format: ${validationResult.error.message}`)
     }
 
-    onProgress?.({ phase: 'Script ready!', percent: 100 })
     const script = validationResult.data
+
+    // BIND THE WRITTEN PARTS TO THE PEOPLE IN THE ROOM.
+    //
+    // This is the step that makes `speaker` mean something. The teleprompter decides whose phone
+    // says YOUR TURN by comparing `line.speaker` to the player's trait card with `===`, and until
+    // 2026-07-30 the model was inventing first names, so that comparison was false for every line
+    // of every script ever generated. The prompt now demands the trait strings verbatim; this
+    // snaps the near-misses and reports anything it could not bind. See scriptCast.service.ts.
+    const binding = bindCastToScript(script, characters)
+    logCastBinding(binding, gameMode, numPlayers)
+
+    onProgress?.({ phase: 'Script ready!', percent: 100 })
     return script
   } catch (error) {
     logger.error('Error generating script:', error)

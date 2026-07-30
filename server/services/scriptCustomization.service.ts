@@ -16,10 +16,22 @@ import type {
 const SCRIPT_LENGTH_RANGES: Record<ScriptLength, { min: number, max: number }> = {
   lightning: { min: 8, max: 12 },
   quick: { min: 15, max: 25 },
-  // 2026-07-29, Jackson's ruling: 30-38, down from 30-40. Not a cost tweak — eight people
-  // performing seventy lines is where a party stops being fun, and it is better that they
-  // want another round than check out mid-scene. The cost saving is a side effect.
-  standard: { min: 30, max: 38 },
+  // 2026-07-30, Jackson's ruling: 42-52, up from 30-38 (which was itself his 2026-07-29 ruling,
+  // down from 30-40). BOTH MOVES ARE HIS AND THEY ARE NOT A CONTRADICTION — the first was decided
+  // against a six-seat room and the second against an eight-seat one. What changed underneath is
+  // the seat cap, not his opinion of how long a party will sit still.
+  //
+  // The trigger was a rule he set in advance: measure mean speaking lines per seated player at 8,
+  // and if it comes in under 5, raise the budget rather than lower the cap. It measured 4.71 across
+  // three live generations (mean), 3.5 (median), range 2-12. See PLAYTEST-2026-07-30.md.
+  //
+  // WHY THE BAND WIDENS RATHER THAN SHIFTS. A narrow band is what forced the model to pay for an
+  // extra character by starving three others; the skew, not the total, was the finding. Ten lines
+  // of slack lets it seat everyone without cutting the busiest part.
+  //
+  // The ceiling is still a ceiling: 52 lines is ~2.5 minutes of reading at 120 wpm and 5.8
+  // words/line (measured), against the ~3.4 minutes his "seventy lines" remark was about.
+  standard: { min: 42, max: 52 },
   epic: { min: 45, max: 60 }
 }
 
@@ -33,9 +45,13 @@ const SCRIPT_LENGTH_RANGES: Record<ScriptLength, { min: number, max: number }> =
  *
  * `standard` is derived from measurement rather than guessed. Three real 8-player ENSEMBLE
  * generations on 2026-07-29 produced 59/70/73 lines at 2267/2538/2704 output tokens — a stable
- * 36-38 tokens per line across all three. A 38-line script is therefore ~1,450 tokens including
- * title and synopsis, and 2,600 leaves ~80% headroom over the target while still cutting the
- * worst case roughly in half. See `.real-generation.json` and HANDOFF.md.
+ * 36-38 tokens per line across all three; the 2026-07-30 re-run at 38 lines measured 39.
+ *
+ * RAISED 2,600 -> 3,000 ON 2026-07-30, with the line band. This is arithmetic, not preference:
+ * at 39 tokens/line a 52-line script is ~2,030 tokens plus title and synopsis, which is 78% of
+ * 2,600. That is too close to a ceiling whose failure mode is not a short script but a PARSE
+ * FAILURE in front of a room full of people. 3,000 restores ~14% headroom over the worst case
+ * the band now permits.
  *
  * The others are left over-provisioned on purpose: they are unmeasured, and an over-provisioned
  * ceiling costs nothing while an under-provisioned one breaks the scene.
@@ -43,7 +59,7 @@ const SCRIPT_LENGTH_RANGES: Record<ScriptLength, { min: number, max: number }> =
 const SCRIPT_LENGTH_TOKENS: Record<ScriptLength, number> = {
   lightning: 2048,
   quick: 4096,
-  standard: 2600,
+  standard: 3000,
   epic: 12000
 }
 

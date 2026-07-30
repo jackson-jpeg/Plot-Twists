@@ -443,3 +443,44 @@ a number is recommended there, not applied.
 from `MAX_PLAYERS`/`MIN_PLAYERS`, never typed. The cap and the copy disagreed *in the deployed
 bundle* precisely because three people had typed three different numbers in three files, and
 changing the constant turned nothing red.
+
+---
+
+## #14 — Script length 42–52, and a script's cast is now the people in the room
+
+**Decided by Jackson, 2026-07-30 evening. Applied the same evening.**
+
+> *"Line budget: apply 42-52, max_tokens 2,600 → 3,000. Approved. Also apply the per-character
+> instruction now — don't wait for the playtest. The skew is already measured… I'd be spending
+> eight real people to confirm what three generations showed."*
+
+Three rulings in one, and the third is the reason the other two were worth making.
+
+**1. The band, 30–38 → 42–52.** This is not a reversal of #13's 30–38; that was decided against a
+six-seat room and this against an eight-seat one. What changed underneath is the seat cap. Jackson
+set the trigger in advance — *"if it's under 5, the fix is raising the line budget, NOT lowering
+the cap back"* — and it fired at a measured 4.71. The band **widens** rather than shifts because
+the skew, not the total, was the finding: a narrow band is what forced the model to pay for an
+extra character by starving three others.
+
+**2. A floor, not a ration.** *"No speaker below 3."* The prompt states the floor and states just
+as loudly that it is **not** an instruction to divide the lines evenly — Jackson named the failure
+mode in advance (*"scenes get stiff or evenly boring"*) and a model in a hurry reads "everyone gets
+at least 3" as "give everyone the same". Measured after: floor 4, busiest seat 12. The lead
+survived.
+
+**3. Exactly the seated cast — which turned out to be a bigger thing than it looked.** The ask was
+about a ninth invented part being a part nobody reads. The truth was that **no part was ever read
+by anybody**: `speaker` was an invented first name, a player's identity is their verbatim trait
+card, and the teleprompter binds the two with `===`. Zero matches in three of three scripts. So
+"exactly the seated cast" is now enforced as *the speaker field literally is the trait string*,
+which is what makes YOUR TURN work at all. See `HANDOFF.md` §14.
+
+**What it cost, and it is more than was forecast.** $0.0400 → **$0.0550** per round (+37.5%,
+against a forecast of +15%). Roughly half is the cast list on input and half is a 50-character
+speaker label on every output line. $9 buys ~164 rounds rather than ~225. Jackson approved a
+budget change and got a budget change plus a correctness change; the cost of the second was not in
+the number he approved, and he is told so plainly rather than having it averaged in.
+
+**The visible consequence, not changed:** speaker labels on the teleprompter are now sentences
+rather than names. Legible, uglier, and a design call that is his.

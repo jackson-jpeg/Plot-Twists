@@ -359,6 +359,15 @@ SCENE DYNAMICS (HEAD-TO-HEAD MODE)
 ═══════════════════════════════════════
 This is a COMPETITIVE scene. The two characters must have OPPOSING GOALS.
 
+THE CAST — TWO PEOPLE, AND THESE EXACT STRINGS ARE THEIR SPEAKER NAMES:
+  1. ${rawCharacters[0]}
+  2. ${rawCharacters[1]}
+
+Copy each into the "speaker" field CHARACTER FOR CHARACTER — no shortening, no renaming, no
+tidying. Each string is the card in one player's hand, and the app matches it exactly to tell
+that player it is their turn. There is no third character: no referee, no narrator, no voice on
+the phone. Both of these speak throughout; neither drops below 3 lines.
+
 STRUCTURE:
 - Character A (${characters[0]}) wants to achieve the Circumstance
 - Character B (${characters[1]}) wants to STOP them or do it their own way
@@ -392,17 +401,45 @@ This is a CHAOTIC GROUP scene. Structure it like a workplace mockumentary: one e
 straight man, a ring of people each pursuing an unrelated private agenda, and a plan that
 survives roughly forty seconds.
 
+═══════════════════════════════════════
+THE CAST — COMPLETE, CLOSED, AND THESE EXACT STRINGS ARE THE SPEAKER NAMES
+═══════════════════════════════════════
+${rawCharacters.length} real people are sitting in a room. Each one has been dealt exactly one of the
+following cards and is holding a phone that lights up when their part speaks. Their card reads:
+
+${rawCharacters.map((c, i) => `  ${i + 1}. ${c}`).join('\n')}
+
+Put each of those strings into the "speaker" field COPIED CHARACTER FOR CHARACTER. Do not shorten
+one, do not tidy its punctuation or capitalisation, do not turn it into a first name, do not add
+a title. The app matches this string against the card in that player's hand to tell them it is
+their turn — so a "speaker" that is not on the list above is a part with nobody holding it.
+
+Yes, these are sentences rather than names. Write them as speaker labels anyway. The comedy comes
+from a person visibly BEING that sentence, which is also how everyone else in the room knows who
+just spoke.
+
+TWO HARD RULES, AND THEY OUTRANK EVERY STYLE NOTE BELOW:
+
+RULE 1 — NOBODY ELSE EXISTS. Do not invent a ${rawCharacters.length + 1}th character. No waiter, no voice on the
+intercom, no narrator, no "EVERYONE", no offstage crowd, no one who walks in at the end. If the
+scene needs an interruption, one of the ${rawCharacters.length} above interrupts. Every invented part is either a
+part nobody in the room can read or one person forced to read two at once.
+
+RULE 2 — NOBODY SPEAKS FEWER THAN 3 TIMES. Every one of the ${rawCharacters.length} gets AT LEAST 3 lines. Not two.
+Not one. Before you close the array, count the lines per speaker and repair anyone under 3 — a
+reaction, an interjection, a one-word derail. Those are cheap, and they are usually the funniest
+thing on the page.
+This is not a plea for fairness and it is NOT an instruction to divide the lines evenly. The scene
+should still have a lead — one voice CAN carry more than the others, and a flat scene where all
+${rawCharacters.length} get identical airtime is a worse scene than a lopsided one. The floor is what is hard. Somebody
+who says two things across ten minutes has paid to watch other people play.
+
 ROLE ASSIGNMENTS — YOU CAST THIS, NOT US:
-Of these traits, choose the ONE best able to play the reasonable one, and cast the rest as chaos.
-
-${characters.map(c => `  - ${c}`).join('\n')}
-
-The straight man is not the first name on the list — it is whichever trait can plausibly hold a
+Of the ${rawCharacters.length} above, choose the ONE best able to play the reasonable one, and cast the rest as chaos.
+The straight man is not the first on the list — it is whichever trait can plausibly hold a
 clipboard and believe the plan will work. Some of these traits are constitutionally incapable of
 that, and a couple of them are almost defined by it. Pick on that basis, then commit: the one you
 chose tries to run the scene, everyone else derails it.
-
-CRITICAL: You have ${characters.length} characters. You MUST give every single one of them dialogue and a personality. Do not leave anyone out.
 
 STRUCTURE:
 - The straight man tries to execute the Circumstance logically
@@ -410,7 +447,8 @@ STRUCTURE:
 - The scene spirals as multiple characters talk over each other
 
 SPOTLIGHT MOMENTS:
-Each character MUST get at least one memorable moment to shine:
+Each character MUST get at least one memorable moment to shine — this is on top of the 3-line
+floor, not a substitute for it:
 - A ridiculous suggestion that somehow makes sense
 - A running gag or catchphrase
 - A reveal that changes the dynamic
@@ -426,6 +464,7 @@ AVOID:
 - Everyone agreeing too quickly
 - Characters standing around watching others perform
 - Letting any character disappear for too long (max 5-6 lines without speaking)
+- A speaker name that is not on the cast list above, for any reason at all
 `
   }
 
@@ -435,6 +474,16 @@ AVOID:
 SCENE DYNAMICS (SOLO MODE - SETTING-BASED ENSEMBLE)
 ═══════════════════════════════════════
 This is a SOLO performance. The human player will perform as ${characters[0]}.
+
+THE ONE SPEAKER NAME THAT IS NOT YOURS TO CHOOSE:
+The human's card reads exactly:
+
+  ${rawCharacters[0]}
+
+Every line the human speaks must carry that string, character for character, in the "speaker"
+field — no shortening, no renaming. The app matches it against the card in their hand to tell
+them it is their turn. The AI cast below is the opposite case: you invent those names, and they
+should be short and readable, because nobody is waiting for one of them to light up.
 
 YOUR MISSION: ${characters[0]} has wandered into the world of "${setting}".
 You must populate the scene with 2-3 characters who NATIVELY BELONG to that setting.

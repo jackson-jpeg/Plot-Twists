@@ -14,11 +14,13 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Branch** | `audit/2026-07-28-snapshot` (tracks `origin/`). **Not** `master`, **not** `v2`. |
 | **iOS repo** | `/root/PlotTwists-Native` — SwiftUI/tvOS. **Shelved, and re-scoped 2026-07-29:** when it returns it is a HOST/TV surface only, never required for players. See §6 and `DECISIONS.md` #12. |
 | **Harness** | **50/50** — `[VPS] cd /root/Plot-Twists && npx tsx scripts/harness/run.ts` (~2 min; it forces its own fake key and its own temp database, so pass neither). Two instrument bugs fixed 2026-07-29: the script-generation counter (§9 #9) and a **shared database that made it report 38/46 with eight fabricated failures** (§9 #12). If you see a number other than 50/50, read #12 before believing it. Denominator moved 49 → 50 on 2026-07-30 when the `playerCount` scenario gained a third check; the same pass turned two false greens in it into real assertions (§13). |
-| **Unit suite** | **469/469** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450 → 469: the source-audit suite grew 4 → 16 → 18 tests, and 2026-07-30 added 19 seat-cap tests (`playerCounts.test.ts`) where previously **nothing asserted `MAX_PLAYERS` at all**. Mostly coverage — but the drift guard in that file reads real UI source and is behaviour. See §3 before you relax. |
+| **Unit suite** | **517/517** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450 → 469 → 517: the source-audit suite grew 4 → 16 → 18 tests, 2026-07-30 added 19 seat-cap tests (`playerCounts.test.ts`) where previously **nothing asserted `MAX_PLAYERS` at all**, and the same evening added 48 for the line budget and the cast binding (§14) — where, again, nothing asserted either. Mostly coverage — but the two drift guards (real UI source in `playerCounts.test.ts`, real prompt text in `comedyPrompts.cast.test.ts`) are behaviour. See §3 before you relax. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
 | **plotslop.com** | 🟢 **LIVE 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Cert for both names expires **2026-10-27**. `plotslop.service` active and enabled on :3100 behind nginx TLS; apex and `www` return 200, HTTP 301s to HTTPS, sang3r.com verified unaffected. **Two clients have joined a room over the public endpoint.** Cutover step 6 (cgroup re-verification) is still Jackson's and still blocking — see §11. |
 | **Current chunk** | **Chunks 2, 3 and 5 complete.** **Chunk 5 (the rename) DONE 2026-07-30** — see §12. `DECISIONS.md` #7 and #10 are both closed. **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 blocked on Jackson. |
 | **Deployed** | ✅ **LIVE as of 2026-07-30 18:38 UTC** — the seat-cap pass, on top of the 17:25 Chunk 5 deploy. Verified after the restart: apex/www 200, sang3r.com 200, zero errors in the journal, `ENSEMBLE:8` present in all three cap-bearing chunks **fetched over TLS** with zero `ENSEMBLE:6`, and all three OG image routes returning `200 image/png` — **including the invite card, which had been returning 500 since it was built** (§9 #24). |
+| **Script length** | **42-52 lines, `max_tokens` 3,000** (`server/services/scriptCustomization.service.ts`). Jackson's ruling 2026-07-30, replacing 30-38 / 2,600 — triggered by his own rule that mean speaking lines per seated player at 8 must not fall under 5. Both branches of `generateScript` now READ that table rather than restating it. See §14. |
+| **Cast binding** | **A script's `speaker` field is now the player's trait card, verbatim.** It was invented first names until 2026-07-30, which meant no line in any script had ever belonged to anybody in the room. `server/services/scriptCast.service.ts` enforces and measures it. **Read §14 before touching `comedyPrompts.ts`.** |
 | **Seating** | **ENSEMBLE seats 8 performers** (`server/utils/constants.ts`). Raised from 6 by Jackson's decision on 2026-07-30; the scope-freeze gate of "eight people who are not my friends" is now seatable. Every seat count in the UI derives from the constant via `lib/playerCounts.ts` — **do not restate one as a literal**, there is a test that fails if you do. See §13. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
@@ -421,7 +423,7 @@ be named.
 
 ---
 
-## 9. Corrections to the record found on 2026-07-29 and 2026-07-30 — twenty-four of them
+## 9. Corrections to the record found on 2026-07-29 and 2026-07-30 — twenty-seven of them
 
 **Eighteen now, across five passes** (13–18 are 2026-07-30 and are at the end of this section),
 and they are listed because the pattern matters more than any
@@ -725,6 +727,41 @@ but never that it ran.
 
 ---
 
+### #25 — "4.71 mean lines per player" was 0.00, and the instrument assumed the bug away
+
+Reported this morning, in `NEEDS-JACKSON.md` item 1 and §13, as the measured answer to Jackson's
+threshold question. It was computed as `total script lines / seat count`, which quietly assumes
+that a speaker in the script is a player in the room. **No speaker was.** The model was returning
+invented first names and a player's identity is their verbatim trait card, so the true figure was
+**0.00 lines per player in all three scripts** — 113 of 113 lines belonged to nobody.
+
+The distribution *shape* I reported was real and the recommendation it produced was right, so the
+conclusion survived. The number did not. A metric that divides by a denominator it never checks
+the numerator against is not a measurement. See §14.
+
+### #26 — the playtest packet praised the defect in prose
+
+`scripts/playtest-packet.ts` told Jackson, admiringly: *"Nobody told the model to name the
+characters. It derived a speaker name from each trait on its own… That is the grammar doing what
+it was supposed to do."* That paragraph is a description of the bug in #25, written as a design
+win, printed in the artefact he was asked to read before a playtest. Rewritten.
+
+### #27 — the +15% cost forecast was wrong by more than a factor of two
+
+`NEEDS-JACKSON.md` item 1 projected `$0.0400` → `~$0.0437`. Measured after the change: **$0.0550,
++37.5%.** The forecast modelled the line-budget change only. It did not model the cost of the
+*other* change in the same recommendation — a ~500-token cast list on input, and a ~50-character
+speaker label on the output of every line (+7 tokens/line). **I forecast the change I was
+recommending and not the change I was about to make.**
+
+*The pattern across 25-27 is one step further than 19-24. Those were claims checked from the wrong
+side of a boundary. These are three places where the instrument, the artefact, and the forecast
+all agreed with each other and all three were wrong together, because they shared an assumption
+none of them tested — that a `speaker` string means a person. **Agreement between your own
+instruments is not corroboration when they share a premise.***
+
+---
+
 ## 11. plotslop.com — LIVE as of 2026-07-29
 
 Jackson pointed DNS himself on 2026-07-29 and authorised the certificate step; everything past it
@@ -935,3 +972,109 @@ number, not a change.**
 Against `$0.0407` at the previous measurement — statistically the same, which is the expected
 result: the prompt is fixed-size and the line budget is a constant, so cast size barely moves it.
 $9 of credit still buys ~225 rounds.
+
+**Superseded 2026-07-30 evening.** Jackson approved the budget change and ordered the
+per-character instruction applied without waiting for a playtest. Everything above about
+distribution is still the correct *shape* of the finding, but the per-player numbers in it are
+wrong for a reason nobody had checked — see §14.
+
+---
+
+## 14. Line budget, cast binding, and a part that belonged to nobody — 2026-07-30 evening
+
+### What Jackson asked for
+
+> *"Line budget: apply 42-52, max_tokens 2,600 → 3,000. Approved. Also apply the per-character
+> instruction now — don't wait for the playtest. [1] A minimum line-share per seated character. No
+> speaker below 3. [2] Exactly the seated cast, no invented characters. Then re-run three
+> generations and report: median, range, and speaker count vs cast size. Acceptance is median >= 5
+> and no speaker below 3."*
+
+**All of it is applied and all of it passes.** Acceptance met: **median 6, minimum 4, zero
+invented characters in three of three scripts.**
+
+### 🔴 The thing found on the way, which is bigger than the thing asked for
+
+`components/MobileTeleprompter.tsx:99` decides whose phone says YOUR TURN:
+
+```ts
+const isMyTurn = currentLine.speaker === myCharacter
+```
+
+`myCharacter` is set in `stores/subscriptions.ts:159` to `selection.character.name` — **the
+verbatim text of the trait card the player picked**, e.g. `Insists nothing is wrong at increasing
+volume`. And the prompt was handing the model a list of traits with an output format whose example
+read `"speaker": "Character Name"`, so the model did the sensible thing and invented first names.
+
+Measured across the three live generations in the previous `.real-generation.json`: speakers were
+`Marcus`, `Denise`, `New Riley`, `Paulo`, `Jen`, … and **zero of eight traits matched in any of the
+three scripts.** Not "sometimes" — zero, three times out of three.
+
+**So every part in every script ever generated belonged to nobody, and YOUR TURN has never fired
+for any player since the teleprompter was written.** There is no other mechanism that binds a
+written part to a person: the host screen prints `line.speaker` raw, and nothing else compares it
+to anything.
+
+This is also why §13's "4.71 mean lines per player" was wrong. That number divided script lines by
+seat count, which silently assumed a speaker is a seated player. Attributed properly against the
+cast list, **the true figure was 0.00 for every player in all three scripts.**
+
+### What changed
+
+| File | Change |
+|---|---|
+| `server/services/scriptCustomization.service.ts` | `standard` band 30-38 → **42-52**; ceiling 2,600 → **3,000** |
+| `server/services/scriptGeneration.service.ts` | Both branches now READ that table instead of restating it as literals; calls the cast binder after validation |
+| `server/services/prompts/comedyPrompts.ts` | ENSEMBLE gets a closed CAST LIST carrying the trait strings verbatim, RULE 1 (nobody else exists) and RULE 2 (nobody under 3 lines). HEAD_TO_HEAD gets the same verbatim rule for two. SOLO gets it for the human only |
+| `server/services/scriptCast.service.ts` | **NEW.** Snaps near-miss speaker labels onto the cast, reports off-cast parts, silent players and per-seat line counts |
+| `scripts/playtest-packet.ts` | The distribution section now attributes against the cast list rather than counting distinct speakers |
+
+**SOLO is deliberately exempt from "no invented characters".** The entire mode is one human against
+2-3 characters the model creates for the setting. `logCastBinding` logs off-cast speakers at
+`debug` for SOLO and at `warn` everywhere else. If you ever "fix" that inconsistency you will
+break SOLO.
+
+### The snapper is not decoration
+
+Script 2 of the re-run needed **6 speaker labels snapped** onto the cast — the model varied
+punctuation or casing on 6 lines. Without the snapper those 6 lines would have failed `===` and
+gone unassigned, in a run that otherwise looks perfect. A prompt instruction is not a guarantee;
+this is the part that makes the binding robust rather than lucky.
+
+### Measured, three live generations, 8 seats
+
+| | before | after |
+|---|---:|---:|
+| lines per script | 37.7 | **51.3** |
+| mean per seated player | **0.00** | **6.42** |
+| median | 0 | **6** |
+| range | 0-0 | **4-12** |
+| distinct parts vs 8 seats | 9 / 8 / 9 | **8 / 8 / 8** |
+| lines belonging to nobody | **113 of 113** | **0** |
+| reading time at 120 wpm | 1.8 min | **2.7 min** |
+| **cost per round** | **$0.0400** | **$0.0550** |
+
+### The cost went up more than was forecast, and the forecast was mine
+
+`NEEDS-JACKSON.md` projected ~15% (`$0.0400` → `~$0.0437`). It is **+37.5%**. Two causes, neither
+of them the line budget:
+
+1. **Input tokens 4,377 → 4,908.** The cast-list block is ~500 tokens of prompt.
+2. **Output tokens per line 39.2 → 46.3.** Every line now carries a ~50-character speaker label
+   instead of a 6-character first name. That is ~11 extra output tokens on every single line.
+
+Both are the cast-binding change, not the budget. Forecasting only the output growth from
+38 → 52 lines was the error: the budget change alone would have landed near the 15% predicted.
+$9 of credit now buys **~164 rounds** rather than ~225.
+
+### Quality — read this before assuming the prompt change was free
+
+Jackson asked to be told plainly if the scenes got stiff or evenly boring. **They did not.** Line
+length held (6.29 words/line, longest 14, no essay-mode drift), the traits drive the voices harder
+than before, and the scenes still have a lead — the busiest seat took 12, 10 and 9 lines. The
+floor is what moved, not the shape.
+
+The one visible cost is cosmetic and it is real: **speaker labels on the teleprompter are now
+sentences, not names.** `MobileTeleprompter.tsx:226-236` renders them at 13px uppercase mono,
+centred, and a 50-character trait wraps to two or three lines above every single line of dialogue.
+It is legible and it is uglier. Not changed — it is a design call and it is Jackson's.

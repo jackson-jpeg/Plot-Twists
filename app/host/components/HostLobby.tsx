@@ -18,6 +18,7 @@ import { useConnectionStore } from '@/stores/connectionStore'
 import { useSelectionStore } from '@/stores/selectionStore'
 import { socketManager } from '@/lib/socketManager'
 import { SITE_DOMAIN } from '@/lib/siteUrl'
+import { MAX_PLAYERS, MIN_PLAYERS, performersLabel } from '@/lib/playerCounts'
 
 export interface HostLobbyProps {
   settings: RoomSettings
@@ -106,22 +107,21 @@ export function HostLobby({
   const gameSetupMode = useSelectionStore((s) => s.gameSetupMode)
 
   const joinUrl = typeof window !== 'undefined' ? `${window.location.origin}/join/invite/${roomCode}` : ''
-  const nonHostPlayers = players.filter(p => !p.isHost)
+  // The cast is PLAYER-role only. This used to be every non-host, which counted SPECTATORS as
+  // performers: past the seat cap a joiner is demoted to SPECTATOR and their selections never
+  // become traits (game.helpers.ts), so a host reading "Cast (9)" was being shown two people who
+  // would not appear in the script. The audience is now counted and named separately.
+  const nonHostPlayers = players.filter(p => !p.isHost && p.role !== 'SPECTATOR')
+  const spectators = players.filter(p => !p.isHost && p.role === 'SPECTATOR')
+
+  const minPlayers = MIN_PLAYERS[settings.gameMode]
+  const maxPlayers = MAX_PLAYERS[settings.gameMode]
 
   const canStartGame =
-    settings.gameMode === 'SOLO' ||
-    (settings.gameMode === 'HEAD_TO_HEAD' && nonHostPlayers.length === 2) ||
-    (settings.gameMode === 'ENSEMBLE' && nonHostPlayers.length >= 3)
-
-  const getMinPlayers = () => {
-    if (settings.gameMode === 'HEAD_TO_HEAD') return 2
-    if (settings.gameMode === 'ENSEMBLE') return 3
-    return 0
-  }
+    settings.gameMode === 'SOLO' || nonHostPlayers.length >= minPlayers
 
   const getWaitingText = () => {
-    const minPlayers = getMinPlayers()
-    if (minPlayers === 0) return ''
+    if (settings.gameMode === 'SOLO') return ''
     const needed = minPlayers - nonHostPlayers.length
     if (needed <= 0) return ''
     return `Waiting for ${needed} more player${needed !== 1 ? 's' : ''}...`
@@ -129,8 +129,7 @@ export function HostLobby({
 
   const getNeededText = () => {
     if (settings.gameMode === 'SOLO') return ''
-    const min = getMinPlayers()
-    return `${nonHostPlayers.length} of ${min} needed`
+    return `${nonHostPlayers.length} of ${minPlayers} needed`
   }
 
   // --- Clapperboard header ---
@@ -336,7 +335,7 @@ export function HostLobby({
           fontSize: 'var(--text-caption)',
           color: 'var(--color-text-tertiary)',
         }}>
-          Max {settings.gameMode === 'HEAD_TO_HEAD' ? 2 : 8}
+          Max {maxPlayers}
         </p>
       </div>
 
@@ -416,6 +415,55 @@ export function HostLobby({
           </motion.div>
         )}
       </div>
+
+      {/* Audience.
+          Everyone past the seat cap joins as a SPECTATOR rather than being turned away. The
+          joiner has always been told — their own lobby says "Spectator Mode" — but the HOST was
+          not, because the cast list counted spectators as performers. At a party the host is the
+          one being asked "am I in this?", so the answer has to be on the host's screen too. */}
+      {spectators.length > 0 && (
+        <motion.div
+          className="mt-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <p style={{
+            fontSize: 'var(--text-label)',
+            fontWeight: 600,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase' as const,
+            color: 'var(--color-text-tertiary)',
+            marginBottom: '8px',
+          }}>
+            Audience ({spectators.length})
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {spectators.map((player) => (
+              <div
+                key={player.publicId}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 14px',
+                  borderRadius: '999px',
+                  background: 'transparent',
+                  border: '1px dashed rgba(255,255,255,0.14)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'var(--color-text-tertiary)',
+                }}
+              >
+                <PlayerConnectionDot connected={player.connected} />
+                {player.nickname}
+              </div>
+            ))}
+          </div>
+          <p className="mt-2" style={{ fontSize: 'var(--text-caption)', color: 'var(--color-text-tertiary)' }}>
+            The cast is full at {maxPlayers}, so they watch and vote instead of performing.
+          </p>
+        </motion.div>
+      )}
 
       {/* Needed count */}
       {!canStartGame && getNeededText() && (
@@ -500,9 +548,9 @@ export function HostLobby({
                 <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '12px' }}>Game Mode</h3>
                 <div className="grid gap-3 md:grid-cols-3">
                   {([
-                    { mode: 'SOLO' as const, label: 'Solo', desc: '1 player vs AI', sublabel: '' },
-                    { mode: 'HEAD_TO_HEAD' as const, label: 'Head-to-Head', desc: '2 performers + host', sublabel: 'Host runs the teleprompter' },
-                    { mode: 'ENSEMBLE' as const, label: 'Ensemble', desc: '3-6 performers + host', sublabel: 'Host runs the teleprompter' },
+                    { mode: 'SOLO' as const, label: 'Solo', desc: `${performersLabel('SOLO')} vs AI`, sublabel: '' },
+                    { mode: 'HEAD_TO_HEAD' as const, label: 'Head-to-Head', desc: `${performersLabel('HEAD_TO_HEAD')} + host`, sublabel: 'Host runs the teleprompter' },
+                    { mode: 'ENSEMBLE' as const, label: 'Ensemble', desc: `${performersLabel('ENSEMBLE')} + host`, sublabel: 'Host runs the teleprompter' },
                   ]).map(({ mode, label, desc, sublabel }) => (
                     <motion.button
                       key={mode}

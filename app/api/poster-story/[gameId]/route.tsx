@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { SITE_DOMAIN } from '@/lib/siteUrl'
+import { SITE_DOMAIN, API_ORIGIN } from '@/lib/siteUrl'
 
 export const runtime = 'edge'
 
@@ -10,11 +10,10 @@ export async function GET(
   const { gameId } = await params
   const url = new URL(req.url)
   const format = url.searchParams.get('format') || 'story'
-  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'
 
   try {
     // The /api/game/:id endpoint accepts both shareCode and gameId
-    const res = await fetch(`${wsUrl}/api/game/${gameId}`, { cache: 'no-store' })
+    const res = await fetch(`${API_ORIGIN}/api/game/${gameId}`, { cache: 'no-store' })
     if (!res.ok) return new Response('Not found', { status: 404 })
     const game = await res.json()
 

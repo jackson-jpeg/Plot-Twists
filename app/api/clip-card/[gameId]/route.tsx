@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { SITE_DOMAIN } from '@/lib/siteUrl'
+import { SITE_DOMAIN, API_ORIGIN } from '@/lib/siteUrl'
 
 export const runtime = 'edge'
 
@@ -10,7 +10,6 @@ export async function GET(
   const { gameId } = await params
   const { searchParams } = new URL(request.url)
   const playerId = searchParams.get('player')
-  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
   // Fetch game data via internal API
   let title = 'PlotSlop'
@@ -20,7 +19,7 @@ export async function GET(
   let winner: { nickname: string; character: string; isWinner: boolean } | undefined
 
   try {
-    const res = await fetch(`${wsUrl}/api/game/${gameId}`, { cache: 'no-store' })
+    const res = await fetch(`${API_ORIGIN}/api/game/${gameId}`, { cache: 'no-store' })
     if (res.ok) {
       const game = await res.json()
       title = game.title || title

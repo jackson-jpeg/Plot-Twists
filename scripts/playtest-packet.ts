@@ -1,7 +1,7 @@
 /**
  * Playtest packet generator — the one Chunk 4 done-criterion automation cannot close.
  *
- *   [VPS] npx tsx scripts/playtest-packet.ts > PLAYTEST-2026-07-29.md
+ *   [VPS] npx tsx scripts/playtest-packet.ts > PLAYTEST-2026-07-30.md
  *
  * The tests prove the deck is LEGAL. Nothing proves it is FUNNY, and that is the whole risk of
  * this rewrite: the previous version of this catalog was funny BECAUSE it was still the protected
@@ -72,15 +72,19 @@ async function main() {
 
   p('# PlotSlop — playtest packet')
   p()
-  p('**Generated 2026-07-29, second pass, from the restructured catalog.**')
+  // The date is a literal on purpose — it names the pass, not the moment of generation, and the
+  // packet is regenerated more often than the pass changes. Bump it when the DATA changes, which
+  // is what happened on 2026-07-30: the scripts below were re-run against the live API at the
+  // raised seat cap, so they are no longer measuring a cast the product cannot stage.
+  p('**Generated 2026-07-30 — third pass. Scripts re-run at the raised seat cap of 8.**')
   p()
   p('Read this to answer the one question the test suite cannot: *is it still funny?*')
   p()
-  p('**This is a different deck from the packet you read this morning.** That one was a rename of')
-  p('the old catalog and it read well because every card was still a protected character with the')
-  p('name filed off. This one changes the card GRAMMAR: the character slot is a trait or a flaw,')
-  p('and the specificity moved into setting and situation. The comedy now has to come from the')
-  p('collision of a trait with a predicament, not from recognition.')
+  p('**The deck itself is the one from the 2026-07-29 restructure**, unchanged: the character slot')
+  p('is a trait or a flaw, and the specificity moved into setting and situation. The comedy has to')
+  p('come from the collision of a trait with a predicament, not from recognition. What changed on')
+  p('this pass is that `MAX_PLAYERS.ENSEMBLE` went from 6 to 8, so the eight-trait scripts below')
+  p('finally describe a scene a real room can seat — the previous pass measured one it could not.')
   p()
   p('Everything below comes from the real dealing path (`cardCatalog.service.dealCards`).')
   p()
@@ -284,6 +288,54 @@ async function main() {
       p('```')
       p()
     })
+
+    // ── how much each player actually says ──────────────────────────────────
+    // Added 2026-07-30. The seat cap moved to 8 and the line budget did not, so the question that
+    // decides whether 8 is a good scene is not "how many lines" but "how many lines EACH". A mean
+    // alone hides the answer: the model reliably gives one character two to three times the
+    // floor, so the mean sits comfortably above what most of the room experiences.
+    {
+      const perScript = real.results.map(r => {
+        const spoken = r.script.lines.filter(l => l.speaker && !/stage|direction/i.test(l.speaker))
+        const by = new Map<string, number>()
+        spoken.forEach(l => by.set(l.speaker, (by.get(l.speaker) ?? 0) + 1))
+        const counts = [...by.values()].sort((a, b) => b - a)
+        return { spoken: spoken.length, speakers: by.size, counts }
+      })
+      const allCounts = perScript.flatMap(s => s.counts).sort((a, b) => a - b)
+      const median = allCounts.length % 2
+        ? allCounts[(allCounts.length - 1) / 2]
+        : (allCounts[allCounts.length / 2 - 1] + allCounts[allCounts.length / 2]) / 2
+      const totalSpoken = perScript.reduce((a, s) => a + s.spoken, 0)
+      const meanPerSeat = totalSpoken / perScript.length / real.players
+
+      p('---')
+      p()
+      p('## How much each player actually says')
+      p()
+      p('| script | spoken lines | distinct speakers | busiest | quietest |')
+      p('|---|---:|---:|---:|---:|')
+      real.results.forEach((r, i) => {
+        const s = perScript[i]
+        p(`| ${i + 1}. ${r.script.title} | ${s.spoken} | ${s.speakers} | ${s.counts[0]} | ${s.counts[s.counts.length - 1]} |`)
+      })
+      p()
+      p(`**Mean per seated player: ${meanPerSeat.toFixed(2)} lines. Median across every speaker: ${median}.**`)
+      p(`Range ${allCounts[0]}-${allCounts[allCounts.length - 1]}.`)
+      p()
+      p('The gap between that mean and that median is the finding. The budget divides evenly on')
+      p('paper; the model does not divide it evenly in practice. Read the busiest and quietest')
+      p('columns rather than the mean when judging whether a cast this size has enough to do.')
+      p()
+      const extras = perScript.filter(s => s.speakers > real.players).length
+      if (extras > 0) {
+        p(`Note: ${extras} of ${perScript.length} scripts invented **more speakers than there are traits** ` +
+          `(${perScript.map(s => s.speakers).join(', ')} against ${real.players}).`)
+        p('Those extra parts still have to be read by someone, so the real per-player figure is')
+        p('slightly worse than the table suggests.')
+        p()
+      }
+    }
 
     if (real.review) {
       p("### The director's review that follows a round")

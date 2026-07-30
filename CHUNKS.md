@@ -227,7 +227,7 @@ Screen generated content for named real people and owned franchises before `scri
 
 Layers 2 and 3 landed and hold. **Layer 1 did not.** All 252 characters remain individually
 identifiable descriptions of the same protected characters, and the catalog kept its
-franchise-by-franchise ordering. Found by generating `PLAYTEST-2026-07-29.md` and reading 25
+franchise-by-franchise ordering. Found by generating `PLAYTEST-2026-07-30.md` and reading 25
 real dealt hands — nothing automated could have found it, because layer 3 is a fixed denylist
 of NAMES and returns clean on described-but-unnamed characters permanently.
 

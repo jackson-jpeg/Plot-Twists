@@ -404,3 +404,42 @@ Asked for, and done. Three categories.
 - **Monetisation centre of gravity moves to Stripe.** Apple IAP (`server/services/apple.service.ts`, `server/routes/apple.ts`, the StoreKit half of `lib/purchases.ts`) stops being the primary path. It is not dead — a host app can still sell — but it is no longer the one that has to work. Do not delete it; do stop treating it as the default.
 
 **This decision does not unblock the deploy.** The cutover is still waiting on the three secrets, DNS, and the Firestore answer.
+
+---
+
+## ✅ 13. The ENSEMBLE seat cap — RAISED TO 8, 2026-07-30
+
+**Jackson's ruling, verbatim:** *"SEAT CAP: raise ENSEMBLE to 8."*
+
+**The question.** `MAX_PLAYERS.ENSEMBLE` was **6**, while the scope freeze lifts only when he has
+*"played this with eight people who are not my friends."* The gate and the product disagreed, and
+nothing in any document had connected them. Worse, the live host lobby rendered **`Max 8`** on the
+same screen as a mode card reading **`3-6 performers`** — so the failure mode was concrete: read
+"Max 8", invite eight, watch two of them get seated as spectators.
+
+**Why 8 and not "change the freeze wording to 6".** Both were live options and the choice was his.
+The case for 8: nothing mechanical resisted it — the floor, the line budget, the token ceiling,
+card dealing, voting, results and progression were all confirmed untouched *before* the change —
+and the UI already claimed it, so 8 was the number a host had been promised. The case for 6 was
+that a 38-line script split eight ways gives each player under five lines. He chose 8 and set the
+follow-up rule himself: *if the measurement comes in under 5 lines per player, raise the line
+budget rather than lower the cap back.* It came in at **4.71**. See `NEEDS-JACKSON.md` item 1 —
+a number is recommended there, not applied.
+
+**What the decision obligated, all done in the same pass:**
+
+1. **One definition.** `MAX_PLAYERS` and a new `MIN_PLAYERS` in `server/utils/constants.ts`;
+   `lib/playerCounts.ts` derives every label. `matchmaking.service.ts` had kept its own private
+   copy of the floor — now an alias.
+2. **No literals anywhere.** Twelve sites across nine files. Three were not strings.
+3. **A test that fails when the cap moves**, where previously nothing asserted it at all — plus a
+   drift guard that reads the real UI source and fails if a bare count reappears. Verified by
+   injecting the exact string that shipped (`'1-6 Players'`) and confirming it goes red.
+4. **Spectators named rather than implied.** The overflow joiner was always told; the **host** was
+   not — the cast list counted spectators as performers. There is now an **Audience (N)** group.
+5. **Both playtest artefacts re-run at 8** against the live API.
+
+**The durable rule this leaves behind:** a seat count that appears in user-facing copy is derived
+from `MAX_PLAYERS`/`MIN_PLAYERS`, never typed. The cap and the copy disagreed *in the deployed
+bundle* precisely because three people had typed three different numbers in three files, and
+changing the constant turned nothing red.

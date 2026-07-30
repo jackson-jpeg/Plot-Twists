@@ -15,6 +15,7 @@ import { isBetaFeatureEnabled } from '@/lib/betaFeatures'
 import type { Socket } from 'socket.io-client'
 import type { ClientToServerEvents, ServerToClientEvents } from '@/lib/types'
 import { setReconnectToken } from '@/lib/playerSession'
+import { performersLabel } from '@/lib/playerCounts'
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -708,7 +709,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                       <div className="text-[13px] font-bold" style={{ fontFamily: 'var(--font-display)', color: 'var(--color-text-primary)' }}>
                         Ensemble
                       </div>
-                      <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>3-6 performers</div>
+                      <div className="text-[11px] mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>{performersLabel('ENSEMBLE')}</div>
                       {isMatching && (
                         <motion.div
                           className="absolute inset-0 rounded-xl flex items-center justify-center"

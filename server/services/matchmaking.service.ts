@@ -12,18 +12,16 @@ import type {
   ServerToClientEvents,
 } from '../../lib/types'
 import * as roomService from './room.service'
-import { MAX_PLAYERS } from '../utils/constants'
+import { MAX_PLAYERS, MIN_PLAYERS } from '../utils/constants'
 import { logger } from '../../lib/logger'
 
 // Socket.IO room name for public room watchers
 const PUBLIC_ROOMS_CHANNEL = 'public_rooms_watchers'
 
-// Auto-start thresholds per mode
-const AUTO_START_THRESHOLD: Record<GameMode, number> = {
-  SOLO: 1,
-  HEAD_TO_HEAD: 2,
-  ENSEMBLE: 3,
-}
+// Auto-start thresholds per mode. This used to be a second, local copy of the floor; it is now an
+// alias for the shared one, so a change to the seat range cannot land in the lobby and silently
+// miss matchmaking.
+const AUTO_START_THRESHOLD: Record<GameMode, number> = MIN_PLAYERS
 
 // Active countdowns
 const activeCountdowns = new Map<string, NodeJS.Timeout>()

@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { API_ORIGIN } from '@/lib/siteUrl'
 
 export const runtime = 'edge'
 
@@ -10,10 +11,9 @@ export async function GET(
   const url = new URL(req.url)
   const format = url.searchParams.get('format') || 'feed'
 
-  const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'
 
   try {
-    const res = await fetch(`${wsUrl}/api/game-player/${gameId}/${playerId}`, {
+    const res = await fetch(`${API_ORIGIN}/api/game-player/${gameId}/${playerId}`, {
       cache: 'no-store',
     })
 

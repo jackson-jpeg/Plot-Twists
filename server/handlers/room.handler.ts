@@ -352,7 +352,10 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket, ctx: Hand
           isMature: room.isMature,
           gameState: room.gameState,
           hostName: room.host.nickname,
-          players: activePlayers.slice(0, 6).map(p => ({ nickname: p.nickname }))
+          // Derived, not a literal 6. This truncation existed to bound the preview payload at the
+          // old seat cap; hardcoded, it would have silently dropped two names from every invite
+          // card the moment the cap moved to 8.
+          players: activePlayers.slice(0, maxPlayers).map(p => ({ nickname: p.nickname }))
         }
       })
     } catch (error) {

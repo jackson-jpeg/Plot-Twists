@@ -43,6 +43,8 @@ delete process.env.ANTHROPIC_BASE_URL // never inherit a mock pointer into a rea
 // import is too late to be sure of catching it.
 process.env.LOG_LEVEL = 'info'
 
+import { MAX_PLAYERS } from '../server/utils/constants'
+
 type Room = import('../lib/types').Room
 type Script = import('../lib/types').Script
 
@@ -51,7 +53,11 @@ const USD_PER_MTOK_IN = 3
 const USD_PER_MTOK_OUT = 15
 const cost = (i: number, o: number) => (i / 1e6) * USD_PER_MTOK_IN + (o / 1e6) * USD_PER_MTOK_OUT
 
-const PLAYERS = 8
+// Derived, not chosen. This was a literal 8 while MAX_PLAYERS.ENSEMBLE was 6, so every artefact it
+// produced measured a cast the product could not seat. Reading the cap makes the measurement
+// follow the product rather than the other way round — and it is why raising the cap to 8 is the
+// change that made these numbers valid, rather than a change that invalidated them.
+const PLAYERS = MAX_PLAYERS.ENSEMBLE
 const SCRIPTS = 3
 
 /**

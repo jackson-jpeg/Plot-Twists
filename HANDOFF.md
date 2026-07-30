@@ -13,13 +13,13 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Canonical repo** | `/root/Plot-Twists` — Next.js 16 + Socket.IO game server. **This is the product.** The game ships on the web at `plotslop.com`, marketing and game on one domain, players join in a phone browser with a room code and never install anything (`DECISIONS.md` #12). |
 | **Branch** | `audit/2026-07-28-snapshot` (tracks `origin/`). **Not** `master`, **not** `v2`. |
 | **iOS repo** | `/root/PlotTwists-Native` — SwiftUI/tvOS. **Shelved, and re-scoped 2026-07-29:** when it returns it is a HOST/TV surface only, never required for players. See §6 and `DECISIONS.md` #12. |
-| **Harness** | **49/49** — `[VPS] cd /root/Plot-Twists && npx tsx scripts/harness/run.ts` (~2 min; it forces its own fake key and its own temp database, so pass neither). Two instrument bugs fixed 2026-07-29: the script-generation counter (§9 #9) and a **shared database that made it report 38/46 with eight fabricated failures** (§9 #12). If you see a number other than 49/49, read #12 before believing it. |
-| **Unit suite** | **450/450** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450: the source-audit suite grew 4 → 16 → 18 tests. Coverage, not behaviour. See §3 before you relax. |
+| **Harness** | **50/50** — `[VPS] cd /root/Plot-Twists && npx tsx scripts/harness/run.ts` (~2 min; it forces its own fake key and its own temp database, so pass neither). Two instrument bugs fixed 2026-07-29: the script-generation counter (§9 #9) and a **shared database that made it report 38/46 with eight fabricated failures** (§9 #12). If you see a number other than 50/50, read #12 before believing it. Denominator moved 49 → 50 on 2026-07-30 when the `playerCount` scenario gained a third check; the same pass turned two false greens in it into real assertions (§13). |
+| **Unit suite** | **469/469** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450 → 469: the source-audit suite grew 4 → 16 → 18 tests, and 2026-07-30 added 19 seat-cap tests (`playerCounts.test.ts`) where previously **nothing asserted `MAX_PLAYERS` at all**. Mostly coverage — but the drift guard in that file reads real UI source and is behaviour. See §3 before you relax. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
 | **plotslop.com** | 🟢 **LIVE 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Cert for both names expires **2026-10-27**. `plotslop.service` active and enabled on :3100 behind nginx TLS; apex and `www` return 200, HTTP 301s to HTTPS, sang3r.com verified unaffected. **Two clients have joined a room over the public endpoint.** Cutover step 6 (cgroup re-verification) is still Jackson's and still blocking — see §11. |
 | **Current chunk** | **Chunks 2, 3 and 5 complete.** **Chunk 5 (the rename) DONE 2026-07-30** — see §12. `DECISIONS.md` #7 and #10 are both closed. **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 blocked on Jackson. |
 | **Deployed** | ✅ **Chunk 5 is LIVE as of 2026-07-30 17:25 UTC.** Jackson ran the deploy. `plotslop.com` serves PlotSlop: correct title, `og:image` absolute on the right host and returning a 135 KB PNG, `robots.txt`/`sitemap.xml` on the real domain, **zero** `localhost:3000` and **zero** old-domain references in the shipped bundle, legal pages corrected, sang3r.com unaffected, and a two-client join over public TLS passing on the new build. Verification table: `NEEDS-JACKSON.md` §0. |
-| **Seating** | **ENSEMBLE seats 6 performers, not 8** (`server/utils/constants.ts:11`). The scope-freeze gate is "eight people who are not my friends", so the gate and the product disagree — see §13, confirmed two ways. **Do not raise the cap**: Jackson asked for the blast radius before the change, and the change is his. |
+| **Seating** | **ENSEMBLE seats 8 performers** (`server/utils/constants.ts`). Raised from 6 by Jackson's decision on 2026-07-30; the scope-freeze gate of "eight people who are not my friends" is now seatable. Every seat count in the UI derives from the constant via `lib/playerCounts.ts` — **do not restate one as a literal**, there is a test that fails if you do. See §13. |
 
 Deliverables: `INVENTORY.md`, `AUDIT.md`, `DECISIONS.md`, `CHUNKS.md`, `BACKLOG.md`, and
 `/root/PlotTwists-Native/AUDIT-iOS.md`.
@@ -137,7 +137,7 @@ Still true, and now demonstrated rather than hypothesised:
 
 - The layer 3 screen is a **deterministic term list**. It catches named entities and nothing
   else. "A wheezing tyrant in black armour who is secretly your father" passes it clean. That
-  was written here as a hypothetical. `PLAYTEST-2026-07-29.md` shows it is the actual state of
+  was written here as a hypothetical. `PLAYTEST-2026-07-30.md` shows it is the actual state of
   most of the catalog.
 - Layer 2 removed the **"✎ Write your own" free-text card**. A user-visible feature removal
   that partly contradicts AUDIT.md Option B.
@@ -355,7 +355,7 @@ so real peak with in-flight generation is higher by an unmeasured amount.
 | `Michael Scott` / `The Office` removed from type-doc comments; `source` field deleted | `lib/content-types.ts` |
 | Franchise-attribution UI badge deleted (it rendered `item.source` to players) | `CardBrowseModal.tsx`, `CardPicker.tsx` |
 | Source-audit gate widened 1 file → **5**, plus grammar and ordering gates | `contentSource.test.ts` — 4 tests → 16 |
-| Playtest packet regenerated at **40 hands** against the new grammar | `PLAYTEST-2026-07-29.md` |
+| Playtest packet regenerated at **40 hands** against the new grammar | `PLAYTEST-2026-07-30.md` |
 | Layer 1 redefined structurally; web-first product decision recorded | `DECISIONS.md` #4, #12 |
 
 **Verification.** Unit suite **448/448** (was 436/436; +12 is the source-audit suite growing,
@@ -421,7 +421,7 @@ be named.
 
 ---
 
-## 9. Corrections to the record found on 2026-07-29 and 2026-07-30
+## 9. Corrections to the record found on 2026-07-29 and 2026-07-30 — twenty-three of them
 
 **Eighteen now, across five passes** (13–18 are 2026-07-30 and are at the end of this section),
 and they are listed because the pattern matters more than any
@@ -594,7 +594,7 @@ The lesson generalises the one in §8: **a grep for the name you renamed *from* 
 names you never knew you had.** The inventory's rename table counted `plot-twists` variants and
 never asked which domains the code actually prints.
 
-**16. `PLAYTEST-2026-07-29.md` on disk is stale, and its headline cost figure is the pre-cap one.**
+**16. `PLAYTEST-2026-07-30.md` on disk is stale, and its headline cost figure is the pre-cap one.**
 The committed packet is timestamped 18:23; `.real-generation.json` is 19:05 and
 `scripts/playtest-packet.ts` is 19:20. The packet was never regenerated after the final run, so it
 reports the scripts and costs from *before* the length cap landed:
@@ -625,6 +625,72 @@ measuring the branch nobody plays, so it is the worst possible one to have inver
 *Two of these — 15 and 16 — were found only because a number or a name did not match the document
 describing it, and the mismatch was chased rather than explained away. That is the same technique
 that caught 12, and it is the only one in this list that generalises.*
+
+### 2026-07-30, second pass — four more, and the worst one is mine
+
+**19. 🔴 "The localhost OG bug is dead" was written after verifying the half that could not fail.**
+`NEEDS-JACKSON.md` §0 and §1 of this file both declared the localhost URL bug closed, on the
+strength of `curl https://plotslop.com/ | grep og:image` returning an absolute URL on the right
+host. That check was real, and it covered `/opengraph-image` — **the one image route that does not
+fetch anything.** Four sibling routes did:
+
+```
+app/join/invite/[code]/opengraph-image.tsx    ← the INVITE-LINK card. The join path.
+app/api/poster-story/[gameId]/route.tsx
+app/api/character-card/[gameId]/[playerId]/route.tsx
+app/api/clip-card/[gameId]/route.tsx
+```
+
+Each wrote its own `process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:3000'`. `NEXT_PUBLIC_WS_URL`
+is **not set** in `/etc/plotslop/env`, and `NEXT_PUBLIC_*` is inlined at build time, so the literal
+was baked into the production bundle. Confirmed two ways:
+
+1. `systemctl show plotslop` → the unit's `PORT=3100`.
+2. `curl -s http://localhost:3000/ | grep '<title>'` → **`<title>Jackson Sanger</title>`**, versus
+   `:3100` → `<title>PlotSlop - AI Improv Party Game</title>`.
+
+**Port 3000 on this box is sang3r.com.** Every one of those four fetches went to Jackson's personal
+site, 404'd, and the card fell back to its generic form. It failed *quietly* — an invite preview
+that still renders something looks fine — which is why no check caught it.
+
+Two of those four files **already imported `SITE_DOMAIN`** from `lib/siteUrl.ts`: the Chunk 5 sweep
+opened them, fixed the domain they *displayed*, and left the domain they *fetched*, because a grep
+for dead brand names does not match "localhost". Fixed by adding `API_ORIGIN` to `lib/siteUrl.ts`
+and routing all four through it.
+
+**The generalisable part:** "I verified it" is not the same as "I verified the thing that was
+broken". The claim should have been *"the root OG card is fixed"*, which is what was tested.
+
+**20. `SocketContext.tsx:121` built `https://localhost:3000` in the production bundle.** The SSR
+branch fell back to the literal `'localhost:3000'` and then prefixed it with `https://` — a value
+that can never connect. Only the SSR path, so no user-visible failure, but it was in the shipped
+JS. Now `API_ORIGIN`.
+
+**21. The seat-cap blast radius undercounted the UI 4×, and named the wrong file.** Detail in §13.
+Twelve sites, not three; three of them were not strings; and the cited `opengraph-image.tsx:34` is
+in `app/join/invite/[code]/`, not `app/`, which matters because `app/opengraph-image.tsx` had a
+*separate* hardcoded count nobody had found.
+
+**22. "Silently demoted to SPECTATOR" was asserted in two places and was false in both.** The
+joiner has always been told — toast plus a full "Spectator Mode" lobby state. The **host** was not.
+Detail in §13.
+
+**23. `INVENTORY.md`'s tuning-constant table was stale in two ways, one of them by 4×.** Found
+while updating it for the new cap — by reading the table against the source rather than trusting it:
+
+- `VOTING_TIMEOUT` listed as **60_000 ms**. It has been **25_000** since Chunk 2.
+- `AI_MAX_TOKENS = { ENSEMBLE: 10000, DEFAULT: 8192 }` listed as a live tuning constant. **Nothing
+  imported it** — a repo-wide grep returned only its own declaration. The real output ceiling is
+  **2,600**, applied by `getMaxTokens()`, and it is a number Jackson chose deliberately. A dead
+  constant sitting in the inventory claiming 10,000 is a trap for exactly the kind of session that
+  reads `INVENTORY.md` to find out what the limits are. Both corrected; the dead constant is
+  deleted from `constants.ts`, with a note where it stood.
+
+*The pattern across 19-23: every one is a claim about a thing being absent or handled, written
+from one side of a boundary and never checked from the other. 19 checked the server's output but
+not the routes that call it; 22 checked the server's ack but not the two clients that render it;
+23 was a table nobody had re-read against the file it describes.
+**When the record says "X is handled", find the code that consumes X, not the code that emits it.***
 
 ---
 
@@ -709,78 +775,132 @@ room over public TLS on the new build.
 
 ---
 
-## 13. Seating — the scope-freeze gate cannot be passed as written
+## 13. Seating — ✅ DECIDED AND SHIPPED 2026-07-30. `MAX_PLAYERS.ENSEMBLE = 8`.
 
-**This is the finding to read first.** Jackson's freeze lifts when he has *"played this with eight
-people who are not my friends."* **ENSEMBLE seats six performers.** Nothing in any document
-connected the gate to the constant, and the constant was recorded in `INVENTORY.md` §7 all along.
+**Jackson raised the cap to 8.** The scope-freeze gate — *"played this with eight people who are
+not my friends"* — is now a shape the product can actually seat. The investigation that led here is
+below the fold; read the outcome first.
 
-### Is 6 real? Yes. Confirmed two ways, per rule 2.2.
+### What changed
 
-**Mechanism 1 — source.** `MAX_PLAYERS.ENSEMBLE = 6` (`server/utils/constants.ts:11`), enforced at
-`room.handler.ts:186`. It is not overridden anywhere: the only readers are `matchmaking.service.ts`
-(2×, both listing filters), `room.handler.ts` (2×) and `routes/api.ts` (display). There is no env
-knob. The 7th joiner is **not rejected** — they are seated as `SPECTATOR` (`room.handler.ts:203`).
-`game.helpers.ts:117-125` then builds the trait list from **PLAYER-role selections only**,
-explicitly excluding spectators, so six is also the ceiling on what reaches the model.
+| | |
+|---|---|
+| `MAX_PLAYERS.ENSEMBLE` | **6 → 8** (`server/utils/constants.ts`) |
+| `MIN_PLAYERS` | **New export.** The floor (`SOLO 1 / H2H 2 / ENSEMBLE 3`) now lives beside the ceiling. `matchmaking.service.ts` had its own private copy as `AUTO_START_THRESHOLD`; it is now an alias for the shared one. |
+| `lib/playerCounts.ts` | **New.** `seatRange`, `seatRangeLabel`, `performersLabel`, `ALL_MODES_PLAYER_RANGE_LABEL`, `FALLBACK_MAX_PLAYERS`. Every seat count shown to a human comes from here. |
+| The UI | **Nothing states a count as a literal any more.** See the table below — there were more of them than the previous version of this section claimed. |
+| Tests | `__tests__/unit/server/utils/playerCounts.test.ts` — **19 new assertions**, including a drift guard that reads the real UI source. Unit suite **450 → 469**. |
+| Harness | `playerCount` rewritten; `spectatorVote` de-hardcoded. **49 → 50 checks.** |
+| Playtest artefacts | Re-run against the live API at 8. `PLAYTEST-2026-07-30.md` → **`PLAYTEST-2026-07-30.md`**. |
 
-**Mechanism 2 — a live room.** Eight clients driven through a real ENSEMBLE round against the real
-handlers, reading the prompt out of the mock Anthropic endpoint rather than out of the source:
+### 🔴 The previous version of this section undercounted the UI work by 4×
+
+It said *"three hardcoded numbers, all strings"*. Both halves were wrong. There were **twelve**
+sites across nine files, and three of them were not strings:
+
+| File | Was | Now |
+|---|---|---|
+| `HostLobby.tsx:338` | `Max {gameMode === 'HEAD_TO_HEAD' ? 2 : 8}` | `Max {maxPlayers}` |
+| `HostLobby.tsx:502-504` | `'1 player vs AI'`, `'2 performers + host'`, `'3-6 performers + host'` — **three** literals, not one | `performersLabel(mode)` |
+| `HostLobby.tsx:111-133` | `canStartGame` and `getMinPlayers()` each restated the floor as `2`/`3` | `MIN_PLAYERS[gameMode]` |
+| `JoinForm.tsx:711` | `'3-6 performers'` | `performersLabel('ENSEMBLE')` |
+| **`app/opengraph-image.tsx:99`** | **`'1-6 Players'`** — the ROOT marketing OG card. Missed entirely by the previous sweep. | `ALL_MODES_PLAYER_RANGE_LABEL` |
+| `app/join/invite/[code]/opengraph-image.tsx:34` | `?? 8` (the previous section cited this as `opengraph-image.tsx:34`, which is a different file) | `FALLBACK_MAX_PLAYERS` |
+| **`room.handler.ts:355`** | **`activePlayers.slice(0, 6)`** — not a string, and it would have silently dropped two names from every invite preview at the new cap | `slice(0, maxPlayers)` |
+| **`matchmaking.service.ts:22`** | a second copy of the floor | alias of `MIN_PLAYERS` |
+| `scripts/real-generation.ts:54` | `const PLAYERS = 8` | `MAX_PLAYERS.ENSEMBLE` |
+| **`scripts/harness/run.ts:758`** | `length: 6` in `spectatorVote` | `MAX_PLAYERS.ENSEMBLE` |
+
+The lesson for the next sweep: **grepping for the number you expect finds the sites you already
+know about.** `'1-6 Players'` and `slice(0, 6)` both survived a sweep that was looking for `3-6`
+and `Max 8`. What found them was grepping for the *shape* (a digit adjacent to a player noun) and
+then reading every reader of the constant.
+
+### 🔴 "Silent demotion" was wrong, and the previous record asserted it twice
+
+`NEEDS-JACKSON.md` and the harness message at `run.ts:624` both said an overflow joiner is
+*"silently demoted to SPECTATOR"* and that *"the UI must surface the role or they think they are
+playing"*. **The joiner has been told all along:**
+
+- `JoinForm.tsx:259` — `toast.info('Room is full! You joined as a Spectator.')`
+- `JoinLobby.tsx:79` — the lobby headline renders **"Spectator Mode"** with an eye icon, and
+  `:89` explains *"Sit back and enjoy the show! You can vote at the end."*
+
+The party that was **not** told was the **host**. `HostLobby.tsx:109` built its cast list as
+`players.filter(p => !p.isHost)` — spectators included. So the host saw `Cast (9)` under `Max 8`
+with no indication that two of those people would never appear in the script, and the same count
+fed `canStartGame`. Fixed: the cast is `role !== 'SPECTATOR'`, and spectators render in their own
+**Audience (N)** group with the line *"The cast is full at 8, so they watch and vote instead of
+performing."*
+
+This is the shape the record keeps getting wrong: an assertion about a missing thing, written from
+the server's point of view, never checked against the client that consumes it.
+
+### The harness gate was a false green in two ways
 
 ```
-8 joiners → 6 PLAYER, 2 SPECTATOR, 0 rejected     (roster: 9 people incl. host)
-CRITICAL: You have 6 characters...                (the prompt the model received)
+-  record('playerCount', 'ENSEMBLE caps PLAYER seats at 6', asPlayer <= 6, ...)
++  record('playerCount', `ENSEMBLE seats exactly MAX_PLAYERS (${CAP}) — no more, and no fewer`,
++    asPlayer === CAP, ...)
 ```
 
-**So the room holds nine bodies; the scene holds six parts.** The host is role `HOST`, not
-`PLAYER`, in ENSEMBLE — they run the teleprompter and do not consume a seat or contribute a trait.
+1. The cap was hardcoded as `6` while `MAX_PLAYERS` was the thing under test.
+2. **`asPlayer <= 6` is satisfied by `asPlayer === 0`.** A server that refused every joiner passed
+   this gate. It is now an equality, and the scenario over-joins by 2 so the spectator path is
+   still exercised at any cap.
 
-### 🔴 The live UI advertises a cap the server does not honour
+**And a second hardcoded 6 that no grep found.** `spectatorVote` filled the room with
+`length: 6` clients so the 7th would overflow. At a cap of 8 the "spectator" joined as a PLAYER and
+every spectator assertion below it stopped measuring a spectator. It surfaced only because the
+harness went **red** when the cap moved — which is the entire argument for making test fixtures
+derive from the constant rather than restate it.
 
-`HostLobby.tsx:338` renders **`Max {gameMode === 'HEAD_TO_HEAD' ? 2 : 8}`** — so the host is told
-the cast maxes at **8**. Two things make this worse than a stale string:
+### Is the new cap real? Confirmed two ways, per rule 2.2.
 
-1. **The same screen contradicts itself.** 165 lines further down, the mode selector describes
-   ENSEMBLE as *"3-6 performers + host"*.
-2. **It is live right now.** Confirmed in the deployed bundle, not just the source:
-   `grep` over `/srv/plotslop/.next/static/chunks/*.js` finds
-   `Max ","HEAD_TO_HEAD"===e.gameMode?2:8`.
+**Mechanism 1 — a live room**, 10 clients through the real handlers:
 
-The failure mode is precisely the playtest: the host reads "Max 8", invites eight people, and
-guests seven and eight are silently seated as spectators. **Left unfixed on purpose** — which of
-the two numbers is wrong is Jackson's cap decision, and fixing it either way pre-empts him. The
-durable fix is to derive both strings from `MAX_PLAYERS` so they cannot disagree again.
+```
+10 joiners → 8 PLAYER, 2 SPECTATOR, 0 rejected
+```
 
-### Both playtest artefacts measure a shape the product cannot produce
+**Mechanism 2 — the shipped bundle.** `grep` over `.next/static/chunks/*.js` finds `ENSEMBLE:8`
+and **zero** occurrences of `ENSEMBLE:6`. Neither `'3-6 performers'` nor `'1-6 Players'` appears
+anywhere in the built JS — they cannot, because no call site holds a literal any more.
 
-`scripts/real-generation.ts:54` sets `const PLAYERS = 8` and line 114 builds **eight** traits.
-Confirmed from the output rather than the generator: all three scripts in `.real-generation.json`
-list 8 traits and produced 8, 10 and 8 distinct speaking parts.
+### What raising it actually touched — the blast-radius prediction held
 
-| | Verdict |
+Every ❌ in the pre-change prediction was correct: `MIN_PLAYERS` is a floor and did not move, the
+30-38 line budget and the 2,600 `max_tokens` ceiling are constants, card dealing is per-room, and
+voting/results/progression iterate the player map. The prediction's only error was undercounting
+the UI, above.
+
+### The measurement that decides what comes next: 4.71 lines per player
+
+Re-run at 8 against the live API (`PLAYTEST-2026-07-30.md`, "How much each player actually says"):
+
+| | |
 |---|---|
-| **The three scripts** | **Invalid as a preview.** An 8-part scene is a different artefact from a 6-part one at the same fixed 30-38 lines — denser cast, fewer lines each. Re-run at 6. |
-| **The cost figure** | **Survives, but the packet's number is wrong for a different reason.** Cast size is not what drives cost: the line budget and `max_tokens` are fixed constants, not functions of player count, so dropping two traits removes ~2 short strings from a ~4,380-token prompt (~1%). But the committed packet's `$0.053` is stale — see §9 #16; current data gives **$0.0407**. |
+| **Mean per seated player** | **4.71 lines** — under Jackson's stated threshold of 5 |
+| **Median across every speaker** | **3.5** |
+| Range | **2 - 12** |
+| Distinct speakers per script | 9, 8, 9 — **against 8 traits** |
 
-### Blast radius, if Jackson raises it (asked for *before* the change — do not pre-empt)
+**The mean is the flattering number.** The model does not divide the budget evenly: one character
+took 11 of 38 lines in one script and 12 of 38 in another, while three speakers got 2. And two of
+the three scripts invented a **ninth** character, whose parts still have to be read by someone.
 
-| Touched? | Item |
-|---|---|
-| ❌ **No** | **`AUTO_START_THRESHOLD`** (`matchmaking.service.ts:22`) — `ENSEMBLE: 3` is a *minimum*. Raising the max does not move it. |
-| ❌ **No** | **The prompt's line budget** — `{min:30,max:38}` for `standard`, a constant. `numPlayers` appears in the prompt only as narration ("N people are reading this aloud"). |
-| ❌ **No** | **The 2,600 `max_tokens` ceiling** — also a constant. The ENSEMBLE ×1.25 multiplier that *was* player-coupled was already removed on 2026-07-29, with the reasoning that cast size does not change tokens-per-line. |
-| ❌ **No** | **Card dealing** — `dealCards` deals one hand per *room*, not per player. **Voting, results, progression** all iterate the player map; no hardcoded counts. |
-| ⚠️ **Yes** | **The UI, but only as strings.** The cast list is `flex flex-wrap` chips and reflows at any count. What breaks is the two hardcoded numbers above. |
-| ⚠️ **Yes** | **`opengraph-image.tsx:34`** — `preview?.maxPlayers ?? 8`, a third hardcoded 8. |
-| ⚠️ **Yes, and this is the real cost** | **Both playtest artefacts must be regenerated at the final number** — whatever it is. If the cap goes to 8, the existing scripts become valid and the cost figure needs re-running anyway because the packet is stale. |
+Per Jackson's rule — *"if it's under 5, the fix is raising the 30-38 line budget, NOT lowering the
+cap back"* — the recommendation is in `NEEDS-JACKSON.md` item 1. **Not applied. He asked for a
+number, not a change.**
 
-**No test asserts the cap** — a grep of `__tests__/` for `MAX_PLAYERS` returns nothing — so raising
-it would not turn anything red. The harness scenario `playerCount` asserts `asPlayer <= 6` and
-would silently keep passing at 8. That is worth fixing *with* any cap change, not after.
+### Cost, re-measured at 8
 
-**Judgement, offered because it was asked for and not acted on:** the cheap move is 8, since
-nothing mechanical resists it and the UI already claims it. The reason to think first is Jackson's
-own stated basis for the 30-38 cap — *"eight people performing seventy lines is where a party stops
-being fun"* — which was reasoning about **eight**. At 8 performers over 38 lines each player gets
-under five lines, and the failure mode is people standing around. That is a design question about
-what an ENSEMBLE round should feel like, which is why it is his.
+| | |
+|---|---:|
+| script generation (mean of 3) | $0.0353 |
+| director's review | $0.0047 |
+| **one complete round** | **$0.0400** |
+
+Against `$0.0407` at the previous measurement — statistically the same, which is the expected
+result: the prompt is fixed-size and the line budget is a constant, so cast size barely moves it.
+$9 of credit still buys ~225 rounds.

@@ -380,7 +380,7 @@ presents as *"the game is broken on mobile data"*, not as a rate limit. Both lim
 | `DECISIONS.md` | Numbered decisions with reasoning. #7 (Firestore) and #10 (copy voice) open. |
 | `CHUNKS.md` | The work plan. Chunks 1–3 done, 4 layer 1 redone, 5 is the rename. |
 | `BACKLOG.md` | Parked ideas. **Closed until the playtest.** |
-| `PLAYTEST-2026-07-29.md` | The packet — 40 dealt hands, real generated scripts, measured costs. |
+| `PLAYTEST-2026-07-30.md` | The packet — 40 dealt hands, real generated scripts, measured costs. |
 | `/root/PlotTwists-Native/AUDIT-iOS.md` | iOS audit. Shelved. |
 
 ---

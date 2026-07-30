@@ -233,16 +233,24 @@ Multi-client / integration tests: **0**. `jest.config.js` `testEnvironment: 'nod
 ```
 ROOM_CODE_LENGTH = 4
 ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'   (32 chars → 1,048,576 codes)
-MAX_PLAYERS = { SOLO: 1, HEAD_TO_HEAD: 2, ENSEMBLE: 6 }
+MAX_PLAYERS = { SOLO: 1, HEAD_TO_HEAD: 2, ENSEMBLE: 8 }   (raised from 6 on 2026-07-30)
+MIN_PLAYERS = { SOLO: 1, HEAD_TO_HEAD: 2, ENSEMBLE: 3 }
 ROOM_CLEANUP_INTERVAL     = 5 min
 ROOM_INACTIVITY_TIMEOUT   = 60 min
 DISCONNECT_GRACE_PERIOD   = 3_000 ms
-VOTING_TIMEOUT            = 60_000 ms
+VOTING_TIMEOUT            = 25_000 ms   (this table said 60_000 until 2026-07-30; it was lowered in Chunk 2)
 PLOT_TWIST_VOTING_DURATION= 15_000 ms
-AI_MAX_TOKENS = { ENSEMBLE: 10000, DEFAULT: 8192 }
 AI_TEMPERATURE = 1
 ```
-`AUTO_START_THRESHOLD` (`server/services/matchmaking.service.ts:22-26`): `SOLO: 1, HEAD_TO_HEAD: 2, ENSEMBLE: 3` — the minimum non-host players required for `start_game`.
+**`AI_MAX_TOKENS = { ENSEMBLE: 10000, DEFAULT: 8192 }` used to be listed here and has been deleted
+from the source.** Nothing imported it — a grep for the identifier returned only its own
+declaration. Listing it as a tuning constant implied ENSEMBLE generation is capped at 10,000
+tokens. **The real ceiling is 2,600**, set by `getMaxTokens()` in
+`scriptCustomization.service.ts`. Found 2026-07-30; see `HANDOFF.md` §9 #23.
+
+`AUTO_START_THRESHOLD` (`server/services/matchmaking.service.ts`) is no longer a separate table —
+it is an alias for `MIN_PLAYERS` above. It is the minimum non-host PLAYER-role count required for
+`start_game`, and it is also what a public room auto-starts at.
 
 Room codes generated with `Math.random()` — `room.service.ts:142`.
 

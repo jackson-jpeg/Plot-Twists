@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { ALL_MODES_PLAYER_RANGE_LABEL } from '@/lib/playerCounts'
 
 export const runtime = 'edge'
 export const alt = 'PlotSlop - AI Improv Party Game'
@@ -96,7 +97,7 @@ export default async function Image() {
         {/* Feature badges */}
         <div style={{ display: 'flex', gap: '16px' }}>
           {[
-            { icon: '🎤', text: '1-6 Players' },
+            { icon: '🎤', text: `${ALL_MODES_PLAYER_RANGE_LABEL} Players` },
             { icon: '🤖', text: 'AI Scripts' },
             { icon: '🏆', text: 'Vote MVP' },
             { icon: '🎬', text: 'Free to Play' },

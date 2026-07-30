@@ -8,10 +8,34 @@ export const ROOM_CODE_LENGTH = 4
 export const ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // Exclude confusing characters
 
 export const MAX_NICKNAME_LENGTH = 50
+
+// THE seat cap. Single definition — every enforcement point, every piece of UI copy and every
+// preview number derives from here. Nothing restates it as a literal; see lib/playerCounts.ts for
+// the client-safe label helpers and __tests__/unit/server/utils/playerCounts.test.ts for the
+// assertions that fail if a literal creeps back in.
+//
+// RAISED TO 8 ON 2026-07-30, by Jackson's decision. It was 6, while the lobby rendered "Max 8" and
+// the scope-freeze condition is "played with eight people who are not my friends" — so the product
+// could not seat the room its own UI advertised or its own release gate required. Joiners past the
+// cap are not rejected; they become SPECTATORS, and only PLAYER-role selections become traits
+// (game.helpers.ts), so the cap is also the ceiling on what reaches the model.
+//
+// What 8 does NOT touch, verified rather than assumed: MIN_PLAYERS (a floor), the 30-38 line
+// budget and the 2,600 max_tokens ceiling (both constants, not functions of cast size), card
+// dealing (per-room), and voting/results/progression (all iterate the player map).
 export const MAX_PLAYERS = {
   SOLO: 1,
   HEAD_TO_HEAD: 2,
-  ENSEMBLE: 6
+  ENSEMBLE: 8
+} as const
+
+// The floor: how many PLAYER-role seats must be filled before a round can start. Also the
+// auto-start threshold for public rooms — matchmaking.service.ts imports this rather than keeping
+// the second copy it used to own.
+export const MIN_PLAYERS = {
+  SOLO: 1,
+  HEAD_TO_HEAD: 2,
+  ENSEMBLE: 3
 } as const
 
 export const ROOM_CLEANUP_INTERVAL = 5 * 60 * 1000 // 5 minutes
@@ -30,10 +54,12 @@ export const DISCONNECT_GRACE_PERIOD = 3000 // 3 seconds
 export const VOTING_TIMEOUT = 25_000
 export const PLOT_TWIST_VOTING_DURATION = 15_000 // 15 seconds for audience to vote on plot twists
 
-export const AI_MAX_TOKENS = {
-  ENSEMBLE: 10000,
-  DEFAULT: 8192
-} as const
+// `AI_MAX_TOKENS = { ENSEMBLE: 10000, DEFAULT: 8192 }` was here and is DELETED, 2026-07-30.
+// Nothing imported it — a repo-wide grep for the identifier returned only its own declaration —
+// but `INVENTORY.md` listed it among the live tuning constants, so the written record implied that
+// an ENSEMBLE generation may spend 10,000 output tokens. The real ceiling is **2,600**, applied by
+// `getMaxTokens()` in scriptCustomization.service.ts, and it is the number Jackson set. A dead
+// constant that contradicts a live one by 4× is worse than no constant.
 
 export const AI_TEMPERATURE = 1 // Maximum creativity
 

@@ -8,6 +8,7 @@ import { logger } from '@/lib/logger'
 import { SocketActionQueue } from '@/lib/socketQueue'
 import { useConnectionStore } from '@/stores/connectionStore'
 import { getPlayerSessionId } from '@/lib/playerSession'
+import { API_ORIGIN } from '@/lib/siteUrl'
 
 type SocketType = Socket<ServerToClientEvents, ClientToServerEvents>
 
@@ -118,9 +119,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
             socketUrl = window.location.origin
           }
         } else {
-          const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'localhost:3000'
-          const cleanUrl = wsUrl.replace(/^(wss?|https?):\/\//, '')
-          socketUrl = `https://${cleanUrl}`
+          // No window: this is the SSR pass. There is no origin to read, so the canonical site URL
+          // is the only correct answer. It used to fall back to the literal 'localhost:3000' and
+          // then prefix it with https://, producing `https://localhost:3000` in a production
+          // bundle — a value that could never connect to anything.
+          socketUrl = API_ORIGIN
         }
 
         globalSocket = io(socketUrl, {

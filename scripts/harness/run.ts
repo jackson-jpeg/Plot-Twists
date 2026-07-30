@@ -16,7 +16,7 @@ import { tmpdir } from 'os'
 import * as path from 'path'
 import { startMockAnthropic, stats as mockStats } from './mock-anthropic'
 import type { GameState } from '../../lib/types'
-import { VOTING_TIMEOUT } from '../../server/utils/constants'
+import { VOTING_TIMEOUT, MAX_PLAYERS } from '../../server/utils/constants'
 
 const MOCK_PORT = Number(process.env.MOCK_PORT || 8788)
 const GAME_PORT = Number(process.env.HARNESS_PORT || 4599)
@@ -608,7 +608,16 @@ scenarios.playerCount = async () => {
   const host = new Client('Host')
   await host.connected()
   const code = await makeRoom(host, 'ENSEMBLE')
-  const extras = Array.from({ length: 8 }, (_, i) => new Client(`P${i + 1}`))
+
+  // Derived, and deliberately OVERSHOT. Two things were wrong with this scenario before
+  // 2026-07-30, and both let it pass while measuring nothing:
+  //   - the cap was hardcoded as `6` while MAX_PLAYERS was the thing under test, so raising the
+  //     cap left the assertion asserting the old number;
+  //   - `asPlayer <= 6` is satisfied by asPlayer === 0. A server that refused every joiner, or
+  //     seated nobody at all, passed this gate. It is now an equality.
+  const CAP = MAX_PLAYERS.ENSEMBLE
+  const OVERSHOOT = 2
+  const extras = Array.from({ length: CAP + OVERSHOOT }, (_, i) => new Client(`P${i + 1}`))
   await Promise.all(extras.map(c => c.connected()))
   let asPlayer = 0, asSpectator = 0, rejected = 0
   for (const c of extras) {
@@ -617,12 +626,16 @@ scenarios.playerCount = async () => {
     else if (r.role === 'SPECTATOR') asSpectator++
     else asPlayer++
   }
-  record('playerCount', 'ENSEMBLE caps PLAYER seats at 6', asPlayer <= 6,
-    `8 joiners → ${asPlayer} PLAYER, ${asSpectator} SPECTATOR, ${rejected} rejected`)
-  record('playerCount', 'overflow joiners are told they are spectators', asSpectator > 0,
-    asSpectator > 0
-      ? `${asSpectator} silently demoted to SPECTATOR — join_room returns success:true, so the UI must surface the role or they think they are playing`
-      : 'no demotion observed')
+  const seatSummary = `${CAP + OVERSHOOT} joiners → ${asPlayer} PLAYER, ${asSpectator} SPECTATOR, ${rejected} rejected`
+  record('playerCount', `ENSEMBLE seats exactly MAX_PLAYERS (${CAP}) — no more, and no fewer`,
+    asPlayer === CAP, seatSummary)
+  record('playerCount', 'joiners past the cap become spectators rather than being turned away',
+    asSpectator === OVERSHOOT && rejected === 0, seatSummary)
+  record('playerCount', 'the overflow joiner is TOLD they are a spectator in the join ack',
+    asSpectator === OVERSHOOT,
+    asSpectator === OVERSHOOT
+      ? `join_room returns success:true with role:'SPECTATOR', which is what JoinLobby renders as "Spectator Mode" and HostLobby lists under Audience`
+      : 'no demotion observed — an overflow joiner cannot learn their role from the ack')
 
   // solo with 1
   const solo = new Client('Solo')
@@ -742,16 +755,20 @@ scenarios.identityBroadcast = async () => {
 /** 8c. Spectators can vote, and their votes count toward the winner. */
 scenarios.spectatorVote = async () => {
   const host = new Client('Host')
-  const players = Array.from({ length: 6 }, (_, i) => new Client(`P${i + 1}`))
+  // Fill the cast to the cap so the next joiner overflows. This used to be a literal 6, which is
+  // how raising MAX_PLAYERS to 8 broke this scenario: the "spectator" it set up joined as a
+  // PLAYER and every spectator assertion below it stopped measuring a spectator.
+  const CAP = MAX_PLAYERS.ENSEMBLE
+  const players = Array.from({ length: CAP }, (_, i) => new Client(`P${i + 1}`))
   const spectator = new Client('Lurker')
   await Promise.all([host, ...players, spectator].map(c => c.connected()))
   const code = await makeRoom(host, 'ENSEMBLE')
   await joinAll(code, players)
 
-  // 7th joiner overflows the 6-player cap and is silently demoted to SPECTATOR.
+  // Joiner number CAP+1 overflows the cast and is seated as a SPECTATOR — told so in this ack.
   const specJoin = await spectator.emitAck<{ success: boolean; role?: string }>('join_room', code, 'Lurker')
   if (specJoin.role !== 'SPECTATOR') {
-    record('spectatorVote', 'setup: 7th joiner became a spectator', false, `role was ${specJoin.role}`)
+    record('spectatorVote', `setup: joiner ${CAP + 1} became a spectator`, false, `role was ${specJoin.role}`)
     ;[host, ...players, spectator].forEach(c => c.close())
     return
   }

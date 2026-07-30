@@ -1,4 +1,6 @@
 import { ImageResponse } from 'next/og'
+import { FALLBACK_MAX_PLAYERS } from '@/lib/playerCounts'
+import { API_ORIGIN } from '@/lib/siteUrl'
 
 export const runtime = 'edge'
 export const alt = 'Join a PlotSlop game'
@@ -16,12 +18,11 @@ interface RoomPreview {
 }
 
 export default async function Image({ params }: { params: { code: string } }) {
-  const baseUrl = process.env.NEXT_PUBLIC_WS_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
   const code = params.code.toUpperCase()
 
   let preview: RoomPreview | null = null
   try {
-    const res = await fetch(`${baseUrl}/api/room-preview/${code}`, { next: { revalidate: 30 } })
+    const res = await fetch(`${API_ORIGIN}/api/room-preview/${code}`, { next: { revalidate: 30 } })
     if (res.ok) {
       preview = await res.json()
     }
@@ -31,7 +32,7 @@ export default async function Image({ params }: { params: { code: string } }) {
 
   const hostName = preview?.hostName || 'Someone'
   const playerCount = preview?.playerCount ?? 0
-  const maxPlayers = preview?.maxPlayers ?? 8
+  const maxPlayers = preview?.maxPlayers ?? FALLBACK_MAX_PLAYERS
   const gameMode = preview?.gameMode || 'ENSEMBLE'
   const modeLabel = gameMode === 'SOLO' ? 'Solo' : gameMode === 'HEAD_TO_HEAD' ? 'Head-to-Head' : 'Ensemble'
 

@@ -39,3 +39,30 @@ export const SITE_URL: string =
 
 /** The bare host, for the places that print a domain at a human rather than link to it. */
 export const SITE_DOMAIN: string = SITE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '')
+
+/**
+ * The origin the app uses to call its OWN HTTP API from server-side render paths — the invite-link
+ * OG card and the three share-card image routes, all of which fetch game state before drawing.
+ *
+ * MISSED BY THE 2026-07-30 CHUNK 5 SWEEP, AND THE MISS IS INSTRUCTIVE. Four call sites wrote
+ * `NEXT_PUBLIC_WS_URL || 'http://localhost:3000'`. The sweep found the *display* domain in two of
+ * those same files and fixed it — `poster-story` and `clip-card` both already import SITE_DOMAIN —
+ * but left the *fetch* target alone, because a grep for dead brand domains does not match
+ * "localhost". So the record went on to claim "the localhost OG bug is dead" on the strength of
+ * verifying `/opengraph-image`, the one card that does not fetch anything.
+ *
+ * What it actually did in production, confirmed on 2026-07-30 by reading `PORT` out of the unit's
+ * environment and then by fetching both ports and comparing `<title>`:
+ *
+ *   PlotSlop listens on :3100.  localhost:3000 is a DIFFERENT next-server — sang3r.com.
+ *
+ * `NEXT_PUBLIC_WS_URL` is not set in /etc/plotslop/env, and `NEXT_PUBLIC_*` is inlined at build
+ * time, so the literal was baked into the bundle. Every one of those four fetches went to
+ * Jackson's personal site, 404'd, and the card silently fell back to its generic form. It failed
+ * quietly, which is why nothing surfaced it: an invite preview that renders *something* looks fine.
+ *
+ * Defaulting to SITE_URL means the app calls itself through its own public origin. That is one
+ * extra hop through nginx versus a loopback port, and worth it: there is now no port number
+ * written down in application code that a deploy could move out from under.
+ */
+export const API_ORIGIN: string = process.env.NEXT_PUBLIC_WS_URL || SITE_URL

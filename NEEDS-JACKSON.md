@@ -1,135 +1,87 @@
 # NEEDS-JACKSON
 
 **The single queue.** Everything blocked on you, ordered by what unblocks the most.
-Rewritten 2026-07-30. Machine labels: `[VPS]` = the Linux box, `[MACBOOK]` = your Mac.
+Rewritten 2026-07-30 (second pass, after the seat-cap decision). Machine labels: `[VPS]` = the
+Linux box, `[MACBOOK]` = your Mac.
 
 Nothing below is waiting on me. Where I could do the part that did not need you, I did it and said
-so. The 2026-07-29 queue is in git history; every item on it is either closed below or carried
-forward here with a new number.
+so.
 
-**Closed by your rulings this session:** Firestore (`DECISIONS.md` #7 — moot, no project), copy
-voice (#10 — applied), the install prompt (Option A — applied), the `TermsContent` refund line
-(applied, and it turned out to be four wrong Apple/iOS claims rather than one), the public-domain
-settings (my call — kept; reasoning recorded in `scripts/build-catalog.ts` so it is not
-re-litigated a fourth time).
+**Closed this pass by your decision:** the seat cap. `MAX_PLAYERS.ENSEMBLE` is **8**, all four
+follow-on items are done, and the playtest artefacts have been re-run at 8. Detail in
+`HANDOFF.md` §13.
 
-**Closed by work:** Chunk 5, the rename, complete (`HANDOFF.md` §12) — **and deployed.**
-`plotslop.com` has served PlotSlop since **2026-07-30 17:25 UTC**. Verification below.
+**Closed earlier today by your rulings:** Firestore (`DECISIONS.md` #7 — moot), copy voice (#10),
+the install prompt (Option A), the `TermsContent` refund line, the public-domain settings.
 
----
-
-## 0. ✅ DEPLOYED 2026-07-30 17:25 UTC — you ran it, and it is verified
-
-You ran `deploy.sh`, which built, synced and pruned but **took its abort path at the restart
-prompt** — stdin was not a TTY, so `read` got EOF and it correctly refused to assume consent. You
-then ran `reset-failed && restart` yourself. Working as designed.
-
-| Check | Result |
-|---|---|
-| Service | active, enabled, **0 errors** since restart |
-| Database | JSON file adapter — Firebase still correctly off |
-| Shutdown | graceful, persisted 0 rooms (nobody was mid-game) |
-| Title | **PlotSlop** |
-| `og:image` | `https://plotslop.com/opengraph-image` → **200, 135 KB PNG** |
-| `robots.txt` / `sitemap.xml` | both on `https://plotslop.com` |
-| `localhost:3000` anywhere on the live site | **0** |
-| Old domains in shipped JS | **0 files** |
-| Legal pages | `support@`/`privacy@plotslop.com`, Stripe-only, Apple claims gone |
-| apex / www / http→https | 200 / 200 / 301 |
-| **sang3r.com** | **200** — unaffected |
-| **Two clients, real TLS** | **PASS** — room created, joined, host observed the joiner, both `transport=websocket`, no credential fields in the payload |
-
-**The localhost OG bug is dead.** Link previews in iMessage, Discord and Twitter now resolve —
-which for a game whose entire join path is sharing a link was the one worth shipping.
-
-Before the restart I confirmed the window was safe rather than assuming it: zero live socket
-connections, `rooms.json` = `items: []`, no game activity in two hours, Thursday early afternoon
-your time. CONSTRAINT-1's risk was genuinely empty.
+**Closed by work:** Chunk 5, the rename (`HANDOFF.md` §12) — deployed and verified.
 
 ---
 
-## 1. 🔴 The seat cap — the scope freeze gates on a number the game cannot seat
+## 0. ⚠️ There is an undeployed build. The live site does not have any of today's second pass.
 
-**You asked for the blast radius before the change. Here it is. I have not touched the cap.**
-
-Your freeze lifts when you have *"played this with eight people who are not my friends."*
-`MAX_PLAYERS.ENSEMBLE` is **6**. Confirmed two ways — reading every reader of the constant, and
-driving eight real clients through a live ENSEMBLE round and reading the prompt the model got:
+`plotslop.com` is still serving the **17:25 UTC** build. Everything below the line — the seat cap
+of 8, the derived UI copy, the Audience group in the host lobby, and the four localhost fetches in
+item 3 — is committed and built but **not live**.
 
 ```
-8 joiners → 6 PLAYER, 2 SPECTATOR, 0 rejected      (9 in the room, counting the host)
-CRITICAL: You have 6 characters...                 (what actually reached the model)
+[VPS] sudo bash scripts/deploy.sh
 ```
 
-Nobody is turned away — joiners 7 and 8 become **spectators**, and the trait list is built from
-PLAYER-role selections only. So eight people can be in the room; six can be in the scene. The host
-holds a `HOST` role rather than a player seat, so they neither consume a seat nor add a trait.
+I did not run it. Restarting ends every game in flight (CONSTRAINT-1), and the script's restart
+prompt is deliberately the one step I leave to you — it is also why the last deploy took its abort
+path when I invoked it non-interactively. There were **zero live socket connections** when I
+checked at 18:4x UTC, so the window is currently free.
 
-**The live UI already claims 8.** `HostLobby.tsx:338` renders `Max 8` for ENSEMBLE while the mode
-card *on the same screen* says *"3-6 performers"*. It is in the deployed bundle today. So the
-playtest failure mode is concrete: you read "Max 8", invite eight, and two of them end up
-spectating.
+Gates before you run it: **469/469 unit · 50/50 harness · tsc 0 errors · `next build` exit 0.**
 
-**I left it broken deliberately** — which of those two numbers is wrong *is* this decision, and
-fixing either one pre-empts you.
+---
 
-**What raising it to 8 would touch — less than you'd expect:**
+## 1. 🟠 The line budget — your rule fired, and here is the number you asked for
+
+You said: *"average speaking lines per player at 8. If it's under 5, the fix is raising the 30-38
+line budget, NOT lowering the cap back. Recommend a number, don't apply it."*
+
+**It is 4.71. Under 5.** Measured from three fresh live-API generations at 8 traits
+(`PLAYTEST-2026-07-30.md` → *How much each player actually says*).
+
+**But the mean is the flattering number, and that is the finding.**
 
 | | |
 |---|---|
-| `AUTO_START_THRESHOLD` | **Untouched.** `ENSEMBLE: 3` is a minimum, not a maximum. |
-| The prompt's line budget | **Untouched.** 30-38 is a constant, not a function of cast size. |
-| The 2,600 `max_tokens` ceiling | **Untouched.** Also constant — the one player-coupled multiplier was already removed on 2026-07-29. |
-| Card dealing, voting, results, progression | **Untouched.** Dealing is per-room; the rest iterate the player map. |
-| Tests | **Nothing asserts the cap.** Which is its own small problem: raising it would turn nothing red. |
-| **The UI** | **Three hardcoded numbers**, all strings: `HostLobby.tsx:338` (`Max 8`), `HostLobby.tsx:504` (`3-6 performers`), `opengraph-image.tsx:34` (`?? 8`). The cast list itself is wrapping chips and reflows at any count. |
-| **The playtest artefacts** | **The real cost.** Both need regenerating at whatever you pick — item 2. |
+| Mean per seated player | **4.71** |
+| **Median across every speaker** | **3.5** |
+| Range | **2 - 12** |
+| Distinct speakers the model wrote | **9, 8, 9** — against 8 traits |
 
-**My recommendation, and why it is not a slam dunk.** Mechanically, 8 is nearly free. But your
-stated reasoning for the 30-38 line cap was *"eight people performing seventy lines is where a
-party stops being fun"* — you were already thinking in eights. At 8 performers across 38 lines each
-player averages under five lines, and the failure mode flips from "too long" to "standing around".
-At 6 it is about six lines each. **If eight is load-bearing because it is your playtest, raise the
-cap. If six is the better scene, change the freeze wording instead.** Same decision from opposite
-ends; only you can pick.
+The model does not divide the budget evenly. One character took **11 of 38** lines in one script
+and **12 of 38** in another; three speakers got **2**. And two of the three scripts invented a
+**ninth** character, whose lines still have to be read by somebody in the room. So the realistic
+experience at 8 is not "everyone gets 4.7" — it is one person carrying the scene while two or three
+people hold two lines each and wait.
 
-Either way the durable fix is to derive all three UI strings from `MAX_PLAYERS` so they cannot
-drift apart again. I will do that with your answer, not before.
+### My recommendation: **42-52, and raise `max_tokens` to 3,000.**
 
----
+Not 30-38 scaled by 8/6. The reasoning:
 
-## 2. 🟠 Both playtest artefacts were measured at 8 traits. You were right.
+| | |
+|---|---|
+| **Why the range widens rather than shifts** | A fixed narrow band is what forces the model to pay for a ninth character by starving three others. Giving it 10 lines of slack lets it seat everyone without cutting the busiest part. |
+| **52 lines ≈ 6.5 per seat, median ~5** | That puts the *median* above your threshold, not just the mean. Aiming the mean at 5 leaves half the room below it. |
+| **`max_tokens` 2,600 → 3,000** | Measured output is **39 tokens/line**. 52 lines ≈ 2,030 tokens — 78% of the current ceiling, which is too close for a model that occasionally writes long. 3,000 gives ~14% headroom and is still nowhere near a runaway. |
+| **Runtime cost: about 40 seconds** | A 38-line script is **1.8 minutes** of reading at 120 wpm (5.8 words/line, measured). At 52 lines it is **2.5 minutes**. Your "seventy lines is where a party stops being fun" line was about ~3.4 minutes; 52 is comfortably inside it. |
+| **Money cost: about 15%** | $0.0400 → **~$0.0437** per round. $9 buys ~206 rounds instead of ~225. |
 
-You asked whether the three scripts and the `$0.053` were generated with 8. **They were** —
-`scripts/real-generation.ts:54` sets `PLAYERS = 8`, and the output confirms it independently: all
-three scripts list 8 traits and produced 8, 10 and 8 distinct speaking parts.
+**The honest caveat:** raising the budget raises the floor, it does not fix the skew. If after a
+playtest the complaint is *"one person did all the talking"* rather than *"I didn't get to say
+much"*, the fix is in the prompt — an explicit per-character line-share instruction — not in the
+budget. I would rather you find that out with eight real people than have me guess at it now.
 
-**They do not fail the same way, so they do not need the same fix:**
-
-- **The three scripts: invalid as a preview, and they need a real re-run.** An 8-part scene at a
-  fixed 30-38 lines is a denser cast with fewer lines each — a different artefact from what a real
-  room can produce. I have **not** re-run them: a real run costs money and the right cast size is
-  item 1, which is yours. Once you have decided:
-  `[VPS] sudo npx tsx scripts/real-generation.ts` (needs root — it reads the key from
-  `/etc/plotslop/env`), then `npx tsx scripts/playtest-packet.ts > PLAYTEST-2026-07-29.md`.
-- **The cost figure survives the cast-size problem — but the packet was stale for an unrelated
-  reason, and I fixed that.** Cast size barely moves cost: the line budget and `max_tokens` are
-  constants, so two fewer traits change the prompt by about 1%. **But the committed packet predated
-  its own data** — the `.md` was written at 18:23 and the generation ran at 19:05, so it was
-  reporting pre-length-cap numbers:
-
-| | packet said | actually |
-|---|---:|---:|
-| script lines | 59–73 | 38, 38, 38 |
-| **cost per round** | **$0.0531** | **$0.0407** |
-| $9 buys | ~169 rounds | **~221 rounds ≈ 36 evenings** |
-
-  Regenerated from the existing data, so the cost table is now right and carries a banner marking
-  the scripts above it as an 8-cast artefact. **Your budget is 23% better than the packet claimed.**
+**Not applied.** You asked for a number.
 
 ---
 
-## 3. 🔴 Cutover step 6 — unchanged, still yours, still blocking
+## 2. 🔴 Cutover step 6 — unchanged, still yours, still blocking
 
 The five-box cgroup re-verification on the *running* unit. Every isolation measurement so far was
 taken on a transient `systemd-run` unit; that proves the directives work, not that **this** unit
@@ -141,14 +93,37 @@ or the next start refuses and hands you a **stale** error.
 
 ---
 
+## 3. 🟢 Nothing needed — but you should know the OG fix I reported yesterday was half a fix
+
+Not a question. It is the correction I would most want to read if I were you, and it is mine.
+
+I told you *"the localhost OG bug is dead"* and gave you a verification table. That check was real,
+and it covered `/opengraph-image` — **the one image route that does not fetch anything.** Four
+sibling routes did, including **the invite-link card, which is the entire join path**. Each had its
+own `NEXT_PUBLIC_WS_URL || 'http://localhost:3000'`, and that variable is not set, and
+`NEXT_PUBLIC_*` is baked in at build time.
+
+Port 3000 on this box is **sang3r.com**. Confirmed two ways — `PORT=3100` in the unit's
+environment, and `curl localhost:3000` returning `<title>Jackson Sanger</title>`. So every one of
+those four fetches has been hitting your personal site, 404ing, and falling back to a generic card.
+It failed *quietly*, which is why nothing caught it.
+
+Two of the four files **already imported** the site-URL constant — the rename sweep opened them,
+fixed the domain they *displayed*, and left the domain they *fetched*. A grep for dead brand names
+does not match "localhost".
+
+Fixed, tested, built. Ships with item 0.
+
+---
+
 ## 4. 🟠 Delete the Vercel project
 
 Link check clean, nothing references it, and it **cannot serve this product** — `npm start` is
 `tsx server.ts`, a custom Socket.IO server that Vercel's Next preset never runs.
 
-I narrowed `server.ts`'s preview-origin trust to `plotslop*.vercel.app` (the `plot-twists`
-alternative went with the rename), but **that trust should not outlive the project**: while it
-exists, any preview deploy under that name is an origin the live game server accepts.
+I narrowed `server.ts`'s preview-origin trust to `plotslop*.vercel.app`, but **that trust should
+not outlive the project**: while it exists, any preview deploy under that name is an origin the
+live game server accepts.
 
 Blocked the same way as before — no Vercel token on this box, CLI not installed, no
 `.vercel/project.json`, and the `gh` token carries only `gist, read:org, repo`. Vercel → the
@@ -156,20 +131,12 @@ project → Settings → Delete Project.
 
 ---
 
-## 5. 🟠 `plottwists.com` belongs to someone else, and the site was pointing players at it
-
-Not a question — something you should know, because it was in no inventory.
+## 5. 🟠 `plottwists.com` belongs to someone else — informational, carried forward
 
 The rename tables tracked `plot-twists.com`. The code also contained **`plottwists.com`**,
-**`plottwists.app`** and **`plottwists.live`**. The last two have no DNS. The first one resolves:
-
-```
-plottwists.com  →  156.254.10.135
-```
-
-And it was the **join instruction on the host's lobby screen** — *"plottwists.com/join → CODE"* —
-plus a second copy under the QR block. At a party that is the sentence people read and type. All
-three now resolve through `lib/siteUrl.ts` and shipped with the deploy.
+**`plottwists.app`** and **`plottwists.live`**. The last two have no DNS. The first resolves to
+`156.254.10.135`, and it was the **join instruction on the host's lobby screen**. All three now
+resolve through `lib/siteUrl.ts` and shipped on 2026-07-30.
 
 Nothing to do unless you once owned `plottwists.com` and want it back.
 
@@ -188,7 +155,7 @@ for playtesting, not for launch. The `pk_live` you nearly sent was bound to
 `public/.well-known/assetlinks.json` still reads
 `"sha256_cert_fingerprints": ["TODO:REPLACE_WITH_YOUR_SIGNING_KEY_FINGERPRINT"]`. Android deep
 links have never worked and still do not. It needs the fingerprint of your Android signing key
-(`keytool -list -v -keystore <your.keystore>`). Everything else in that file is now correct.
+(`keytool -list -v -keystore <your.keystore>`). Everything else in that file is correct.
 
 Low stakes while the game is web-only.
 
@@ -207,15 +174,19 @@ decision and it is yours.
 
 ## Not waiting on you
 
-Chunk 5 shipped in full (`HANDOFF.md` §12): 103 brand occurrences across 45 files, the copy pass in
-the voice you chose, four dead domains consolidated behind one constant, CORS and the Vercel regex
-cleaned, the legal pages corrected, the install prompt suppressed per Option A, the Capacitor
-`webcredentials:` entitlement moved off the expiring domain, and the service-worker cache bumped so
-installed PWAs actually evict the old shell.
+**The seat cap, in full.** 8 seats, twelve hardcoded counts replaced with derivations across nine
+files, a new `lib/playerCounts.ts`, a spectator **Audience** group on the host's lobby, 19 new unit
+tests including a drift guard that reads real UI source, and two false greens in the harness turned
+into real assertions. `HANDOFF.md` §13.
 
-Six more corrections to the written record are in `HANDOFF.md` §9 — that list is now eighteen, and
-the record has been wrong about a completed item **five sessions running**. The two worth your
-attention are **#14** (the OG diagnosis in the previous version of *this file* was wrong, and so was
-the fix it prescribed) and **#16** (the playtest packet predated its own data).
+**Five more corrections to the record**, §9 #19-23 — the OG one above, a `https://localhost:3000`
+baked into the SSR bundle, the blast-radius undercount, and "silent demotion", which was asserted
+in two places and was false in both: the *joiner* has always been told; the *host* was not.
 
-Verification after everything: **450/450 unit · 49/49 harness · tsc 0 errors · `next build` exit 0.**
+That list now stands at **twenty-three**, and the record has been wrong about a completed item **six
+sessions running**. The pattern across the five found today is worth one sentence: every one was a
+claim about something being handled, written from one side of a boundary and never checked from the
+other. When the record says "X is handled", read the code that *consumes* X, not the code that
+emits it.
+
+Verification after everything: **469/469 unit · 50/50 harness · tsc 0 errors · `next build` exit 0.**

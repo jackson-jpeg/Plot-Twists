@@ -11,6 +11,14 @@
  * irreproducible from the repo, and the whole point of writing the key down separately is that
  * somebody can check afterwards that it was not quietly rewritten to match the verdict.
  *
+ * ⚠️ "FIXED" MEANS "NOT RANDOMISED AT RUNTIME". IT DOES NOT MEAN "THE SAME ARM IN EVERY PAIR".
+ * This ambiguity is not hypothetical — it is exactly how the packet shipped with a header
+ * claiming "whatever A is in pair 1, it is in pair 6", which is false. A is re-drawn per pair.
+ * Any tally BY LETTER across pairs is therefore meaningless, and worse than meaningless: a
+ * unanimous 6-0 preference for one arm tallies by letter as 3 A / 3 B, so the instrument
+ * returns "no difference" precisely when the answer is "unanimous". Verdicts are collected
+ * per pair and tallied BY ARM after decoding against A_IS. See the emitted header below.
+ *
  * WHAT THIS BLINDING DOES AND DOES NOT BUY, stated here rather than in the packet. The two arms
  * are visually distinguishable on sight: one has sentences for speaker names and the other has
  * proper nouns. Nothing can hide that, because it IS the change. What the blinding removes is the
@@ -38,7 +46,8 @@ type Run = {
 }
 
 // Fixed, balanced 3/3, and deliberately not alternating — an alternating key is decodable from
-// one correct guess.
+// one correct guess. Balanced 3/3 is what makes a letter tally inverted rather than merely
+// lossy (see the ⚠️ note in the file header): tally by arm, per pair, never by letter.
 const A_IS: Array<'trait' | 'name'> = ['name', 'trait', 'name', 'name', 'trait', 'trait']
 
 const data = JSON.parse(readFileSync(join(__dirname, '../.ab-generation.json'), 'utf8')) as { runs: Run[] }
@@ -66,11 +75,24 @@ md.push('Six pairs. Each pair is the same setting and the same situation, genera
 md.push('Everything else that could change the outcome — model, temperature, line budget, seat')
 md.push('count, style settings — is identical within a pair.')
 md.push('')
-md.push('**A** and **B** are consistent across all six pairs: whatever A is in pair 1, it is in pair 6.')
-md.push('Which is which is not recorded in this file.')
+md.push('**⚠️ The letter assignment is re-drawn every pair.** A is not the same arm in pair 1 as in')
+md.push('pair 6. An earlier version of this header claimed it was, and that claim was false — the')
+md.push('assignment is a fixed 3/3 split across the six pairs, which means A changes arm partway')
+md.push('through. Which arm is which is not recorded in this file.')
 md.push('')
-md.push('Tell me a letter. If it is genuinely a coin toss, say that — "no difference" is a result,')
-md.push('and it is the most useful one, because it prices the whole question at zero.')
+md.push('**Answer one verdict PER PAIR, and name the pair.** "Pair 1: A. Pair 2: B." — six answers,')
+md.push('not one letter. A single letter for the whole packet cannot be scored, and a letter tally')
+md.push('across pairs is meaningless.')
+md.push('')
+md.push('**Why this matters, stated plainly, because the earlier protocol was not merely awkward but')
+md.push('inverted.** Since A is the same arm in only three of the six pairs, a *unanimous* 6–0')
+md.push('preference for either arm tallies BY LETTER as exactly **3 A / 3 B**. The old instruction')
+md.push('called a 3–3 letter split "a coin toss" that "prices the whole question at zero" — so the')
+md.push('strongest possible result the packet can produce would have been read as the weakest. Tally')
+md.push('by ARM, after decoding each pair against the key. Never by letter.')
+md.push('')
+md.push('If a given pair is genuinely a coin toss, say so for that pair. "No difference" is a real')
+md.push('per-pair verdict. It is not a verdict about the packet.')
 md.push('')
 md.push('---')
 

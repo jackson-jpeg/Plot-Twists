@@ -368,8 +368,16 @@ shape of the 4.71-vs-0.00 error from this morning.
 sight: one has sentences for speaker names, the other has proper nouns. Nothing can hide that,
 because it *is* the change. What the blinding removes is the thing that actually biases a read —
 knowing which one is the incumbent and which one the person who prepared the packet wants to win.
-A and B are consistent across all six pairs, the assignment is a fixed 3/3 split, and the key is
-in `.ab-key.json`, which the packet generator writes and never reads.
+The assignment is a fixed 3/3 split **re-drawn per pair** — A is the name arm in pairs 1, 3 and
+4, and the trait arm in pairs 2, 5 and 6 — and the key is in `.ab-key.json`, which the packet
+generator writes and never reads.
+
+> **⚠️ Corrected 2026-07-30.** This sentence originally read *"A and B are consistent across all
+> six pairs, the assignment is a fixed 3/3 split"*, which contradicts itself inside one sentence:
+> a fixed 3/3 split **is** a per-pair re-draw. The error propagated into the packet header and
+> into the answer protocol at the end of this file, where it became a live measurement defect
+> rather than a wording nit. Verdicts are collected **per pair** and tallied **by arm**, never by
+> letter. Logged as correction #28 in `HANDOFF.md` §9.
 
 Where a rendering choice was arguable I made it in favour of the arm I did not build: the trait
 arm is shown with the **full** trait rather than the shipped short label, because a reader has no
@@ -400,8 +408,21 @@ thing, which is that the name arm is importing something rather than making it.
 **`AB-PACKET.md`** — six pairs, twelve scripts, 621 lines. Roughly ten minutes, not five; I would
 rather overshoot your budget than cut the sample to four pairs and hand you a coin toss.
 
-A 3–3 split is a real result and the most useful one available: it prices the entire question at
-zero and the freeze holds by default.
+A 3–3 split **by arm** is a real result and the most useful one available: it prices the entire
+question at zero and the freeze holds by default.
+
+> **⚠️ Corrected 2026-07-30 — "by arm" is load-bearing and was missing.** Read as a *letter*
+> split, this sentence inverts the instrument. Because A is the name arm in exactly three of six
+> pairs, a **unanimous 6–0 preference for either arm tallies by letter as 3 A / 3 B**. The
+> pre-registered reading of 3–3 was "prices the question at zero, freeze holds by default" — so
+> the packet would have returned *no difference* at the exact moment the answer was *unanimous*,
+> and the freeze would have held on a misread rather than on a finding. This is the same
+> guard-watching-the-wrong-input shape as the stale margin table, this time inside the
+> measurement itself.
+>
+> For the record, on the live data it distorts in the other direction too: the observed **3–3 by
+> arm** (a genuine tie) tallies **4 A / 2 B** by letter, which reads as a two-vote lead for A.
+> Verified against the key: pairs 1, 2, 4 and 5 went to A; pairs 3 and 6 went to B.
 
 The packet is **not committed** — same reason as the casts. It is on your Mac.
 
@@ -438,7 +459,119 @@ If the answer were mine to give: **the difference is not worth six sessions**, a
 especially not worth six sessions before the playtest that would tell you whether the floor or
 the ceiling is the thing that matters with strangers in the room.
 
-But the answer is not mine to give. Tell me a letter and I will tell you which arm won.
+But the answer is not mine to give. Give me **one verdict per pair, named by pair** — "Pair 1: A,
+Pair 2: B, …" — and I will decode each against the key and tally by arm. **Do not give me a
+single letter for the packet**, and do not tally letters across pairs; see the correction above
+for why that reading is inverted rather than merely lossy.
+
+---
+
+# 4. Resolution — added 2026-07-30, after the protocol defect was caught
+
+## The protocol defect
+
+Jackson derived the arm assignment independently from the **rendered text** of `AB-PACKET.md`
+(first speaker label of each arm in each pair) and got `name, trait, name, name, trait, trait`.
+That derivation was checked mechanically against `.ab-key.json` and against the hardcoded `A_IS`
+in `scripts/ab-packet.ts`. **All three agree exactly.**
+
+**Verdict: the data is sound; the prose and the answer protocol were wrong.** `.ab-key.json`
+records a correct per-pair assignment, not a single global one. Nothing needs re-deriving and no
+result needs re-decoding. What needed fixing was the packet header, the self-contradicting
+sentence in §3 of this file, and the letter-based answer form — all three now corrected.
+
+One nuance worth writing down, because it is the root cause: the generator did **not** randomise
+per pair. `A_IS` is a hardcoded literal, deliberately so, and the word "fixed" in its comment
+meant *not randomised at runtime*. It was then read downstream as *the same arm in every pair*.
+That single ambiguity produced the false header. The comment now says which "fixed" it means.
+
+## The verdict on Chunk 4
+
+**DO NOT REVERSE. On merit, not on cost.**
+
+An independent read of all twelve scripts scored **names funnier in pairs 1, 4 and 6; traits
+funnier in pairs 2, 3 and 5 — 3–3 by arm.** The scripts do not show the name arm winning. The
+question is priced at zero and **the freeze holds**, now on a correctly-read instrument rather
+than on a misread one.
+
+## The finding that matters more than the verdict
+
+**The variable that predicted funniness in all six pairs was not names vs traits. It was whether
+the card supplies a MECHANISM or only a VOICE.**
+
+- An **engine** is a behaviour that generates escalating consequences. Each firing changes the
+  state of the scene, so consequences accumulate.
+- A **voice** is a manner of speaking. Each firing is the same joke.
+
+Engines won **on both sides of the experiment**: *solves it in the first minute and is ignored*,
+*reads every sign aloud*, *knows something and is waiting to be asked*, Jason Voorhees' silence,
+and eight catchphrases shouted as a seance incantation. Voices lost on both sides: *says "as I
+was saying" having said nothing* produces one joke and then repeats it, and so does Michael Scott
+saying "that's what she said."
+
+**This reframes the whole reversal question.** Names vs traits was the wrong axis. A named
+character is a *delivery mechanism* for a mechanism-or-voice, not a third thing — which is why
+the name arm neither won nor lost cleanly. The deck's comic yield is a property of how many of
+its entries are engines, and that is orthogonal to the IP question.
+
+### Audit of the 251-entry trait deck
+
+Run 2026-07-30 against the criterion above. Every entry in `lib/content.ts` classified.
+
+| | count | share |
+|---|---:|---:|
+| **Engines** — behaviour generating escalating consequences | **156** | **62.2%** |
+| **Voices** — a manner of speaking, one joke repeated | **95** | **37.8%** |
+| Total | 251 | 100% |
+
+**The deck is roughly five-eighths engine.** That is better than the packet's failure cases
+suggest and it is not good enough to leave alone: **95 entries are dead weight by the only
+variable that predicted funniness in the experiment.**
+
+Two honesty caveats on that number, because it is a single judgement pass by one reader:
+
+1. **Roughly 40 of the 251 are genuinely borderline** and were forced to a side. *Believes the
+   room is being recorded* is a belief (voice) that drives guarded behaviour (engine); *has read
+   one book about leadership* is a cliché generator (voice) that makes its holder try to run the
+   room (engine). A second pass by a different reader would plausibly move the split by ±8
+   percentage points. **Treat 62% as "about three-fifths", not as a measured constant.**
+2. **This is a classification, not a measurement.** Nothing here was scored against generated
+   scripts. The criterion earned its standing by predicting six of six pairs in the packet, which
+   is suggestive and is not the same as validated. Six pairs is a small sample and the criterion
+   was derived from the same six pairs it predicts — it has not yet been tested out-of-sample.
+
+**No rewrite has been done and none should be.** A deck rewrite is post-playtest work and the
+freeze holds. The number is recorded here so the decision has an input when the freeze lifts.
+
+## A live performance hazard the instruments cannot see
+
+**Pair 5's name arm renders Scooby-Doo phonetically.** Four lines, verbatim from the packet at
+`AB-PACKET.md:1071` onward:
+
+```
+SCOOBY-DOO
+    Rwo rakes? Rhat's rike, rour rakes!
+SCOOBY-DOO
+    Rmaybe rone rake ris a rhost!
+SCOOBY-DOO
+    Ri'll rake rhe rwhole rfing!
+SCOOBY-DOO
+    Ri rote for Re!
+```
+
+A player has to perform that aloud, cold, off a phone, in front of seven strangers. **Every
+instrument in the experiment scores those four lines as healthy** — they are on-cast, they are
+inside the line budget, the seat clears the 3-line floor, and layer 3 does not fire on a
+phonetic respelling because it is not a protected term as written.
+
+This is the **second** instance of the packet containing information no instrument detects, after
+the clustered-cast finding in §2 where seven players performing an in-joke and one performing
+alone produced the healthiest telemetry line of the evening. Both point the same way: **the
+distribution metrics measure whether lines were dealt, not whether they can be performed.**
+
+It is also specific to the name arm and has no trait-arm equivalent — a trait card cannot ask a
+player to do an accent, because it describes a behaviour rather than a person with a voice. Add
+it to the column against reversal that the metrics table does not contain.
 
 The mapping was written to `.ab-key.json` **before** either of us read a line of the packet, by
 the same script that rendered it, and the packet generator never reads that file back. If you

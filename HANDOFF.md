@@ -17,7 +17,7 @@ box, `[MACBOOK]` = Jackson's Mac over the tunnel.
 | **Unit suite** | **553/553** — `[VPS] npx jest`. Denominator moved 436 → 448 → 450 → 469 → 517 → 540: the source-audit suite grew 4 → 16 → 18 tests, 2026-07-30 added 19 seat-cap tests (`playerCounts.test.ts`) where previously **nothing asserted `MAX_PLAYERS` at all**, the same evening added 48 for the line budget and the cast binding (§14), 23 more late that night for the short speaker label (§15) — where, again, nothing asserted either — and 13 more on 2026-07-30 for `trust proxy` and for the A/B scaffolding guard (§17). Mostly coverage — but the three drift guards (real UI source in `playerCounts.test.ts`, real prompt text in `comedyPrompts.cast.test.ts`, real component source in `speakerLabel.test.ts`) are behaviour. See §3 before you relax. |
 | **Typecheck** | `npx tsc --noEmit` → **0 errors**. Keep it there; the types are load-bearing (§5). |
 | **plotslop.com** | 🟢 **LIVE 2026-07-29.** A → `187.77.218.14` TTL 60, `www` CNAME, no AAAA (deliberate — do not add one). Cert for both names expires **2026-10-27**. `plotslop.service` active and enabled on :3100 behind nginx TLS; apex and `www` return 200, HTTP 301s to HTTPS, sang3r.com verified unaffected. **Two clients have joined a room over the public endpoint.** **Cutover step 6: four of five boxes RUN AND PASSED 2026-07-30 with numbers (§17b).** Box 2 (deliberate OOM) is the only one outstanding, and box 1 already eliminates the failure class step 6 existed for. |
-| **Current chunk** | **Chunks 2, 3 and 5 complete.** **Chunk 5 (the rename) DONE 2026-07-30** — see §12. `DECISIONS.md` #7 and #10 are both closed. **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 is 4/5 boxes green (§17b). **Chunk 4 reversal ANALYSED, not executed — `CHUNK4-REVERSAL-ANALYSIS.md`, and the product is unchanged (§17a).** |
+| **Current chunk** | **Chunks 2, 3 and 5 complete.** **Chunk 5 (the rename) DONE 2026-07-30** — see §12. `DECISIONS.md` #7 and #10 are both closed. **Chunk 4 layer 1 REDONE 2026-07-29** on Jackson's ruling — the catalog is restructured, not paraphrased; see §8. **Chunk 1** cutover APPLIED 2026-07-29 (steps 1-5, 7); step 6 is 4/5 boxes green (§17b). **Chunk 4 reversal DECIDED 2026-07-30: DO NOT REVERSE, on merit — the twelve scripts score 3–3 by arm, so the name arm does not win. Nothing reversed, product unchanged (§17a, and §4 of `CHUNK4-REVERSAL-ANALYSIS.md`).** The A/B answer protocol was found to be **inverted** before the verdict was read — a unanimous 6–0 for either arm would have tallied 3 A / 3 B and been misread as "no difference" (correction #28, §9). Verdicts tally **by arm, per pair, never by letter.** |
 | **Deployed** | ✅ **LIVE as of 2026-07-30 20:17 UTC** — the short speaker label (§15) and the homepage poster wall (§16), on top of the 19:18 line-budget/cast-binding deploy. Verified in a real browser at two viewports, plus 16 routes curled with no 500s. Previously: ✅ **2026-07-30 18:38 UTC** — the seat-cap pass, on top of the 17:25 Chunk 5 deploy. Verified after the restart: apex/www 200, sang3r.com 200, zero errors in the journal, `ENSEMBLE:8` present in all three cap-bearing chunks **fetched over TLS** with zero `ENSEMBLE:6`, and all three OG image routes returning `200 image/png` — **including the invite card, which had been returning 500 since it was built** (§9 #24). |
 | **Script length** | **42-52 lines, `max_tokens` 3,000** (`server/services/scriptCustomization.service.ts`). Jackson's ruling 2026-07-30, replacing 30-38 / 2,600 — triggered by his own rule that mean speaking lines per seated player at 8 must not fall under 5. Both branches of `generateScript` now READ that table rather than restating it. See §14. |
 | **Cast binding** | **A script's `speaker` field is now the player's trait card, verbatim.** It was invented first names until 2026-07-30, which meant no line in any script had ever belonged to anybody in the room. `server/services/scriptCast.service.ts` enforces and measures it. **Read §14 before touching `comedyPrompts.ts`.** |
@@ -425,9 +425,10 @@ be named.
 
 ---
 
-## 9. Corrections to the record found on 2026-07-29 and 2026-07-30 — twenty-seven of them
+## 9. Corrections to the record found on 2026-07-29 and 2026-07-30 — twenty-eight of them
 
-**Eighteen now, across five passes** (13–18 are 2026-07-30 and are at the end of this section),
+**Twenty-eight now, across seven passes** (13–24 are 2026-07-30; 25–27 are the late-evening
+`speaker`-string pass; **#28 is the A/B protocol defect and is at the end of this section**),
 and they are listed because the pattern matters more than any
 one of them: **the written record has been wrong about a completed item five sessions running.**
 Go looking. The afternoon pass found three more (5–7) *inside the fix for number 1*, and the
@@ -761,6 +762,44 @@ side of a boundary. These are three places where the instrument, the artefact, a
 all agreed with each other and all three were wrong together, because they shared an assumption
 none of them tested — that a `speaker` string means a person. **Agreement between your own
 instruments is not corroboration when they share a premise.***
+
+### #28 — the A/B answer protocol inverted the result it was built to measure
+
+**Found by Jackson 2026-07-30, from the rendered packet rather than from any metric.**
+
+`AB-PACKET.md`'s header claimed *"whatever A is in pair 1, it is in pair 6"* and asked for **one
+letter** as the answer. `CHUNK4-REVERSAL-ANALYSIS.md` §3 carried the same claim and contradicted
+itself inside a single sentence: *"A and B are consistent across all six pairs, the assignment is
+a fixed 3/3 split."* **A fixed 3/3 split IS a per-pair re-draw.** The two halves of that sentence
+cannot both be true.
+
+**The data was never wrong.** Derived from the rendered text — first speaker label of each arm in
+each pair — the assignment is `name, trait, name, name, trait, trait`, which matches
+`.ab-key.json` and the hardcoded `A_IS` in `scripts/ab-packet.ts` exactly. Verified all three
+ways. Nothing needed re-deriving.
+
+**What made it a measurement defect rather than a wording nit:** with A as the name arm in
+exactly three of six pairs, a **unanimous 6–0 preference for either arm tallies BY LETTER as 3 A
+/ 3 B** — and the pre-registered reading of 3–3 was *"prices the question at zero, freeze holds
+by default."* The instrument returned **"no difference" exactly when the answer was
+"unanimous."** On the live data it distorted the other way too: the observed genuine 3–3 by arm
+tallies 4 A / 2 B by letter, reading as a two-vote lead that does not exist.
+
+**Root cause, and it is one word.** `A_IS` is a hardcoded literal and its comment called that
+"fixed", meaning *not randomised at runtime*. Downstream prose read "fixed" as *the same arm in
+every pair*. One ambiguous word, propagated into a header, a protocol, and an analysis.
+
+**Fixed in all three files:** the emitted header in `scripts/ab-packet.ts`, the rendered
+`AB-PACKET.md`, and §3 of `CHUNK4-REVERSAL-ANALYSIS.md`. The answer form is now **one verdict per
+pair, tallied by arm, never by letter.** `.ab-key.json` was deliberately **not** regenerated —
+re-running the generator would rewrite it and destroy the timestamp that is its tamper-evidence.
+
+*This is the same shape as the stale margin table — a guard watching the wrong input — but one
+layer deeper: it was inside the measurement rather than inside the thing measured. **A blind
+protocol has to be checked against the artefact it renders, not against the intent of whoever
+wrote it.** Note also that #25-27 were caught by instruments; #28 was caught by reading the
+output. Two of this session's most useful findings — this and the Scooby-Doo performance hazard
+logged in `CHUNK4-REVERSAL-ANALYSIS.md` §4 — came from the packet and from no metric at all.*
 
 ---
 
@@ -1225,6 +1264,19 @@ archetypes only.
 
 **Nothing in the product changed.** Read that before reading anything else in this section. The
 catalog, the layers, the deck and the prompts are exactly as they were.
+
+**RESOLVED 2026-07-30 — do not reverse, on merit rather than on cost.** An independent read of
+all twelve scripts scored names funnier in pairs 1, 4 and 6 and traits funnier in pairs 2, 3 and
+5: **3–3 by arm.** The scripts do not show the name arm winning, the question is priced at zero,
+and the freeze holds. Before that verdict was read, the answer protocol was found to be
+**inverted** — see correction #28 in §9, and read it before trusting any letter-based result
+recorded earlier. Two findings came out of the packet that no instrument in this repo detects:
+the **engine-vs-voice** criterion (which predicted funniness in all six pairs, and against which
+the 251-entry trait deck audits **156 engines / 95 voices**), and a **live performance hazard**
+in the name arm — pair 5 renders Scooby-Doo phonetically, four lines a player must perform aloud,
+and every metric scores those lines as healthy. Both are written up in §4 of
+`CHUNK4-REVERSAL-ANALYSIS.md`. **No deck rewrite — that is post-playtest work and the freeze
+holds.**
 
 **What was added, and how to delete it.** `CastStyle` in `server/services/prompts/comedyPrompts.ts`
 is experiment scaffolding: a parameter that defaults to shipping behaviour and is not reachable

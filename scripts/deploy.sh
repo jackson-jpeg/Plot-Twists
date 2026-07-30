@@ -74,6 +74,13 @@ echo "==> syncing to $DST"
 # The failure was invisible from the source tree, where the file plainly exists, and invisible
 # from the build, which compiles the Next app rather than the Socket.IO server. '/data' anchors
 # the pattern to the transfer root, so only the top-level database is spared.
+#
+# '/.clerk' is excluded because the Clerk SDK writes .clerk/.tmp/keyless.json — containing a
+# publishableKey AND a secretKey for a throwaway instance it creates itself — whenever the app
+# boots without NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY set. That happens by accident when someone runs
+# `npx tsx server.ts` by hand without sourcing the env file. It is gitignored, so nothing here
+# catches it; without this line rsync copies a credential file into the runtime tree. Added
+# 2026-07-30 after doing exactly that.
 rsync -a --delete \
   --exclude '.git' \
   --exclude '/data' \
@@ -82,6 +89,7 @@ rsync -a --delete \
   --exclude 'scripts/harness' \
   --exclude '.env*' \
   --exclude '.mcp.json' \
+  --exclude '/.clerk' \
   "$SRC"/ "$DST"/
 
 echo "==> pruning dev dependencies in the runtime tree"

@@ -77,8 +77,11 @@ app.prepare().then(async () => {
   //
   // Everything reaches this process through nginx on 127.0.0.1, so without this `req.ip` is the
   // loopback address for every visitor on earth and express-rate-limit puts the whole internet in
-  // one bucket. express-rate-limit v7 detects the contradiction and throws a ValidationError on
-  // every request — which is how this was found, in the journal, rather than by anything failing.
+  // one bucket. express-rate-limit v7 detects the contradiction and logs a ValidationError —
+  // ONCE per process, not per request, because its validation checks disable themselves after
+  // firing. That is worth knowing: the single line in the journal was the only symptom, while the
+  // shared-bucket behaviour it warned about applied to every request for the life of the process.
+  // Found by reading the journal, not by anything failing.
   //
   // `1` RATHER THAN `true`, and this is the part worth reading twice. nginx sends
   // `X-Forwarded-For $proxy_add_x_forwarded_for`, which APPENDS the real peer to whatever the

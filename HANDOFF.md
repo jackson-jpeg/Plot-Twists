@@ -1300,6 +1300,12 @@ socket with a forged header, including the non-vacuity case: with `true`, `req.i
 come back as the forged `1.2.3.4`. Reading the config value back would have passed just as
 happily on `true`.
 
+**Correction to how this was first reported.** express-rate-limit logs that ValidationError
+**once per process**, not once per request — its validation checks disable themselves after
+firing. The journal for the whole 20:17→22:07 process life contains exactly one. The
+shared-bucket *behaviour* applied to every request; the *symptom* was a single line, which is
+why nothing surfaced it for as long as it did.
+
 Scope unchanged from what was reported: the money paths are `SocketRateLimiter`, socket-keyed, and
 were never affected. This repairs `gameMetadataLimiter` — 30/min on two read-only routes, until
 now shared by everybody on the internet at once.

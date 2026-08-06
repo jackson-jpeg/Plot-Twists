@@ -49,7 +49,7 @@ export function TopBar() {
                 className={`font-medium no-underline transition-colors duration-150 ${
                   pathname === item.href
                     ? 'text-[rgba(240,236,228,0.8)]'
-                    : 'text-[rgba(240,236,228,0.25)] hover:text-[rgba(240,236,228,0.5)]'
+                    : 'text-[rgba(240,236,228,0.55)] hover:text-[rgba(240,236,228,0.85)]'
                 }`}
                 style={{ fontSize: 13 }}>
                 {item.label}
@@ -59,7 +59,7 @@ export function TopBar() {
         )}
 
         <Link href="/join"
-          className="no-underline text-[rgba(240,236,228,0.4)] border border-[rgba(255,255,255,0.08)] rounded-full transition-all duration-150 hover:border-[rgba(255,255,255,0.18)] hover:text-[rgba(240,236,228,0.6)]"
+          className="no-underline text-[rgba(240,236,228,0.62)] border border-[rgba(255,255,255,0.08)] rounded-full transition-all duration-150 hover:border-[rgba(255,255,255,0.18)] hover:text-[rgba(240,236,228,0.85)]"
           style={{
             fontSize: 12,
             padding: '5px 14px',

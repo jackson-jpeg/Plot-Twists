@@ -18,7 +18,7 @@ empty · loading · error · socket disconnected/reconnecting · 2 players ·
 
 | Screen | Key states | H | T | S | M | St | Notes |
 |---|---|---|---|---|---|---|---|
-| Homepage / landing (`LandingPage`, `HomepagePosterShowcase`) | signed-out, signed-in, mobile strip bug | 1• | 1• | 2• | 2• | 2• | Jackson's four findings: "Now Showing" ×4 above fold; uppercase body copy; three competing accents; six identical sidebar rows. Plus near-white strip under dark route on mobile. **Direction: away from the marquee format, don't reinvent it.** |
+| Homepage / landing (`LandingPage`, `PosterOneSheet`) | signed-out, signed-in, mobile strip bug | 4 | 4 | 4 | 3 | 3 | **Iter 1 (verified by screenshot):** marquee gone; studio-pitch layout — serif sentence-case hero, ONE accent (stage gold), one rotating type-driven one-sheet as the star, billing-block texture, dots not rows. "Now Showing" ×0. Strip bug fixed (body bg scoped). Nav contrast raised (was 1.95:1). axe 0 violations; LCP 2032→1120ms (m390); CLS 0.17→0.088 (d1440). Open: motion is entrance+crossfade only (M=3); signed-in variant unverified; residual 0.088 CLS (suspect serif font swap). |
 | Join form (`JoinForm`) | entry, bad code, full→spectator toast, keyboard-open | 3• | 2• | 3• | 2• | 4• | Spectator handling is complete (§13); visual register unknown. |
 | Join lobby (`JoinLobby`) | waiting, spectator mode, disconnect/reconnect | 3• | 3• | 3• | 2• | 4• | Spectator mode state exists and explains itself. |
 | Host create (`app/host`) | mode select, room settings | 3• | 3• | 3• | 2• | 3• | |
@@ -55,4 +55,5 @@ screenshot critique. Never `ios ship`/`ios install`.
 
 | N | Surface | What was tried | Score delta | Commit |
 |---|---|---|---|---|
-| 0 | — | Setup: tokens spine, NORTH-STAR, this ledger, gate tooling, baselines | — | (this commit) |
+| 0 | — | Setup: tokens spine, NORTH-STAR, this ledger, gate tooling, baselines | — | (see git log) |
+| 1 | Homepage | Marquee → studio pitch + one-sheet. First draft critiqued and reworked before commit: sub-copy was center-drifted on desktop, poster had a bare-gradient void (title moved center as the art), credits label was a naked "1-8". axe found 6 contrast nodes (incl. 4 pre-existing nav) + heading-order — all fixed. | H 1→4, T 1→4, S 2→4, M 2→3, St 2→3 | (this commit) |

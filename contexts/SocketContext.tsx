@@ -110,7 +110,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
                              window.location.hostname === '127.0.0.1'
 
           if (isLocalhost) {
-            socketUrl = 'http://localhost:3000'
+            // The page's own origin, NOT a hardcoded port: server.ts serves
+            // the app and the socket from one process, so wherever the page
+            // came from is where the socket lives. The old literal ':3000'
+            // broke any local instance on another port — and on the
+            // production box port 3000 is a different site entirely (the
+            // same class of bug as corrections #19/#20, HANDOFF §9).
+            socketUrl = window.location.origin
           } else if (process.env.NEXT_PUBLIC_WS_URL) {
             const wsUrl = process.env.NEXT_PUBLIC_WS_URL
             const cleanUrl = wsUrl.replace(/^(wss?|https?):\/\//, '')

@@ -26,8 +26,11 @@ export function PageContainer({
   className = '',
   style,
 }: PageContainerProps) {
+  // A <div>, not <main>: AppShell already renders the page's one <main>
+  // landmark, and this container nesting a second one inside it was a
+  // duplicate-landmark axe violation on every consumer page.
   return (
-    <main
+    <div
       className={`${centered ? 'flex flex-col items-center justify-center' : ''} ${className}`}
       style={{
         minHeight: '100dvh',
@@ -44,6 +47,6 @@ export function PageContainer({
       >
         {children}
       </div>
-    </main>
+    </div>
   )
 }

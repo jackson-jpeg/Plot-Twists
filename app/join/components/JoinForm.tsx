@@ -69,6 +69,16 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
   const [showPublicGames, setShowPublicGames] = useState(false)
   const publicMatchmakingEnabled = isBetaFeatureEnabled('publicMatchmaking')
 
+  // Same strip bug as the landing page: body is light --color-bg and shows
+  // through around a dark route. Scoped override with cleanup.
+  useEffect(() => {
+    const prev = document.body.style.background
+    document.body.style.background = '#08070b'
+    return () => {
+      document.body.style.background = prev
+    }
+  }, [])
+
   const validateRoomCode = (code: string): string => {
     if (!code) return 'Room code is required'
     if (code.length !== 4) return 'Room code must be 4 characters'
@@ -149,35 +159,26 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
     if (nicknameTouched) setNicknameError(validateNickname(value))
   }
 
-  // Fetch room preview
+  // Fetch room preview. Deferred a tick so the effect body has no synchronous
+  // setState (react-hooks/set-state-in-effect); the stale-preview reset is
+  // already handled in handleRoomCodeChange.
   useEffect(() => {
     if (!socket || !isConnected) return
     const upperCode = roomCode.toUpperCase()
-    if (!VALID_ROOM_CODE_REGEX.test(upperCode)) { setRoomPreview(null); return }
-    setIsLoadingPreview(true)
-    socket.emit('get_room_preview', upperCode, (response) => {
-      setIsLoadingPreview(false)
-      if (response.success && response.preview) {
-        setRoomPreview(response.preview)
-      } else {
-        setRoomPreview(null)
-      }
-    })
-  }, [socket, isConnected, roomCode])
-
-  // Auto-submit when arriving from invite page with both code and nickname
-  useEffect(() => {
-    if (hasAutoSubmitted.current) return
-    if (!socket || !isConnected) return
-    if (!initialRoomCode || !initialNickname) return
-    const roomErr = validateRoomCode(initialRoomCode)
-    const nickErr = validateNickname(initialNickname)
-    if (roomErr || nickErr) return
-    hasAutoSubmitted.current = true
-    const timer = setTimeout(() => handleJoin(), 300)
+    if (!VALID_ROOM_CODE_REGEX.test(upperCode)) return
+    const timer = setTimeout(() => {
+      setIsLoadingPreview(true)
+      socket.emit('get_room_preview', upperCode, (response) => {
+        setIsLoadingPreview(false)
+        if (response.success && response.preview) {
+          setRoomPreview(response.preview)
+        } else {
+          setRoomPreview(null)
+        }
+      })
+    }, 0)
     return () => clearTimeout(timer)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket, isConnected])
+  }, [socket, isConnected, roomCode])
 
   // Subscribe to public rooms
   useEffect(() => {
@@ -283,6 +284,22 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
     })
   }
 
+  // Auto-submit when arriving from invite page with both code and nickname.
+  // Lives below handleJoin so the reference is declared before use.
+  useEffect(() => {
+    if (hasAutoSubmitted.current) return
+    if (!socket || !isConnected) return
+    if (!initialRoomCode || !initialNickname) return
+    const roomErr = validateRoomCode(initialRoomCode)
+    const nickErr = validateNickname(initialNickname)
+    if (roomErr || nickErr) return
+    hasAutoSubmitted.current = true
+    const timer = setTimeout(() => handleJoin(), 300)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [socket, isConnected])
+
+
   const isFull = roomPreview ? roomPreview.playerCount >= roomPreview.maxPlayers : false
 
   // Extract digits for the 4-box display
@@ -292,8 +309,8 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
   const TICKET_BG = '#faf7f0'
   const TICKET_TEXT = '#1a1812'
   const TICKET_RED = 'var(--color-stage-red, #c23b22)'
-  const TICKET_MUTED = 'rgba(26,24,18,0.35)'
-  const TICKET_DIVIDER = 'rgba(26,24,18,0.08)'
+  const TICKET_MUTED = 'rgba(26,24,18,0.66)'
+  const TICKET_DIVIDER = 'rgba(26,24,18,0.14)'
 
   return (
     <div style={{
@@ -314,7 +331,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
         <motion.button
           onClick={onNavigateHome}
           className="flex items-center gap-1.5 text-sm font-medium cursor-pointer"
-          style={{ color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', padding: 0 }}
+          style={{ color: 'rgba(240,236,228,0.65)', background: 'none', border: 'none', padding: 0 }}
           {...PRESS}
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -355,7 +372,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             Admit One
           </span>
           <span style={{
-            color: 'rgba(255,255,255,0.75)',
+            color: 'rgba(255,255,255,0.92)',
             fontSize: '11px',
             fontFamily: 'var(--font-code, monospace)',
           }}>
@@ -403,6 +420,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                   inputMode="text"
                   autoCapitalize="characters"
                   autoComplete="off"
+                  aria-label={`Room code, character ${i + 1} of 4`}
                   maxLength={4}
                   value={digits[i] || ''}
                   onChange={(e) => handleDigitChange(i, e.target.value)}
@@ -421,7 +439,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                     color: TICKET_TEXT,
                     border: focusedDigit === i
                       ? `2px solid ${TICKET_RED}`
-                      : roomCodeTouched && roomCodeError
+                      : roomCodeTouched && roomCodeError && !isRoomCodeValid
                       ? '2px solid var(--color-danger)'
                       : isRoomCodeValid
                       ? '2px solid rgba(26,24,18,0.15)'
@@ -434,11 +452,11 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
               ))}
             </div>
             <AnimatePresence>
-              {roomCodeTouched && roomCodeError && (
+              {roomCodeTouched && roomCodeError && !isRoomCodeValid && (
                 <motion.p
                   key="roomCodeError"
                   className="text-center mt-2 text-xs"
-                  style={{ color: 'var(--color-danger)' }}
+                  style={{ color: TICKET_RED }}
                   initial={{ opacity: 0, y: -6, height: 0 }}
                   animate={{ opacity: 1, y: 0, height: 'auto' }}
                   exit={{ opacity: 0, y: -6, height: 0 }}
@@ -563,7 +581,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                 border: 'none',
                 borderBottom: nicknameTouched && nicknameError
                   ? '1.5px solid var(--color-danger)'
-                  : `1.5px solid ${TICKET_DIVIDER}`,
+                  : '1.5px solid rgba(26,24,18,0.3)',
                 borderRadius: 0,
                 padding: '8px 0',
                 color: TICKET_TEXT,
@@ -579,7 +597,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                 <motion.p
                   key="nicknameError"
                   className="text-xs mt-1"
-                  style={{ color: 'var(--color-danger)' }}
+                  style={{ color: TICKET_RED }}
                   initial={{ opacity: 0, y: -6, height: 0 }}
                   animate={{ opacity: 1, y: 0, height: 'auto' }}
                   exit={{ opacity: 0, y: -6, height: 0 }}
@@ -623,8 +641,8 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
                 width: '100%',
                 padding: '14px',
                 borderRadius: '12px',
-                background: isFormValid() && !isJoining ? TICKET_RED : 'rgba(194,59,34,0.35)',
-                color: 'white',
+                background: isFormValid() && !isJoining ? TICKET_RED : '#e8e2d4',
+                color: isFormValid() && !isJoining ? 'white' : 'rgba(26,24,18,0.45)',
                 fontWeight: 700,
                 fontSize: '16px',
                 border: 'none',
@@ -637,17 +655,26 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             </motion.button>
           </motion.div>
 
-          {/* Perforated tear line */}
-          <div style={{
-            margin: '20px 0 0',
-            borderTop: `2px dashed ${TICKET_DIVIDER}`,
-          }} />
+          {/* Perforated tear line — punched notches make it a ticket, not a card */}
+          <div style={{ position: 'relative', margin: '20px -24px 0', height: '0' }}>
+            <div aria-hidden style={{
+              position: 'absolute', left: '-11px', top: '-11px',
+              width: '22px', height: '22px', borderRadius: '50%',
+              background: 'var(--color-void)',
+            }} />
+            <div aria-hidden style={{
+              position: 'absolute', right: '-11px', top: '-11px',
+              width: '22px', height: '22px', borderRadius: '50%',
+              background: 'var(--color-void)',
+            }} />
+            <div style={{ borderTop: `2px dashed rgba(26,24,18,0.22)`, margin: '0 20px' }} />
+          </div>
 
           {/* Below the tear */}
           <p style={{
             textAlign: 'center',
             fontSize: '13px',
-            color: 'rgba(26,24,18,0.2)',
+            color: 'rgba(26,24,18,0.66)',
             marginTop: '16px',
             marginBottom: '4px',
             lineHeight: 1.4,
@@ -673,6 +700,20 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
               {showPublicGames ? 'hide public games' : 'or browse public games'}
             </button>
           </div>
+
+          {/* Billing credit — the ticket is a produced object */}
+          <p style={{
+            textAlign: 'center',
+            fontFamily: 'var(--font-code)',
+            fontSize: '8px',
+            fontWeight: 700,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'rgba(26,24,18,0.68)',
+            margin: '18px 0 0',
+          }}>
+            PlotSlop Pictures · one night only · no refunds
+          </p>
         </div>{/* end ticket body */}
 
         {/* Public games panel — dark, outside the cream body */}

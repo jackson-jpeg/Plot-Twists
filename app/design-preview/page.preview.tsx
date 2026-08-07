@@ -22,6 +22,8 @@ import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
 import { useAudienceStore } from '@/stores/audienceStore'
+import { useVotingStore } from '@/stores/votingStore'
+import { HostResults } from '@/app/host/components/HostResults'
 
 const ENABLED =
   process.env.NODE_ENV !== 'production' ||
@@ -67,6 +69,66 @@ function applyLoadingFixture(state: string) {
   }
 }
 
+const RESULT_CAST = [
+  'Insists nothing is wrong at increasing volume',
+  'Solves every problem in the first minute and is ignored',
+  'Has already searched your bag',
+  'Narrates their own exit',
+  'Apologizes to furniture',
+  'Treats every task as a heist',
+  'Quotes a rule that does not exist',
+  'Keeps upgrading small promises',
+]
+
+function applyResultsFixture(state: string) {
+  useGameStore.setState({
+    players: RESULT_CAST.map((trait, i) => ({
+      publicId: `p${i}`,
+      nickname: ['Dana', 'Marco', 'Priya', 'Sam', 'Lee', 'Iris', 'Theo', 'Noor'][i],
+      role: 'PLAYER',
+      isHost: i === 0,
+      connected: true,
+      assignedCharacter: trait,
+      score: [7, 4, 3, 3, 2, 2, 1, 0][i],
+    })) as never,
+    settings: { gameMode: 'ENSEMBLE' } as never,
+  } as never)
+  useScriptStore.setState({
+    script: {
+      title: 'The Intervention Goes to Space',
+      synopsis:
+        'Eight acquaintances stage a gentle confrontation at the worst possible altitude.',
+      lines: [],
+    } as never,
+  } as never)
+  useVotingStore.setState({
+    gameResults:
+      state === 'nowinner'
+        ? { allResults: [] }
+        : {
+            winner: { playerName: 'Dana', votes: 5 },
+            allResults: [
+              { playerName: 'Dana', votes: 5 },
+              { playerName: 'Marco', votes: 2 },
+              { playerName: 'Priya', votes: 1 },
+            ],
+            highlights: [
+              { label: 'Longest silence survived', value: '11 seconds', icon: 'clock' },
+              { label: 'Lines delivered standing on a chair', value: '4', icon: 'star' },
+            ],
+          },
+    directorsReview: {
+      rating: 4,
+      headline: 'A Masterclass in Escalating Reassurance',
+      review:
+        'What begins as a wellness check becomes cinema. The ensemble commits to the bit with the discipline of a much better-funded production. One chair did not survive, and it was worth it.',
+      bestMoment: 'The unanimous decision to whisper the loudest line.',
+    },
+    xpEvents: [],
+    levelUpData: null,
+  } as never)
+}
+
 function PreviewInner() {
   const params = useSearchParams()
   const screen = params.get('screen') ?? 'loading'
@@ -76,9 +138,20 @@ function PreviewInner() {
   // their own, so no local ready-state is needed.
   useEffect(() => {
     if (screen === 'loading') applyLoadingFixture(state)
+    if (screen === 'results') applyResultsFixture(state)
   }, [screen, state])
   if (screen === 'loading') {
     return <HostLoading onRetry={() => {}} onBackToLobby={() => {}} />
+  }
+  if (screen === 'results') {
+    return (
+      <HostResults
+        userUid=""
+        toast={{ success: () => {}, error: () => {} }}
+        onShowPosterLightbox={() => {}}
+        onRequestNewGame={() => {}}
+      />
+    )
   }
   if (screen === 'system') {
     // Harness pages have no product h1; give axe one so heading checks

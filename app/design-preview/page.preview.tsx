@@ -24,6 +24,7 @@ import { useScriptStore } from '@/stores/scriptStore'
 import { useAudienceStore } from '@/stores/audienceStore'
 import { useVotingStore } from '@/stores/votingStore'
 import { HostResults } from '@/app/host/components/HostResults'
+import { HostVoting } from '@/app/host/components/HostVoting'
 
 const ENABLED =
   process.env.NODE_ENV !== 'production' ||
@@ -129,6 +130,29 @@ function applyResultsFixture(state: string) {
   } as never)
 }
 
+function applyVotingFixture(state: string) {
+  const voted = state === 'complete' ? 8 : 5
+  useGameStore.setState({
+    players: RESULT_CAST.map((trait, i) => ({
+      publicId: `p${i}`,
+      nickname: ['Dana', 'Marco', 'Priya', 'Sam', 'Lee', 'Iris', 'Theo', 'Noor'][i],
+      role: 'PLAYER',
+      isHost: false,
+      connected: true,
+      assignedCharacter: trait,
+      hasSubmittedVote: i < voted,
+    })) as never,
+    settings: { gameMode: 'ENSEMBLE' } as never,
+  } as never)
+  useScriptStore.setState({
+    script: {
+      title: 'The Intervention Goes to Space',
+      synopsis: '',
+      lines: [],
+    } as never,
+  } as never)
+}
+
 function PreviewInner() {
   const params = useSearchParams()
   const screen = params.get('screen') ?? 'loading'
@@ -139,9 +163,13 @@ function PreviewInner() {
   useEffect(() => {
     if (screen === 'loading') applyLoadingFixture(state)
     if (screen === 'results') applyResultsFixture(state)
+    if (screen === 'voting') applyVotingFixture(state)
   }, [screen, state])
   if (screen === 'loading') {
     return <HostLoading onRetry={() => {}} onBackToLobby={() => {}} />
+  }
+  if (screen === 'voting') {
+    return <HostVoting />
   }
   if (screen === 'results') {
     return (

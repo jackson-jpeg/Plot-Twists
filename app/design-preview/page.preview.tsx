@@ -25,6 +25,7 @@ import { useAudienceStore } from '@/stores/audienceStore'
 import { useVotingStore } from '@/stores/votingStore'
 import { HostResults } from '@/app/host/components/HostResults'
 import { HostVoting } from '@/app/host/components/HostVoting'
+import { HostPerforming } from '@/app/host/components/HostPerforming'
 
 const ENABLED =
   process.env.NODE_ENV !== 'production' ||
@@ -130,6 +131,40 @@ function applyResultsFixture(state: string) {
   } as never)
 }
 
+function applyPerformingFixture(state: string) {
+  useGameStore.setState({
+    roomCode: 'T22X',
+    players: RESULT_CAST.map((trait, i) => ({
+      publicId: `p${i}`,
+      nickname: ['Dana', 'Marco', 'Priya', 'Sam', 'Lee', 'Iris', 'Theo', 'Noor'][i],
+      role: 'PLAYER',
+      isHost: false,
+      connected: true,
+      assignedCharacter: trait,
+    })) as never,
+    settings: { gameMode: 'ENSEMBLE' } as never,
+  } as never)
+  useScriptStore.setState({
+    script: {
+      title: 'The Intervention Goes to Space',
+      synopsis: 'Eight acquaintances stage a gentle confrontation at the worst possible altitude.',
+      lines: [
+        { speaker: 'STAGE DIRECTIONS', text: '[A BORROWED CONFERENCE ROOM ON A COMMERCIAL SPACEFLIGHT. A BANNER READS "WE NEED TO TALK." ZERO GRAVITY IS NOT HELPING.]' },
+        { speaker: RESULT_CAST[0], text: 'Nothing is wrong. NOTHING IS WRONG.' },
+        { speaker: RESULT_CAST[1], text: 'We could simply land the shuttle. I said this an hour ago.' },
+        { speaker: RESULT_CAST[2], text: 'Whose bag is this. Answer carefully.' },
+        { speaker: RESULT_CAST[3], text: 'And with that, I drift meaningfully toward the airlock.' },
+        { speaker: RESULT_CAST[4], text: 'Sorry, table. You deserved a better meeting.' },
+        { speaker: RESULT_CAST[5], text: 'Phase one: everyone act natural. Phase two: the vents.' },
+        { speaker: RESULT_CAST[6], text: 'Regulation 9 clearly forbids crying in zero gravity.' },
+        { speaker: RESULT_CAST[7], text: 'I promised a small intervention. It is now a summit.' },
+      ],
+    } as never,
+    currentLineIndex: state === 'start' ? 0 : 4,
+    isPlaying: true,
+  } as never)
+}
+
 function applyVotingFixture(state: string) {
   const voted = state === 'complete' ? 8 : 5
   useGameStore.setState({
@@ -164,12 +199,16 @@ function PreviewInner() {
     if (screen === 'loading') applyLoadingFixture(state)
     if (screen === 'results') applyResultsFixture(state)
     if (screen === 'voting') applyVotingFixture(state)
+    if (screen === 'performing') applyPerformingFixture(state)
   }, [screen, state])
   if (screen === 'loading') {
     return <HostLoading onRetry={() => {}} onBackToLobby={() => {}} />
   }
   if (screen === 'voting') {
     return <HostVoting />
+  }
+  if (screen === 'performing') {
+    return <HostPerforming onShowPosterLightbox={() => {}} />
   }
   if (screen === 'results') {
     return (

@@ -123,7 +123,7 @@ export function TeleprompterSettings({
             <h3 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               Teleprompter View
             </h3>
-            <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+            <p className="text-sm" style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}>
               {getModeLabel()}
               {settings.autoScroll ? ' • Auto-scroll on' : ''}
             </p>
@@ -131,7 +131,7 @@ export function TeleprompterSettings({
         </div>
         <motion.span
           animate={{ rotate: isExpanded ? 180 : 0 }}
-          style={{ color: 'var(--color-text-tertiary)' }}
+          style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}
         >
           ▼
         </motion.span>
@@ -149,7 +149,7 @@ export function TeleprompterSettings({
             <div className="p-4 pt-0 space-y-4">
               {/* Preset buttons */}
               <div className="space-y-2">
-                <label className="text-sm font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+                <label className="text-sm font-medium" style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}>
                   View Mode
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -222,7 +222,7 @@ export function TeleprompterSettings({
                       {/* Past lines slider */}
                       <div className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          <span className="text-sm" style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}>
                             Past Lines
                           </span>
                           <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
@@ -238,7 +238,7 @@ export function TeleprompterSettings({
                           disabled={disabled}
                           className="w-full accent-[var(--color-accent)]"
                         />
-                        <div className="flex justify-between text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                        <div className="flex justify-between text-xs" style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}>
                           <span>0</span>
                           <span>5</span>
                         </div>
@@ -247,7 +247,7 @@ export function TeleprompterSettings({
                       {/* Upcoming lines slider */}
                       <div className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                          <span className="text-sm" style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}>
                             Upcoming Lines
                           </span>
                           <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
@@ -263,7 +263,7 @@ export function TeleprompterSettings({
                           disabled={disabled}
                           className="w-full accent-[var(--color-accent)]"
                         />
-                        <div className="flex justify-between text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                        <div className="flex justify-between text-xs" style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}>
                           <span>1</span>
                           <span>10</span>
                         </div>
@@ -279,7 +279,7 @@ export function TeleprompterSettings({
                   <p className="font-medium text-sm" style={{ color: 'var(--color-text-primary)' }}>
                     Auto-scroll
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                  <p className="text-xs" style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}>
                     Keep current line centered
                   </p>
                 </div>
@@ -336,7 +336,7 @@ function CompactSettingsContent({
             }}
           >
             <span className="font-medium text-sm">{PRESET_INFO[mode].label}</span>
-            <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+            <span className="text-xs" style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}>
               {PRESET_INFO[mode].description}
             </span>
           </button>
@@ -359,7 +359,7 @@ function CompactSettingsContent({
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Past</label>
+            <label className="text-xs" style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}>Past</label>
             <input
               type="number"
               min="0"
@@ -376,7 +376,7 @@ function CompactSettingsContent({
             />
           </div>
           <div>
-            <label className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Upcoming</label>
+            <label className="text-xs" style={{ color: 'var(--color-text-primary)', opacity: 0.75 }}>Upcoming</label>
             <input
               type="number"
               min="1"

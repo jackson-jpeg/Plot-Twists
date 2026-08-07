@@ -69,7 +69,9 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
             fontSize: '40px',
             fontWeight: 400,
             fontStyle: 'italic',
-            color: isSpectator ? 'var(--color-accent-2)' : 'var(--color-text-primary)',
+            // Explicit theater ink: the light-mode text tokens render
+            // near-black on this dark surface under a light color-scheme.
+            color: isSpectator ? '#7C9FD9' : 'rgba(240,236,228,0.95)',
             marginBottom: '8px',
           }}
           initial={{ y: 20, opacity: 0 }}
@@ -81,7 +83,7 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
 
         {/* Subtitle */}
         <motion.p
-          style={{ fontSize: '16px', color: 'var(--color-text-secondary)', marginBottom: '24px' }}
+          style={{ fontSize: '16px', color: 'rgba(240,236,228,0.62)', marginBottom: '24px' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -145,9 +147,11 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
                         : '1px solid rgba(255,255,255,0.10)',
                     fontSize: '14px',
                     fontWeight: 600,
+                    // Explicit theater ink (the light-scheme text token
+                    // rendered near-black on the ink chip).
                     color: isHost
                       ? 'var(--color-stage-gold)'
-                      : 'var(--color-text-primary)',
+                      : 'rgba(240,236,228,0.88)',
                   }}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -161,8 +165,8 @@ export function JoinLobby({ myPlayerId, myRole, autoStartCountdown }: JoinLobbyP
                       fontSize: '10px',
                       padding: '1px 6px',
                       borderRadius: '999px',
-                      background: 'rgba(245,158,66,0.15)',
-                      color: 'var(--color-accent)',
+                      background: 'rgba(201,162,77,0.18)',
+                      color: 'var(--color-stage-gold)',
                       fontWeight: 700,
                       letterSpacing: '0.04em',
                     }}>

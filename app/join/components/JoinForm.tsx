@@ -30,7 +30,11 @@ export interface JoinFormProps {
   onNavigateHome: () => void
 }
 
-const VALID_ROOM_CODE_REGEX = /^[A-HJ-NP-Y2-9]{4}$/
+// Must accept exactly what the server mints (ROOM_CODE_CHARS in
+// server/utils/constants.ts: A-Z minus I/O, 2-9). The previous range
+// stopped at Y — the server happily minted codes containing Z that this
+// form then refused to submit: ~1 in 8 rooms was untypeable by code.
+const VALID_ROOM_CODE_REGEX = /^[A-HJ-NP-Z2-9]{4}$/
 
 function GameModeLabel({ mode }: { mode: GameMode }) {
   switch (mode) {

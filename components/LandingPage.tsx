@@ -6,8 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { SignInButton } from '@clerk/nextjs'
 import { analytics } from '@/lib/analytics'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
-import { HOMEPAGE_SHOWCASE } from '@/lib/homepageShowcase'
-import { PosterOneSheet } from '@/components/PosterOneSheet'
+import { LiveScriptDemo } from '@/components/LiveScriptDemo'
 import { ALL_MODES_PLAYER_RANGE_LABEL } from '@/lib/playerCounts'
 import { EASE_CAMERA, DUR } from '@/lib/motion'
 
@@ -18,13 +17,10 @@ import { EASE_CAMERA, DUR } from '@/lib/motion'
  * the billing kicker and the credits line.
  */
 
-const ROTATE_MS = 7000
-
 export function LandingPage() {
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
   const reducedMotion = useReducedMotion()
-  const [posterIndex, setPosterIndex] = useState(0)
 
   // The near-white strip bug: body is --color-bg and any dark route with
   // bottom padding on <main> shows it through. Scoped fix with cleanup.
@@ -34,14 +30,6 @@ export function LandingPage() {
     return () => {
       document.body.style.background = prev
     }
-  }, [])
-
-  useEffect(() => {
-    const id = setInterval(
-      () => setPosterIndex((i) => (i + 1) % HOMEPAGE_SHOWCASE.length),
-      ROTATE_MS
-    )
-    return () => clearInterval(id)
   }, [])
 
   const fadeUp = (delay: number) => ({
@@ -66,7 +54,7 @@ export function LandingPage() {
           width: '100%',
           maxWidth: '1080px',
           display: 'grid',
-          gridTemplateColumns: isDesktop ? '1fr 360px' : '1fr',
+          gridTemplateColumns: isDesktop ? '1fr 440px' : '1fr',
           alignItems: 'center',
           gap: isDesktop ? '72px' : '48px',
         }}
@@ -85,7 +73,7 @@ export function LandingPage() {
               margin: 0,
             }}
           >
-            A PlotSlop production
+            Written live, performed by you
           </motion.p>
 
           <motion.h1
@@ -185,82 +173,32 @@ export function LandingPage() {
             Free · players never sign up · any phone is a script
           </motion.p>
 
-          {/* Credits line — billing texture, the only other tracked type on the page */}
           <motion.p
             {...fadeUp(0.4)}
             style={{
-              fontFamily: 'var(--font-code)',
-              fontSize: '9px',
-              fontWeight: 700,
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase',
-              lineHeight: 2,
-              color: 'rgba(240,236,228,0.52)',
-              margin: '36px 0 0',
-              maxWidth: isDesktop ? '52ch' : '100%',
+              fontFamily: 'var(--font-body)',
+              fontSize: '13px',
+              lineHeight: 1.6,
+              color: 'rgba(240,236,228,0.55)',
+              margin: '28px 0 0',
+              maxWidth: isDesktop ? '46ch' : '100%',
             }}
           >
-            No rehearsal · no talent required · {ALL_MODES_PLAYER_RANGE_LABEL}{' '}
-            performers · somebody wins an award
+            No rehearsal, no talent required, {ALL_MODES_PLAYER_RANGE_LABEL}{' '}
+            performers. Somebody wins an award.
           </motion.p>
         </div>
 
-        {/* ---- The star: one rotating one-sheet ---- */}
+        {/* ---- The demo IS the hero: a scene writing itself ---- */}
         <motion.div
           {...fadeUp(0.2)}
           style={{
             width: '100%',
-            maxWidth: isDesktop ? '360px' : '300px',
+            maxWidth: isDesktop ? '440px' : '520px',
             margin: '0 auto',
           }}
         >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={HOMEPAGE_SHOWCASE[posterIndex].slug}
-              initial={
-                reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 1.025 }
-              }
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: reducedMotion ? 0.2 : 0.7, ease: EASE_CAMERA }}
-            >
-              <PosterOneSheet entry={HOMEPAGE_SHOWCASE[posterIndex]} />
-            </motion.div>
-          </AnimatePresence>
-
-          <div
-            role="tablist"
-            aria-label="Featured premieres"
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '8px',
-              marginTop: '20px',
-            }}
-          >
-            {HOMEPAGE_SHOWCASE.map((entry, i) => (
-              <button
-                key={entry.slug}
-                role="tab"
-                aria-selected={i === posterIndex}
-                aria-label={entry.title}
-                onClick={() => setPosterIndex(i)}
-                style={{
-                  width: i === posterIndex ? '20px' : '6px',
-                  height: '6px',
-                  borderRadius: '3px',
-                  border: 'none',
-                  padding: 0,
-                  cursor: 'pointer',
-                  background:
-                    i === posterIndex
-                      ? 'var(--color-stage-gold)'
-                      : 'rgba(240,236,228,0.18)',
-                  transition: 'all 250ms var(--easing-out)',
-                }}
-              />
-            ))}
-          </div>
+          <LiveScriptDemo />
         </motion.div>
       </div>
     </div>

@@ -369,14 +369,7 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             letterSpacing: '0.3em',
             textTransform: 'uppercase',
           }}>
-            Admit One
-          </span>
-          <span style={{
-            color: 'rgba(255,255,255,0.92)',
-            fontSize: '11px',
-            fontFamily: 'var(--font-code, monospace)',
-          }}>
-            No. 0247
+            Join the show
           </span>
         </div>
 
@@ -701,19 +694,6 @@ export function JoinForm({ socket, isConnected, initialRoomCode, initialNickname
             </button>
           </div>
 
-          {/* Billing credit — the ticket is a produced object */}
-          <p style={{
-            textAlign: 'center',
-            fontFamily: 'var(--font-code)',
-            fontSize: '8px',
-            fontWeight: 700,
-            letterSpacing: '0.18em',
-            textTransform: 'uppercase',
-            color: 'rgba(26,24,18,0.68)',
-            margin: '18px 0 0',
-          }}>
-            PlotSlop Pictures · one night only · no refunds
-          </p>
         </div>{/* end ticket body */}
 
         {/* Public games panel — dark, outside the cream body */}

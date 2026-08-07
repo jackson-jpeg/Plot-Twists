@@ -94,8 +94,7 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
           transition={{ duration: DUR.slower, delay: 0.1, ease: EASE_CAMERA }}
           style={{
             width: '100%',
-            aspectRatio: '2 / 3',
-            background: 'linear-gradient(180deg, var(--color-cream) 0%, var(--color-paper) 70%, var(--color-paper-dark) 100%)',
+            background: 'linear-gradient(180deg, var(--color-cream) 0%, var(--color-paper) 100%)',
             borderRadius: '8px',
             boxShadow:
               '0 24px 60px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.07)',
@@ -128,33 +127,15 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
             }}
           />
 
-          {/* Studio credit */}
-          <p
-            style={{
-              position: 'relative',
-              padding: '8% 8% 0',
-              textAlign: 'center',
-              fontFamily: 'var(--font-code)',
-              fontSize: '9px',
-              fontWeight: 700,
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: 'rgba(26,24,18,0.5)',
-              margin: 0,
-            }}
-          >
-            PlotSlop Pictures presents
-          </p>
-
           {/* Title — streams in as it is written */}
           <div
             style={{
               position: 'relative',
-              flex: 1,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '0 9%',
+              padding: '44px 9% 30px',
+              minHeight: '150px',
             }}
           >
             <AnimatePresence>
@@ -202,8 +183,8 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
             </AnimatePresence>
           </div>
 
-          {/* Billing block — credits materialize with progress */}
-          <div style={{ position: 'relative', padding: '0 10% 8%' }}>
+          {/* Typed progress list — the real steps, no costume */}
+          <div style={{ position: 'relative', padding: '0 10% 26px' }}>
             <div
               aria-hidden
               style={{
@@ -255,20 +236,6 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
                 )
               })}
             </div>
-            <p
-              style={{
-                fontFamily: 'var(--font-code)',
-                fontSize: '8px',
-                fontWeight: 700,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                textAlign: 'center',
-                color: 'rgba(26,24,18,0.42)',
-                margin: '14px 0 0',
-              }}
-            >
-              written live · one night only
-            </p>
           </div>
         </motion.div>
 

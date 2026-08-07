@@ -6,6 +6,21 @@ scratchpad for this document. Per that chunk's ruling, **no image, franchise,
 or character name from them is ever committed** — what carries forward is the
 design language, which was never the infringing part.
 
+## RULING — 2026-08-07, from Jackson, overrides anything below that conflicts
+
+> "i hate those fake dumb posters and everything like that"
+
+**No fake memorabilia.** Fake one-sheets for shows that don't exist, billing
+blocks crediting nobody ("casting by dumb luck"), fake ticket serials
+("No. 0247"), fake legalese ("no refunds"), studio credits ("PlotSlop
+Pictures presents") — all OUT. They are set dressing, and set dressing is the
+wink this document already forbade. What replaces them: **the real product as
+the hero** — actual script content, live typing, real game state, big honest
+type. The deadpan register, the two-world palette, the serif/mono type system
+and single-accent rule all stand. §2 (one-sheet grammar) and the
+billing-block texture are dead; the translation table's poster rows no longer
+apply.
+
 ## The one-line brief
 
 **A film studio's marketing department took a very silly party game completely

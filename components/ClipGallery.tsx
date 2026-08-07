@@ -113,13 +113,6 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
       {clips.length === 0 && (
         <div className="flex flex-col items-center justify-center text-center px-8" style={{ minHeight: '60dvh' }}>
           <p style={{
-            fontFamily: 'var(--font-code)', fontSize: '10px', fontWeight: 700,
-            letterSpacing: '0.24em', textTransform: 'uppercase',
-            color: 'var(--color-stage-gold)', margin: '0 0 14px',
-          }}>
-            The archive
-          </p>
-          <p style={{
             fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px, 7vw, 36px)',
             fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.015em',
             color: 'rgba(240,236,228,0.94)', margin: '0 0 12px',

@@ -12,10 +12,13 @@
  * Usage: /design-preview?screen=loading&state=start|writing|greenroom|timeout
  */
 
-import { useEffect, Suspense } from 'react'
+import React, { useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { notFound } from 'next/navigation'
 import { HostLoading } from '@/app/host/components/HostLoading'
+import { ConnectionBanner } from '@/components/ConnectionStatus'
+import { GamePausedOverlay } from '@/components/GamePausedOverlay'
+import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
 import { useAudienceStore } from '@/stores/audienceStore'
@@ -77,7 +80,50 @@ function PreviewInner() {
   if (screen === 'loading') {
     return <HostLoading onRetry={() => {}} onBackToLobby={() => {}} />
   }
+  if (screen === 'system') {
+    // Harness pages have no product h1; give axe one so heading checks
+    // measure the component under test, not the scaffold.
+    const dark: React.CSSProperties = { minHeight: '100dvh', background: '#08070b', padding: 24 }
+    const H1 = <h1 className="sr-only">Design preview: {state}</h1>
+    if (state === 'reconnecting')
+      return (
+        <div style={dark}>
+          {H1}
+          <ConnectionBanner online connectionState="reconnecting" reconnectAttempt={3} onRetry={() => {}} />
+        </div>
+      )
+    if (state === 'lost')
+      return (
+        <div style={dark}>
+          {H1}
+          <ConnectionBanner online connectionState="disconnected" reconnectAttempt={5} onRetry={() => {}} />
+        </div>
+      )
+    if (state === 'paused')
+      return (
+        <div style={dark}>
+          {H1}
+          <GamePausedOverlay visible reason="Host disconnected" />
+        </div>
+      )
+    if (state === 'errorboundary')
+      return (
+        <div style={{ ...dark, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {H1}
+          <div style={{ maxWidth: 420, width: '100%' }}>
+            <GameErrorBoundary phaseName="the performance">
+              <Thrower />
+            </GameErrorBoundary>
+          </div>
+        </div>
+      )
+  }
   return <p style={{ padding: 40 }}>Unknown screen: {screen}</p>
+}
+
+/** Throws on render so the error-boundary fallback can be screenshot. */
+function Thrower(): never {
+  throw new Error('design-preview: deliberate render error')
 }
 
 export default function DesignPreviewPage() {

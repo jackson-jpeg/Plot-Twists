@@ -9,7 +9,7 @@ import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { HOMEPAGE_SHOWCASE } from '@/lib/homepageShowcase'
 import { PosterOneSheet } from '@/components/PosterOneSheet'
 import { ALL_MODES_PLAYER_RANGE_LABEL } from '@/lib/playerCounts'
-import { MOTION, PALETTE } from '@/design/tokens'
+import { EASE_CAMERA, DUR } from '@/lib/motion'
 
 /**
  * The landing page is a studio pitch, not a marquee (design/NORTH-STAR.md,
@@ -19,8 +19,6 @@ import { MOTION, PALETTE } from '@/design/tokens'
  */
 
 const ROTATE_MS = 7000
-
-const cameraEase = MOTION.ease.camera as unknown as [number, number, number, number]
 
 export function LandingPage() {
   const breakpoint = useBreakpoint()
@@ -32,7 +30,7 @@ export function LandingPage() {
   // bottom padding on <main> shows it through. Scoped fix with cleanup.
   useEffect(() => {
     const prev = document.body.style.background
-    document.body.style.background = PALETTE.void
+    document.body.style.background = '#08070b'
     return () => {
       document.body.style.background = prev
     }
@@ -49,14 +47,14 @@ export function LandingPage() {
   const fadeUp = (delay: number) => ({
     initial: reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16 },
     animate: reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 },
-    transition: { duration: MOTION.duration.slower, delay, ease: cameraEase },
+    transition: { duration: DUR.slower, delay, ease: EASE_CAMERA },
   })
 
   return (
     <div
       style={{
         minHeight: '100dvh',
-        background: PALETTE.void,
+        background: 'var(--color-void)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -83,7 +81,7 @@ export function LandingPage() {
               fontWeight: 700,
               letterSpacing: '0.22em',
               textTransform: 'uppercase',
-              color: PALETTE.stageGold,
+              color: 'var(--color-stage-gold)',
               margin: 0,
             }}
           >
@@ -139,7 +137,7 @@ export function LandingPage() {
                   fontSize: '16px',
                   fontWeight: 650,
                   color: '#120f08',
-                  background: PALETTE.stageGold,
+                  background: 'var(--color-stage-gold)',
                   border: 'none',
                   borderRadius: 'var(--radius-button)',
                   padding: '15px 34px',
@@ -224,7 +222,7 @@ export function LandingPage() {
               }
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: reducedMotion ? 0.2 : 0.7, ease: cameraEase }}
+              transition={{ duration: reducedMotion ? 0.2 : 0.7, ease: EASE_CAMERA }}
             >
               <PosterOneSheet entry={HOMEPAGE_SHOWCASE[posterIndex]} />
             </motion.div>
@@ -256,7 +254,7 @@ export function LandingPage() {
                   cursor: 'pointer',
                   background:
                     i === posterIndex
-                      ? PALETTE.stageGold
+                      ? 'var(--color-stage-gold)'
                       : 'rgba(240,236,228,0.18)',
                   transition: 'all 250ms var(--easing-out)',
                 }}

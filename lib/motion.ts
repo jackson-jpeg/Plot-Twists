@@ -32,3 +32,17 @@ export const HOVER_LIFT = { whileHover: { scale: 1.02, y: -1 } }
 
 // Stagger delay (seconds)
 export const STAGGER = 0.04
+
+// ---------------------------------------------------------------------------
+// Design-pass tokens (2026-08-06). lib/motion.ts is the ONE client module that
+// imports design/tokens: it already lives in the shared chunk, so the token
+// module lands there once. Leaf components import these — importing
+// design/tokens directly from leaves duplicated the module into ~10 route
+// chunks (+21 kb, measured against the design(2) build; see design/LEDGER.md
+// iter 3). Colors are NOT re-exported at all: use the CSS custom properties
+// from globals.css ('var(--color-…)'), which cost zero JS bytes.
+// ---------------------------------------------------------------------------
+import { MOTION as DESIGN_MOTION } from '@/design/tokens'
+
+export const EASE_CAMERA = DESIGN_MOTION.ease.camera as unknown as [number, number, number, number]
+export const DUR = DESIGN_MOTION.duration

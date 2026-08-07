@@ -2,14 +2,13 @@
 
 import React from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { SPRING_GENTLE, ENTER_Y } from '@/lib/motion'
+import { SPRING_GENTLE, ENTER_Y, EASE_CAMERA, DUR } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
 import { RetryIcon, WarningIcon } from '@/components/GameIcons'
 import { Button } from '@/components/ui'
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
 import { useAudienceStore } from '@/stores/audienceStore'
-import { MOTION, PALETTE } from '@/design/tokens'
 
 /**
  * The loading screen is the one-sheet being typeset (NORTH-STAR: the poster
@@ -33,8 +32,6 @@ const steps = [
   { label: 'Staging', done: 'built' },
   { label: 'Screenplay', done: 'typing' },
 ]
-
-const cameraEase = MOTION.ease.camera as unknown as [number, number, number, number]
 
 export interface HostLoadingProps {
   onRetry: () => void
@@ -66,7 +63,7 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
           ? undefined
           : { duration: 1, repeat: Infinity, times: [0, 0.49, 0.5, 1], ease: 'linear' }
       }
-      style={{ color: PALETTE.stageRed, fontSize: size, marginLeft: 2 }}
+      style={{ color: 'var(--color-stage-red)', fontSize: size, marginLeft: 2 }}
     >
       |
     </motion.span>
@@ -80,7 +77,7 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
       transition={SPRING_GENTLE}
       className="min-h-screen w-full flex flex-col items-center justify-center px-5 py-10"
       style={{
-        background: PALETTE.void,
+        background: 'var(--color-void)',
         color: 'var(--color-theater-text)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
@@ -94,11 +91,11 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
         <motion.div
           initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.985 }}
           animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: MOTION.duration.slower, delay: 0.1, ease: cameraEase }}
+          transition={{ duration: DUR.slower, delay: 0.1, ease: EASE_CAMERA }}
           style={{
             width: '100%',
             aspectRatio: '2 / 3',
-            background: `linear-gradient(180deg, ${PALETTE.cream} 0%, ${PALETTE.paper} 70%, ${PALETTE.paperDark} 100%)`,
+            background: 'linear-gradient(180deg, var(--color-cream) 0%, var(--color-paper) 70%, var(--color-paper-dark) 100%)',
             borderRadius: '8px',
             boxShadow:
               '0 24px 60px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.07)',
@@ -173,7 +170,7 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
                       ? { opacity: 1 }
                       : { opacity: 1, filter: 'blur(0px)', scale: 1 }
                   }
-                  transition={{ duration: MOTION.duration.sceneLong, ease: cameraEase }}
+                  transition={{ duration: DUR.sceneLong, ease: EASE_CAMERA }}
                   style={{
                     fontFamily: 'var(--font-serif)',
                     fontSize: isDesktop ? '32px' : '27px',
@@ -212,7 +209,7 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
               style={{
                 width: '28px',
                 height: '3px',
-                background: PALETTE.stageRed,
+                background: 'var(--color-stage-red)',
                 margin: '0 auto 12px',
               }}
             />
@@ -294,10 +291,10 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
             >
               <motion.div
                 className="h-full rounded-full"
-                style={{ background: PALETTE.stageRed }}
+                style={{ background: 'var(--color-stage-red)' }}
                 initial={{ width: '0%' }}
                 animate={{ width: `${Math.min(loadingProgress, 100)}%` }}
-                transition={{ duration: MOTION.duration.scene, ease: cameraEase }}
+                transition={{ duration: DUR.scene, ease: EASE_CAMERA }}
               />
             </div>
             <p
@@ -402,7 +399,7 @@ export function HostLoading({ onRetry, onBackToLobby }: HostLoadingProps) {
                       // Danger context: red, not the store-orange primary (one
                       // accent per surface). Stage red, not --color-danger:
                       // white on #EF4444 is 3.76:1 and fails AA at this size.
-                      background: PALETTE.stageRed,
+                      background: 'var(--color-stage-red)',
                       color: '#fff',
                     }}
                   >

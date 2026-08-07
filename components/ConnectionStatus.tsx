@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
-import { MOTION, PALETTE } from '@/design/tokens'
+import { EASE_CAMERA, DUR } from '@/lib/motion'
 
 /**
  * Connection banner — "hold please", not an alarm (NORTH-STAR: reconnecting
@@ -11,8 +11,6 @@ import { MOTION, PALETTE } from '@/design/tokens'
  * machinery is working on it; red only when the connection is genuinely lost
  * and the user has to act.
  */
-
-const cameraEase = MOTION.ease.camera as unknown as [number, number, number, number]
 
 export interface ConnectionBannerProps {
   online: boolean
@@ -41,7 +39,7 @@ export function ConnectionBanner({
     headline = 'Connection lost'
   }
 
-  const accent = isFullyLost || !online ? PALETTE.danger : PALETTE.stageGold
+  const accent = isFullyLost || !online ? 'var(--color-danger)' : 'var(--color-stage-gold)'
 
   return (
     <AnimatePresence>
@@ -50,7 +48,7 @@ export function ConnectionBanner({
           initial={{ opacity: 0, y: -40 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -40 }}
-          transition={{ duration: MOTION.duration.slow, ease: cameraEase }}
+          transition={{ duration: DUR.slow, ease: EASE_CAMERA }}
           role="status"
           aria-live="polite"
           style={{
@@ -116,7 +114,7 @@ export function ConnectionBanner({
                 fontSize: '13px',
                 fontWeight: 600,
                 color: '#fff',
-                background: PALETTE.stageRed,
+                background: 'var(--color-stage-red)',
                 border: 'none',
                 borderRadius: 'var(--radius-md)',
                 padding: '6px 14px',

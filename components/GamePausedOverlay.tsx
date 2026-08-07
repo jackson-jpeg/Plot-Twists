@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { MOTION, PALETTE } from '@/design/tokens'
+import { EASE_CAMERA, DUR } from '@/lib/motion'
 
 /**
  * Intermission title card (NORTH-STAR: deadpan theatrical register — a pause
@@ -14,8 +14,6 @@ interface GamePausedOverlayProps {
   reason?: string
 }
 
-const cameraEase = MOTION.ease.camera as unknown as [number, number, number, number]
-
 export function GamePausedOverlay({
   visible,
   reason = 'Host disconnected',
@@ -27,7 +25,7 @@ export function GamePausedOverlay({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: MOTION.duration.slow, ease: cameraEase }}
+          transition={{ duration: DUR.slow, ease: EASE_CAMERA }}
           className="fixed inset-0 z-40 flex items-center justify-center"
           style={{
             background: 'rgba(8,7,11,0.88)',
@@ -40,10 +38,10 @@ export function GamePausedOverlay({
             initial={{ scale: 0.97, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.97, opacity: 0 }}
-            transition={{ duration: MOTION.duration.slower, ease: cameraEase }}
+            transition={{ duration: DUR.slower, ease: EASE_CAMERA }}
             className="text-center mx-4"
             style={{
-              background: PALETTE.ink,
+              background: 'var(--color-ink)',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 'var(--radius-card)',
               maxWidth: '380px',
@@ -59,7 +57,7 @@ export function GamePausedOverlay({
                 fontWeight: 700,
                 letterSpacing: '0.22em',
                 textTransform: 'uppercase',
-                color: PALETTE.stageGold,
+                color: 'var(--color-stage-gold)',
                 margin: '0 0 16px',
               }}
             >
@@ -96,7 +94,7 @@ export function GamePausedOverlay({
                     width: 6,
                     height: 6,
                     borderRadius: '50%',
-                    background: PALETTE.stageGold,
+                    background: 'var(--color-stage-gold)',
                   }}
                   animate={{ opacity: [0.25, 1, 0.25] }}
                   transition={{ duration: 1.6, repeat: Infinity, delay: i * 0.2, ease: 'easeInOut' }}

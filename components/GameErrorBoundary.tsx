@@ -1,12 +1,10 @@
 'use client'
 import React from 'react'
 import { motion } from 'framer-motion'
-import { MOTION, PALETTE } from '@/design/tokens'
+import { EASE_CAMERA, DUR } from '@/lib/motion'
 
 interface Props { children: React.ReactNode; phaseName?: string }
 interface State { hasError: boolean; key: number; retryCount: number }
-
-const cameraEase = MOTION.ease.camera as unknown as [number, number, number, number]
 
 export class GameErrorBoundary extends React.Component<Props, State> {
   state: State = { hasError: false, key: 0, retryCount: 0 }
@@ -41,11 +39,11 @@ export class GameErrorBoundary extends React.Component<Props, State> {
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: MOTION.duration.slower, ease: cameraEase }}
+          transition={{ duration: DUR.slower, ease: EASE_CAMERA }}
           style={{
             textAlign: 'center',
             padding: '40px 28px',
-            background: PALETTE.ink,
+            background: 'var(--color-ink)',
             border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 'var(--radius-card)',
             boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
@@ -95,7 +93,7 @@ export class GameErrorBoundary extends React.Component<Props, State> {
             <button
               onClick={this.handleRetry}
               style={{
-                background: PALETTE.stageRed,
+                background: 'var(--color-stage-red)',
                 color: '#fff',
                 padding: '11px 26px',
                 borderRadius: 'var(--radius-lg)',

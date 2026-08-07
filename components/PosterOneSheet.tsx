@@ -1,7 +1,6 @@
 'use client'
 
 import type { HomepageShowcaseEntry } from '@/lib/homepageShowcase'
-import { POSTER_ASPECT } from '@/design/tokens'
 
 /**
  * A typographic film one-sheet, 2:3 exactly (design/tokens POSTER_ASPECT).
@@ -30,7 +29,7 @@ export function PosterOneSheet({ entry }: { entry: HomepageShowcaseEntry }) {
       style={{
         position: 'relative',
         overflow: 'hidden',
-        aspectRatio: POSTER_ASPECT,
+        aspectRatio: '2 / 3', // POSTER_ASPECT (design/tokens.ts) — inlined, see lib/motion.ts note
         width: '100%',
         borderRadius: '8px',
         background: palette.background,

@@ -47,13 +47,18 @@ export function MobileTeleprompter({
   )
   const labelFor = (speaker: string) => speakerLabels.get(speaker) ?? speaker
 
-  // Load font size from localStorage
+  // Load font size from localStorage. Deferred a tick: SSR renders the
+  // default (no hydration mismatch) and the effect body has no synchronous
+  // setState (react-hooks/set-state-in-effect).
   useEffect(() => {
-    const saved = localStorage.getItem(FONT_SIZE_KEY)
-    if (saved) {
-      const size = parseInt(saved, 10)
-      if (size >= MIN_FONT_SIZE && size <= MAX_FONT_SIZE) setFontSize(size)
-    }
+    const t = setTimeout(() => {
+      const saved = localStorage.getItem(FONT_SIZE_KEY)
+      if (saved) {
+        const size = parseInt(saved, 10)
+        if (size >= MIN_FONT_SIZE && size <= MAX_FONT_SIZE) setFontSize(size)
+      }
+    }, 0)
+    return () => clearTimeout(t)
   }, [])
 
   const updateFontSize = (delta: number) => {
@@ -110,7 +115,7 @@ export function MobileTeleprompter({
   const moodIndicator = getMoodIndicator(currentLine.mood)
 
   return (
-    <div ref={containerRef} className="flex flex-col flex-1" style={{ background: '#faf7f0' }}>
+    <div ref={containerRef} className="flex flex-col flex-1" style={{ background: '#ece6d8' }}>
       {/* YOUR TURN full-screen flash */}
       <AnimatePresence>
         {showYourTurn && (
@@ -220,9 +225,29 @@ export function MobileTeleprompter({
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.2}
         onDragEnd={handleDragEnd}
-        style={{ x, opacity, touchAction: 'pan-y', background: '#faf7f0' }}
+        style={{ x, opacity, touchAction: 'pan-y' }}
       >
-        <div ref={lineRef}>
+        {/* The cue card — a physical object in the hand; swiping moves IT */}
+        <div
+          ref={lineRef}
+          style={{
+            width: '100%',
+            maxWidth: '560px',
+            background: '#faf7f0',
+            borderRadius: '12px',
+            border: isMyTurn
+              ? '1px solid rgba(194,59,34,0.35)'
+              : '1px solid rgba(26,24,18,0.08)',
+            borderLeft: isMyTurn
+              ? '4px solid var(--color-stage-red, #c23b22)'
+              : '4px solid rgba(26,24,18,0.1)',
+            boxShadow: isMyTurn
+              ? '0 18px 44px rgba(194,59,34,0.18), 0 4px 12px rgba(0,0,0,0.12)'
+              : '0 12px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+            padding: '28px 20px 24px',
+            transition: 'border-color 300ms, box-shadow 300ms',
+          }}
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={currentLineIndex}
@@ -239,7 +264,7 @@ export function MobileTeleprompter({
                 fontWeight: 700,
                 textTransform: 'uppercase',
                 letterSpacing: '0.12em',
-                color: isMyTurn ? 'var(--color-stage-red, #c23b22)' : '#8a8478',
+                color: isMyTurn ? 'var(--color-stage-red, #c23b22)' : '#6f6a5e',
                 marginBottom: '8px',
               }}
               /* Screen readers get the whole trait; sighted players get something that fits. */
@@ -259,7 +284,7 @@ export function MobileTeleprompter({
                   <span style={{
                     fontSize: '12px',
                     fontStyle: 'italic',
-                    color: '#8a8478',
+                    color: '#6f6a5e',
                   }}>
                     ({moodIndicator.label})
                   </span>
@@ -295,7 +320,7 @@ export function MobileTeleprompter({
             fontWeight: 600,
             textTransform: 'uppercase',
             letterSpacing: '0.15em',
-            color: '#a09a8e',
+            color: '#5f5a4f',
             marginBottom: '4px',
           }}>
             UP NEXT
@@ -365,7 +390,7 @@ export function MobileTeleprompter({
         </div>
         <motion.p
           className="text-center text-xs mt-2"
-          style={{ color: '#a09a8e' }}
+          style={{ color: '#6f6a5e' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}

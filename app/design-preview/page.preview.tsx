@@ -26,6 +26,7 @@ import { useVotingStore } from '@/stores/votingStore'
 import { HostResults } from '@/app/host/components/HostResults'
 import { HostVoting } from '@/app/host/components/HostVoting'
 import { HostPerforming } from '@/app/host/components/HostPerforming'
+import { MobileTeleprompter } from '@/components/MobileTeleprompter'
 
 const ENABLED =
   process.env.NODE_ENV !== 'production' ||
@@ -209,6 +210,27 @@ function PreviewInner() {
   }
   if (screen === 'performing') {
     return <HostPerforming onShowPosterLightbox={() => {}} />
+  }
+  if (screen === 'teleprompter') {
+    const lines = [
+      { speaker: RESULT_CAST[1], text: 'We could simply land the shuttle. I said this an hour ago.' },
+      { speaker: RESULT_CAST[0], text: 'Nothing is wrong. NOTHING IS WRONG.' },
+      { speaker: RESULT_CAST[3], text: 'And with that, I drift meaningfully toward the airlock.' },
+      { speaker: RESULT_CAST[0], text: 'Okay. One thing is wrong. The door is now open.' },
+    ]
+    const idx = state === 'myturn' ? 1 : 0
+    return (
+      <div className="flex flex-col" style={{ minHeight: '100dvh' }}>
+        <h1 className="sr-only">Teleprompter preview</h1>
+        <MobileTeleprompter
+          script={{ title: 'The Intervention Goes to Space', synopsis: '', lines } as never}
+          currentLineIndex={idx}
+          myCharacter={RESULT_CAST[0]}
+          onNextLine={() => {}}
+          onPreviousLine={() => {}}
+        />
+      </div>
+    )
   }
   if (screen === 'results') {
     return (

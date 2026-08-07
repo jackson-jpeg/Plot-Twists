@@ -3,6 +3,16 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  // Design-preview harness (design/2026-08-06 pass): route files named
+  // *.preview.tsx exist ONLY in builds that set NEXT_PUBLIC_DESIGN_PREVIEW=1.
+  // deploy.sh never sets it, so the harness route is absent from shipped
+  // bundles — a build-time exclusion, unlike the runtime notFound() guard
+  // inside the page itself (which stays as defense in depth).
+  pageExtensions:
+    process.env.NEXT_PUBLIC_DESIGN_PREVIEW === '1'
+      ? ['preview.tsx', 'tsx', 'ts', 'jsx', 'js']
+      : ['tsx', 'ts', 'jsx', 'js'],
+
   // Optimize for production
   compress: true,
   poweredByHeader: false,

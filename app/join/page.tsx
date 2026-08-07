@@ -30,6 +30,7 @@ import { GameErrorBoundary } from '@/components/GameErrorBoundary'
 import { ReconnectingOverlay } from '@/components/ReconnectingOverlay'
 import { ReconnectionBanner } from '@/components/ReconnectionBanner'
 import { MoviePosterFrame } from '@/components/MoviePosterFrame'
+import { ConnectingCurtain } from '@/components/ConnectingCurtain'
 import { PageContainer } from '@/components/ui/PageContainer'
 import { Button } from '@/components/ui/Button'
 import { GameShell } from '@/app/game/GameShell'
@@ -106,10 +107,12 @@ function JoinPageContent() {
 
   // Auto-show onboarding for first-time users
   useEffect(() => {
-    if (!localStorage.getItem('pt-onboarding-seen')) {
+    if (localStorage.getItem('pt-onboarding-seen')) return
+    const t = setTimeout(() => {
       setShowOnboarding(true)
       localStorage.setItem('pt-onboarding-seen', '1')
-    }
+    }, 0)
+    return () => clearTimeout(t)
   }, [])
 
   // Lock body scroll when overlays are visible
@@ -132,8 +135,8 @@ function JoinPageContent() {
     }
 
     if (!activeRoom) {
-      setRecoveryResolved(true)
-      return
+      const t = setTimeout(() => setRecoveryResolved(true), 0)
+      return () => clearTimeout(t)
     }
 
     if (recoveryAttemptRef.current === `${socket.id}:${activeRoom}`) return
@@ -161,7 +164,8 @@ function JoinPageContent() {
       useSelectionStore.getState().setSelection({ character: null, setting: null, circumstance: null })
       useSelectionStore.getState().setHasSubmitted(false)
       useSelectionStore.getState().setIsSubmitting(false)
-      setHasTriggeredSelectionConfetti(false)
+      const t = setTimeout(() => setHasTriggeredSelectionConfetti(false), 0)
+      return () => clearTimeout(t)
     }
   }, [gameState])
 
@@ -176,13 +180,18 @@ function JoinPageContent() {
   useEffect(() => {
     if (selection.character && selection.setting && selection.circumstance &&
         !hasTriggeredSelectionConfetti && gameState === 'SELECTION' && !hasSubmitted) {
-      setHasTriggeredSelectionConfetti(true)
-      setTimeout(() => confetti.fireWinnerConfetti(), 250)
+      const t = setTimeout(() => {
+        setHasTriggeredSelectionConfetti(true)
+        setTimeout(() => confetti.fireWinnerConfetti(), 250)
+      }, 0)
+      return () => clearTimeout(t)
     }
   }, [selection, hasTriggeredSelectionConfetti, gameState, hasSubmitted, confetti])
 
   useEffect(() => {
-    if (!selection.character && !selection.setting && !selection.circumstance) setHasTriggeredSelectionConfetti(false)
+    if (selection.character || selection.setting || selection.circumstance) return
+    const t = setTimeout(() => setHasTriggeredSelectionConfetti(false), 0)
+    return () => clearTimeout(t)
   }, [selection])
 
   // --- Actions ---
@@ -234,10 +243,7 @@ function JoinPageContent() {
   if (!isConnected) {
     return (
       <PageContainer size="narrow" centered>
-        <div className="text-center">
-          <div className="text-6xl mb-6">⚡</div>
-          <p className="text-xl font-display" style={{ color: 'var(--color-text-secondary)' }}>Connecting...</p>
-        </div>
+        <ConnectingCurtain />
       </PageContainer>
     )
   }

@@ -34,15 +34,23 @@ export const HOVER_LIFT = { whileHover: { scale: 1.02, y: -1 } }
 export const STAGGER = 0.04
 
 // ---------------------------------------------------------------------------
-// Design-pass tokens (2026-08-06). lib/motion.ts is the ONE client module that
-// imports design/tokens: it already lives in the shared chunk, so the token
-// module lands there once. Leaf components import these — importing
-// design/tokens directly from leaves duplicated the module into ~10 route
-// chunks (+21 kb, measured against the design(2) build; see design/LEDGER.md
-// iter 3). Colors are NOT re-exported at all: use the CSS custom properties
-// from globals.css ('var(--color-…)'), which cost zero JS bytes.
+// Design-pass tokens (2026-08-06), as LITERALS. lib/motion is a small module
+// that webpack duplicates into ~10 route chunks, so anything it imports gets
+// duplicated with it — importing design/tokens from here (or from any leaf)
+// cost +21 kb, measured. The values below mirror design/tokens.ts MOTION and
+// __tests__/unit/design/motionTokens.test.ts fails if they drift. Colors are
+// not mirrored at all: use the CSS custom properties from globals.css
+// ('var(--color-…)'), which cost zero JS bytes.
 // ---------------------------------------------------------------------------
-import { MOTION as DESIGN_MOTION } from '@/design/tokens'
 
-export const EASE_CAMERA = DESIGN_MOTION.ease.camera as unknown as [number, number, number, number]
-export const DUR = DESIGN_MOTION.duration
+export const EASE_CAMERA: [number, number, number, number] = [0.22, 1, 0.36, 1]
+export const DUR = {
+  instant: 0,
+  fast: 0.15,
+  standard: 0.25,
+  slow: 0.35,
+  slower: 0.5,
+  long: 1.0,
+  scene: 1.5,
+  sceneLong: 2.0,
+} as const

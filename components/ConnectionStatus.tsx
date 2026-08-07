@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSocket } from '@/contexts/SocketContext'
+import { Button } from '@/components/ui/Button'
 import { EASE_CAMERA, DUR } from '@/lib/motion'
 
 /**
@@ -107,23 +108,25 @@ export function ConnectionBanner({
             </span>
           )}
           {isFullyLost && (
-            <button
+            // ui/Button, deliberately: this component mounts in the always-
+            // loaded shell, which anchors the Button module in the shared
+            // chunk. Replacing it with a plain <button> un-anchored Button
+            // and Turbopack duplicated it into all 11 consumer route chunks
+            // (+21 kb, measured — design/LEDGER.md iter 3).
+            <Button
+              size="sm"
+              variant="ghost"
               onClick={onRetry}
               style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '13px',
-                fontWeight: 600,
+                marginLeft: '4px',
+                padding: '6px 16px',
                 color: '#fff',
                 background: 'var(--color-stage-red)',
-                border: 'none',
                 borderRadius: 'var(--radius-md)',
-                padding: '6px 14px',
-                cursor: 'pointer',
-                marginLeft: '4px',
               }}
             >
               Retry
-            </button>
+            </Button>
           )}
         </motion.div>
       )}

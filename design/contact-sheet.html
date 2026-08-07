@@ -1,0 +1,168 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>PlotSlop — overnight design pass, 2026-08-06→07</title>
+<style>
+  body { margin: 0; padding: 32px; background: #0a0a0c; color: #ece7dc; font: 15px/1.5 system-ui, sans-serif; }
+  h1 { font: 400 34px/1.1 Georgia, serif; margin: 0 0 6px; }
+  .sub { color: #9a948a; margin: 0 0 36px; }
+  section { border-top: 1px solid #26262c; padding: 26px 0; max-width: 1200px; }
+  h2 { font: 400 21px Georgia, serif; margin: 0; }
+  .meta { color: #9a948a; font-size: 12px; margin: 4px 0 10px; }
+  code { color: #c9a24d; }
+  .note { max-width: 76ch; color: #c9c3b8; margin: 0 0 14px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  h3 { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #9a948a; margin: 0 0 8px; }
+  img { max-width: 100%; max-height: 460px; width: auto; border-radius: 6px; border: 1px solid #26262c; display: block; margin-bottom: 10px; }
+  .none { color: #6e695f; font-style: italic; }
+  @media (max-width: 800px) { .pair { grid-template-columns: 1fr; } }
+</style>
+<h1>The overnight design pass</h1>
+<p class="sub">design/2026-08-06 branch, both repos · 17 commits · nothing deployed — cherry-pick from here.
+Gates on the final commit: tsc 0 · eslint 0 errors on touched files · jest 558/558 · IP gate green · axe 0
+(one documented exception) · deploy bundle 2,108,065 B (+1,720 vs the +15,000 cap).</p>
+
+<section>
+  <header>
+    <h2>design(1) — Homepage — marquee → studio pitch</h2>
+    <p class="meta"><code>ec301925</code> · H1→4 T1→4 S2→4 M2→3 St2→3</p>
+  </header>
+  <p class="note">Marquee killed; final form after design(11): serif hero + LiveScriptDemo (a real scene typing itself). 'Now Showing' ×0, one accent, axe 0, mobile LCP 2032→1120ms.</p>
+  <div class="pair">
+    <div><h3>before</h3><a href="screenshots/1-before-d1440.png"><img src="screenshots/1-before-d1440.png" alt="1-before-d1440.png" loading="lazy"></a></div>
+    <div><h3>after</h3><a href="screenshots/11-after-home-d1440.png"><img src="screenshots/11-after-home-d1440.png" alt="11-after-home-d1440.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(2) — Loading screen — the typed page</h2>
+    <p class="meta"><code>4e6e21cc</code> · all 2→4</p>
+  </header>
+  <p class="note">The wait shows the real thing: streaming title, real progress steps, red ribbon. Poster costume removed in design(11). Preview harness born here (pageExtensions-gated).</p>
+  <div class="pair">
+    <div><h3>before</h3><a href="screenshots/2-before-loading-writing.png"><img src="screenshots/2-before-loading-writing.png" alt="2-before-loading-writing.png" loading="lazy"></a></div>
+    <div><h3>after</h3><a href="screenshots/11-after-loading.png"><img src="screenshots/11-after-loading.png" alt="11-after-loading.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(3) — System states — intermission register</h2>
+    <p class="meta"><code>b4adc833</code> · H2→4 T2→4 S3→4 M2→4 St3→4</p>
+  </header>
+  <p class="note">Calm gold 'Hold, please' banner, Intermission card, cutting-room 404, 'We lost the plot.' boundary (later verified in the wild). +3b/3c: the +21k Button un-anchoring hunt.</p>
+  <div class="pair">
+    <div><h3>before</h3><p class="none">state-fixture iteration — no before capture</p></div>
+    <div><h3>after</h3><a href="screenshots/3-after-system-paused.png"><img src="screenshots/3-after-system-paused.png" alt="3-after-system-paused.png" loading="lazy"></a><a href="screenshots/3-after-404-m390.png"><img src="screenshots/3-after-404-m390.png" alt="3-after-404-m390.png" loading="lazy"></a><a href="screenshots/3-after-system-lost.png"><img src="screenshots/3-after-system-lost.png" alt="3-after-system-lost.png" loading="lazy"></a><a href="screenshots/3-after-system-errorboundary.png"><img src="screenshots/3-after-system-errorboundary.png" alt="3-after-system-errorboundary.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(5) — Join form — ticket polish + 3 bugs</h2>
+    <p class="meta"><code>ef02044b</code> · H3→4 T2→4 S3→4 M2→3</p>
+  </header>
+  <p class="note">Perforation notches, honest disabled CTA, live room preview. Bugs: hardcoded socket port, duplicate <main> site-wide, stale-error race.</p>
+  <div class="pair">
+    <div><h3>before</h3><a href="screenshots/5-before-join-m390.png"><img src="screenshots/5-before-join-m390.png" alt="5-before-join-m390.png" loading="lazy"></a></div>
+    <div><h3>after</h3><a href="screenshots/5-after-join-preview.png"><img src="screenshots/5-after-join-preview.png" alt="5-after-join-preview.png" loading="lazy"></a><a href="screenshots/5-after-join-entry.png"><img src="screenshots/5-after-join-entry.png" alt="5-after-join-entry.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(6) — Results — the award ceremony</h2>
+    <p class="meta"><code>99520e34</code> · H3→4 T3→4 S3→4 M2→3 St3→4</p>
+  </header>
+  <p class="note">Gold MVP reveal in glowing serif, closing-credits roll with dotted leaders, gold CTA, serif review h2.</p>
+  <div class="pair">
+    <div><h3>before</h3><a href="screenshots/6-before-results-m390.png"><img src="screenshots/6-before-results-m390.png" alt="6-before-results-m390.png" loading="lazy"></a></div>
+    <div><h3>after</h3><a href="screenshots/6-after-results-m390.png"><img src="screenshots/6-after-results-m390.png" alt="6-after-results-m390.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(7) — Voting — rubber stamps</h2>
+    <p class="meta"><code>659cf8f2</code> · H3→4 T3→4 S3→4 M2→4 St3→4</p>
+  </header>
+  <p class="note">VOTED stamps, ink monograms. Lesson: never animate text opacity through illegibility (axe caught 1.46:1 mid-animation).</p>
+  <div class="pair">
+    <div><h3>before</h3><p class="none">state-fixture iteration — no before capture</p></div>
+    <div><h3>after</h3><a href="screenshots/7-after-voting-partial.png"><img src="screenshots/7-after-voting-partial.png" alt="7-after-voting-partial.png" loading="lazy"></a><a href="screenshots/7-after-voting-complete-d1440.png"><img src="screenshots/7-after-voting-complete-d1440.png" alt="7-after-voting-complete-d1440.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(8) — Host performing — legible read-along</h2>
+    <p class="meta"><code>c9c79766</code> · H3→4 T3→4 S3→4 M2→3 St3→4</p>
+  </header>
+  <p class="note">Dim floors follow the visibility mode (Full = the a11y remedy at ≥5:1). The night's only documented axe exception, with its remedy.</p>
+  <div class="pair">
+    <div><h3>before</h3><a href="screenshots/8-before-performing-d1440.png"><img src="screenshots/8-before-performing-d1440.png" alt="8-before-performing-d1440.png" loading="lazy"></a></div>
+    <div><h3>after</h3><a href="screenshots/8-after-performing-d1440.png"><img src="screenshots/8-after-performing-d1440.png" alt="8-after-performing-d1440.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(9) — Clips + digest — designed empty states</h2>
+    <p class="meta"><code>0b76031d</code> · H3→4 T3→4 S3→4 St2→4</p>
+  </header>
+  <p class="note">'Nothing has premiered yet.' / 'A very quiet week.' — skeletons-forever became states with one thing to do next.</p>
+  <div class="pair">
+    <div><h3>before</h3><a href="screenshots/9-before-clips.png"><img src="screenshots/9-before-clips.png" alt="9-before-clips.png" loading="lazy"></a></div>
+    <div><h3>after</h3><a href="screenshots/9-after-clips-empty.png"><img src="screenshots/9-after-clips-empty.png" alt="9-after-clips-empty.png" loading="lazy"></a><a href="screenshots/9-after-digest-empty.png"><img src="screenshots/9-after-digest-empty.png" alt="9-after-digest-empty.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(10) — Mobile teleprompter — the cue card</h2>
+    <p class="meta"><code>aa59ba7a</code> · H3→4 T2→4 S3→4 M3→4</p>
+  </header>
+  <p class="note">The line rides a physical card; red rule + warm shadow when it's yours. Labels ≥4.5. Identity logic untouched (drift guards green).</p>
+  <div class="pair">
+    <div><h3>before</h3><p class="none">state-fixture iteration — no before capture</p></div>
+    <div><h3>after</h3><a href="screenshots/10-after-teleprompter-myturn.png"><img src="screenshots/10-after-teleprompter-myturn.png" alt="10-after-teleprompter-myturn.png" loading="lazy"></a><a href="screenshots/10-after-teleprompter-waiting.png"><img src="screenshots/10-after-teleprompter-waiting.png" alt="10-after-teleprompter-waiting.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(11) — KILL THE PROPS (Jackson's ruling)</h2>
+    <p class="meta"><code>5d2c6283</code> · register correction, all surfaces</p>
+  </header>
+  <p class="note">'i hate those fake dumb posters' — fake one-sheets, billing credits, ticket serials all deleted. The hero is the product writing itself.</p>
+  <div class="pair">
+    <div><h3>before</h3><p class="none">state-fixture iteration — no before capture</p></div>
+    <div><h3>after</h3><a href="screenshots/11-after-home-d1440.png"><img src="screenshots/11-after-home-d1440.png" alt="11-after-home-d1440.png" loading="lazy"></a><a href="screenshots/11-after-home-m390.png"><img src="screenshots/11-after-home-m390.png" alt="11-after-home-m390.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(12) — iOS de-postered</h2>
+    <p class="meta"><code>3f6b5096 (iOS repo)</code> · iOS T→4 St→4</p>
+  </header>
+  <p class="note">ScriptSceneCard replaces TypographicOneSheet across welcome/home; verified on-device in simulator (screenshots in the iOS session log). Repo also builds again on Xcode 26 (baseline was 13 errors red).</p>
+  <div class="pair">
+    <div><h3>before</h3><p class="none">state-fixture iteration — no before capture</p></div>
+    <div><h3>after</h3><p class="none">state-fixture iteration — no before capture</p></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(13) — Host entry + connecting states</h2>
+    <p class="meta"><code>6943c751</code> · M2→3 St3→4</p>
+  </header>
+  <p class="note">The 'blank page' was a stuck skeleton behind Clerk's middleware redirect (screenshot shows the real destination — still branded 'Plot Twists' in Clerk's dashboard). ⚡ emoji states → ConnectingCurtain. Nine pre-existing effect races fixed.</p>
+  <div class="pair">
+    <div><h3>before</h3><p class="none">state-fixture iteration — no before capture</p></div>
+    <div><h3>after</h3><a href="screenshots/13-after-host-signedout.png"><img src="screenshots/13-after-host-signedout.png" alt="13-after-host-signedout.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section>
+  <header>
+    <h2>design(14) — Join lobby + THE Z BUG</h2>
+    <p class="meta"><code>dddb80ae</code> · H3→4 T3→4 S3→4 M2→3</p>
+  </header>
+  <p class="note">First end-to-end join found it: server mints Z, form regex stopped at Y — ~1 in 8 rooms untypeable. Fixed + drift-gated (suite 558). Lobby theater-ink fixes; guest reconnect verified across a restart.</p>
+  <div class="pair">
+    <div><h3>before</h3><a href="screenshots/14-before-zbug.png"><img src="screenshots/14-before-zbug.png" alt="14-before-zbug.png" loading="lazy"></a></div>
+    <div><h3>after</h3><a href="screenshots/14-after-joinlobby.png"><img src="screenshots/14-after-joinlobby.png" alt="14-after-joinlobby.png" loading="lazy"></a></div>
+  </div>
+</section>
+<section><header><h2>Iteration 0 — the spine</h2><p class="meta"><code>1266c8a4</code></p></header>
+<p class="note">design/tokens.ts (type scale, two-world palette, motion), NORTH-STAR.md (now opening with the no-props ruling), this LEDGER, eslint + axe-core installed (repo had neither), hard baselines.</p></section>

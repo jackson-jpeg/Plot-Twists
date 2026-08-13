@@ -32,3 +32,25 @@ export const HOVER_LIFT = { whileHover: { scale: 1.02, y: -1 } }
 
 // Stagger delay (seconds)
 export const STAGGER = 0.04
+
+// ---------------------------------------------------------------------------
+// Design-pass tokens (2026-08-06), as LITERALS. lib/motion is a small module
+// that webpack duplicates into ~10 route chunks, so anything it imports gets
+// duplicated with it — importing design/tokens from here (or from any leaf)
+// cost +21 kb, measured. The values below mirror design/tokens.ts MOTION and
+// __tests__/unit/design/motionTokens.test.ts fails if they drift. Colors are
+// not mirrored at all: use the CSS custom properties from globals.css
+// ('var(--color-…)'), which cost zero JS bytes.
+// ---------------------------------------------------------------------------
+
+export const EASE_CAMERA: [number, number, number, number] = [0.22, 1, 0.36, 1]
+export const DUR = {
+  instant: 0,
+  fast: 0.15,
+  standard: 0.25,
+  slow: 0.35,
+  slower: 0.5,
+  long: 1.0,
+  scene: 1.5,
+  sceneLong: 2.0,
+} as const

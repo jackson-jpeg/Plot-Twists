@@ -13,6 +13,8 @@ import { Modal } from '@/components/Modal'
 import { useToast } from '@/hooks/useToast'
 import { ToastContainer } from '@/components/Toast'
 import { useAuth } from '@/contexts/AuthContext'
+import { SignInButton } from '@clerk/nextjs'
+import { ConnectingCurtain } from '@/components/ConnectingCurtain'
 import dynamic from 'next/dynamic'
 const PurchaseCreditsModal = dynamic(() => import('@/components/PurchaseCreditsModal').then(m => ({ default: m.PurchaseCreditsModal })), { ssr: false, loading: () => null })
 import { AchievementToast, useAchievementToasts } from '@/components/AchievementToast'
@@ -159,8 +161,8 @@ function HostPageContent() {
     }
 
     if (!activeRoom) {
-      setRecoveryResolved(true)
-      return
+      const t = setTimeout(() => setRecoveryResolved(true), 0)
+      return () => clearTimeout(t)
     }
 
     if (recoveryAttemptRef.current === `${socket.id}:${activeRoom}`) return
@@ -216,10 +218,12 @@ function HostPageContent() {
 
   // Reset orchestrator state when returning to LOBBY
   useEffect(() => {
-    if (gameState === 'LOBBY') {
+    if (gameState !== 'LOBBY') return
+    const t = setTimeout(() => {
       setHasTriggeredSelectionConfetti(false)
       setShowPosterLightbox(false)
-    }
+    }, 0)
+    return () => clearTimeout(t)
   }, [gameState])
 
   // Confetti on results
@@ -234,13 +238,18 @@ function HostPageContent() {
   useEffect(() => {
     if (settings.gameMode === 'SOLO' && selection.character && selection.setting && selection.circumstance &&
         !hasTriggeredSelectionConfetti && gameState === 'SELECTION' && !hasSubmittedSelection) {
-      setHasTriggeredSelectionConfetti(true)
-      setTimeout(() => confetti.fireWinnerConfetti(), 250)
+      const t = setTimeout(() => {
+        setHasTriggeredSelectionConfetti(true)
+        setTimeout(() => confetti.fireWinnerConfetti(), 250)
+      }, 0)
+      return () => clearTimeout(t)
     }
   }, [selection, hasTriggeredSelectionConfetti, gameState, hasSubmittedSelection, settings.gameMode, confetti])
 
   useEffect(() => {
-    if (!selection.character && !selection.setting && !selection.circumstance) setHasTriggeredSelectionConfetti(false)
+    if (selection.character || selection.setting || selection.circumstance) return
+    const t = setTimeout(() => setHasTriggeredSelectionConfetti(false), 0)
+    return () => clearTimeout(t)
   }, [selection])
 
   // --- Actions ---
@@ -323,8 +332,8 @@ function HostPageContent() {
     router.push('/')
   }
 
-  // Auth loading / unauthenticated
-  if (authLoading || !user) {
+  // Auth still resolving: brief skeleton
+  if (authLoading) {
     return (
       <PageContainer centered>
         <div className="text-center">
@@ -335,13 +344,53 @@ function HostPageContent() {
     )
   }
 
+  // Signed out: a real state, not a stuck skeleton. Hosting needs an account
+  // (credits are tied to one); players never sign up.
+  if (!user) {
+    return (
+      <PageContainer centered theater>
+        <div className="text-center" style={{ maxWidth: '400px', margin: '0 auto' }}>
+          <p style={{
+            fontFamily: 'var(--font-code)', fontSize: '10px', fontWeight: 700,
+            letterSpacing: '0.24em', textTransform: 'uppercase',
+            color: 'var(--color-stage-gold)', margin: '0 0 14px',
+          }}>
+            Hosting
+          </p>
+          <h1 style={{
+            fontFamily: 'var(--font-serif)', fontSize: 'clamp(30px, 7vw, 38px)',
+            fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.015em',
+            color: 'rgba(240,236,228,0.95)', margin: '0 0 12px',
+          }}>
+            The host signs in. Nobody else does.
+          </h1>
+          <p style={{
+            fontFamily: 'var(--font-body)', fontSize: '15px', lineHeight: 1.6,
+            color: 'rgba(240,236,228,0.62)', margin: '0 0 28px',
+          }}>
+            Your account carries the room and the credits. Your players just
+            get a four-letter code.
+          </p>
+          <SignInButton mode="redirect">
+            <button style={{
+              fontFamily: 'var(--font-body)', fontSize: '16px', fontWeight: 650,
+              color: '#120f08', background: 'var(--color-stage-gold)',
+              border: 'none', borderRadius: 'var(--radius-button)',
+              padding: '14px 32px', cursor: 'pointer',
+              boxShadow: '0 8px 28px rgba(201,162,77,0.28)',
+            }}>
+              Sign in to host
+            </button>
+          </SignInButton>
+        </div>
+      </PageContainer>
+    )
+  }
+
   if (!isConnected) {
     return (
       <PageContainer centered>
-        <motion.div {...ENTER_SCALE} className="text-center">
-          <motion.div className="text-6xl mb-6" animate={prefersReducedMotion ? {} : { rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>⚡</motion.div>
-          <p className="text-xl font-display" style={{ color: 'var(--color-text-secondary)' }}>Connecting...</p>
-        </motion.div>
+        <ConnectingCurtain />
       </PageContainer>
     )
   }
@@ -360,7 +409,7 @@ function HostPageContent() {
           <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>This mode contains adult themes and mature humor. You must be at least 17 years old to enable it.</p>
           <p className="text-xs mb-6" style={{ color: 'var(--color-text-tertiary)' }}>By continuing, you confirm that you are 17 or older.</p>
           <div className="flex flex-col gap-2">
-            <Button variant="primary" fullWidth onClick={confirmMatureMode}>I'm 17 or Older — Enable</Button>
+            <Button variant="primary" fullWidth onClick={confirmMatureMode}>I&rsquo;m 17 or Older — Enable</Button>
             <Button variant="ghost" fullWidth size="sm" onClick={() => setShowAgeGate(false)}>Cancel</Button>
           </div>
         </div>

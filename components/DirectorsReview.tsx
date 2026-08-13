@@ -78,24 +78,25 @@ export function DirectorsReview({ review, showTitle, date, delay = 0, onShare }:
               </motion.span>
             ))}
           </div>
-          <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-accent)' }}>
+          <span style={{ fontSize: '15px', fontWeight: 600, color: 'var(--color-stage-gold)' }}>
             {review.rating}/5
           </span>
         </div>
 
         {/* Show title */}
-        <h3
-          className="font-display"
+        <h2
           style={{
+            fontFamily: 'var(--font-serif)',
             fontSize: '28px',
-            fontWeight: 700,
-            color: 'white',
+            fontWeight: 400,
+            letterSpacing: '-0.01em',
+            color: 'rgba(240,236,228,0.95)',
             lineHeight: 1.15,
             marginBottom: '4px',
           }}
         >
           {showTitle || review.headline}
-        </h3>
+        </h2>
 
         <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', marginBottom: '16px' }}>
           Reviewed by AI Director
@@ -135,10 +136,10 @@ export function DirectorsReview({ review, showTitle, date, delay = 0, onShare }:
 
 function StarIcon({ filled }: { filled: boolean }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill={filled ? '#F59E42' : 'none'} aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill={filled ? 'var(--color-stage-gold)' : 'none'} aria-hidden="true">
       <path
         d="M10 2l2.35 4.76 5.25.76-3.8 3.7.9 5.24L10 13.67l-4.7 2.79.9-5.24-3.8-3.7 5.25-.76L10 2z"
-        stroke={filled ? '#F59E42' : 'rgba(255,255,255,0.2)'}
+        stroke={filled ? 'var(--color-stage-gold)' : 'rgba(255,255,255,0.2)'}
         strokeWidth="1"
         strokeLinejoin="round"
       />

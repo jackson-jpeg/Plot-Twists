@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+
 import dynamic from 'next/dynamic'
 import { AnimatePresence } from 'framer-motion'
 import { useGameStore } from '@/stores/gameStore'
@@ -131,6 +133,17 @@ export function GameShell(props: GameShellProps) {
   const gameState = useGameStore((s) => s.gameState)
   const script = useScriptStore((s) => s.script)
   useWakeLock()
+
+  // Every game phase is a dark theater surface, but body is light --color-bg,
+  // which shows through as a pale strip under any phase shorter than the
+  // viewport padding (same bug fixed per-route on landing and /join).
+  useEffect(() => {
+    const prev = document.body.style.background
+    document.body.style.background = '#08070b'
+    return () => {
+      document.body.style.background = prev
+    }
+  }, [])
 
   const isHost = props.role === 'host'
 

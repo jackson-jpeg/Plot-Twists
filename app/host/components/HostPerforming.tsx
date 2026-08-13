@@ -62,17 +62,18 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
   const [chaosCooldownRemaining, setChaosCooldownRemaining] = useState(0)
   const [chaosShaking, setChaosShaking] = useState(false)
 
-  // Chaos cooldown timer
+  // Chaos cooldown timer. The initial 30s set is deferred a tick so the
+  // effect body has no synchronous setState (react-hooks/set-state-in-effect).
   useEffect(() => {
     if (!chaosCooldown) return
-    setChaosCooldownRemaining(30)
+    const start = setTimeout(() => setChaosCooldownRemaining(30), 0)
     const interval = setInterval(() => {
       setChaosCooldownRemaining(prev => {
         if (prev <= 0.1) { setChaosCooldown(false); clearInterval(interval); return 0 }
         return Math.max(0, prev - 0.1)
       })
     }, 100)
-    return () => clearInterval(interval)
+    return () => { clearTimeout(start); clearInterval(interval) }
   }, [chaosCooldown, setChaosCooldown])
 
   // Actions
@@ -218,10 +219,10 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
           <h2 style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: isDesktop ? '1.75rem' : '1.35rem', fontWeight: 700, color: '#1a1812', margin: 0 }}>
             {script.title}
           </h2>
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: '11px', color: '#8a8478', marginTop: '4px', letterSpacing: '0.05em' }}>
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: '11px', color: '#6f6a5e', marginTop: '4px', letterSpacing: '0.05em' }}>
             A PlotSlop Original
           </p>
-          <p style={{ fontSize: '10px', color: '#a09a8e', marginTop: '8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          <p style={{ fontSize: '10px', color: '#6f6a5e', marginTop: '8px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             {cast.map(labelFor).join(' \u00B7 ')}
           </p>
         </div>
@@ -229,7 +230,7 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
         {/* Progress bar on paper */}
         <div style={{ marginBottom: '1.5rem' }}>
           <div className="flex items-center justify-between mb-1">
-            <span style={{ fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#a09a8e' }}>
+            <span style={{ fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#6f6a5e' }}>
               Line {currentLineIndex + 1} of {script.lines.length}
             </span>
           </div>
@@ -249,6 +250,15 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
             const isCurrent = originalIndex === currentLineIndex
             const isPast = originalIndex < currentLineIndex
             const isFuture = originalIndex > currentLineIndex
+            // Dim floors are a function of the user's visibility mode: Full is
+            // the legibility remedy (near-opaque context), Balanced keeps a
+            // readable hierarchy, Focused is the hard spotlight the user chose.
+            // Documented axe exception in design/LEDGER.md iter 8: dimmed
+            // context in focused/balanced modes is intentional de-emphasis
+            // with Full mode as the user-facing remedy.
+            const mode = teleprompterSettings.visibilityMode
+            const dimPast = mode === 'full' ? 0.88 : mode === 'balanced' ? 0.45 : 0.2
+            const dimFuture = mode === 'full' ? 0.94 : mode === 'balanced' ? 0.6 : 0.3
             const moodIndicator = getMoodIndicator(line.mood)
             const isStageDirection = line.speaker?.toLowerCase() === 'stage direction' || line.speaker?.toLowerCase() === 'narrator'
 
@@ -263,11 +273,11 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
                     ? 'linear-gradient(90deg, rgba(255,240,100,0.12) 0%, rgba(255,240,100,0.08) 70%, transparent 100%)'
                     : 'transparent',
                   borderLeft: isCurrent ? '2px solid rgba(194,59,34,0.3)' : '2px solid transparent',
-                  opacity: isPast ? 0.15 : isFuture ? 0.25 : 1,
+                  opacity: isPast ? dimPast : isFuture ? dimFuture : 1,
                   transition: 'background 0.2s, opacity 0.2s',
                 }}
                 initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: isPast ? 0.15 : isFuture ? 0.25 : 1, height: 'auto' }}
+                animate={{ opacity: isPast ? dimPast : isFuture ? dimFuture : 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.3 }}
                 data-line-index={originalIndex}
@@ -291,7 +301,7 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
                         fontWeight: 700,
                         textTransform: 'uppercase',
                         letterSpacing: '0.12em',
-                        color: isCurrent ? 'var(--color-stage-gold, #b8860b)' : '#5a5548',
+                        color: isCurrent ? 'var(--color-stage-gold, #b8860b)' : '#4a463c',
                       }}
                       aria-label={line.speaker}
                       >
@@ -324,7 +334,7 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
                       fontFamily: 'var(--font-mono)',
                       fontSize: isCurrent ? '19px' : '16px',
                       lineHeight: 1.6,
-                      color: isCurrent ? '#1a1812' : '#5a5548',
+                      color: isCurrent ? '#1a1812' : '#4a463c',
                       textAlign: 'center',
                       maxWidth: '380px',
                       margin: '0 auto',
@@ -339,7 +349,7 @@ export function HostPerforming({ onShowPosterLightbox }: HostPerformingProps) {
         </AnimatePresence>
 
         {/* Page number */}
-        <div style={{ textAlign: 'right', marginTop: '1rem', fontSize: '10px', color: '#b0a99c', fontFamily: 'var(--font-mono)' }}>
+        <div style={{ textAlign: 'right', marginTop: '1rem', fontSize: '10px', color: '#6f6a5e', fontFamily: 'var(--font-mono)' }}>
           {currentLineIndex + 1}
         </div>
       </motion.div>

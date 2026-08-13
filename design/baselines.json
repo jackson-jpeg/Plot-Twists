@@ -1,0 +1,18 @@
+{
+  "recorded": "2026-08-06T21:52Z (iteration 0)",
+  "bundle": {
+    "metric": "du -bc .next/static/chunks/*.js after production build",
+    "bytes": 2106345,
+    "capDeltaBytes": 15000,
+    "note": "Hard fail for the whole night: final build may not exceed 2121345 bytes."
+  },
+  "webVitals": {
+    "metric": "local prod build on :3200, PerformanceObserver buffered, networkidle+2.5s",
+    "homepage": {
+      "m390": { "lcpMs": 2032, "cls": 0 },
+      "t834": { "lcpMs": 960, "cls": 0 },
+      "d1440": { "lcpMs": 892, "cls": 0.1717 }
+    },
+    "budget": "No viewport regresses LCP by >10% or CLS above max(baseline, 0.1). The 0.17 desktop CLS is a defect to fix, not a budget."
+  }
+}

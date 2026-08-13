@@ -49,8 +49,8 @@ function WaveformIcon() {
             width="4"
             height={h}
             rx="2"
-            fill="var(--color-accent)"
-            opacity={0.4 + Math.random() * 0.4}
+            fill="var(--color-stage-gold)"
+            opacity={0.4 + ((i * 37) % 40) / 100}
           />
         )
       })}
@@ -65,8 +65,8 @@ function PlayButton({ size = 48 }: { size?: number }) {
       style={{
         width: size,
         height: size,
-        background: 'var(--color-accent)',
-        boxShadow: '0 4px 20px rgba(245,158,66,0.4)',
+        background: 'var(--color-stage-gold)',
+        boxShadow: '0 4px 20px rgba(201,162,77,0.4)',
       }}
     >
       <svg width={size * 0.4} height={size * 0.4} viewBox="0 0 16 16" fill="white">
@@ -86,8 +86,8 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
     <div style={{ minHeight: '100dvh', background: 'var(--color-theater-bg, #0f0f0f)', color: 'white' }}>
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-8 pb-4">
-        <h1 className="font-display" style={{ fontSize: '28px', fontWeight: 700 }}>Clips</h1>
-        <div className="flex gap-2">
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 400, letterSpacing: '-0.01em', color: 'rgba(240,236,228,0.95)' }}>Clips</h1>
+        {clips.length > 0 && <div className="flex gap-2">
           {(['trending', 'new'] as const).map((t) => (
             <button
               key={t}
@@ -106,8 +106,39 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
               {t === 'trending' ? 'Trending' : 'New'}
             </button>
           ))}
-        </div>
+        </div>}
       </div>
+
+      {/* Empty archive — deadpan, with the one thing to do next */}
+      {clips.length === 0 && (
+        <div className="flex flex-col items-center justify-center text-center px-8" style={{ minHeight: '60dvh' }}>
+          <p style={{
+            fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px, 7vw, 36px)',
+            fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.015em',
+            color: 'rgba(240,236,228,0.94)', margin: '0 0 12px',
+          }}>
+            Nothing has premiered yet.
+          </p>
+          <p style={{
+            fontFamily: 'var(--font-body)', fontSize: '15px', lineHeight: 1.6,
+            color: 'rgba(240,236,228,0.6)', margin: '0 0 28px', maxWidth: '34ch',
+          }}>
+            Clips land here after a show closes. Somebody has to go first.
+          </p>
+          <button
+            onClick={onPlayGame}
+            style={{
+              fontFamily: 'var(--font-body)', fontSize: '15px', fontWeight: 650,
+              color: '#120f08', background: 'var(--color-stage-gold)',
+              border: 'none', borderRadius: 'var(--radius-button)',
+              padding: '13px 28px', cursor: 'pointer',
+              boxShadow: '0 8px 28px rgba(201,162,77,0.28)',
+            }}
+          >
+            Host tonight&rsquo;s show
+          </button>
+        </div>
+      )}
 
       {/* Featured clip */}
       {featured && (
@@ -152,7 +183,7 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
           {/* Info */}
           <div className="flex items-center justify-between px-5 pb-5">
             <div>
-              <p className="font-display" style={{ fontSize: '16px', fontWeight: 700 }}>{featured.showTitle}</p>
+              <p style={{ fontFamily: 'var(--font-serif)', fontSize: '17px', fontWeight: 400 }}>{featured.showTitle}</p>
               <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)' }}>
                 {featured.players.join(', ')} &middot; {featured.timeAgo}
               </p>
@@ -244,8 +275,8 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
         ))}
       </div>
 
-      {/* Play a game CTA */}
-      {onPlayGame && (
+      {/* Play a game CTA — hidden when the empty state already carries it */}
+      {onPlayGame && clips.length > 0 && (
         <div className="px-5 py-6">
           <motion.button
             onClick={onPlayGame}
@@ -256,8 +287,8 @@ export function ClipGallery({ clips, onPlayClip, onShareClip, onPlayGame }: Clip
               fontSize: '15px',
               fontWeight: 600,
               background: 'transparent',
-              color: 'var(--color-accent)',
-              border: '1px solid rgba(245,158,66,0.3)',
+              color: 'var(--color-stage-gold)',
+              border: '1px solid rgba(201,162,77,0.35)',
               cursor: 'pointer',
             }}
             whileHover={{ scale: 1.02 }}

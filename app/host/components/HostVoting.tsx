@@ -4,7 +4,6 @@ import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { SPRING, SPRING_GENTLE, STAGGER } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
-import { SpinnerIcon } from '@/components/GameIcons'
 import { Avatar } from '@/components/ui'
 import { useGameStore } from '@/stores/gameStore'
 import { useScriptStore } from '@/stores/scriptStore'
@@ -45,15 +44,29 @@ export function HostVoting() {
       >
         <p
           style={{
+            fontFamily: 'var(--font-code)',
+            fontSize: '10px',
+            fontWeight: 700,
+            letterSpacing: '0.26em',
+            textTransform: 'uppercase',
+            color: 'var(--color-stage-gold)',
+            marginBottom: '12px',
+          }}
+        >
+          The house votes
+        </p>
+        <h1
+          style={{
             fontFamily: 'var(--font-serif)',
-            fontStyle: 'italic',
-            fontSize: '28px',
-            color: 'var(--color-cream)',
-            marginBottom: '6px',
+            fontSize: isDesktop ? '40px' : '32px',
+            letterSpacing: '-0.015em',
+            lineHeight: 1.05,
+            color: 'rgba(240,236,228,0.95)',
+            marginBottom: '14px',
           }}
         >
           Who stole the show?
-        </p>
+        </h1>
 
         {/* Vote count badge */}
         <motion.span
@@ -92,11 +105,10 @@ export function HostVoting() {
         >
           <p
             style={{
-              fontSize: '15px',
-              fontWeight: 600,
-              color: 'rgba(250, 247, 240, 0.5)',
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
+              fontFamily: 'var(--font-serif)',
+              fontStyle: 'italic',
+              fontSize: '16px',
+              color: 'rgba(240,236,228,0.6)',
             }}
           >
             {script.title}
@@ -121,7 +133,19 @@ export function HostVoting() {
           >
             {/* Left: avatar + name */}
             <div className="flex items-center gap-3">
-              <Avatar name={player.nickname} size="md" highlighted={player.hasSubmittedVote} />
+              <Avatar
+                name={player.nickname}
+                size="md"
+                // Ink monogram on the paper slip — the surface's accents are
+                // gold (chrome) and stamp red; the store-orange gradient was
+                // a third voice (Avatar accepts style overrides).
+                style={{
+                  background: '#1a1812',
+                  color: 'var(--color-cream)',
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 400,
+                }}
+              />
               <div>
                 <span
                   className="font-semibold"
@@ -138,41 +162,49 @@ export function HostVoting() {
             {/* Right: vote status circle / check */}
             {player.hasSubmittedVote ? (
               <motion.div
-                initial={prefersReducedMotion ? { opacity: 0 } : { scale: 0, rotate: -180 }}
-                animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, rotate: 0 }}
-                transition={{ ...SPRING, delay: 0.15 }}
+                aria-label="Voted"
+                initial={prefersReducedMotion ? { opacity: 0 } : { scale: 1.6, rotate: 4, opacity: 0 }}
+                animate={prefersReducedMotion ? { opacity: 1 } : { scale: 1, rotate: -7, opacity: 1 }}
+                transition={{ ...SPRING, delay: 0.1 }}
                 style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
-                  background: 'var(--color-stage-red)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  fontFamily: 'var(--font-code)',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: 'var(--color-stage-red)',
+                  border: '2px solid var(--color-stage-red)',
+                  borderRadius: '3px',
+                  padding: '3px 7px',
                   flexShrink: 0,
+                  opacity: 0.9,
                 }}
               >
-                {/* White check mark */}
-                <svg width="14" height="11" viewBox="0 0 14 11" fill="none" aria-hidden="true">
-                  <path d="M1.5 5.5L5.5 9.5L12.5 1.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                Voted
               </motion.div>
             ) : (
               <motion.div
-                animate={prefersReducedMotion ? {} : { opacity: [0.4, 0.8, 0.4] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
+                aria-label="Still deciding"
+                animate={
+                  prefersReducedMotion
+                    ? {}
+                    : { borderColor: ['#cfc6b4', '#a89f8d', '#cfc6b4'] }
+                }
+                transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
                 style={{
-                  width: 28,
-                  height: 28,
-                  borderRadius: '50%',
-                  border: '2px solid #c8bfaf',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  fontFamily: 'var(--font-code)',
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: '#6f6759',
+                  border: '2px dashed #cfc6b4',
+                  borderRadius: '3px',
+                  padding: '3px 7px',
                   flexShrink: 0,
                 }}
               >
-                <SpinnerIcon size={14} color="#c8bfaf" />
+                · · ·
               </motion.div>
             )}
           </motion.div>
@@ -183,16 +215,16 @@ export function HostVoting() {
       <motion.p
         className="text-center mt-8"
         style={{
-          color: 'rgba(250, 247, 240, 0.35)',
-          fontSize: '13px',
-          fontFamily: 'var(--font-mono)',
-          letterSpacing: '0.04em',
+          color: 'rgba(240,236,228,0.6)',
+          fontSize: '14px',
+          fontFamily: 'var(--font-serif)',
+          fontStyle: 'italic',
         }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
       >
-        Waiting for all players to cast their votes...
+        The house is still deciding.
       </motion.p>
     </motion.div>
   )

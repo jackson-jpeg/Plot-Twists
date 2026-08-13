@@ -1,40 +1,46 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SPRING } from '@/lib/motion'
 import { useSocket } from '@/contexts/SocketContext'
 import { Button } from '@/components/ui/Button'
+import { EASE_CAMERA, DUR } from '@/lib/motion'
 
-export function ConnectionStatus() {
-  const [isOnline, setIsOnline] = useState(true)
-  const { socket, connectionState, reconnectAttempt } = useSocket()
+/**
+ * Connection banner — "hold please", not an alarm (NORTH-STAR: reconnecting
+ * is a live-party moment and deserves calm confidence). Gold while the
+ * machinery is working on it; red only when the connection is genuinely lost
+ * and the user has to act.
+ */
 
-  useEffect(() => {
-    // Set initial state (avoid SSR mismatch by defaulting to true)
-    setIsOnline(navigator.onLine)
+export interface ConnectionBannerProps {
+  online: boolean
+  connectionState: string
+  reconnectAttempt: number
+  onRetry: () => void
+}
 
-    const handleOnline = () => setIsOnline(true)
-    const handleOffline = () => setIsOnline(false)
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
-
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
-    }
-  }, [])
-
-  const showBanner = !isOnline || connectionState === 'reconnecting' || (connectionState === 'disconnected' && reconnectAttempt > 0)
+/** Presentational — also rendered by the design-preview harness. */
+export function ConnectionBanner({
+  online,
+  connectionState,
+  reconnectAttempt,
+  onRetry,
+}: ConnectionBannerProps) {
+  const showBanner =
+    !online ||
+    connectionState === 'reconnecting' ||
+    (connectionState === 'disconnected' && reconnectAttempt > 0)
   const isFullyLost = connectionState === 'disconnected' && reconnectAttempt > 0
 
-  let message = 'No internet connection'
-  if (isOnline && connectionState === 'reconnecting') {
-    message = `Reconnecting... (attempt ${reconnectAttempt})`
-  } else if (isOnline && isFullyLost) {
-    message = 'Connection lost'
+  let headline = 'No internet connection'
+  if (online && connectionState === 'reconnecting') {
+    headline = 'Hold, please — reconnecting the theater'
+  } else if (online && isFullyLost) {
+    headline = 'Connection lost'
   }
+
+  const accent = isFullyLost || !online ? 'var(--color-danger)' : 'var(--color-stage-gold)'
 
   return (
     <AnimatePresence>
@@ -43,7 +49,9 @@ export function ConnectionStatus() {
           initial={{ opacity: 0, y: -40 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -40 }}
-          transition={SPRING}
+          transition={{ duration: DUR.slow, ease: EASE_CAMERA }}
+          role="status"
+          aria-live="polite"
           style={{
             position: 'fixed',
             top: 'env(safe-area-inset-top, 0px)',
@@ -53,46 +61,68 @@ export function ConnectionStatus() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '8px',
+            gap: '12px',
             padding: '10px 16px',
-            background: 'rgba(8,7,11,0.92)',
+            background: 'rgba(8,7,11,0.94)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            borderBottom: '1px solid rgba(231,76,60,0.3)',
-            color: 'rgba(231,76,60,0.9)',
-            fontFamily: 'var(--font-dm-sans), sans-serif',
-            fontSize: '14px',
-            fontWeight: 600,
-            textAlign: 'center',
+            borderBottom: `1px solid ${accent}55`,
             boxShadow: '0 2px 16px rgba(0,0,0,0.6)',
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <line x1="1" y1="1" x2="23" y2="23" />
-            <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
-            <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39" />
-            <path d="M10.71 5.05A16 16 0 0 1 22.56 9" />
-            <path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88" />
-            <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
-            <line x1="12" y1="20" x2="12.01" y2="20" />
-          </svg>
-          {message}
-          {isFullyLost && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (socket && !socket.connected) {
-                  socket.connect()
-                } else {
-                  window.location.reload()
-                }
-              }}
+          {/* Calm pulse — a stage lamp, not a siren */}
+          <motion.span
+            aria-hidden
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+            style={{
+              width: 7,
+              height: 7,
+              borderRadius: '50%',
+              background: accent,
+              flexShrink: 0,
+            }}
+          />
+          <span
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: 'rgba(240,236,228,0.88)',
+            }}
+          >
+            {headline}
+          </span>
+          {online && connectionState === 'reconnecting' && reconnectAttempt > 0 && (
+            <span
               style={{
-                marginLeft: '8px',
-                background: 'rgba(231,76,60,0.15)',
-                border: '1px solid rgba(231,76,60,0.35)',
-                color: 'rgba(231,76,60,0.9)',
+                fontFamily: 'var(--font-code)',
+                fontSize: '9px',
+                fontWeight: 700,
+                letterSpacing: '0.14em',
+                textTransform: 'uppercase',
+                color: 'rgba(240,236,228,0.5)',
+              }}
+            >
+              take {reconnectAttempt}
+            </span>
+          )}
+          {isFullyLost && (
+            // ui/Button, deliberately: this component mounts in the always-
+            // loaded shell, which anchors the Button module in the shared
+            // chunk. Replacing it with a plain <button> un-anchored Button
+            // and Turbopack duplicated it into all 11 consumer route chunks
+            // (+21 kb, measured — design/LEDGER.md iter 3).
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onRetry}
+              style={{
+                marginLeft: '4px',
+                padding: '6px 16px',
+                color: '#fff',
+                background: 'var(--color-stage-red)',
+                borderRadius: 'var(--radius-md)',
               }}
             >
               Retry
@@ -101,5 +131,39 @@ export function ConnectionStatus() {
         </motion.div>
       )}
     </AnimatePresence>
+  )
+}
+
+function subscribeOnline(callback: () => void) {
+  window.addEventListener('online', callback)
+  window.addEventListener('offline', callback)
+  return () => {
+    window.removeEventListener('online', callback)
+    window.removeEventListener('offline', callback)
+  }
+}
+
+export function ConnectionStatus() {
+  // SSR snapshot defaults to true so the banner never flashes during hydration.
+  const isOnline = useSyncExternalStore(
+    subscribeOnline,
+    () => navigator.onLine,
+    () => true
+  )
+  const { socket, connectionState, reconnectAttempt } = useSocket()
+
+  return (
+    <ConnectionBanner
+      online={isOnline}
+      connectionState={connectionState}
+      reconnectAttempt={reconnectAttempt}
+      onRetry={() => {
+        if (socket && !socket.connected) {
+          socket.connect()
+        } else {
+          window.location.reload()
+        }
+      }}
+    />
   )
 }

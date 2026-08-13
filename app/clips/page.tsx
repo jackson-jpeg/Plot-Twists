@@ -53,6 +53,16 @@ function gameToClip(game: SavedGame, index: number) {
 
 export default function ClipsPage() {
   const router = useRouter()
+
+  // Theater route outside GameShell: keep the light body from striping
+  // through below the content (same fix as landing//join/GameShell).
+  useEffect(() => {
+    const prev = document.body.style.background
+    document.body.style.background = '#08070b'
+    return () => {
+      document.body.style.background = prev
+    }
+  }, [])
   const { socket, isConnected } = useSocket()
   const { getPlayerId } = useAuth()
   const [games, setGames] = useState<SavedGame[]>([])
@@ -74,8 +84,12 @@ export default function ClipsPage() {
     })
   }, [socket, getPlayerId])
 
+  // Deferred a tick: fetchGames sets loading state synchronously, and a
+  // sync setState in an effect body trips react-hooks/set-state-in-effect.
   useEffect(() => {
-    if (isConnected) fetchGames()
+    if (!isConnected) return
+    const t = setTimeout(fetchGames, 0)
+    return () => clearTimeout(t)
   }, [isConnected, fetchGames])
 
   // Sort clips by tab criteria

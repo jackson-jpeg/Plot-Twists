@@ -41,8 +41,8 @@ export function PushPermissionPrompt() {
           exit={{ opacity: 0, y: 10, scale: 0.95 }}
           transition={SPRING}
           style={{
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
+            background: 'var(--color-ink)',
+            border: '1px solid rgba(255,255,255,0.12)',
             borderRadius: '12px',
             padding: '16px',
             marginTop: '12px',
@@ -53,10 +53,10 @@ export function PushPermissionPrompt() {
         >
           <span style={{ fontSize: '1.5rem' }}>🔔</span>
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-text)', margin: 0 }}>
+            <p style={{ fontSize: '14px', fontWeight: 600, color: 'rgba(240,236,228,0.92)', margin: 0 }}>
               Get notified when it&apos;s your turn?
             </p>
-            <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', margin: '2px 0 0' }}>
+            <p style={{ fontSize: '12px', color: 'rgba(240,236,228,0.6)', margin: '2px 0 0' }}>
               We&apos;ll ping you when the game needs you.
             </p>
           </div>
@@ -66,7 +66,7 @@ export function PushPermissionPrompt() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: 'var(--color-text-secondary)',
+                color: 'rgba(240,236,228,0.65)',
                 fontSize: '14px',
                 cursor: 'pointer',
                 padding: '10px 14px',
@@ -78,8 +78,8 @@ export function PushPermissionPrompt() {
             <button
               onClick={handleEnable}
               style={{
-                background: 'var(--color-accent)',
-                color: 'white',
+                background: 'var(--color-stage-gold)',
+                color: '#120f08',
                 border: 'none',
                 borderRadius: '8px',
                 fontSize: '14px',

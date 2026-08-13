@@ -183,34 +183,32 @@ export function HostResults({
                 <path d="M9 1L11.5 6.1L17 6.9L13 10.8L13.9 16.3L9 13.7L4.1 16.3L5 10.8L1 6.9L6.5 6.1L9 1Z" fill="var(--color-stage-gold)" />
               </svg>
             </motion.div>
-            <span style={{
-              display: 'inline-block', background: 'var(--color-stage-gold)', color: 'var(--color-void)',
-              padding: '4px 10px', borderRadius: '3px', fontWeight: 700, fontSize: '9px',
-              textTransform: 'uppercase', letterSpacing: '0.3em', marginBottom: '12px',
+            <p style={{
+              fontFamily: 'var(--font-code)', fontSize: '10px', fontWeight: 700,
+              letterSpacing: '0.26em', textTransform: 'uppercase',
+              color: 'var(--color-stage-gold)', margin: '0 0 14px',
             }}>
-              MVP
-            </span>
+              Tonight&rsquo;s MVP
+            </p>
             <h1 style={{
-              fontFamily: 'var(--font-serif)', fontSize: isDesktop ? '36px' : '32px',
-              fontWeight: 700, color: 'var(--color-theater-text)', lineHeight: 1.1, marginBottom: '4px',
+              fontFamily: 'var(--font-serif)', fontSize: isDesktop ? 'clamp(48px, 5vw, 64px)' : 'clamp(40px, 11vw, 48px)',
+              fontWeight: 400, letterSpacing: '-0.02em',
+              color: 'rgba(240,236,228,0.96)', lineHeight: 1.02, marginBottom: '10px',
+              textShadow: '0 0 60px rgba(201,162,77,0.35)',
             }}>
               {winner.playerName}
             </h1>
             {winnerCharacter && (
-              <p style={{ fontSize: '15px', color: 'var(--color-theater-muted)', marginBottom: '4px' }}>
-                as <em>{winnerCharacter}</em>
+              <p style={{ fontSize: '15px', lineHeight: 1.5, color: 'rgba(240,236,228,0.68)', margin: '0 auto', maxWidth: '40ch' }}>
+                as &ldquo;{winnerCharacter}&rdquo;
               </p>
             )}
-            {script?.title && (
-              <p style={{
-                fontFamily: 'var(--font-serif)', fontStyle: 'italic',
-                fontSize: '16px', color: 'var(--color-stage-gold)', marginTop: '8px',
-              }}>
-                {script.title}
-              </p>
-            )}
-            <p style={{ fontSize: '13px', color: 'var(--color-theater-muted)', marginTop: '4px' }}>
-              {winner.votes} vote{winner.votes !== 1 ? 's' : ''}
+            <p style={{
+              fontFamily: 'var(--font-code)', fontSize: '9px', fontWeight: 700,
+              letterSpacing: '0.2em', textTransform: 'uppercase',
+              color: 'rgba(240,236,228,0.6)', marginTop: '12px',
+            }}>
+              by a vote of {winner.votes} · {script?.title ?? 'tonight&rsquo;s feature'}
             </p>
           </motion.div>
         )}
@@ -269,25 +267,37 @@ export function HostResults({
             transition={{ delay: 0.6 }}
           >
             <p style={{
-              fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.2em',
-              color: 'rgba(155, 149, 144, 0.4)', marginBottom: '12px',
+              fontFamily: 'var(--font-code)', fontSize: '9px', fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: '0.24em',
+              color: 'rgba(240,236,228,0.55)', marginBottom: '14px',
             }}>
-              THE CAST
+              Closing credits
             </p>
-            <div className="flex flex-wrap justify-center gap-x-6 gap-y-3">
+            <div className="mx-auto" style={{ maxWidth: '420px' }}>
               {castList.map((c, index) => (
                 <motion.div
                   key={c.name}
-                  className="text-center"
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * STAGGER }}
+                  style={{
+                    display: 'flex', alignItems: 'baseline', gap: '12px',
+                    padding: '7px 0',
+                    borderBottom: index < castList.length - 1 ? '1px solid rgba(240,236,228,0.07)' : 'none',
+                  }}
                 >
-                  <p style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(253, 252, 250, 0.7)' }}>{c.name}</p>
+                  <span style={{
+                    fontFamily: 'var(--font-code)', fontSize: '11px', fontWeight: 700,
+                    letterSpacing: '0.12em', textTransform: 'uppercase',
+                    color: 'rgba(240,236,228,0.85)', whiteSpace: 'nowrap',
+                  }}>
+                    {c.name}
+                  </span>
+                  <span aria-hidden style={{ flex: 1, borderBottom: '1px dotted rgba(240,236,228,0.18)', transform: 'translateY(-3px)' }} />
                   {c.character && (
-                    <p style={{ fontSize: '10px', fontStyle: 'italic', color: 'rgba(155, 149, 144, 0.4)' }}>
-                      as {c.character}
-                    </p>
+                    <span style={{ fontSize: '12.5px', lineHeight: 1.4, color: 'rgba(240,236,228,0.62)', textAlign: 'right', maxWidth: '58%' }}>
+                      {c.character}
+                    </span>
                   )}
                 </motion.div>
               ))}
@@ -307,7 +317,7 @@ export function HostResults({
             size="lg"
             fullWidth
             onClick={() => onRequestNewGame(false)}
-            style={{ background: '#ffffff', color: 'var(--color-void)' }}
+            style={{ background: 'var(--color-stage-gold)', color: '#120f08' }}
           >
             Play Again
           </Button>

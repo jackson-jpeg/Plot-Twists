@@ -1,185 +1,206 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { SignInButton } from '@clerk/nextjs'
 import { analytics } from '@/lib/analytics'
-import { SPRING_GENTLE } from '@/lib/motion'
 import { useBreakpoint } from '@/hooks/useBreakpoint'
-import { Button } from '@/components/ui'
-import { HomepagePosterShowcase } from '@/components/HomepagePosterShowcase'
+import { LiveScriptDemo } from '@/components/LiveScriptDemo'
+import { ALL_MODES_PLAYER_RANGE_LABEL } from '@/lib/playerCounts'
+import { EASE_CAMERA, DUR } from '@/lib/motion'
+
+/**
+ * The landing page is a studio pitch, not a marquee (design/NORTH-STAR.md,
+ * homepage direction). One star: a single rotating one-sheet. One accent:
+ * stage gold. Body copy is sentence case — uppercase tracking is reserved for
+ * the billing kicker and the credits line.
+ */
 
 export function LandingPage() {
   const breakpoint = useBreakpoint()
   const isDesktop = breakpoint === 'desktop'
+  const reducedMotion = useReducedMotion()
+
+  // The near-white strip bug: body is --color-bg and any dark route with
+  // bottom padding on <main> shows it through. Scoped fix with cleanup.
+  useEffect(() => {
+    const prev = document.body.style.background
+    document.body.style.background = '#08070b'
+    return () => {
+      document.body.style.background = prev
+    }
+  }, [])
+
+  const fadeUp = (delay: number) => ({
+    initial: reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16 },
+    animate: reducedMotion ? { opacity: 1 } : { opacity: 1, y: 0 },
+    transition: { duration: DUR.slower, delay, ease: EASE_CAMERA },
+  })
 
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: '100dvh',
         background: 'var(--color-void)',
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
+        justifyContent: 'center',
+        padding: isDesktop ? '48px 32px 96px' : '40px 24px 72px',
       }}
     >
       <div
-        className="w-full mx-auto"
-        style={{ maxWidth: isDesktop ? '1100px' : '448px', width: '100%', padding: isDesktop ? '0 24px' : '0 20px' }}
+        style={{
+          width: '100%',
+          maxWidth: '1080px',
+          display: 'grid',
+          gridTemplateColumns: isDesktop ? '1fr 440px' : '1fr',
+          alignItems: 'center',
+          gap: isDesktop ? '72px' : '48px',
+        }}
       >
-        {/* Marquee Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={SPRING_GENTLE}
-          style={{
-            textAlign: 'center',
-            paddingTop: isDesktop ? '32px' : '24px',
-            paddingBottom: isDesktop ? '20px' : '16px',
-            position: 'relative',
-          }}
-        >
-          {/* Chase light strip */}
-          <div
+        {/* ---- The pitch ---- */}
+        <div style={{ textAlign: isDesktop ? 'left' : 'center' }}>
+          <motion.p
+            {...fadeUp(0)}
             style={{
-              position: 'absolute',
-              top: 0,
-              left: '-20px',
-              right: '-20px',
-              height: '6px',
-              backgroundImage:
-                'repeating-linear-gradient(90deg, transparent 0px, transparent 14px, rgba(201,162,77,0.15) 14px, rgba(201,162,77,0.15) 18px)',
-              backgroundSize: '200px 6px',
-              animation: 'marqueeChase 3s linear infinite',
-            }}
-          />
-
-          <h1
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: isDesktop ? '36px' : '32px',
-              fontWeight: 400,
-              color: '#f0ece4',
-              letterSpacing: '0.04em',
-              lineHeight: 1.1,
-              margin: 0,
+              fontFamily: 'var(--font-code)',
+              fontSize: '10px',
+              fontWeight: 700,
+              letterSpacing: '0.22em',
               textTransform: 'uppercase',
+              color: 'var(--color-stage-gold)',
+              margin: 0,
             }}
           >
-            PlotSlop
-          </h1>
+            Written live, performed by you
+          </motion.p>
 
-          <p
+          <motion.h1
+            {...fadeUp(0.08)}
             style={{
               fontFamily: 'var(--font-serif)',
-              fontSize: isDesktop ? '15px' : '13px',
-              fontStyle: 'italic',
-              color: 'rgba(240,236,228,0.45)',
-              marginTop: '6px',
-              letterSpacing: '0.08em',
+              fontSize: isDesktop ? 'clamp(44px, 4.6vw, 60px)' : 'clamp(36px, 10vw, 44px)',
+              fontWeight: 400,
+              lineHeight: 1.04,
+              letterSpacing: '-0.015em',
+              color: '#f0ece4',
+              margin: '18px 0 0',
             }}
           >
-            Now Showing
-          </p>
-        </motion.div>
+            Tonight&rsquo;s feature doesn&rsquo;t exist yet.
+          </motion.h1>
 
-        {/* Poster Showcase — the hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, ...SPRING_GENTLE }}
-        >
-          <HomepagePosterShowcase />
-        </motion.div>
+          <motion.p
+            {...fadeUp(0.16)}
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: isDesktop ? '17px' : '15px',
+              lineHeight: 1.6,
+              color: 'rgba(240,236,228,0.62)',
+              margin: isDesktop ? '20px 0 0' : '20px auto 0',
+              maxWidth: '46ch',
+            }}
+          >
+            Pick an impossible cast. An AI writes the scene while you watch.
+            You and your friends perform it before it cools.
+          </motion.p>
 
-        {/* How it works — minimal 3-line version */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.28, ...SPRING_GENTLE }}
-          style={{
-            marginTop: isDesktop ? '28px' : '20px',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: isDesktop ? 'row' : 'column',
-            gap: isDesktop ? '32px' : '8px',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '0 8px',
-          }}
-        >
-          {[
-            'Pick the crossover',
-            'AI writes the scene',
-            'Perform it live',
-          ].map((step, i) => (
-            <p
-              key={i}
+          <motion.div
+            {...fadeUp(0.24)}
+            style={{
+              display: 'flex',
+              flexDirection: isDesktop ? 'row' : 'column',
+              alignItems: 'center',
+              gap: isDesktop ? '24px' : '16px',
+              marginTop: '32px',
+              justifyContent: isDesktop ? 'flex-start' : 'center',
+            }}
+          >
+            <SignInButton mode="redirect">
+              <button
+                onClick={() => analytics.landingCtaClicked('clerk')}
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '16px',
+                  fontWeight: 650,
+                  color: '#120f08',
+                  background: 'var(--color-stage-gold)',
+                  border: 'none',
+                  borderRadius: 'var(--radius-button)',
+                  padding: '15px 34px',
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 28px rgba(201,162,77,0.28)',
+                  transition: 'transform 150ms var(--easing-out), box-shadow 150ms var(--easing-out)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-1px)'
+                  e.currentTarget.style.boxShadow = '0 12px 34px rgba(201,162,77,0.36)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = '0 8px 28px rgba(201,162,77,0.28)'
+                }}
+              >
+                Host tonight&rsquo;s show
+              </button>
+            </SignInButton>
+
+            <Link
+              href="/join"
               style={{
-                fontFamily: 'var(--font-ui)',
-                fontSize: isDesktop ? '14px' : '13px',
-                color: 'rgba(240,236,228,0.4)',
-                margin: 0,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                fontFamily: 'var(--font-body)',
+                fontSize: '15px',
+                color: 'rgba(240,236,228,0.55)',
+                textDecoration: 'none',
+                borderBottom: '1px solid rgba(240,236,228,0.22)',
+                paddingBottom: '2px',
               }}
             >
-              {isDesktop && i > 0 && (
-                <span style={{ color: 'rgba(201,162,77,0.3)' }}>·</span>
-              )}
-              {step}
-            </p>
-          ))}
-        </motion.div>
+              Have a room code? Join the cast
+            </Link>
+          </motion.div>
 
-        {/* CTA — ticket booth */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.38, ...SPRING_GENTLE }}
-          style={{
-            marginTop: isDesktop ? '32px' : '24px',
-            marginBottom: isDesktop ? '40px' : '32px',
-            background: 'var(--color-ink)',
-            borderTop: '2px dashed rgba(255,255,255,0.03)',
-            padding: isDesktop ? '28px 32px' : '24px 20px',
-            borderRadius: '0 0 12px 12px',
-            textAlign: 'center',
-          }}
-        >
-          <SignInButton mode="redirect">
-            <Button
-              variant="primary"
-              size="lg"
-              fullWidth={!isDesktop}
-              onClick={() => analytics.landingCtaClicked('clerk')}
-              style={isDesktop ? { padding: '16px 48px' } : undefined}
-            >
-              Get Tickets
-            </Button>
-          </SignInButton>
-
-          <p
+          <motion.p
+            {...fadeUp(0.32)}
             style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: '12px',
-              color: 'rgba(240,236,228,0.25)',
-              marginTop: '12px',
-              letterSpacing: '0.04em',
+              fontFamily: 'var(--font-body)',
+              fontSize: '13px',
+              color: 'rgba(240,236,228,0.58)',
+              margin: '18px 0 0',
             }}
           >
-            Free · No signup · Any device
-          </p>
+            Free · players never sign up · any phone is a script
+          </motion.p>
+
+          <motion.p
+            {...fadeUp(0.4)}
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '13px',
+              lineHeight: 1.6,
+              color: 'rgba(240,236,228,0.55)',
+              margin: '28px 0 0',
+              maxWidth: isDesktop ? '46ch' : '100%',
+            }}
+          >
+            No rehearsal, no talent required, {ALL_MODES_PLAYER_RANGE_LABEL}{' '}
+            performers. Somebody wins an award.
+          </motion.p>
+        </div>
+
+        {/* ---- The demo IS the hero: a scene writing itself ---- */}
+        <motion.div
+          {...fadeUp(0.2)}
+          style={{
+            width: '100%',
+            maxWidth: isDesktop ? '440px' : '520px',
+            margin: '0 auto',
+          }}
+        >
+          <LiveScriptDemo />
         </motion.div>
       </div>
-
-      {/* Chase light keyframes */}
-      <style>{`
-        @keyframes marqueeChase {
-          from { background-position: 0 0; }
-          to   { background-position: 200px 0; }
-        }
-      `}</style>
     </div>
   )
 }

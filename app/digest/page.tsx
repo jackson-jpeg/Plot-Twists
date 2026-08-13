@@ -100,8 +100,12 @@ export default function DigestPage() {
     })
   }, [socket, getPlayerId])
 
+  // Deferred a tick: fetchGames sets loading state synchronously, and a
+  // sync setState in an effect body trips react-hooks/set-state-in-effect.
   useEffect(() => {
-    if (isConnected) fetchGames()
+    if (!isConnected) return
+    const t = setTimeout(fetchGames, 0)
+    return () => clearTimeout(t)
   }, [isConnected, fetchGames])
 
   const playerId = getPlayerId()
@@ -140,6 +144,50 @@ export default function DigestPage() {
           </div>
         </div>
       </div>
+    )
+  }
+
+  if (games.length === 0) {
+    return (
+      <motion.div
+        {...ENTER_Y}
+        transition={SPRING_GENTLE}
+        className="flex flex-col items-center justify-center text-center px-8"
+        style={{ minHeight: '100dvh', background: 'var(--color-surface)', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <p style={{
+          fontFamily: 'var(--font-code)', fontSize: '10px', fontWeight: 700,
+          letterSpacing: '0.24em', textTransform: 'uppercase',
+          color: 'var(--color-stage-red)', margin: '0 0 14px',
+        }}>
+          Your week in comedy
+        </p>
+        <h1 style={{
+          fontFamily: 'var(--font-serif)', fontSize: 'clamp(28px, 7vw, 36px)',
+          fontWeight: 400, lineHeight: 1.1, letterSpacing: '-0.015em',
+          color: 'var(--color-text-primary)', margin: '0 0 12px',
+        }}>
+          A very quiet week.
+        </h1>
+        <p style={{
+          fontFamily: 'var(--font-body)', fontSize: '15px', lineHeight: 1.6,
+          color: 'var(--color-text-secondary)', margin: '0 0 28px', maxWidth: '34ch',
+        }}>
+          No games on the books yet. The digest writes itself once you perform.
+        </p>
+        <button
+          onClick={() => router.push('/host')}
+          style={{
+            fontFamily: 'var(--font-body)', fontSize: '15px', fontWeight: 650,
+            color: '#fff', background: 'var(--color-stage-red)',
+            border: 'none', borderRadius: 'var(--radius-button)',
+            padding: '13px 28px', cursor: 'pointer',
+            boxShadow: '0 8px 28px rgba(194,59,34,0.25)',
+          }}
+        >
+          Put on a show
+        </button>
+      </motion.div>
     )
   }
 

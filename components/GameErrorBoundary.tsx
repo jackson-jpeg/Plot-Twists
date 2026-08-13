@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 import { motion } from 'framer-motion'
-import { SPRING_GENTLE, HOVER_LIFT, PRESS } from '@/lib/motion'
+import { EASE_CAMERA, DUR } from '@/lib/motion'
 
 interface Props { children: React.ReactNode; phaseName?: string }
 interface State { hasError: boolean; key: number; retryCount: number }
@@ -22,53 +22,107 @@ export class GameErrorBoundary extends React.Component<Props, State> {
   }
 
   handleGoHome = () => {
+    // Deliberate full reload: after a render crash the client state is
+    // suspect, and a class component has no useRouter. A hard reset is the
+    // recovery, not a nicety.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = '/'
   }
 
   render() {
     if (this.state.hasError) {
       const showHomeOption = this.state.retryCount >= 1
+      // Dropped-scene title card: this fallback renders inside the theater
+      // (dark game phases), so it lives in the ink world — the old version
+      // floated a light-mode surface card with a bouncing emoji.
       return (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={SPRING_GENTLE}
-          className="rounded-xl"
-          style={{ textAlign: 'center', padding: '2rem', background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
+          transition={{ duration: DUR.slower, ease: EASE_CAMERA }}
+          style={{
+            textAlign: 'center',
+            padding: '40px 28px',
+            background: 'var(--color-ink)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 'var(--radius-card)',
+            boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
+          }}
+          role="alert"
         >
-          <motion.div
-            className="text-4xl mb-2"
-            animate={{ y: [0, -4, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          <p
+            style={{
+              fontFamily: 'var(--font-code)',
+              fontSize: '9px',
+              fontWeight: 700,
+              letterSpacing: '0.22em',
+              textTransform: 'uppercase',
+              // Lightened stage red: the token value is 3.6:1 on ink at 9px
+              color: '#e57358',
+              margin: '0 0 14px',
+            }}
           >
-            🎬
-          </motion.div>
-          <h2 style={{ color: 'var(--color-text-primary)', marginBottom: '0.5rem' }}>
-            Scene interrupted!
+            Technical difficulties
+          </p>
+          <h2
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: '26px',
+              fontWeight: 400,
+              lineHeight: 1.15,
+              color: 'rgba(240,236,228,0.94)',
+              margin: '0 0 10px',
+            }}
+          >
+            We lost the plot.
           </h2>
-          {this.props.phaseName && (
-            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '1rem' }}>
-              Something went wrong during {this.props.phaseName}.
-            </p>
-          )}
+          <p
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '14px',
+              lineHeight: 1.5,
+              color: 'rgba(240,236,228,0.55)',
+              margin: '0 0 24px',
+            }}
+          >
+            {this.props.phaseName
+              ? `Something broke during ${this.props.phaseName}. The scene can be retaken.`
+              : 'Something broke mid-scene. It can be retaken.'}
+          </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <motion.button
+            <button
               onClick={this.handleRetry}
-              {...HOVER_LIFT}
-              {...PRESS}
-              style={{ background: 'var(--color-accent)', color: 'white', padding: '10px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+              style={{
+                background: 'var(--color-stage-red)',
+                color: '#fff',
+                padding: '11px 26px',
+                borderRadius: 'var(--radius-lg)',
+                fontFamily: 'var(--font-body)',
+                fontSize: '15px',
+                fontWeight: 600,
+                border: 'none',
+                cursor: 'pointer',
+              }}
             >
-              Try Again
-            </motion.button>
+              Retake the scene
+            </button>
             {showHomeOption && (
-              <motion.button
+              <button
                 onClick={this.handleGoHome}
-                {...HOVER_LIFT}
-                {...PRESS}
-                style={{ background: 'transparent', color: 'var(--color-text-secondary)', padding: '10px 24px', borderRadius: '12px', fontSize: '15px', fontWeight: 600, border: '1px solid var(--color-border)', cursor: 'pointer' }}
+                style={{
+                  background: 'transparent',
+                  color: 'rgba(240,236,228,0.75)',
+                  padding: '11px 26px',
+                  borderRadius: 'var(--radius-lg)',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  border: '1px solid rgba(255,255,255,0.16)',
+                  cursor: 'pointer',
+                }}
               >
-                Back to Home
-              </motion.button>
+                Leave the theater
+              </button>
             )}
           </div>
         </motion.div>
